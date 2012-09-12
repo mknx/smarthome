@@ -1,0 +1,80 @@
+21;Bodenfrost;;"ganzjährig; spezielle Wetterwarnung, keine Grundversorgung"
+22;Frost (Temp. unter 0C);;"vom 01.11. bis 31.03.; spezielle Wetterwarnung, keine Grundversorgung"
+23;Frost/Glätte;;"vom 01.11. bis 31.03., für Glätte gem. ww84; spezielle Wetterwarnung, keine Grundversorgung"
+24;Glätte;;"durch Reif, überfrierende Nässe, Schneematsch, ganzjährig; spezielle Wetterwarnung, keine Grundversorgung"
+25;Frost/Glätte;;"für Kombiwarnungen mit Glätte gem. ww24, ganzjährig; spezielle Wetterwarnung, keine Grundversorgung"
+30;Gewitter;Blitze;nur elektr. Entladung
+31;Gewitter;Sturm;mit Windböen
+32;Gewitter;Sturm;mit Sturmböen
+33;Gewitter;Sturm;mit schweren Sturmböen
+34;Gewitter;Sturm;mit Starkregen
+35;Gewitter;Sturm;mit Sturmböen und Starkregen
+36;Gewitter;Sturm;mit schweren Sturmböen und Starkregen
+37;Gewitter;Sturm;mit Sturmböen, Starkregen und Hagel
+38;Gewitter;Sturm;mit schweren Sturmböen, Starkregen und Hagel
+39;schweres Gewitter;Sturm;mit orkanartigen Böen
+40;schweres Gewitter;Sturm;mit Orkanböen
+41;schweres Gewitter;Sturm;mit extremen Orkanböen
+42;schweres Gewitter;Sturm;mit schweren Sturmböen und heftigem Starkregen
+43;schweres Gewitter;Sturm;mit orkanartigen Böen und heftigem Starkregen
+44;schweres Gewitter;Sturm;mit Orkanböen und heftigem Starkregen
+45;schweres Gewitter;Sturm;mit extremen Orkanböen und heftigem Starkregen
+46;schweres Gewitter;Sturm;mit schweren Sturmböen, heftigem Starkregen und Hagel
+47;schweres Gewitter;Sturm;mit orkanartigen Böen, heftigem Starkregen und Hagel
+48;schweres Gewitter;Sturm;mit Orkanböen, heftigem Starkregen und Hagel
+49;schweres Gewitter;Sturm;mit extremen Orkanböen, heftigem Starkregen und Hagel
+45;Hoher UV-Index;UV;nicht belegt
+46;Hoher UV-Index;UV;UV-Warnungen KU3 0.FT
+47;Hitzewarnung;Hitze;Hitzewarnung KU3 0.FT
+48;Hitzewarnung;Hitze;Hitzevorwarninformation
+49;Hitzewarnung;Hitze;Hitzewarnung KU3 0.+1.FT
+50;Starkwind;Wind;See- und Küstenwarnungen für Nord- und Ostsee aus Hamburg
+51;Windböen;Wind;
+52;Sturmböen;Wind;
+53;schwere Sturmböen;Wind;
+54;orkanartige Böen;Wind;
+55;Orkanböen;Wind;
+56;Orkanböen ab 140 km/h ;Wind;für extremes Unwetterereignis
+57;Starkwindwarnung;Wind;für Bodensee und Bayerische Binnenseen
+58;Sturmwarnung;Sturm;für Bodensee und Bayerische Binnenseen
+59;Nebel;Nebel;
+60;derzeit nicht vergeben;;frei
+61;Starkregen;Regen;
+62;heftiger Starkregen;Regen;
+63;Dauerregen;Regen;
+64;ergiebiger Dauerregen;Regen;
+65;ergiebiger Dauerregen;Regen;für extremes Unwetterereignis
+66;derzeit nicht vergeben;;frei
+67;derzeit nicht vergeben;;frei
+68;derzeit nicht vergeben;;frei
+69;derzeit nicht vergeben;;frei
+70;Schneefall;Schnee;für leichten Schneefall
+71;Schneefall;Schnee;
+72;starker Schneefall;Schnee;
+73;starker Schneefall;Schnee;für extremes Unwetterereignis
+74;Schneeverwehung;Schnee;
+75;starke Schneeverwehung;Schnee;
+76;Schneefall und Schneeverwehung;Schnee;als Kombiwarnung
+77;starker Schneefall und Schneeverwehung;Schnee;als Kombiwarnung für Unwetterwarnung
+78;extrem starker Schneefall und Schneeverwehung;Schnee;als Kombiwarnung für extremes Unwetterereignis
+79;Leiterseilschwingung;;spezielle Wetterwarnung, keine Grundversorgung
+80;derzeit nicht vergeben;;frei
+81;Frost;Frost;vom 01.04. bis 31.10.
+82;strenger Frost;Frost;ganzjährig
+83;Frost/Glätte;Glätte;als Kombiwarnung mit Glätte gemäß ww84, vom 01.04. bis 31.10.
+84;Glätte;Glätte;durch überfrierende Nässe, Schneeregen, durch sehr starke Reifablagerungen
+85;Glatteis;Glätte;"verbreitet Glatteis am Boden oder an Gegenständen bei gefrierendem Regen, im Einzelfall auch bei verbreitetem Auftreten von überfrierender Nässe; erhebliche Verkehrsbehinderungen"
+86;Glätte;Schnee;bei frischer vorhandener Schneedecke (bis max. 18h nach einem Schneefallereignis)
+87;Glätte;Glätte;kurzzeitig oder kleinräumig durch gefrierenden Regen oder Sprühregen, auch bei überfrierender Nässe nach Regen
+88;Tauwetter;;Abflussmengen durch Niederschlag und Schneeschmelze wie bei Dauerregen
+89;starkes Tauwetter;;
+90;derzeit nicht vergeben;;frei
+91;derzeit nicht vergeben;;frei
+92;derzeit nicht vergeben;;frei
+93;schweres Gewitter;Sturm;mit heftigem Starkregen und Windböen
+94;schweres Gewitter;Sturm;mit heftigem Starkregen und Sturmböen
+95;derzeit nicht vergeben;;frei
+96;derzeit nicht vergeben;;frei
+97;derzeit nicht vergeben;;frei
+98;Testwarnung;;für Testzwecke, bitte Weiterverbreitung an Dritte unterbinden
+99;Testwarnung;;für Testzwecke, bitte Weiterverbreitung an Dritte unterbinden
