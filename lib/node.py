@@ -31,7 +31,7 @@ logger = logging.getLogger('')
 
 class Node():
     _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'foo': None}
-    def __init__(self, smarthome, root, config, path='__smarthome'):
+    def __init__(self, smarthome, root, path, config):
         # basic attributes
         self._path = path
         self._name = path
@@ -58,12 +58,8 @@ class Node():
         # parse config
         for attr in config:
             if isinstance(config[attr], dict): # sub node
-                if self._path != '__smarthome':
-                    sub_path = path + '.' + attr
-                else:
-                    sub_path = attr
-                #smarthome.add_node(sub_path, False)
-                sub_node = Node(smarthome, self, config[attr], sub_path)
+                sub_path = attr
+                sub_node = Node(smarthome, self, sub_path, config[attr])
                 vars(self)[attr] = sub_node
                 smarthome.add_node(sub_path, sub_node)
                 self._sub_nodes.append(sub_node)

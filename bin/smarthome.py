@@ -66,8 +66,9 @@ class LogHandler(logging.StreamHandler):
         self._log.append([timestamp, record.threadName, record.levelname, record.message])
 
 
-class SmartHome(lib.node.Node):
+class SmartHome():
     _plugin_conf = BASE + '/etc/plugin.conf'
+    _nodes_dir = BASE + '/nodes/'
     _logic_conf = BASE + '/etc/logic.conf'
     _cache_dir = BASE + '/var/cache/'
     _logfile = BASE + '/var/log/smarthome.log'
@@ -76,6 +77,7 @@ class SmartHome(lib.node.Node):
     connections = {}
     _plugins = []
     __nodes = []
+    _sub_nodes = []
     __node_dict = {}
 
     _utctz = TZ
@@ -188,9 +190,19 @@ class SmartHome(lib.node.Node):
         self.scheduler = lib.scheduler.Scheduler(self)
         self.trigger = self.scheduler.trigger
         self.scheduler.start()
-        logger.info("Init nodes")
+        logger.info("Init plugins")
         self._plugins = lib.plugin.Plugins(self, configfile=self._plugin_conf)
-        lib.node.Node.__init__(self, self, self, config)
+        logger.info("Init nodes")
+        for node_file in sorted(os.listdir(self._nodes_dir)):
+            if node_file.endswith('.conf'):
+                node_conf = ConfigObj(self._nodes_dir + node_file)
+                for entry in node_conf:
+                    if isinstance(node_conf[entry], dict):
+                        path = entry
+                        sub_node = lib.node.Node(self, self, path, node_conf[path])
+                        vars(self)[path] = sub_node
+                        self.add_node(path, sub_node)
+                        self._sub_nodes.append(sub_node)
         for node in self.return_nodes():
             node.init_eval_trigger()
         for node in self.return_nodes():
@@ -206,6 +218,10 @@ class SmartHome(lib.node.Node):
                 asyncore.loop(timeout=1, count=1, map=self.socket_map)
             else:
                 time.sleep(2)
+
+    def __iter__(self):
+        for node in self._sub_nodes:
+            yield node
 
     def add_node(self, path, node):
         if path not in self.__nodes:
