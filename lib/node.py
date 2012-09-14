@@ -58,7 +58,7 @@ class Node():
         # parse config
         for attr in config:
             if isinstance(config[attr], dict): # sub node
-                sub_path = attr
+                sub_path = self._path + '.' + attr
                 sub_node = Node(smarthome, self, sub_path, config[attr])
                 vars(self)[attr] = sub_node
                 smarthome.add_node(sub_path, sub_node)
