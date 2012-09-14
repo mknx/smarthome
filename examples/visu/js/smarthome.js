@@ -166,7 +166,6 @@ function shPageInit() {
     for (path in shBuffer) {
         if (shMonitor.indexOf(path) != -1) { // if path in shMonitor
             shUpdateItem(path, shBuffer[path]);
-            console.log('p');
         } else {
             delete shBuffer[path];
             delete shOpt[path];
