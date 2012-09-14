@@ -185,12 +185,12 @@ class Node():
             if self._threshold and self._logics_to_trigger:
                 if self._th and self._value <= self._th_low: # cross lower bound
                     self._th = False
-                    self._logics_to_trigger_logics()
+                    self._trigger_logics()
                 elif not self._th and self._value >= self._th_high: # cross upper bound
                     self._th = True
-                    self._logics_to_trigger_logics()
+                    self._trigger_logics()
             elif self._logics_to_trigger:
-                self._logics_to_trigger_logics()
+                self._trigger_logics()
             for node in self._nodes_to_trigger:
                 args = {'value': value, 'source': self._path}
                 self._sh.trigger(name=node.id(), obj=node._run_eval, value=args, by=caller, source=source)
@@ -253,6 +253,9 @@ class Node():
 
     def __repr__(self):
         return "Node: {0}".format(self._value)
+
+    def add_logic_trigger(self, logic):
+        self._logics_to_trigger.append(logic)
 
     def _trigger_logics(self):
         for logic in self._logics_to_trigger:

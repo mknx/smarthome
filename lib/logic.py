@@ -68,12 +68,12 @@ class Logics():
                 if hasattr(plugin, 'parse_logic'):
                     plugin.parse_logic(logic)
 
-            # item hook
-            if hasattr(logic, 'watch_item'):
-                for watch_item in logic.watch_item:
-                    item = self._sh.return_node(watch_item)
-                    if item != None:
-                        item._trigger.append(logic)
+            # node hook
+            if hasattr(logic, 'watch_node'):
+                for watch_node in logic.watch_node:
+                    node = self._sh.return_node(watch_node)
+                    if node != None:
+                        node.add_logic_trigger(logic)
 
     def __iter__(self):
         for logic in self._logics:
@@ -93,9 +93,9 @@ class Logic():
         for attribute in attributes:
             vars(self)[attribute] = attributes[attribute]
         self._generate_bytecode()
-        if hasattr(self, 'watch_item'):
-            if isinstance(self.watch_item, str):
-                self.watch_item = [self.watch_item, ]
+        if hasattr(self, 'watch_node'):
+            if isinstance(self.watch_node, str):
+                self.watch_node = [self.watch_node, ]
         self.prio = int(self.prio)
         if self.cycle != None:
             self.cycle = float(self.cycle)
