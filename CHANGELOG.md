@@ -16,6 +16,7 @@ Roadmap
 - directory structure cleanup: logic => logics
 - sh.tools.dewpoint()
 - sh.tools.ping()
+- sh.tz => sh.tzinfo
 
 Bug Fixes
 - CLI Plugin: update attribute negated
