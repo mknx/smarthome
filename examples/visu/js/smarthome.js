@@ -18,7 +18,7 @@
 //  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 //########################################################################
 
-var shVersion = 0.63;
+var shVersion = 0.64;
 var shWS = false; // WebSocket
 var shLock = false;
 var shURL = '';
@@ -113,7 +113,7 @@ function shWsInit() {
         command = data[0];
         delete data[0];
         switch(command) {
-            case 'knot':
+            case 'node':
                 for (var i = 1; i < data.length; i++) {
                     path = data[i][0];
                     val = data[i][1];
@@ -201,7 +201,7 @@ function shBufferUpdate(path, val, src){
     if ( path in shBuffer) {
         if (shBuffer[path] !== val){
             shBuffer[path] = val;
-            shSend([ 'knot', [ path, val ]]);
+            shSend([ 'node', [ path, val ]]);
             shUpdateItem(path, val, src);
         };
     };
