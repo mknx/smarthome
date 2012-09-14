@@ -41,6 +41,7 @@ class KNX(lib.my_asynchat.AsynChat):
         self._sh = smarthome
         self.gal = {}
         self.gar = {}
+        self._init_ga = {}
         self.time_ga = time_ga
         self.date_ga = date_ga
         if send_time:
@@ -180,6 +181,10 @@ class KNX(lib.my_asynchat.AsynChat):
 
     def run(self):
         self.alive = True
+        logger.debug('knx: init ga')
+        for ga in self._init_ga:
+            self.groupread(ga, self._init_ga[ga])
+        self._init_ga = {}
 
     def stop(self):
         self.alive = False
@@ -214,7 +219,7 @@ class KNX(lib.my_asynchat.AsynChat):
             else:
                 if not node in self.gal[ga]['nodes']:
                     self.gal[ga]['nodes'].append(node)
-            self.groupread(ga)
+            self._init_ga[ga] = False
 
         if 'knx_cache' in node.conf:
             ga = node['knx_cache']
@@ -224,7 +229,7 @@ class KNX(lib.my_asynchat.AsynChat):
             else:
                 if not node in self.gal[ga]['nodes']:
                     self.gal[ga]['nodes'].append(node)
-            self.groupread(ga, cache=True)
+            self._init_ga[ga] = True
 
         if 'knx_reply' in node.conf:
             knx_reply = node.conf['knx_reply']
