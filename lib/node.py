@@ -312,9 +312,9 @@ class Node():
 
     def fade(self, dest, step=1, delta=1):
         dest = float(dest)
-        self._sh.trigger('fade', self.__fadejob, value=(dest, step, delta))
+        self._sh.trigger('fade', self._fadejob, value={'dest': dest, 'step': step, 'delta': delta})
 
-    def _fadejob(self, (dest, step, delta)):
+    def _fadejob(self, dest, step, delta):
         self.__fade = True
         if self._value < dest:
             while (self._value + step) < dest and self.__fade:
