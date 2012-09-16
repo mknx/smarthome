@@ -1,3 +1,3 @@
 
-See http://smarthome.sourceforge.net/ for more information.
+See http://mknx.github.com/smarthome/ for more information.
 
