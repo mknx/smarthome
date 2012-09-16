@@ -54,11 +54,11 @@ h1, h2, h3, h4 {
 
 }
 #content {
-  width: 42em;
+  width: 60em;
 }
 
 #footer {
-  width: 40em;
+  width: 50em;
   color: #4F91B0;
   font-size: 0.8em;
   padding: 2em;
@@ -72,7 +72,6 @@ h1, h2, h3, h4 {
 #footer .copy {
   float: left;
 }
-
 .sidebar {
   float: right;
   width: 13em;
