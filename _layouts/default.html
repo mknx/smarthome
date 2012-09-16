@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+         "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SmartHome.py - <%= @item[:title] %></title>
+  <% if @item[:changed] then
+      date = atom_time( @item[:changed] )
+     else
+      date = atom_time( Time.now )
+  end %><meta name="date" content="<%= date %>">
+  <link rel="stylesheet" type="text/css" href="/media/screen.css" media="screen">
+  <link rel="stylesheet" type="text/css" href="/media/content.css" media="screen">
+  <link rel="stylesheet" type="text/css" href="/media/print.css" media="print">
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+</head>
+
+<body>
+  <div id="header">
+    <a href="/"><img src="/media/img/logo.png"></a>
+    <span class="menu">
+      <ul>
+        <li><a href="/install/">Install</a></li>
+        <li><a href="/config/">Config</a></li>
+        <li><a href="/plugins/">Plugins</a></li>
+        <li><a href="/logic/">Logic</a></li>
+        <li><a href="http://sourceforge.net/p/smarthome/tickets/">Bugs</a>
+        <li><a href="http://sourceforge.net/projects/smarthome/files/">Download</a></li>
+      </ul>
+    </span>
+  </div>
+  <div id="contfoot">
+    <div id="content" class="content">
+<% if @item[:type] == 'page' then %>
+<%= render 'article', :content => yield %>
+<% else %>
+<%= yield %>
+<% end %>
+    </div>
+    <div id="footer">
+      <!-- <div class="copy">&copy; <%= Date.today.strftime(fmt='%Y') %> SmartHome.py - All rights reserved.</div> -->
+    </div>
+  </div>
+  <div class="content sidebar tagcloud">
+    <h3>Tags</h3>
+    <div style="float: left;">
+      <%= tag_cloud() %>
+    </div>
+  </div>
+</body>
+
+</html>
