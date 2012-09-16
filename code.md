@@ -2,7 +2,7 @@
 title: code test
 layout: default
 ---
-{% highlight python linenos %}
+{% highlight python %}
 def foo():
   print 'foo'
 {% endhighlight %}
