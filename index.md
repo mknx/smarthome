@@ -8,7 +8,7 @@ changed: 2012-06-21T18:27:24+0200
 ---
 
 SmartHome.py is a modular framework to automate your (smart) home.
-See the [install](install/) and [config](config/) section to start your SmartHome.
+See the [install](install) and [config](config) section to start your SmartHome.
 
 ## 2012-06-21 New Release [0.6](http://sourceforge.net/projects/smarthome/files/)
 
@@ -16,13 +16,13 @@ See the [install](install/) and [config](config/) section to start your SmartHom
   * Redesign of the underlying framework to reduce the number of necessary threads and system footprint.
 
 ### Features
-  * [Network plugin](plugins/network/) to receive TCP/UDP and send UDP messages and to trigger logics.
-  * [DMX plugin](plugins/dmx/) accepts now a channel list to bound several channel to one item (value)
-  * [KNX plugin](plugins/knx/) changed class options to `host` and `port`. Adding support for more DPTs. Sending the date/time on the bus.
-  * [Asterisk plugin](plugins/asterisk/) changed class options to `host` and `port`. New functions: db_write, db_read and mailbox_count.
-  * [1-Wire plugin](plugins/onewire/) changed class options to `host` and `port`. Supporting the current owfs version (2.8p15). New function [ibutton_hook](plugins/onewire/#ibuttonhookibutton-item) to monitor intrusion attempts.
-  * [Visu](plugins/visu/) three new interactive image elements added: switch, push and set. See the example.html file. JQuery mobile updated to 1.1.0. Websocket default `port` changed to 2121.
-  * New [item types](/config/#item-attributes) list and foo.
+  * [Network plugin](plugins/network) to receive TCP/UDP and send UDP messages and to trigger logics.
+  * [DMX plugin](plugins/dmx) accepts now a channel list to bound several channel to one item (value)
+  * [KNX plugin](plugins/knx) changed class options to `host` and `port`. Adding support for more DPTs. Sending the date/time on the bus.
+  * [Asterisk plugin](plugins/asterisk) changed class options to `host` and `port`. New functions: db_write, db_read and mailbox_count.
+  * [1-Wire plugin](plugins/onewire) changed class options to `host` and `port`. Supporting the current owfs version (2.8p15). New function [ibutton_hook](plugins/onewire/#ibuttonhookibutton-item) to monitor intrusion attempts.
+  * [Visu](plugins/visu) three new interactive image elements added: switch, push and set. See the example.html file. JQuery mobile updated to 1.1.0. Websocket default `port` changed to 2121.
+  * New [item types](/config#item-attributes) list and foo.
   * New start option `-d` to set the log level to debug.
   * UDP plugin is no longer supported. Please use the generic network plugin instead.
 
@@ -33,7 +33,7 @@ See the [install](install/) and [config](config/) section to start your SmartHom
 ## 2012-04-12 New Release [0.5](http://sourceforge.net/projects/smarthome/files/)
 
 ### Features
-  * [Visu](plugins/visu/) with JQuery mobile
+  * [Visu](plugins/visu) with JQuery mobile
   * ping: sh.ping(host), return True if up, False if down.
 
 ### Bug Fixes
@@ -42,13 +42,13 @@ See the [install](install/) and [config](config/) section to start your SmartHom
 ## 2011-10-29 New Release [0.4](http://sourceforge.net/projects/smarthome/files/)
 
 ### Feature
-  * KNX Reply with [KNX plugin](plugins/knx/)
+  * KNX Reply with [KNX plugin](plugins/knx)
 
 
 ## 2011-08-14 New Release [0.3](http://sourceforge.net/projects/smarthome/files/)
 
 ### Features
- * [Asterisk plugin](plugins/asterisk/) to monitor channels and listen for UserEvents
+ * [Asterisk plugin](plugins/asterisk) to monitor channels and listen for UserEvents
  * [item.fade()](config/#fade): fade the item to a specified value
  + [item.area](config/#item-attributes): provides access to the area object
  + [logic.alive](logic/config/#logic): safe loop expression for a clean shutdown
