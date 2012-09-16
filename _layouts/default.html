@@ -4,11 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>SmartHome.py - {{ page.title }}</title>
-  <% if @item[:changed] then
-      date = atom_time( @item[:changed] )
-     else
-      date = atom_time( Time.now )
-  end %><meta name="date" content="<%= date %>">
+  <meta name="date" content="{{ site.time }}">
   <link rel="stylesheet" type="text/css" href="/media/screen.css" media="screen">
   <link rel="stylesheet" type="text/css" href="/media/content.css" media="screen">
   <link rel="stylesheet" type="text/css" href="/media/print.css" media="print">
@@ -31,11 +27,7 @@
   </div>
   <div id="contfoot">
     <div id="content" class="content">
-<% if @item[:type] == 'page' then %>
-<%= render 'article', :content => yield %>
-<% else %>
-<%= yield %>
-<% end %>
+        {{ content }}
     </div>
     <div id="footer">
       <!-- <div class="copy">&copy; <%= Date.today.strftime(fmt='%Y') %> SmartHome.py - All rights reserved.</div> -->
