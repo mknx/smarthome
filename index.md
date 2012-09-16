@@ -1,5 +1,6 @@
 ---
 title: Homepage
+layout: default
 summary:
 uid: index
 created: 2011-08-08T21:27:24+0200

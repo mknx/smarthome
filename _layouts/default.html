@@ -3,7 +3,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>SmartHome.py - <%= @item[:title] %></title>
+  <title>SmartHome.py - {{ page.title }}</title>
   <% if @item[:changed] then
       date = atom_time( @item[:changed] )
      else
