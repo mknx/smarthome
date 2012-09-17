@@ -29,7 +29,7 @@ import cPickle
 logger = logging.getLogger('')
 
 
-class Node():
+class Item():
     _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'foo': None}
     def __init__(self, smarthome, root, path, config):
         # basic attributes
@@ -50,19 +50,19 @@ class Node():
         self._threshold = False
         self._enforce_updates = False
         self._parent = root
-        self._sub_nodes = []
+        self._sub_items = []
         self._plugins_to_trigger = []
         self._logics_to_trigger = []
-        self._nodes_to_trigger = []
+        self._items_to_trigger = []
         self.__fade = False
         # parse config
         for attr in config:
-            if isinstance(config[attr], dict): # sub node
+            if isinstance(config[attr], dict): # sub item
                 sub_path = self._path + '.' + attr
-                sub_node = Node(smarthome, self, sub_path, config[attr])
-                vars(self)[attr] = sub_node
-                smarthome.add_node(sub_path, sub_node)
-                self._sub_nodes.append(sub_node)
+                sub_item = Item(smarthome, self, sub_path, config[attr])
+                vars(self)[attr] = sub_item
+                smarthome.add_item(sub_path, sub_item)
+                self._sub_items.append(sub_item)
             else: # attribute
                 if attr == 'type':
                     self._type = config[attr]
@@ -92,43 +92,43 @@ class Node():
                 try:
                     self._value = getattr(self, '_return_' + self._type)(self._value)
                 except:
-                    logger.error("Node '{0}': value ({1}) does not match type ({2}). Ignoring!".format(path, self._value, self._type))
+                    logger.error("Item '{0}': value ({1}) does not match type ({2}). Ignoring!".format(path, self._value, self._type))
                     return
         else:
-            logger.debug("Node '{0}': No type specified.".format(self._path))
+            logger.debug("Item '{0}': No type specified.".format(self._path))
             return
         if self._cache:
             self._value = self._db_read()
         if self._eval and 'eval_trigger' in self.conf:
-            nodes = map(lambda x: 'sh.' + x + '()', self.conf['eval_trigger'])
+            items = map(lambda x: 'sh.' + x + '()', self.conf['eval_trigger'])
             if self._eval == 'and':
-                self._eval = ' and '.join(nodes)
+                self._eval = ' and '.join(items)
             elif self._eval == 'or':
-                self._eval = ' or '.join(nodes)
+                self._eval = ' or '.join(items)
             elif self._eval == 'sum':
-                self._eval = ' + '.join(nodes)
+                self._eval = ' + '.join(items)
             elif self._eval == 'avg':
-                self._eval = '({0})/{1}'.format(' + '.join(nodes), len(nodes))
+                self._eval = '({0})/{1}'.format(' + '.join(items), len(items))
         if self._threshold:
             low, sep, high = self._threshold.rpartition(':')
             if not low:
                 low = high
             self._th_low = float(low)
             self._th_high = float(high)
-            logger.debug("Node '{0}': set threshold => low: {1} high: {2}".format(self._path, self._th_low, self._th_high))
+            logger.debug("Item '{0}': set threshold => low: {1} high: {2}".format(self._path, self._th_low, self._th_high))
             self._th = False
         for plugin in self._sh.return_plugins():
-            if hasattr(plugin, 'parse_node'):
-                update = plugin.parse_node(self)
+            if hasattr(plugin, 'parse_item'):
+                update = plugin.parse_item(self)
                 if update:
                     self._plugins_to_trigger.append(update)
 
     def init_eval_trigger(self):
         if 'eval_trigger' in self.conf:
-            for node in self.conf['eval_trigger']:
-                node = self._sh.return_node(node)
-                if node != None:
-                    node._nodes_to_trigger.append(self)
+            for item in self.conf['eval_trigger']:
+                item = self._sh.return_item(item)
+                if item != None:
+                    item._items_to_trigger.append(self)
 
     def init_eval_run(self):
         if 'eval_trigger' in self.conf:
@@ -148,7 +148,7 @@ class Node():
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error("Node '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
+            logger.error("Item '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
             return
         if self._eval:
             args = {'value': value, 'caller': caller, 'source': source}
@@ -160,7 +160,7 @@ class Node():
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error("Node '{0}': value ({1}) does not match type ({2}). Via {3}  {4}".format(self._path, value, self._type, caller, source))
+            logger.error("Item '{0}': value ({1}) does not match type ({2}). Via {3}  {4}".format(self._path, value, self._type, caller, source))
             return
         self._lock.acquire()
 
@@ -191,20 +191,20 @@ class Node():
                     self._trigger_logics()
             elif self._logics_to_trigger:
                 self._trigger_logics()
-            for node in self._nodes_to_trigger:
+            for item in self._items_to_trigger:
                 args = {'value': value, 'source': self._path}
-                self._sh.trigger(name=node.id(), obj=node._run_eval, value=args, by=caller, source=source)
+                self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source)
             if self._cache and not self.__fade: self._db_update(value)
         else:
             self._lock.release()
 
     def __iter__(self):
-        for node in self._sub_nodes:
-            yield node
+        for item in self._sub_items:
+            yield item
 
     def return_children(self):
-        for node in self._sub_nodes:
-            yield node
+        for item in self._sub_items:
+            yield item
 
     def return_parent(self):
         return self._parent
@@ -252,14 +252,14 @@ class Node():
         return self._name
 
     def __repr__(self):
-        return "Node: {0}".format(self._value)
+        return "Item: {0}".format(self._value)
 
     def add_logic_trigger(self, logic):
         self._logics_to_trigger.append(logic)
 
     def _trigger_logics(self):
         for logic in self._logics_to_trigger:
-            logic.trigger('Node', self._path, self._value)
+            logic.trigger('Item', self._path, self._value)
 
     def _return_str(self, value):
         if isinstance(value, basestring):

@@ -24,44 +24,44 @@ import logging
 logger = logging.getLogger('')
 
 
-def return_html(node):
+def return_html(item):
     html = ''
-    if 'visu' in node.conf:
-        visu = node.conf['visu']
-        dom = node.id().replace('.', '_')
+    if 'visu' in item.conf:
+        visu = item.conf['visu']
+        dom = item.id().replace('.', '_')
         if visu in ['text', 'textarea', 'toggle', 'checkbox', 'radio', 'select', 'slider']:  # regular form elements
             html += '<div data-role="fieldcontain">\n'.format(dom)
             if visu == 'text':
-                html += '    <label for="{0}">{1}</label>\n'.format(dom, node)
-                html += '    <input id="{0}" data-sh="{1}" type="text" />\n'.format(dom, node.id())
+                html += '    <label for="{0}">{1}</label>\n'.format(dom, item)
+                html += '    <input id="{0}" data-sh="{1}" type="text" />\n'.format(dom, item.id())
             elif visu == 'textarea':
-                html += '    <label for="{0}">{1}</label>\n'.format(dom, node)
-                html += '    <textarea id="{0}" data-sh="{1}" type="checkbox"></textarea>\n'.format(dom, node.id())
+                html += '    <label for="{0}">{1}</label>\n'.format(dom, item)
+                html += '    <textarea id="{0}" data-sh="{1}" type="checkbox"></textarea>\n'.format(dom, item.id())
             elif visu == 'toggle':
-                html += '    <label for="{0}">{1}</label>\n'.format(dom, node)
-                if 'visu_opt' in node.conf:
-                    opt = node.conf['visu_opt']
+                html += '    <label for="{0}">{1}</label>\n'.format(dom, item)
+                if 'visu_opt' in item.conf:
+                    opt = item.conf['visu_opt']
                 else:
                     opt = ['Off', 'On']
-                html += '    <select id="{0}" data-sh="{1}" data-role="slider"><option value="off">{2}</option><option value="on">{3}</option></select>\n'.format(dom, node.id(), opt[0], opt[1])
+                html += '    <select id="{0}" data-sh="{1}" data-role="slider"><option value="off">{2}</option><option value="on">{3}</option></select>\n'.format(dom, item.id(), opt[0], opt[1])
             elif visu == 'checkbox':
-                html += '    <label for="{0}">{1}</label>\n'.format(dom, node)
-                html += '    <input id="{0}" data-sh="{1}" type="checkbox" />\n'.format(dom, node.id())
+                html += '    <label for="{0}">{1}</label>\n'.format(dom, item)
+                html += '    <input id="{0}" data-sh="{1}" type="checkbox" />\n'.format(dom, item.id())
             elif visu == 'slider':
-                html += '    <label for="{0}">{1}</label>\n'.format(dom, node)
-                if 'visu_opt' in node.conf:
-                    opt = node.conf['visu_opt']
+                html += '    <label for="{0}">{1}</label>\n'.format(dom, item)
+                if 'visu_opt' in item.conf:
+                    opt = item.conf['visu_opt']
                 else:
                     opt = [0, 100, 5]
-                html += '    <input id="{0}" data-sh="{1}" type="range" min="{2}" max="{3}" step="{4}" />\n'.format(dom, node.id(), opt[0], opt[1], opt[2])
+                html += '    <input id="{0}" data-sh="{1}" type="range" min="{2}" max="{3}" step="{4}" />\n'.format(dom, item.id(), opt[0], opt[1], opt[2])
             elif visu == 'select':
                 html += '<fieldset data-role="controlgroup">\n'
-                if 'visu_opt' in node.conf:
-                    opt = node.conf['visu_opt']
+                if 'visu_opt' in item.conf:
+                    opt = item.conf['visu_opt']
                 else:
                     opt = ['Please specify the "visu_opt" attribute']
-                html += '    <legend>{0}</legend>\n'.format(node)
-                html += '    <select id="{0}" data-sh="{1}">\n'.format(dom, node.id())
+                html += '    <legend>{0}</legend>\n'.format(item)
+                html += '    <select id="{0}" data-sh="{1}">\n'.format(dom, item.id())
                 for value in opt:
                     html += '        <option value="{0}">{0}</option>\n'.format(value)
                 html += '    </select>\n'
@@ -69,35 +69,35 @@ def return_html(node):
             elif visu == 'radio':
                 html += '<fieldset data-role="controlgroup">\n'
                 i = 0
-                if 'visu_opt' in node.conf:
-                    opt = node.conf['visu_opt']
+                if 'visu_opt' in item.conf:
+                    opt = item.conf['visu_opt']
                 else:
                     opt = ['Please specify the "visu_opt" attribute']
-                html += '    <legend>{0}</legend>\n'.format(node)
+                html += '    <legend>{0}</legend>\n'.format(item)
                 for value in opt:
                     i += 1
                     html += '    <label for="{0}{1}">{2}</label>\n'.format(dom, i, value)
-                    html += '    <input id="{0}{1}" name="{0}" data-sh="{2}" value="{3}" type="radio" />\n'.format(dom, i, node.id(), value)
+                    html += '    <input id="{0}{1}" name="{0}" data-sh="{2}" value="{3}" type="radio" />\n'.format(dom, i, item.id(), value)
                 html += '</fieldset>\n'
             html += '</div>\n'
         elif visu in ['div', 'span', 'img']:  # passive elements
             if visu == 'div':
-                html += '<div>{0}: <span data-sh="{1}"></span></div>\n'.format(node, node.id())
+                html += '<div>{0}: <span data-sh="{1}"></span></div>\n'.format(item, item.id())
             elif visu == 'span':
-                html += '<span>{0}: <span data-sh="{1}"></span></span>\n'.format(node, node.id())
+                html += '<span>{0}: <span data-sh="{1}"></span></span>\n'.format(item, item.id())
             elif visu == 'img':
-                html += '<img data-sh="{0}" src="{1}" />\n'.format(node.id(), node())
+                html += '<img data-sh="{0}" src="{1}" />\n'.format(item.id(), item())
         elif visu in ['switch', 'push']:  # active elements
             if visu == 'switch':
-                html += '<img data-sh="{0}" src="/img/t.png" class="switch" />\n'.format(node.id())
+                html += '<img data-sh="{0}" src="/img/t.png" class="switch" />\n'.format(item.id())
             elif visu == 'push':
-                html += '<img data-sh="{0}" src="/img/t.png" class="push" />\n'.format(node.id())
+                html += '<img data-sh="{0}" src="/img/t.png" class="push" />\n'.format(item.id())
     return html
 
 
-def return_tree(node):
+def return_tree(item):
     html = ''
-    html += return_html(node)
-    for child in node:
+    html += return_html(item)
+    for child in item:
         html += return_tree(child)
     return html

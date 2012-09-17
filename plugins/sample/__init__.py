@@ -37,10 +37,10 @@ class Plugin():
     def stop(self):
         self.alive = False
 
-    def parse_node(self, node):
-        if 'plugin_attr' in node.conf:
-            logger.debug("parse node: {0}".format(node))
-            return self.update_node
+    def parse_item(self, item):
+        if 'plugin_attr' in item.conf:
+            logger.debug("parse item: {0}".format(item))
+            return self.update_item
         else:
             return None
 
@@ -49,9 +49,9 @@ class Plugin():
             # self.function(logic['name'])
             pass
 
-    def update_node(self, node, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None):
         if caller != 'plugin':
-            logger.info("update node: {0}".format(node.id()))
+            logger.info("update item: {0}".format(item.id()))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

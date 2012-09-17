@@ -53,7 +53,7 @@ class CLIHandler(asynchat.async_chat):
         cmd = self.buffer.strip()
         self.buffer = ''
         if cmd.startswith('ls'):
-            self.push("Nodes:\n======\n")
+            self.push("Items:\n======\n")
             self.ls(cmd.lstrip('ls').strip())
         elif cmd == 'la':
             self.la()
@@ -76,40 +76,40 @@ class CLIHandler(asynchat.async_chat):
             for path in self.sh:
                 self.push("{0}\n".format(path))
         else:
-            node = self.sh.return_node(path)
-            if hasattr(node, 'id'):
-                if node._type:
-                    self.push("{0} = {1}\n".format(node.id(), node()))
+            item = self.sh.return_item(path)
+            if hasattr(item, 'id'):
+                if item._type:
+                    self.push("{0} = {1}\n".format(item.id(), item()))
                 else:
-                    self.push("%s\n" % (node.id()))
-                for child in node:
+                    self.push("%s\n" % (item.id()))
+                for child in item:
                     self.ls(child.id())
             else:
                 self.push("Could not find path: %s\n" % (path))
 
     def la(self):
-        self.push("Nodes:\n======\n")
-        for node in self.sh.return_nodes():
-            if node._type:
-                self.push("{0} = {1}\n".format(node.id(), node()))
+        self.push("Items:\n======\n")
+        for item in self.sh.return_items():
+            if item._type:
+                self.push("{0} = {1}\n".format(item.id(), item()))
             else:
-                self.push("{0}\n".format(node.id()))
+                self.push("{0}\n".format(item.id()))
 
     def update(self, data):
         if not self.updates_allowed:
-            self.push("Updating nodes is not allowed.\n")
+            self.push("Updating items is not allowed.\n")
             return
         path, sep, value = data.partition('=')
         path = path.strip()
         value = value.strip()
         if not value:
-            self.push("You have to specify an node value. Syntax: up node = value\n")
+            self.push("You have to specify an item value. Syntax: up item = value\n")
             return
-        node = self.sh.return_node(path)
-        if not hasattr(node, '_type'):
-            self.push("Could not find node with a valid type specified: '{0}'\n".format(path))
+        item = self.sh.return_item(path)
+        if not hasattr(item, '_type'):
+            self.push("Could not find item with a valid type specified: '{0}'\n".format(path))
             return
-        node(value, 'CLI', self.source)
+        item(value, 'CLI', self.source)
 
     def tr(self, logic):
         if not self.updates_allowed:
@@ -127,11 +127,11 @@ class CLIHandler(asynchat.async_chat):
                 self.push("{0}\n".format(logic))
 
     def usage(self):
-        self.push('ls: list the first level nodes\n')
-        self.push('ls node: list node and every child node (with values)\n')
-        self.push('la: list all nodes (with values)\n')
+        self.push('ls: list the first level items\n')
+        self.push('ls item: list item and every child item (with values)\n')
+        self.push('la: list all items (with values)\n')
         self.push('lo: list all logics and next execution time\n')
-        self.push('update node = value: update the specified node with the specified value\n')
+        self.push('update item = value: update the specified item with the specified value\n')
         self.push('up: alias for update\n')
         self.push('tr logic: trigger logic\n')
         self.push('quit: quit the session\n')

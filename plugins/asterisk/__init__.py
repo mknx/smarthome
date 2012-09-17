@@ -180,9 +180,9 @@ class Asterisk(lib.my_asynchat.AsynChat):
         a, b, channel = channel.partition('/')
         return channel
 
-    def parse_node(self, node):
-        if 'ast_dev' in node.conf:
-            self._devices[node.conf['ast_dev']] = node
+    def parse_item(self, item):
+        if 'ast_dev' in item.conf:
+            self._devices[item.conf['ast_dev']] = item
 
     def parse_logic(self, logic):
         if 'ast_userevent' in logic.conf:

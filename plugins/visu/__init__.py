@@ -41,7 +41,7 @@ class WebSocket(asyncore.dispatcher):
         asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
         self._sh = smarthome
         self.clients = []
-        self.visu_nodes = {}
+        self.visu_items = {}
         self.visu_logics = {}
         self.generator_dir = generator_dir
         try:
@@ -74,18 +74,18 @@ class WebSocket(asyncore.dispatcher):
         index += '    <div data-role="header"><h3>SmartHome</h3></div>\n'
         index += '    <div data-role="content">\n\n'
         index += '<ul data-role="listview" data-inset="true">\n'
-        for node in self._sh:
-            html = generator.return_tree(node)
-            node_file = "/dyn/{0}.html".format(node.id())
+        for item in self._sh:
+            html = generator.return_tree(item)
+            item_file = "/dyn/{0}.html".format(item.id())
             if 'data-sh' in html:
-                index += '<li><a href="{0}">{1}</a></li>\n'.format(node_file, node)
+                index += '<li><a href="{0}">{1}</a></li>\n'.format(item_file, item)
                 page = header
-                page += '<div data-role="page" id="{0}">\n'.format(node.id())
-                page += '    <div data-role="header"><h3>{0}</h3></div>\n'.format(node)
+                page += '<div data-role="page" id="{0}">\n'.format(item.id())
+                page += '    <div data-role="header"><h3>{0}</h3></div>\n'.format(item)
                 page += '    <div data-role="content">\n\n'
                 page += html
                 page += footer
-                with open(directory + node_file, 'w') as f:
+                with open(directory + item_file, 'w') as f:
                     f.write(page)
                 f.closed
         index += '</ul>\n' + footer
@@ -101,7 +101,7 @@ class WebSocket(asyncore.dispatcher):
             sock, addr = pair
             addr = "{0}:{1}".format(addr[0], addr[1])
             logger.debug('Websocket: incoming connection from %s' % addr)
-            client = WebSocketHandler(sock, self._sh.socket_map, addr, self.visu_nodes, self.visu_logics)
+            client = WebSocketHandler(sock, self._sh.socket_map, addr, self.visu_items, self.visu_logics)
             self.clients.append(client)
 
     def run(self):
@@ -122,19 +122,19 @@ class WebSocket(asyncore.dispatcher):
         except:
             pass
 
-    def parse_node(self, node):
-        if 'visu' in node.conf:
-            self.visu_nodes[node.id()] = node
-            return self.update_node
+    def parse_item(self, item):
+        if 'visu' in item.conf:
+            self.visu_items[item.id()] = item
+            return self.update_item
 
     def parse_logic(self, logic):
         if hasattr(logic, 'visu'):
             self.visu_logics[logic.name] = logic
 
-    def update_node(self, node, caller=None, source=None):
-        data = json.dumps(['node', [node.id(), node()]])
+    def update_item(self, item, caller=None, source=None):
+        data = json.dumps(['item', [item.id(), item()]])
         for client in self.clients:
-            client.update(node.id(), data, source)
+            client.update(item.id(), data, source)
 
     def dialog(self, header, content):
         data = json.dumps(['dialog', [header, content]])
@@ -144,7 +144,7 @@ class WebSocket(asyncore.dispatcher):
 
 class WebSocketHandler(asynchat.async_chat):
 
-    def __init__(self, sock, socket_map, addr, nodes, logics):
+    def __init__(self, sock, socket_map, addr, items, logics):
         asynchat.async_chat.__init__(self, sock, map=socket_map)
         self.set_terminator("\r\n\r\n")
         self.parse_data = self.parse_header
@@ -152,7 +152,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.ibuffer = ""
         self.header = {}
         self.monitor = []
-        self.nodes = nodes
+        self.items = items
         self._lock = threading.Lock()
         self.logics = logics
 
@@ -188,22 +188,22 @@ class WebSocketHandler(asynchat.async_chat):
             logger.debug("Problem decoding %s from %s: %s" % (repr(data), self.addr, e))
             return
 
-        if command == 'node':
+        if command == 'item':
             path = data[0]
             value = data[1]
-            if path in self.nodes:
-                self.nodes[path](value, 'Visu', self.addr)
+            if path in self.items:
+                self.items[path](value, 'Visu', self.addr)
             else:
-                logger.info("Client %s want to update invalid node: %s" % (self.addr, path))
+                logger.info("Client %s want to update invalid item: %s" % (self.addr, path))
         elif command == 'monitor':
             for path in list(set(data).difference(set(self.monitor))):
-                if path in self.nodes:
-                    if 'visu_img' in self.nodes[path].conf:
-                        self.json_send(json.dumps(['node', [path, self.nodes[path](), self.nodes[path].conf['visu_img']]]))
+                if path in self.items:
+                    if 'visu_img' in self.items[path].conf:
+                        self.json_send(json.dumps(['item', [path, self.items[path](), self.items[path].conf['visu_img']]]))
                     else:
-                        self.json_send(json.dumps(['node', [path, self.nodes[path]()]]))
+                        self.json_send(json.dumps(['item', [path, self.items[path]()]]))
                 else:
-                    logger.info("Client %s requested invalid node: %s" % (self.addr, path))
+                    logger.info("Client %s requested invalid item: %s" % (self.addr, path))
             self.monitor = data
         elif command == 'logic':
             name = data[0]
