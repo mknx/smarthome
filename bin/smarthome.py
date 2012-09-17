@@ -16,7 +16,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with SmartHome.py.  If not, see <http://www.gnu.org/licenses/>.
+#  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 ##########################################################################
 
 import signal
@@ -163,10 +163,13 @@ class SmartHome():
         logger.info("Init SmartHome.py v%s" % VERSION)
         # Tools
         self.tools = lib.tools.Tools()
-        config = ConfigObj(smarthome_conf)
-        for attr in config:
-            if not isinstance(config[attr], dict):  # ignore sub nodes
-                vars(self)['_' + attr] = config[attr]
+        try:
+            config = ConfigObj(smarthome_conf)
+            for attr in config:
+                if not isinstance(config[attr], dict):  # ignore sub nodes
+                    vars(self)['_' + attr] = config[attr]
+        except Exception, e:
+            pass
 
         # set tz to local tz
         if hasattr(self, '_tz'):
