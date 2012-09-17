@@ -49,10 +49,10 @@ See the [install](install) and [config](config) section to start your SmartHome.
 
 ### Features
  * [Asterisk plugin](plugins/asterisk) to monitor channels and listen for UserEvents
- * [item.fade()](config/#fade): fade the item to a specified value
- + [item.area](config/#item-attributes): provides access to the area object
- + [logic.alive](logic/config/#logic): safe loop expression for a clean shutdown
- + [logig crontab](logic/config/#crontab): new keyword 'init'
+ * [item.fade()](config#fade): fade the item to a specified value
+ + [item.area](config#item-attributes): provides access to the area object
+ + [logic.alive](logic/config#logic): safe loop expression for a clean shutdown
+ + [logig crontab](logic/config#crontab): new keyword 'init'
  + [CLI plugin](plugins/cli/#usage): new function 'tr' to trigger logics
 
 ### Nonfunctional changes
@@ -69,7 +69,7 @@ See the [install](install) and [config](config) section to start your SmartHome.
 ## 2011-06-21 New Release [0.2](http://sourceforge.net/projects/smarthome/files/) 
 
 ### Features
- * Two new [item attributes](config/#item-attributes): threshold and offset
+ * Two new [item attributes](config#item-attributes): threshold and offset
  * [CLI plugin](plugins/cli/) for a simple telnet interface
  * [DMX plugin](plugins/dmx/) to interact with the DMX bus
 
