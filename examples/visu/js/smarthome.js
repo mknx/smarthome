@@ -102,7 +102,7 @@ function shInit(url) {
 function shWsInit() {
     shWS = new WebSocket(shURL);
     shWS.onopen = function(){
-        shSend([ 'SmartHome.py', 2 ]);
+        shSend([ 'SmartHome.py', 1 ]);
         shSend([ 'monitor', shMonitor ]);
         $('.ui-dialog').dialog('close');
     };
@@ -113,7 +113,7 @@ function shWsInit() {
         command = data[0];
         delete data[0];
         switch(command) {
-            case 'node':
+            case 'item':
                 for (var i = 1; i < data.length; i++) {
                     path = data[i][0];
                     val = data[i][1];
@@ -201,7 +201,7 @@ function shBufferUpdate(path, val, src){
     if ( path in shBuffer) {
         if (shBuffer[path] !== val){
             shBuffer[path] = val;
-            shSend([ 'node', [ path, val ]]);
+            shSend([ 'item', [ path, val ]]);
             shUpdateItem(path, val, src);
         };
     };
