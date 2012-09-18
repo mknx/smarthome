@@ -10,6 +10,7 @@ category: Configuration
 # Configuration
 
 The configuration of SmartHome.py is split up in four areas:
+
  * Basic Configuration: smarthome.conf
  * Logic Configuration: logic.conf
  * Plugin Configuration: plugin.conf
