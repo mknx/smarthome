@@ -42,6 +42,7 @@ class Russound(asynchat.async_chat):
         self._sh = smarthome
         self.all_zones = {}
         self.controller = {}
+        self.set_terminator(RESP_DELIMITER)
 
         if 'russound' not in smarthome:
             logger.warning("No russound configuration found!")
@@ -52,26 +53,22 @@ class Russound(asynchat.async_chat):
             self.controller[zone.controller][zone.zone] = zone
 
     def parse_item(self, item):
-        if item.parent in self.zones.keys():
-            return self.zones[item.parent].update_item
+        if item.parent in self.all_zones.keys():
+            return self.all_zones[item.parent].update_item
         else:
             return None
 
     def send_set(self, zone, cmd, value):
-        #write_to_socket('SET C[%d].Z[%d].%s="%s"\r' % zone.controller, zone.zone, cmd, value)
-        pass
+        self.send_cmd('SET C[%d].Z[%d].%s="%s"\r' % zone.controller, zone.zone, cmd, value)
 
     def send_event(self, zone, cmd, value1=None, value2=None):
-        #write_to_socket('EVENT C[%d].Z[%d]!%s %s %s\r' % zone.controller, zone.zone, cmd, value)
-        pass
+        self.send_cmd('EVENT C[%d].Z[%d]!%s %s %s\r' % zone.controller, zone.zone, cmd, value)
         
     def watch_zone(self, controller, zone, value):
-        #write_to_socket('WATCH C[%d].Z[%d] %s\r' % controller, zone, 'ON' if value else 'OFF')
-        pass
+        self.send_cmd('WATCH C[%d].Z[%d] %s\r' % controller, zone, 'ON' if value else 'OFF')
 
     def watch_system(self, value):
-        #write_to_socket('WATCH System %s\r' % 'ON' if value else 'OFF')
-        pass 
+        self.send_cmd('WATCH System %s\r' % 'ON' if value else 'OFF')
 
     def send_cmd(self, cmd):
         logger.debug("Request: %s" % cmd)
@@ -84,10 +81,27 @@ class Russound(asynchat.async_chat):
         logger.debug("Response: %s" % resp)
         return resp
 
-
     def _handle_response(self, resp):
         if resp[0] == 'S':
             return 
+        if resp[0] == 'E':
+            logger.debug("Response error: %s" %s resp)
+        elif resp[0] == 'N':
+            resp = resp[2:]
+
+            if resp[0] == 'C':
+                c = int(resp[2])
+                z = int(resp[6])
+                resp = resp[10:]
+                cmd = resp.split('=')[0]
+                value = resp.split('"')[1]
+                
+                self.controllers[c][z].item[cmd](value, 'RUSSOUND')
+            elif resp.startswith('System.status'):
+                return
+            elif resp[0] == 'S':
+                return
+
 
     def _connect(self):
         print 'connecting...'
