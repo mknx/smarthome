@@ -19,7 +19,6 @@
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-import os
 import logging
 import asynchat
 import asyncore
@@ -77,7 +76,7 @@ class WebSocket(asyncore.dispatcher):
         index += '<ul data-role="listview" data-inset="true">\n'
         for item in self._sh:
             html = generator.return_tree(item)
-            item_file = "dyn/{0}.html".format(item.id())
+            item_file = "/dyn/{0}.html".format(item.id())
             if 'data-sh' in html:
                 index += '<li><a href="{0}">{1}</a></li>\n'.format(item_file, item)
                 page = header
@@ -86,11 +85,11 @@ class WebSocket(asyncore.dispatcher):
                 page += '    <div data-role="content">\n\n'
                 page += html
                 page += footer
-                with open(os.path.join(directory, item_file), 'w') as f:
+                with open(directory + item_file, 'w') as f:
                     f.write(page)
                 f.closed
         index += '</ul>\n' + footer
-        with open(os.path.join(directory, 'index.html'), 'w') as f:
+        with open(directory + '/dyn/index.html', 'w') as f:
             f.write(index)
         f.closed
 
