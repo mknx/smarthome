@@ -22,10 +22,8 @@
 
 import os
 import sys
+from collections import namedtuple
 import xml.etree.ElementTree as ET
-
-# Ausgabedatei
-OUTFILE = '/usr/local/smarthome/etc/smarthome.conf'
 
 # erster Knoten ist meist das Projekt, damit das nicht mit abgebildet wird
 # folgende Option auf 1 setzen
@@ -41,29 +39,38 @@ FIND_CONNECTOR = NS_URL + 'Connectors'
 FIND_SEND = NS_URL + 'Send'
 FIND_RECEIVE = NS_URL + 'Receive'
 FIND_GA = NS_URL + 'GroupAddress'
+FIND_DPT = NS_URL + 'DatapointType'
+FIND_DPST = NS_URL + 'DatapointSubtype'
 
-def processBuildingPart(root, part, depth, f):
+def processBuildingPart(root, part, depth, f, dpts):
 	print "processing " + part.tag + " " + part.attrib['Name'] + " (" + part.attrib['Type'] + ")"
 
 	if part.attrib['Type'] != "DistributionBoard":
 		write_node(part.attrib['Name'], depth, f)
 		
 		for devref in part.findall(FIND_DEVICEREF):
-			processDevice(root, devref.attrib['RefId'], depth + 1, f)
+			processDevice(root, devref.attrib['RefId'], depth + 1, f, dpts)
 
 	for subpart in part.findall(FIND_BUILDINGPART):
-		processBuildingPart(root, subpart, depth + 1, f)
+		processBuildingPart(root, subpart, depth + 1, f, dpts)
 		
 	f.write('\n')
 
-def processDevice(root, ref, depth, f):
+def processDevice(root, ref, depth, f, dpts):
 	print "process device " + ref
 	device = root.findall('.//' + FIND_DEVICE + "[@Id='" + ref + "']")[0]
 	if 'Description' in device.attrib.keys():
 		print device.attrib['Description']
 
 	for comobj in device.findall('.//' + FIND_COMREF):
-		# TODO: read DPT
+		if 'DatapointType' not in comobj.attrib.keys():
+			continue
+
+		if comobj.attrib['DatapointType'] not in dpts:
+			dpt = 1
+		else:
+			dpt = dpts[comobj.attrib['DatapointType']].dpt.number
+
 		for connector in comobj.findall('.//' + FIND_CONNECTOR):
 
 			for send in connector.findall('.//' + FIND_SEND):
@@ -76,7 +83,9 @@ def processDevice(root, ref, depth, f):
 
 					if len(ga_str) > 0:
 						write_node(ga.attrib['Name'], depth, f)
+						write_dpt(dpt, depth + 1, f)
 						write_param("knx_send=" + ga_str, depth + 1, f)
+						write_param("knx_listen=" + ga_str, depth + 1, f)
 
 			for receive in connector.findall('.//' + FIND_RECEIVE):
 				if 'GroupAddressRefId' in receive.keys():
@@ -88,22 +97,41 @@ def processDevice(root, ref, depth, f):
 
 					if len(ga_str) > 0:
 						write_node(ga.attrib['Name'], depth, f)
+						write_dpt(dpt, depth + 1, f)
 						write_param("knx_read=" + ga_str, depth + 1, f)
+						write_param("knx_listen=" + ga_str, depth + 1, f)
+
+def write_dpt(dpt, depth, f):
+	if dpt == 1:
+		write_param("type=bool", depth, f)
+		write_param("visu=toggle", depth, f)
+	elif dpt == 2 or dpt == 3 or dpt == 10 or dpt == 11:
+		write_param("type=foo", depth, f)
+	elif dpt == 4 or dpt == 24:
+		write_param("type=str", depth, f)
+		write_param("visu=div", depth, f)
+	else:
+		write_param("type=num", depth, f)
+		write_param("visu=slider", depth, f)
+        write_param("knx_dpt=5001", depth, f)
+        return
+
+	write_param("knx_dpt=" + str(dpt), depth, f)
 
 def write_param(string, depth, f):
 	for i in range(depth):
-		f.write('\t')
+		f.write('    ')
 
 	f.write(string + '\n')
 
 def write_node(string, depth, f):
 	for i in range(depth):
-		f.write('\t')
+		f.write('    ')
 
 	for i in range(depth + 1):
 		f.write('[')
 
-	f.write("'" + string.encode('UTF-8') + "'")
+	f.write("'" + string.encode('UTF-8').lower() + "'")
 
 	for i in range(depth + 1):
 		f.write(']')
@@ -120,11 +148,37 @@ def pa2str(pa):
 #		Main
 ##############################################################
 
+KNXMASTERFILE = sys.argv[1]
+PROJECTFILE = sys.argv[2]
+OUTFILE = sys.argv[3]
+
+print "Master: " + KNXMASTERFILE
+print "Project: " + PROJECTFILE
+print "Outfile: " + OUTFILE
+
 if (os.path.exists(OUTFILE)):
 	os.remove(OUTFILE)
 
-tree = ET.parse('/home/niko/Arbeitsfläche/P-024F/0.xml')
-root = tree.getroot()
+master = ET.parse(KNXMASTERFILE)
+root = master.getroot()
+dpts = {}
+
+DPT = namedtuple('DPT', ['id', 'number', 'name', 'text', 'size', 'dpsts'])
+DPST = namedtuple('DPST', ['id', 'number', 'name', 'text', 'dpt'])
+
+for dpt in root.findall('.//' + FIND_DPT):
+	item = DPT(id = dpt.attrib['Id'], number = int(dpt.attrib['Number']), name = dpt.attrib['Name'], text = dpt.attrib['Text'], size = int(dpt.attrib['SizeInBit']), dpsts = {})
+
+	for dpst in dpt.findall('.//' + FIND_DPST):
+		sub = DPST(id = dpst.attrib['Id'], number = int(dpst.attrib['Number']), name = dpst.attrib['Name'], text = dpst.attrib['Text'], dpt = item)
+		item.dpsts[sub.id] = sub
+		dpts[sub.id] = sub
+
+	dpts[item.id] = item
+
+
+project = ET.parse(PROJECTFILE)
+root = project.getroot()
 buildings = root.find('.//' + FIND_BUILDINGS)
 
 if buildings is None:
@@ -133,9 +187,9 @@ else:
 	with open(OUTFILE, 'w') as f:
 		if IGNORE_TOP_LEVEL:
 			for part in buildings[0]:
-				processBuildingPart(root, part, 0, f)
+				processBuildingPart(root, part, 0, f, dpts)
 		else:
 			for part in buildings:
-				processBuildingPart(root, part, 0, f)
+				processBuildingPart(root, part, 0, f, dpts)
 
 
