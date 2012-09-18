@@ -16,7 +16,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with SmartHome.py.  If not, see <http://www.gnu.org/licenses/>.
+#  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 ##########################################################################
 
 import signal
@@ -42,7 +42,7 @@ BASE = '/usr/local/smarthome'
 PID_FILE = BASE + '/var/run/smarthome.pid'
 sys.path.append(BASE)
 
-import lib.node
+import lib.item
 import lib.scheduler
 import lib.logic
 import lib.plugin
@@ -68,7 +68,7 @@ class LogHandler(logging.StreamHandler):
 
 class SmartHome():
     _plugin_conf = BASE + '/etc/plugin.conf'
-    _nodes_dir = BASE + '/nodes/'
+    _items_dir = BASE + '/items/'
     _logic_conf = BASE + '/etc/logic.conf'
     _cache_dir = BASE + '/var/cache/'
     _logfile = BASE + '/var/log/smarthome.log'
@@ -76,9 +76,9 @@ class SmartHome():
     socket_map = {}
     connections = {}
     _plugins = []
-    __nodes = []
-    _sub_nodes = []
-    __node_dict = {}
+    __items = []
+    _sub_items = []
+    __item_dict = {}
 
     _utctz = TZ
 
@@ -163,10 +163,13 @@ class SmartHome():
         logger.info("Init SmartHome.py v%s" % VERSION)
         # Tools
         self.tools = lib.tools.Tools()
-        config = ConfigObj(smarthome_conf)
-        for attr in config:
-            if not isinstance(config[attr], dict):  # ignore sub nodes
-                vars(self)['_' + attr] = config[attr]
+        try:
+            config = ConfigObj(smarthome_conf)
+            for attr in config:
+                if not isinstance(config[attr], dict):  # ignore sub items
+                    vars(self)['_' + attr] = config[attr]
+        except Exception, e:
+            pass
 
         # set tz to local tz
         if hasattr(self, '_tz'):
@@ -192,21 +195,21 @@ class SmartHome():
         self.scheduler.start()
         logger.info("Init plugins")
         self._plugins = lib.plugin.Plugins(self, configfile=self._plugin_conf)
-        logger.info("Init nodes")
-        for node_file in sorted(os.listdir(self._nodes_dir)):
-            if node_file.endswith('.conf'):
-                node_conf = ConfigObj(self._nodes_dir + node_file)
-                for entry in node_conf:
-                    if isinstance(node_conf[entry], dict):
+        logger.info("Init items")
+        for item_file in sorted(os.listdir(self._items_dir)):
+            if item_file.endswith('.conf'):
+                item_conf = ConfigObj(self._items_dir + item_file)
+                for entry in item_conf:
+                    if isinstance(item_conf[entry], dict):
                         path = entry
-                        sub_node = lib.node.Node(self, self, path, node_conf[path])
-                        vars(self)[path] = sub_node
-                        self.add_node(path, sub_node)
-                        self._sub_nodes.append(sub_node)
-        for node in self.return_nodes():
-            node.init_eval_trigger()
-        for node in self.return_nodes():
-            node.init_eval_run()
+                        sub_item = lib.item.Item(self, self, path, item_conf[path])
+                        vars(self)[path] = sub_item
+                        self.add_item(path, sub_item)
+                        self._sub_items.append(sub_item)
+        for item in self.return_items():
+            item.init_eval_trigger()
+        for item in self.return_items():
+            item.init_eval_run()
         if self._connections != []:
             self._connection_monitor()
             self.scheduler.add('sh.con', self._connection_monitor, cycle=120, offset=60)
@@ -220,23 +223,23 @@ class SmartHome():
                 time.sleep(2)
 
     def __iter__(self):
-        for node in self._sub_nodes:
-            yield node
+        for item in self._sub_items:
+            yield item
 
-    def add_node(self, path, node):
-        if path not in self.__nodes:
-            self.__nodes.append(path)
-        self.__node_dict[path] = node
+    def add_item(self, path, item):
+        if path not in self.__items:
+            self.__items.append(path)
+        self.__item_dict[path] = item
 
-    def return_node(self, string):
-        if string in self.__nodes:
-            return self.__node_dict[string]
+    def return_item(self, string):
+        if string in self.__items:
+            return self.__item_dict[string]
         else:
             return None
 
-    def return_nodes(self):
-        for node in self.__nodes:
-            yield self.__node_dict[node]
+    def return_items(self):
+        for item in self.__items:
+            yield self.__item_dict[item]
 
     def return_logics(self):
         for logic in self.__logics:

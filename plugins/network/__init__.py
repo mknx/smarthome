@@ -174,9 +174,9 @@ class Network():
         acl = self.parse_acl(acl)
 
         if generic:
-            self.generic_listeners[dest] = {'nodes': {}, 'logics': {}, 'acl': acl}
+            self.generic_listeners[dest] = {'items': {}, 'logics': {}, 'acl': acl}
         else:
-            self.special_listeners[dest] = {'nodes': {}, 'logics': {}, 'acl': acl}
+            self.special_listeners[dest] = {'items': {}, 'logics': {}, 'acl': acl}
         return True
 
     def parse_acl(self, acl):
@@ -194,21 +194,21 @@ class Network():
                 return False
             typ, name, value = inp
             gacl = self.generic_listeners[dest]['acl']
-            if typ == 'node':
-                if name not in self.generic_listeners[dest]['nodes']:
-                    logger.error("Node '%s' not available in the generic listener." % name)
+            if typ == 'item':
+                if name not in self.generic_listeners[dest]['items']:
+                    logger.error("Item '%s' not available in the generic listener." % name)
                     return False
-                iacl = self.generic_listeners[dest]['nodes'][name]['acl']
+                iacl = self.generic_listeners[dest]['items'][name]['acl']
                 if iacl:
                     if source not in iacl:
-                        logger.error("Node '%s' acl doesn't permit updates from %s." % (name, source))
+                        logger.error("Item '%s' acl doesn't permit updates from %s." % (name, source))
                         return False
                 elif gacl:
                     if source not in gacl:
                         logger.error("Generic network acl doesn't permit updates from %s." % (source))
                         return False
-                node = self.generic_listeners[dest]['nodes'][name]['node']
-                node(value, 'network', source)
+                item = self.generic_listeners[dest]['items'][name]['item']
+                item(value, 'network', source)
 
             elif typ == 'logic':
                 if name not in self.generic_listeners[dest]['logics']:
@@ -275,12 +275,12 @@ class Network():
     def parse_logic(self, logic):
         self.parse_obj(logic, 'logic')
 
-    def parse_node(self, node):
-        self.parse_obj(node, 'node')
+    def parse_item(self, item):
+        self.parse_obj(item, 'item')
 
     def parse_obj(self, obj, obj_type):
         # nw_acl, nw_udp, nw_tcp
-        if obj_type == 'node':
+        if obj_type == 'item':
             oid = obj.id()
         elif obj_type == 'logic':
             oid = obj.id()

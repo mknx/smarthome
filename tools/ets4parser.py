@@ -46,7 +46,7 @@ def processBuildingPart(root, part, depth, f, dpts):
 	print "processing " + part.tag + " " + part.attrib['Name'] + " (" + part.attrib['Type'] + ")"
 
 	if part.attrib['Type'] != "DistributionBoard":
-		write_node(part.attrib['Name'], depth, f)
+		write_item(part.attrib['Name'], depth, f)
 		
 		for devref in part.findall(FIND_DEVICEREF):
 			processDevice(root, devref.attrib['RefId'], depth + 1, f, dpts)
@@ -82,7 +82,7 @@ def processDevice(root, ref, depth, f, dpts):
 					print "Send GA: " + ga_str + " (" + ga.attrib['Name'] + ")"
 
 					if len(ga_str) > 0:
-						write_node(ga.attrib['Name'], depth, f)
+						write_item(ga.attrib['Name'], depth, f)
 						write_dpt(dpt, depth + 1, f)
 						write_param("knx_send=" + ga_str, depth + 1, f)
 						write_param("knx_listen=" + ga_str, depth + 1, f)
@@ -96,7 +96,7 @@ def processDevice(root, ref, depth, f, dpts):
 					print "Receive GA: " + ga_str + " (" + ga.attrib['Name'] + ")"
 
 					if len(ga_str) > 0:
-						write_node(ga.attrib['Name'], depth, f)
+						write_item(ga.attrib['Name'], depth, f)
 						write_dpt(dpt, depth + 1, f)
 						write_param("knx_read=" + ga_str, depth + 1, f)
 						write_param("knx_listen=" + ga_str, depth + 1, f)
@@ -124,7 +124,7 @@ def write_param(string, depth, f):
 
 	f.write(string + '\n')
 
-def write_node(string, depth, f):
+def write_item(string, depth, f):
 	for i in range(depth):
 		f.write('    ')
 

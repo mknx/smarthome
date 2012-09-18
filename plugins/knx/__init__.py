@@ -152,7 +152,7 @@ class KNX(lib.my_asynchat.AsynChat):
         else:
             payload = telegram[8:]
         if flg == 'write' or flg == 'response':
-            if dst not in self.gal:  # update node/logic
+            if dst not in self.gal:  # update item/logic
                 logger.debug("{0} set {1} to {2}".format(src, dst, self.decode(payload, 'hex')))
                 return
             dpt = self.gal[dst]['dpt']
@@ -164,18 +164,18 @@ class KNX(lib.my_asynchat.AsynChat):
                 #for i in self.encode(val, dpt):
                 #    out += " {0:x}".format(i)
                 #print "out:{0}".format(out)
-                for node in self.gal[dst]['nodes']:
-                    node(val, 'KNX', src)
+                for item in self.gal[dst]['items']:
+                    item(val, 'KNX', src)
                 for logic in self.gal[dst]['logics']:
                     logic.trigger('KNX', src, val)
             else:
                 logger.warning("Wrong payload '{2}' for ga '{1}' with dpt '{0}'.".format(dpt, dst, self.decode(payload, 'hex')))
         elif flg == 'read':
             logger.debug("{0} read {1}".format(src, dst))
-            if dst in self.gar:  # read node
-                if self.gar[dst]['node']:
-                    node = self.gar[dst]['node']
-                    self.groupwrite(dst, node(), node.knx_dpt, 'response')
+            if dst in self.gar:  # read item
+                if self.gar[dst]['item']:
+                    item = self.gar[dst]['item']
+                    self.groupwrite(dst, item(), item.knx_dpt, 'response')
                 else:
                     self.gar[ga]['logic'].trigger('KNX', dst, 'read')
 
@@ -190,62 +190,62 @@ class KNX(lib.my_asynchat.AsynChat):
         self.alive = False
         self.handle_close()
 
-    def parse_node(self, node):
-        if 'knx_dpt' in node.conf:
-            dpt = node.conf['knx_dpt']
+    def parse_item(self, item):
+        if 'knx_dpt' in item.conf:
+            dpt = item.conf['knx_dpt']
             if dpt not in dpts.decode:
-                logger.warning("knx: Ignoring {0} unknown dpt: {1}".format(node, dpt))
+                logger.warning("knx: Ignoring {0} unknown dpt: {1}".format(item, dpt))
                 return None
         else:
             return None
 
-        if 'knx_listen' in node.conf:
-            knx_listen = node.conf['knx_listen']
+        if 'knx_listen' in item.conf:
+            knx_listen = item.conf['knx_listen']
             if isinstance(knx_listen, str):
                 knx_listen = [knx_listen, ]
             for ga in knx_listen:
-                logger.debug("knx: {0} listen on {1}".format(node, ga))
+                logger.debug("knx: {0} listen on {1}".format(item, ga))
                 if not ga in self.gal:
-                    self.gal[ga] = {'dpt': dpt, 'nodes': [node], 'logics': []}
+                    self.gal[ga] = {'dpt': dpt, 'items': [item], 'logics': []}
                 else:
-                    if not node in self.gal[ga]['nodes']:
-                        self.gal[ga]['nodes'].append(node)
+                    if not item in self.gal[ga]['items']:
+                        self.gal[ga]['items'].append(item)
 
-        if 'knx_init' in node.conf:
-            ga = node.conf['knx_init']
-            logger.debug("knx: {0} listen on and init with {1}".format(node, ga))
+        if 'knx_init' in item.conf:
+            ga = item.conf['knx_init']
+            logger.debug("knx: {0} listen on and init with {1}".format(item, ga))
             if not ga in self.gal:
-                self.gal[ga] = {'dpt': dpt, 'nodes': [node], 'logics': []}
+                self.gal[ga] = {'dpt': dpt, 'items': [item], 'logics': []}
             else:
-                if not node in self.gal[ga]['nodes']:
-                    self.gal[ga]['nodes'].append(node)
+                if not item in self.gal[ga]['items']:
+                    self.gal[ga]['items'].append(item)
             self._init_ga[ga] = False
 
-        if 'knx_cache' in node.conf:
-            ga = node['knx_cache']
-            logger.debug("knx: {0} listen on and init with cache {1}".format(node, ga))
+        if 'knx_cache' in item.conf:
+            ga = item['knx_cache']
+            logger.debug("knx: {0} listen on and init with cache {1}".format(item, ga))
             if not ga in self.gal:
-                self.gal[ga] = {'dpt': dpt, 'nodes': [node], 'logics': []}
+                self.gal[ga] = {'dpt': dpt, 'items': [item], 'logics': []}
             else:
-                if not node in self.gal[ga]['nodes']:
-                    self.gal[ga]['nodes'].append(node)
+                if not item in self.gal[ga]['items']:
+                    self.gal[ga]['items'].append(item)
             self._init_ga[ga] = True
 
-        if 'knx_reply' in node.conf:
-            knx_reply = node.conf['knx_reply']
+        if 'knx_reply' in item.conf:
+            knx_reply = item.conf['knx_reply']
             if isinstance(knx_reply, str):
                 knx_reply = [knx_reply, ]
             for ga in knx_reply:
-                logger.debug("knx: {0} reply to {1}".format(node, ga))
+                logger.debug("knx: {0} reply to {1}".format(item, ga))
                 if ga not in self.gar:
-                    self.gar[ga] = {'dpt': dpt, 'node': node, 'logic': False}
+                    self.gar[ga] = {'dpt': dpt, 'item': item, 'logic': False}
                 else:
-                    logger.warning("knx: {0} knx_reply ({1}) already defined for {2}".format(node, ga, self.gar[ga]['node']))
+                    logger.warning("knx: {0} knx_reply ({1}) already defined for {2}".format(item, ga, self.gar[ga]['item']))
 
-        if 'knx_send' in node.conf:
-            if isinstance(node.conf['knx_send'], str):
-                node.conf['knx_send'] = [node.conf['knx_send'], ]
-            return self.update_node
+        if 'knx_send' in item.conf:
+            if isinstance(item.conf['knx_send'], str):
+                item.conf['knx_send'] = [item.conf['knx_send'], ]
+            return self.update_item
         else:
             return None
 
@@ -265,7 +265,7 @@ class KNX(lib.my_asynchat.AsynChat):
             for ga in knx_listen:
                 logger.debug("knx: {} listen on {}".format(logic, ga))
                 if not ga in self.gal:
-                    self.gal[ga] = {'dpt': dpt, 'nodes': [], 'logics': [logic]}
+                    self.gal[ga] = {'dpt': dpt, 'items': [], 'logics': [logic]}
                 else:
                     self.gal[ga]['logics'].append(logic)
 
@@ -279,13 +279,13 @@ class KNX(lib.my_asynchat.AsynChat):
                     if self.gar[ga]['logic']:
                         obj = self.gar[ga]['logic']
                     else:
-                        obj = self.gar[ga]['node']
+                        obj = self.gar[ga]['item']
                     logger.warning("knx: {0} knx_reply ({1}) already defined for {2}".format(logic, ga, obj))
                 else:
-                    self.gar[ga] = {'dpt': dpt, 'node': False, 'logic': logic}
+                    self.gar[ga] = {'dpt': dpt, 'item': False, 'logic': logic}
 
-    def update_node(self, node, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None):
         if caller != 'KNX':
-            for ga in node.conf['knx_send']:
+            for ga in item.conf['knx_send']:
                 print 'wtf'
-                self.groupwrite(ga, node(), node.conf['knx_dpt'])
+                self.groupwrite(ga, item(), item.conf['knx_dpt'])

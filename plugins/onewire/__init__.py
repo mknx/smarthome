@@ -143,15 +143,15 @@ class Owconnection():
 
     def tree(self, path='/'):
         try:
-            nodes = self.dir(path)
+            items = self.dir(path)
         except:
             return
-        for node in nodes:
-            if node.endswith('/'):
-                logger.info(node)
-                self.tree(node)
+        for item in items:
+            if item.endswith('/'):
+                logger.info(item)
+                self.tree(item)
             else:
-                logger.info(node)
+                logger.info(item)
 
     def close(self):
         self.is_connected = False
@@ -230,11 +230,11 @@ class OneWire(Owconnection):
         for sensor in self._sensors:
             typ = self._sensors[sensor]['sensor']
             path = "/" + sensor + '/' + typ
-            node = self._sensors[sensor]['node']
+            item = self._sensors[sensor]['item']
             try:
                 value = self.read(path)
             except Exception, e:
-                logger.debug("Could not read {0} ({1}). Exception e: {2}".format(node, sensor, e))
+                logger.debug("Could not read {0} ({1}). Exception e: {2}".format(item, sensor, e))
                 continue
             if type(value) != float:
                 logger.warning("OneWire: value '{0}' for {1} is not a float.".format(repr(value), path))
@@ -243,7 +243,7 @@ class OneWire(Owconnection):
                 value = round(value, 1)
             elif typ == 'humidity':
                 value = round(value)
-            self._sensors[sensor]['node'](value, '1-Wire')
+            self._sensors[sensor]['item'](value, '1-Wire')
 
     def _ibutton_loop(self):
         threading.currentThread().name = 'iButton'
@@ -282,17 +282,17 @@ class OneWire(Owconnection):
     def ibutton_hook(self, ibutton, name):
         pass
 
-    def parse_node(self, node):
-        if 'ow_id' not in node.conf:
+    def parse_item(self, item):
+        if 'ow_id' not in item.conf:
             return
-        elif 'ow_sensor' not in node.conf:
-            logger.warning(u"No ow_sensor for %s defined".format(node))
+        elif 'ow_sensor' not in item.conf:
+            logger.warning(u"No ow_sensor for %s defined".format(item))
             return
-        ow_id = node.conf['ow_id']
-        ow_sensor = node.conf['ow_sensor']
+        ow_id = item.conf['ow_id']
+        ow_sensor = item.conf['ow_sensor']
         if ow_sensor == 'ibutton':
-            self._ibuttons[ow_id] = node
+            self._ibuttons[ow_id] = item
         elif ow_sensor == 'ibutton_master':
-            self._ibutton_masters[ow_id] = node
+            self._ibutton_masters[ow_id] = item
         else:
-            self._sensors[ow_id] = {'sensor': ow_sensor, 'node': node}
+            self._sensors[ow_id] = {'sensor': ow_sensor, 'item': item}

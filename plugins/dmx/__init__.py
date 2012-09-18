@@ -72,18 +72,18 @@ class DMX():
     def send(self, channel, value):
         self._send("C{0:03d}L{1:03d}".format(int(channel), int(value)))
 
-    def parse_node(self, node):
-        if 'dmx_ch' in node.conf:
-            channels = node.conf['dmx_ch']
+    def parse_item(self, item):
+        if 'dmx_ch' in item.conf:
+            channels = item.conf['dmx_ch']
             if isinstance(channels, str):
                 channels = [channels, ]
             channels = map(int, channels)
-            node.conf['dmx_ch'] = channels
-            return self.update_node
+            item.conf['dmx_ch'] = channels
+            return self.update_item
         else:
             return None
 
-    def update_node(self, node, caller=None, source=None):
-        #logger.debug("update dmx channel {0:03d}".format(node.dmx_ch))
-        for channel in node.conf['dmx_ch']:
-            self.send(channel, node())
+    def update_item(self, item, caller=None, source=None):
+        #logger.debug("update dmx channel {0:03d}".format(item.dmx_ch))
+        for channel in item.conf['dmx_ch']:
+            self.send(channel, item())
