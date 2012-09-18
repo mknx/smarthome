@@ -23,6 +23,8 @@ java -jar ./dev/yuicompressor-*.jar $JS.tmp.js -o $JS.min.js --charset utf-8
 rm -f $JS.tmp.js
 echo "$1" > VERSION
 
-#git add VERSION
-#git commit -m "set version to $1" VERSION
-
+git add VERSION bin/smarthome.py $JS.js $JS.min.js
+git tag -a -m "set version to $1" $1
+git commit -m "set version to $1"
+git archive master --prefix='/usr/local/smarthome/' | gzip > release/`git describe master`.tgz
+git archive master --prefix='/usr/local/smarthome/' --format=zip > release/`git describe master`.zip
