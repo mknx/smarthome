@@ -13,7 +13,7 @@ The configuration of SmartHome.py is split up in four areas:
  * Basic Configuration: smarthome.conf
  * Logic Configuration: logic.conf
  * Plugin Configuration: plugin.conf
- * Nodes Configuration: nodes
+ * Item Configuration: items
 
 
 ## smarthome.conf
@@ -48,8 +48,8 @@ SmartHome.py would look in <code>/usr/local/smarthome/logics/</code> for the fil
 
 There are several special attributes to controll the behavior of the logics:
 
-### watch_node
-Specify nodes as a single node path or as a comma-separated list to monitor for changes.
+### watch_item
+Specify items as a single item path or as a comma-separated list to monitor for changes.
 <pre>watch_item = house.door, terrace.door</pre>
 Every change of these two items would trigger (run) the logic.
 
