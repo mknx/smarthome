@@ -31,7 +31,7 @@ logger = logging.getLogger('')
 
 class Item():
     _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'foo': None}
-    def __init__(self, smarthome, root, path, config):
+    def __init__(self, smarthome, parent, path, config):
         # basic attributes
         self._path = path
         self._name = path
@@ -39,9 +39,9 @@ class Item():
         self._type = None
         # public attributes
         self.conf = {}
-        self.last_change = smarthome.now()
-        self.prev_change = self.last_change
-        self.changed_by = 'Init'
+        self._last_change = smarthome.now()
+        self._prev_change = self._last_change
+        self._changed_by = 'Init'
         # special attributes
         self._sh = smarthome
         self._lock = threading.Condition()
@@ -49,7 +49,7 @@ class Item():
         self._eval = False
         self._threshold = False
         self._enforce_updates = False
-        self._parent = root
+        self._parent = parent
         self._sub_items = []
         self._plugins_to_trigger = []
         self._logics_to_trigger = []
@@ -136,6 +136,15 @@ class Item():
                 self._sh.trigger(name=self._path, obj=self._run_eval, by='Init')
             del(self.conf['eval_trigger'])
 
+    def last_change(self):
+        return self._last_change
+
+    def prev_change(self):
+        return self._prev_change
+
+    def changed_by(self):
+        return self._changed_by
+
     def _run_eval(self, value=None, caller='Eval', source=None):
         if self._eval:
             sh = self._sh
@@ -163,7 +172,6 @@ class Item():
             logger.error("Item '{0}': value ({1}) does not match type ({2}). Via {3}  {4}".format(self._path, value, self._type, caller, source))
             return
         self._lock.acquire()
-
         if value != self._value or self._enforce_updates: # value change
             #logger.debug("update item: %s" % self._path)
             if caller != "fade":
@@ -171,17 +179,16 @@ class Item():
                 self._lock.notify_all()
                 logger.info("{0} = {1} via {2} {3}".format(self._path, value, caller, source))
             self._value = value
-            delta = self._sh.now() - self.last_change
-            self.prev_change = delta.seconds + delta.days * 24 * 3600 # FIXME change to timedelta.total_seconds()
-            self.last_change = self._sh.now()
-            self.changed_by = "{0}:{1}".format(caller, source)
+            delta = self._sh.now() - self._last_change
+            self._prev_change = delta.seconds + delta.days * 24 * 3600 # FIXME change to timedelta.total_seconds()
+            self._last_change = self._sh.now()
+            self._changed_by = "{0}:{1}".format(caller, source)
             self._lock.release()
             for update_plugin in self._plugins_to_trigger:
                 try:
                     update_plugin(self, caller, source)
                 except Exception, e:
                     logger.error("Problem running {0}: {1}".format(update_plugin, e))
-
             if self._threshold and self._logics_to_trigger:
                 if self._th and self._value <= self._th_low: # cross lower bound
                     self._th = False
