@@ -38,7 +38,7 @@ tz = 'Europe/Berlin'
 
 ## etc/logic.conf
 
-Logic items within SmartHome.py are simple python scripts, which are placed in <code>/usr/local/smarthome/logics/</code>. See XXX for howto write logics.
+Logic items within SmartHome.py are simple python scripts, which are placed in <code>/usr/local/smarthome/logics/</code>. See the [logic introduction](/logic) for howto write logics.
 
 A very simple logic.conf would look like this:
 <pre># /usr/local/smarthome/etc/logic.conf
