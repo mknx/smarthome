@@ -143,7 +143,7 @@ class Item():
             self._update(value, caller, source)
 
     def __call__(self, value=None, caller='Logic', source=None):
-        if value == None:
+        if value == None or self._type == None:
             return self._value
         try:
             value = getattr(self, '_return_' + self._type)(value)
@@ -297,17 +297,14 @@ class Item():
     def _return_num(self, value):
         if isinstance(value, float):
             return value
-
         try:
             return int(value)
         except:
             pass
-
         try:
             return float(value)
         except:
             pass
-
         raise ValueError
 
     def fade(self, dest, step=1, delta=1):
@@ -328,7 +325,5 @@ class Item():
                 self._lock.acquire()
                 self._lock.wait(delta)
                 self._lock.release()
-
         if self.__fade:
             self(dest)
-
