@@ -1,14 +1,9 @@
 ---
 title: Prowl Plugin
 summary:
-uid: index
+layout: default
 created: 2011-04-08T20:00:36+0200
 changed: 2011-04-08T20:00:36+0200
-type: page
-category: Plugin
-tags:
-- Plugin
-- Prowl
 ---
 
 Requirements
@@ -20,14 +15,14 @@ Configuration
 
 plugin.conf
 -----------
-<pre>['notify']
+<pre>[notify]
     class_name = Prowl
     class_path = plugins.prowl
     apikey = asdf1234asdf1234 # secret global key for prowl
 </pre>
 
 ### Attributes
-* `apikey`: this attribute is optional. You could define an global apikey for the prowl service.
+   * `apikey`: this attribute is optional. You could define a global apikey for the prowl service.
 
 Functions
 =========
@@ -45,5 +40,3 @@ This function takes several arguments:
 sh.notify('Intrusion', 'Living room window broken', 2, 'http://yourvisu.com/')
 sh.notify('Tumbler', 'finished', apikey='qwerqwer')
 </pre>
-
-

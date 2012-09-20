@@ -68,7 +68,7 @@ for entry in sh.log:
 
 ## sh.now and sh.utcnow
 These two functions return a timezone-aware datetime object. This way you could compute with different timezones.
-You could use <code>self.tz</code> and <code>self.utctz</code> to address a local and the utc timezone.
+You could use <code>sh.tzinfo()</code> and <code>sh.utcinfo()</code> to address a local and the utc timezone.
 
 ## sh.sun
 This module provides access to some parameters of the sun. In order to use this module you have to specify the latitude (e.g. lat = 51.1633) and longitude (e.g. lon = 10.4476) in the smarthome.conf!
@@ -77,12 +77,12 @@ azimut, altitude = sh.sun.pos() # return the current sun position
 azimut, altitude = sh.sun.pos(30) # return the sun position 30 minutes
                                   # in the future.
 
-### sh.sun.set([offset]) You could specify an degree offset.
+# sh.sun.set([offset]) You could specify an degree offset.
 sunset = sh.sun.set() # Returns a utc! based datetime object with the next
                       # sunset.
 sunset_tw = sh.sun.set(-6) # Would return the end of the twilight.
 
-### sh.sun.rise([offset]) You could specify an degree offset.
+# sh.sun.rise([offset]) You could specify an degree offset.
 sunrise = sh.sun.rise() # Returns a utc! based datetime object with the next
                         # sunrise.
 sunrise_tw = sh.sun.rise(-6) # Would return the start of the twilight.

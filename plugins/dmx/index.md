@@ -1,13 +1,9 @@
 ---
 title: DMX Plugin
 summary: Plugin to use the NanoDMX interface to access the DMX bus.
-uid: dmx
+layout: default
 created: 2011-04-12T21:12:34+0200
 changed: 2011-04-12T21:12:34+0200
-type: page
-category: Plugin
-tags:
-- DMX
 ---
 
 Requirements
@@ -16,14 +12,13 @@ This plugin needs a NanoDMX interface from [dmx4all.de](http://www.dmx4all.de/) 
 
 <pre>apt-get install python-serial</pre>
 
-
 Configuration
 =============
 
 plugin.conf
 -----------
 <pre>
-['dmx']
+[dmx]
    class_name = DMX
    class_path = plugins.dmx
    tty = /dev/usbtty...

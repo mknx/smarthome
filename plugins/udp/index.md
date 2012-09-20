@@ -1,12 +1,9 @@
 ---
 title: UDP Plugin
 summary: A UDP Plugin to send and receive UDP Messages and trigger logics.
-uid: index
+layout: default
 created: 2011-04-08T20:58:06+0200
 changed: 2011-04-08T20:58:06+0200
-type: page
-category: Plugin
-tags:
 ---
 
 
@@ -14,7 +11,6 @@ END OF LIFE
 ===========
 
 This plugin is no longer supported. Use the generic [network plugin](../network/) for in and outgoing data.
-
 
 
 Requirements

@@ -1,16 +1,10 @@
 ---
 title: CLI
+layout: default
 summary: Simple Command Line Interface to access SmartHome.py with telnet
-uid: cli
 created: 2011-04-12T21:12:34+0200
 changed: 2011-04-12T21:12:34+0200
-type: page
-category: Plugin
-tags:
-- Telnet
-- CLI
 ---
-
 
 Configuration
 =============
@@ -18,7 +12,7 @@ Configuration
 plugin.conf
 -----------
 <pre>
-['cli']
+[cli]
    class_name = CLI
    class_path = plugins.cli
 #   ip = 127.0.0.1
@@ -29,7 +23,6 @@ plugin.conf
 This plugin listen by default on 127.0.0.1 port 2323 for a telnet connection.
 You could change the IP to a local address or to <code>0.0.0.0</code> to get access it over the network.
 By default you could only list the values of your items. If you want to change them you have to allow updates by <code>update = True</code>.
-
 
 Usage
 =====

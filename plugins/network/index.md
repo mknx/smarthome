@@ -2,15 +2,9 @@
 title: Network Plugin
 summary: A Network Plugin to send and receive TCP/UDP Messages and trigger logics.
 uid: index
+layout: default
 created: 2011-06-08T20:58:06+0200
 changed: 2011-06-08T20:58:06+0200
-type: page
-category: Plugin
-tags:
-- Plugin
-- Network
-- TCP
-- UDP
 ---
 
 Requirements
@@ -23,7 +17,7 @@ Configuration
 plugin.conf
 -----------
 <pre>
-['nw']
+[nw]
     class_name = Network
     class_path = plugins.network
     # ip = 0.0.0.0
@@ -34,7 +28,7 @@ plugin.conf
     # udp_acl= *
 </pre>
 
-#### Attributes
+### Attributes
   * `ip`: specifies the listening IP address. By default it listens on all addresses.
   * `port`: specifies the listening port for generic incoming TCP and UDP connections. By default it listens on 2727.
   * `tcp`: by default the plugin doesn't accept incoming TCP connections. You have to set this attribute to 'yes' to accept them.
@@ -46,7 +40,7 @@ plugin.conf
 smarthome.conf
 --------------
 
-#### nw
+### nw
 If this attribute is set to 'yes' you could update this item with the generic listener (TCP and/or UDP).
 <pre>
 ['test']
@@ -55,11 +49,11 @@ If this attribute is set to 'yes' you could update this item with the generic li
         nw = yes
 </pre>
 
-#### nw_acl
+### nw_acl
 Like the generic tcp_acl/udp_acl a list or single IP address to limit updates from.
 This attribute is valid for TCP and UDP and overrides the generic tcp_acl/udp_acl.
 
-#### nw_udp_listen/nw_tcp_listen
+### nw_udp_listen/nw_tcp_listen
 You could specify the `nw_udp_listen` and `nw_tcp_listen` attribute to an item to create a dedicated listener. The argument could be a port or ip:port.
 <pre>
 ['test']

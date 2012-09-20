@@ -1,14 +1,9 @@
 ---
 title: KNX Plugin
+layout: default
 summary: Plugin to communicate with the KNX bus.
-uid: knxplugin
 created: 2011-04-07T21:18:27+0200
 changed: 2011-04-07T21:18:27+0200
-type: page
-category: Plugin
-tags:
-- Plugin
-- KNX
 ---
 
 Requirements
@@ -27,7 +22,7 @@ Configuration
 plugin.conf
 -----------
 <pre>
-['knx']
+[knx]
    class_name = KNX
    class_path = plugins.knx
 #   host = 127.0.0.1

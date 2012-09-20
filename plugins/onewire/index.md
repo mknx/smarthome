@@ -1,19 +1,14 @@
 ---
 title: 1-Wire Plugin
+layout: default
 summary: Plugin to monitor sensor information on a 1-Wire bus
-uid: onewire
 created: 2011-04-08T20:59:34+0200
 changed: 2011-04-08T20:59:34+0200
-type: page
-category: Plugin
-tags:
-- Plugin
-- 1-Wire
 ---
 
 Requirements
 ============
-This plugin needs an running owserver from owfs. I've tested owfs-2.7p34 and owfs-2.8p15.
+This plugin needs an running owserver from owfs. I have tested owfs-2.7p34 and owfs-2.8p15.
 
 Hint: to run the owserver as non root. You have to add a udev rule for the usb busmasters.
 <pre># /etc/udev/rules.d/80-smarthome.rules
@@ -26,7 +21,7 @@ Configuration
 plugin.conf
 -----------
 <pre>
-['ow']
+[ow]
     class_name = OneWire
     class_path = plugins.onewire
 #    host = 127.0.0.1
@@ -76,8 +71,6 @@ They 'ibutton' sensor returns 'True' if the ibutton is present or 'False' if not
         ow_id = 01.BBBBA30000
         ow_sensor = ibutton
 </pre>
-
-See the [logic key hanger](/logic/key_hanger) for an example.
 
 Functions
 =========
