@@ -45,3 +45,21 @@ for day in events:
         time, summary = event
         print("Time: {0} {1}".format(time, summary))
 {% endhighlight %}
+
+```python
+today = sh.now().date()
+tomorrow = today + datetime.timedelta(days=1)
+
+holidays = sh.ical('http://cal.server/holidays.ical')
+if today in holidays:
+    print 'yeah'
+else:
+    print 'naah'
+
+events = sh.ical('http://cal.server/events.ical')
+for day in events:
+    print("Date: {0}".format(day))
+    for event in events[day]:
+        time, summary = event
+        print("Time: {0} {1}".format(time, summary))
+```
