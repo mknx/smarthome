@@ -1,25 +1,32 @@
 Roadmap
 =======
-+ rrdtool plugin: build round robin databases and create graphs,  sh.office.temperature.average('1h')
-+ visu plugin: plot rrd with flot
-+ dwd plugin: Deutscher Wetterdienst - weather forecast and warnings
-+ Squeezeserver plugin
+   * rrdtool plugin: build round robin databases and create graphs,  sh.office.temperature.average('1h')
+   * visu plugin: plot rrd with flot
+   * dwd plugin: Deutscher Wetterdienst - weather forecast and warnings
+   * Squeezeserver plugin
+   * Russound plugin
 
 0.7
 ===
-- Nodes! id(),
-- eval! (sum, avg, and, or)
-- Asterisk: hangup(channel)
-- sh.scheduler.change
-- iCal Plugin
-- Visu: time input, autogenerate visu elements
-- directory structure cleanup: logic => logics
-- sh.tools.dewpoint()
-- sh.tools.ping()
-- sh.tz => sh.tzinfo
+   * Items
+      * Trees: You could now build unlimited item trees.
+      * id(): function to return the item path.
+      * eval: see the item configuration page for an explanation for 'eval' and 'eval_trigger'.
+   * Asterisk Plugin: hangup(channel)
+   * iCal Plugin: to parse iCal files
+   * Visu Plugin:
+      * autogenerate visu pages
+      * new input type 'time'
+    * SmartHome.py:
+       * sh.scheduler.change
+       * directory structure cleanup: logic => logics
+       * sh.tools.dewpoint(): new function to calculate the dewpoint
+       * sh.tools.ping(): moved ping to the tools object.
+       * sh.tz => sh.tzinfo: renaming tz to tzinfo.
 
 Bug Fixes
-- CLI Plugin: update attribute negated
+---------
+    * CLI Plugin: update attribute negated
 
 0.6
 ===
