@@ -1,11 +1,9 @@
 ---
 title: Asterisk Plugin
+layout: default
 summary: A UDP Plugin to send and receive UDP Messages and trigger logics.
-uid: index
 created: 2011-08-08T20:58:06+0200
 changed: 2011-08-08T20:58:06+0200
-type: page
-category: Plugin
 tags:
 - Plugin
 - Asterisk
@@ -87,4 +85,7 @@ db_read(key)
 mailbox_count(mailbox, context='default')
 -----------------------------------------
 <code>mbc = sh.ast.mailbox_count('2222')</code> would set 'mbc' to a tuple (old_messages, new_messages).
+
+## hangup(device)
+`sh.ast.hangup('30')` would close all connections from or to the device '30'.
 
