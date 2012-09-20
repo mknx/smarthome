@@ -28,7 +28,7 @@ This function has one mandatory and two optional arguments. `sh.ical(file, delta
 
 It returns a dictonary with a datetime.date object as key and an array with the event time and summary.
 
-{% highlight python %}
+<pre>
 today = sh.now().date()
 tomorrow = today + datetime.timedelta(days=1)
 
@@ -44,22 +44,4 @@ for day in events:
     for event in events[day]:
         time, summary = event
         print("Time: {0} {1}".format(time, summary))
-{% endhighlight %}
-
-<code>
-today = sh.now().date()
-tomorrow = today + datetime.timedelta(days=1)
-
-holidays = sh.ical('http://cal.server/holidays.ical')
-if today in holidays:
-    print 'yeah'
-else:
-    print 'naah'
-
-events = sh.ical('http://cal.server/events.ical')
-for day in events:
-    print("Date: {0}".format(day))
-    for event in events[day]:
-        time, summary = event
-        print("Time: {0} {1}".format(time, summary))
-</code>
+</pre>
