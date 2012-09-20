@@ -21,7 +21,7 @@ The configuration of SmartHome.py is split up in four areas:
 
 There are the following attributes for SmartHome.py:
 
- * `lat`, `lon`, `elev`: specifies the geographic coordinates of your home (latitude, longitude, elevation). The lat and lon are neccesary if you want to reference the sunrise/sunset or the sun position. See the description at the [Logic](/logic/config/) page.
+ * `lat`, `lon`, `elev`: specifies the geographic coordinates of your home (latitude, longitude, elevation). The lat and lon are neccesary if you want to reference the sunrise/sunset or the sun position.
  * `tz`: describes the timezone
 
 ### Sample Configuration
@@ -38,7 +38,7 @@ tz = 'Europe/Berlin'
 
 ## etc/logic.conf
 
-Logic items within SmartHome.py are simple python scripts, which are placed in <code>/usr/local/smarthome/logics/</code>. See the [logic introduction](/logic) for howto write logics.
+Logic items within SmartHome.py are simple python scripts, which are placed in <code>/usr/local/smarthome/logics/</code>. See the [logic introduction](/smarthome/logic) for howto write logics.
 
 A very simple logic.conf would look like this:
 <pre># /usr/local/smarthome/etc/logic.conf

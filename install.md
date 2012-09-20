@@ -61,11 +61,11 @@ Within <code>/usr/local/smarthome/</code> is the following structure:
 
 Confguration
 ============
-[There is a dedicated page for the configuration.](/config)
+[There is a dedicated page for the configuration.](/smarthome/config)
 
 Plugins
 =======
-Every [plugin](/plugins/) has it's own  installation section.
+Every [plugin](/smarthome/plugins/) has it's own  installation section.
 
 Running SmartHome.py
 ====================
