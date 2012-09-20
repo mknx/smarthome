@@ -46,7 +46,7 @@ for day in events:
         print("Time: {0} {1}".format(time, summary))
 {% endhighlight %}
 
-```python
+<code>
 today = sh.now().date()
 tomorrow = today + datetime.timedelta(days=1)
 
@@ -62,4 +62,4 @@ for day in events:
     for event in events[day]:
         time, summary = event
         print("Time: {0} {1}".format(time, summary))
-```
+</code>
