@@ -175,12 +175,12 @@ class SmartHome():
         if hasattr(self, '_tz'):
             os.environ['TZ'] = self._tz
             self.tz = self._tz
-            self.tzinfo = gettz(self._tz)
-            TZ = self.tzinfo
+            self._tzinfo = gettz(self._tz)
+            TZ = self._tzinfo
         else:
             self.tz = 'UTC'
             os.environ['TZ'] = self.tz
-            self.tzinfo = self._utctz
+            self._tzinfo = self._utctz
 
         # init sun
         if hasattr(self, '_lon') and hasattr(self, '_lat'):
@@ -272,11 +272,17 @@ class SmartHome():
 
     def now(self):
         # tz aware 'localtime'
-        return datetime.datetime.now(self.tzinfo)
+        return datetime.datetime.now(self._tzinfo)
+
+    def tzinfo(self):
+        return self._tzinfo
 
     def utcnow(self):
         # tz aware utc time
         return datetime.datetime.now(self._utctz)
+
+    def utcinfo(self):
+        return self._utctz
 
     def string2bool(self, string):
         if string.lower() in ['0', 'false', 'n', 'no', 'off']:

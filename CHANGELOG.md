@@ -22,7 +22,7 @@ Roadmap
        * directory structure cleanup: logic => logics
        * sh.tools.dewpoint(): new function to calculate the dewpoint
        * sh.tools.ping(): moved ping to the tools object.
-       * sh.tz => sh.tzinfo: renaming tz to tzinfo.
+       * sh.tz => sh.tzinfo(): new function tzinfo().
 
 Bug Fixes
 ---------
