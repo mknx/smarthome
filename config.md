@@ -229,6 +229,9 @@ There are several eval keywords to use with the eval_trigger:
 ### Item Functions
 There are several item functions which every item provides.
 
+#### id()
+Returns the item id (path).
+
 #### return_parent()
 Returns the parent item. `sh.item.return_parent()`
 

@@ -2,10 +2,8 @@
 title: Logic Configuration
 layout: default
 summary: HowTo write and integrate logics for Smarthome.py
-uid: logicconf
 created: 2011-04-07T21:30:13+0200
 changed: 2011-04-07T21:30:13+0200
-type: page
 ---
 
 # Introduction
@@ -14,14 +12,14 @@ Logic items within SmartHome.py are simple python scripts, which should be place
 
 # Basic Structure
 
-The most important object to use is 'sh' for smarthome. It contains every detail about your smarthome. You could access your items, plugins and basic functions of SmartHome.py.
-It is very important that you always access these objects with parantheses ()! Otherwise errors could accure.
+The most important object to use is 'sh' for the smarthome object. It contains every detail about your smarthome. You could access your items, plugins and basic functions of SmartHome.py.
 To get the value of an item just call the name of it: <code>sh.area.item()</code>. And to set a new value: <code>sh.area.item(new_value)</code>.
 <pre>#!/usr/bin/env python
 # put on the light in the living room, if it is not on
 if not sh.living_room.light():
     sh.living_room.light('on')
 </pre>
+It is very important that you always access the items with parantheses ()! Otherwise errors could accure.
 
 You could iterate over `sh` and the item objects.
 <pre>
@@ -89,6 +87,17 @@ sunrise = sh.sun.rise() # Returns a utc! based datetime object with the next
                         # sunrise.
 sunrise_tw = sh.sun.rise(-6) # Would return the start of the twilight.
 </pre>
+
+## sh.tools
+The `sh.tools` object provide some useful functions:
+
+### sh.tools.ping()
+Pings a computer and return True if the computer respondes and False if not.
+`sh.office.laptop(sh.tools.ping('hostname'))`
+
+### sh.tools.dewpoint()
+Calculate the dewpoint for the provided temperature and humidity.
+`sh.office.dew(sh.tools.dewpoint(sh.office.temp(), sh.office.hum())`
 
 # Loaded modules
 In the logic enviroment are several python modules already loaded:
