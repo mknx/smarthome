@@ -103,7 +103,7 @@ class iCal():
                     if date not in event['exdate']:
                         yield(date)
 
-    def return_events(self, file, delta=1, offset=0):
+    def __call__(self, file, delta=1, offset=0):
         event = {}
         events = {}
         tzinfo = self._sh.tzinfo
