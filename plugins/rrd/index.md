@@ -35,7 +35,7 @@ plugin.conf
 `rrd_style` is a list of graph style options. See man rrdgraph for creating your own style.
 `rrd_dir` specify the rrd storage location. `rrd_png` location for the png graphs. `rrd_web` is used for the relative path name used in the img tag.
 
-smarthome.conf
+items.conf
 --------------
 
 ### rrd

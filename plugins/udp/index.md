@@ -27,11 +27,11 @@ This plugin has no additional arguments in the plugin.conf.
    class_path = plugins.udp
 </pre>
 
-smarthome.conf
+items.conf
 --------------
 
 ### udp_listen
-You could specify the `udp_listen` attribute to every item in your smarthome.conf. The argument could be a port or ip:port and a list of both.
+You could specify the `udp_listen` attribute to every item in your items.conf. The argument could be a port or ip:port and a list of both.
 <pre>
 ['test']
     [['item1']]

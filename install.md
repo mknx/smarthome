@@ -65,7 +65,7 @@ Confguration
 
 Plugins
 =======
-Every [plugin](/smarthome/plugins/) has it's own  installation section.
+Every [plugin](/smarthome/plugins/) has it's own installation section.
 
 Running SmartHome.py
 ====================

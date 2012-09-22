@@ -6,20 +6,17 @@ created: 2011-04-12T19:41:03+0200
 changed: 2012-04-12T19:41:03+0200
 ---
 
-This plugin provides an javascript interface for the JQuery mobile framework (tested with 1.1.0RC2 and jQuery 1.7.1). It has been tested with Chrome (18.0.1025.151), Firefox (11.0), Safari (5.1.5) and mobile Safari (iOS 5.1).
-Right now the WebSocket interface of SmartHome.py only supports a nonencrypted connections. You have to connect to the interface within a secure network or over a VPN.
+This plugin provides an javascript interface for the JQuery mobile framework (shipping with 1.1.1 and jQuery 1.7.1). It has been tested with Chrome (18.0.1025.151), Firefox (11.0), Safari (5.1.5) and mobile Safari (iOS 5.1).
+Right now the WebSocket interface of SmartHome.py only supports nonencrypted connections. Please use a internal network or VPN to connect to the service.
 
-Requirements
-============
-This plugin needs just a webserver to serve the HTML files for the GUI.
+# Requirements
+This plugin needs just a webserver to serve the HTML and JavaScript files for the GUI.
 
-Configuration
-=============
+# Configuration
 
-plugin.conf
------------
+## plugin.conf
 <pre>
-['visu']
+[visu]
     class_name = WebSocket
     class_path = plugins.visu
 #   ip='0.0.0.0'
@@ -28,27 +25,24 @@ plugin.conf
 
 This plugins listens by default on every IP address of the host on the TCP port 2121.
 
-smarthome.conf
---------------
+## items.conf
 
-### visu
 If you want to use the value of an item in you user interface you have to set it.
 Right now it doesn't matter which value you set. But I'm planning to implement some basic access controll list function.
 
 <pre>
-['example']
-    [['toggle']]
+[example]
+    [[toggle]]
         value = True
         type = bool
         visu = rw
 </pre>
 
 
-logic.conf
-----------
+## logic.conf
 You could specify the `visu` attribute to every logic in your logic.conf. This way you could trigger the logic via the interface.
 <pre>
-['dialog']
+[dialog]
     filename = 'dialog.py'
     visu = true
 </pre>

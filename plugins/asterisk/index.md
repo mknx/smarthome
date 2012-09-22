@@ -23,7 +23,7 @@ Configuration
 You have to provide the username and password of the AMI and you could specify a differnt IP and port address.
 
 <pre>
-['ast']
+[ast]
     class_name = Asterisk
     class_path = plugins.asterisk
     username = admin
@@ -32,18 +32,18 @@ You have to provide the username and password of the AMI and you could specify a
     port = 5038 # default
 </pre>
 
-## smarthome.conf
+## items.conf
 
 ### ast_dev
 
-You could specify the `ast_dev` attribute to an bool item in your smarthome.conf. The argument could be a number or string and corrospond to your asterisk device configuration.
+You could specify the `ast_dev` attribute to an bool item in your items.conf. The argument could be a number or string and corrospond to your asterisk device configuration.
 E.g. <code>2222</code> for the following device in your asterisk sip.conf:
 <pre>[2222]
 secret=very
 context=internal
 </pre>
 
-And in your smarthome.conf:
+And in your items.conf:
 <pre>
 ['office']
     [['fon']]

@@ -37,7 +37,7 @@ plugin.conf
   * `udp_acl`: with this attribute you could specify a list or a single IP address to allow UDP updates from. By default it accepts every incoming request.
 
 
-smarthome.conf
+items.conf
 --------------
 
 ### nw
@@ -72,7 +72,7 @@ If you send a TCP/UDP packet to the port, the corrosponding item will be set to 
 
 logic.conf
 ----------
-You could use the same network attributes as in smarthome.conf to trigger logics.
+You could use the same network attributes as in items.conf to trigger logics.
 
 Usage
 =====

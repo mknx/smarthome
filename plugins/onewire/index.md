@@ -30,7 +30,7 @@ plugin.conf
 
 This plugins is looking by default for the owserver on 127.0.0.1 port 4304. You could change this in your plugin.conf.
 
-smarthome.conf
+items.conf
 --------------
 
 ### ow_id
