@@ -84,14 +84,14 @@ def return_html(item):
             if visu == 'div':
                 html += '<div>{0}: <span data-sh="{1}"></span></div>\n'.format(item, item.id())
             elif visu == 'span':
-                html += '<span>{0}: <span data-sh="{1}"></span></span>\n'.format(item, item.id())
+                html += '<div>{0}: <span data-sh="{1}"></span></div>\n'.format(item, item.id())
             elif visu == 'img':
-                html += '<img data-sh="{0}" src="{1}" />\n'.format(item.id(), item())
+                html += '<div>{0}: <img data-sh="{1}" src="{2}" /></div>\n'.format(item, item.id(), item())
         elif visu in ['switch', 'push']:  # active elements
             if visu == 'switch':
-                html += '<img data-sh="{0}" src="/img/t.png" class="switch" />\n'.format(item.id())
+                html += '<div>{0}: <img data-sh="{1}" src="/img/t.png" class="switch" /></div>\n'.format(item, item.id())
             elif visu == 'push':
-                html += '<img data-sh="{0}" src="/img/t.png" class="push" />\n'.format(item.id())
+                html += '<div>{0}: <img data-sh="{1}" src="/img/t.png" class="push" /></div>\n'.format(item, item.id())
     return html
 
 
