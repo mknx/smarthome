@@ -63,7 +63,7 @@ dialog(header, content)
 -----------------------
 This function opens a jQuery mobile dialog.
 <pre>sh.visu.dialog('Easy', 'going')</pre> would create the following dialog on every client.
-![dialog](/media/img/dialog.png)
+![dialog](/smarthome/img/dialog.png)
 
 
 User Interface
