@@ -15,7 +15,7 @@
     </head>
 <body>
 
-<div data-role="page" id="page1" data-dom-cache="true">
+<div data-role="page" id="html" data-dom-cache="true">
 
     <div data-role="header">
         <h3>Basic HTML Elements</h3>
@@ -48,14 +48,13 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
         <h2>Interactive Images</h2>
         <h3>Switch/Push</h3>
         <div data-role="fieldcontain">
-            <img data-sh="example.toggle" class="switch" style="width: 100px; height: 100px" src="/img/example.png" />
-            <img data-sh="example.toggle" class="push" style="width: 100px; height: 100px" src="/img/example.png" />
+            <p><img data-sh="example.switch" class="switch" style="width: 100px; height: 100px" src="/img/example.png" />&nbsp;<img data-sh="example.switch" class="push" style="width: 100px; height: 100px" src="/img/example.png" /></p>
             <p>The switch class provides a basic switch. Depending on the current value it will send 'True' or 'False'. For visual feedback you would like to specify 'visu_img' as in the example above.<br />
             The push class is similar to the switch, but it sends 'True' if you push the button and 'False' if you release it.</p>
         </div>
         <h3>Set</h3>
         <div data-role="fieldcontain">
-            <img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="77" src="/img/example.png" />
+            <p><img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="22" src="/img/example.png" /> <img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="77" src="/img/example.png" /> Value of example.set = <span data-sh="example.set"></span></p>
             <p>This button sets the value of the item to the specified value. Currently only numeric (integer and float) values are supported!</p>
         </div>
     </div> <!-- /content -->
@@ -63,15 +62,16 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar" data-iconpos="top">
             <ul>
-                <li><a href="#page1">HTML</a></li>
-                <li><a href="#page2">Logic Trigger</a></li>
-                <li><a href="#page3">Form</a></li>
+                <li><a href="/example.html#html">HTML</a></li>
+                <li><a href="/example.html#trigger">Logic Trigger</a></li>
+                <li><a href="/example.html#form">Form</a></li>
+                <li><a href="/gen/example.html">Generated</a></li>
             </ul>
         </div><!-- /navbar -->
     </div><!-- /footer -->
 </div><!-- /page -->
 
-<div data-role="page" id="page2">
+<div data-role="page" id="trigger">
 
     <div data-role="header">
         <h3>Trigger logics</h3>
@@ -92,15 +92,16 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar" data-iconpos="top">
             <ul>
-                <li><a href="#page1">HTML</a></li>
-                <li><a href="#page2">Logic Trigger</a></li>
-                <li><a href="#page3">Form</a></li>
+                <li><a href="/example.html#html">HTML</a></li>
+                <li><a href="/example.html#trigger">Logic Trigger</a></li>
+                <li><a href="/example.html#form">Form</a></li>
+                <li><a href="/gen/example.html">Generated</a></li>
             </ul>
         </div><!-- /navbar -->
     </div><!-- /footer -->
 </div><!-- /page -->
 
-<div data-role="page" id="page3">
+<div data-role="page" id="form">
 
     <div data-role="header">
         <h3>Form Elements</h3>
@@ -154,8 +155,8 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
         <div data-role="fieldcontain">
             <fieldset data-role="controlgroup" data-type="vertical">
                 <legend>Checkbox</legend>
-                <input data-sh="example.checkbox1" id="checkbox1" type="checkbox" />
-                <label for="checkbox1">Checkbox 1</label>
+                <input data-sh="example.checkbox" id="checkbox" type="checkbox" />
+                <label for="checkbox">Checkbox 1</label>
                 <input data-sh="example.checkbox2" id="checkbox2" type="checkbox" />
                 <label for="checkbox2">Checkbox 2</label>
             </fieldset>
@@ -166,9 +167,10 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar" data-iconpos="top">
             <ul>
-                <li><a href="#page1">HTML</a></li>
-                <li><a href="#page2">Logic Trigger</a></li>
-                <li><a href="#page3">Form</a></li>
+                <li><a href="/example.html#html">HTML</a></li>
+                <li><a href="/example.html#trigger">Logic Trigger</a></li>
+                <li><a href="/example.html#form">Form</a></li>
+                <li><a href="/gen/example.html">Generated</a></li>
             </ul>
         </div><!-- /navbar -->
     </div><!-- /footer -->
@@ -176,4 +178,5 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
 
 </body>
 </html>
+
 
