@@ -29,7 +29,7 @@
         </div>
         <h2>Image element</h2>
         <div data-role="fieldcontain">
-            <img data-sh="example.img" style="width: 100px; height: 100px" src="/img/example.png" />
+            <img data-sh="example.img" style="width: 100px; height: 100px" src=/smarthome/img/example.png" />
             <p>A string item which could be set with sh.example.img("/new/path.png")</p>
             <p>You could specify a visu_img attribute to map a postive integer value to an image.<br />list for the item.</p>
 <pre>
@@ -48,13 +48,13 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
         <h2>Interactive Images</h2>
         <h3>Switch/Push</h3>
         <div data-role="fieldcontain">
-            <p><img data-sh="example.switch" class="switch" style="width: 100px; height: 100px" src="/img/example.png" />&nbsp;<img data-sh="example.switch" class="push" style="width: 100px; height: 100px" src="/img/example.png" /></p>
+            <p><img data-sh="example.switch" class="switch" style="width: 100px; height: 100px" src=/smarthome/img/example.png" />&nbsp;<img data-sh="example.switch" class="push" style="width: 100px; height: 100px" src=/smarthome/img/example.png" /></p>
             <p>The switch class provides a basic switch. Depending on the current value it will send 'True' or 'False'. For visual feedback you would like to specify 'visu_img' as in the example above.<br />
             The push class is similar to the switch, but it sends 'True' if you push the button and 'False' if you release it.</p>
         </div>
         <h3>Set</h3>
         <div data-role="fieldcontain">
-            <p><img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="22" src="/img/example.png" /> <img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="77" src="/img/example.png" /> Value of example.set = <span data-sh="example.set"></span></p>
+            <p><img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="22" src=/smarthome/img/example.png" /> <img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="77" src=/smarthome/img/example.png" /> Value of example.set = <span data-sh="example.set"></span></p>
             <p>This button sets the value of the item to the specified value. Currently only numeric (integer and float) values are supported!</p>
         </div>
     </div> <!-- /content -->
@@ -84,7 +84,7 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
         </div>
         <div data-role="fieldcontain">
             <label for="sh_example_trigger_img">Image trigger</label>
-            <img data-logic="dialog" style="width: 80px; height: 80px;" value="Test 3" src="/img/example.png" />
+            <img data-logic="dialog" style="width: 80px; height: 80px;" value="Test 3" src=/smarthome/img/example.png" />
         </div>
     </div> <!-- /content -->
 
