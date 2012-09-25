@@ -76,7 +76,7 @@ class WebSocket(asyncore.dispatcher):
         index += '<ul data-role="listview" data-inset="true">\n'
         for item in self._sh:
             html = generator.return_tree(item)
-            item_file = "/dyn/{0}.html".format(item.id())
+            item_file = "/gen/{0}.html".format(item.id())
             if 'data-sh' in html:
                 index += '<li><a href="{0}">{1}</a></li>\n'.format(item_file, item)
                 page = header
@@ -89,7 +89,7 @@ class WebSocket(asyncore.dispatcher):
                     f.write(page)
                 f.closed
         index += '</ul>\n' + footer
-        with open(directory + '/dyn/index.html', 'w') as f:
+        with open(directory + '/gen/index.html', 'w') as f:
             f.write(index)
         f.closed
 
