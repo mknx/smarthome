@@ -82,7 +82,7 @@ function shInit(url) {
     $(document).on("change", 'input[data-sh][data-type="range"]', function() { // Slider
         shSendNum(this);
     });
-    $(document).on("change", 'input[data-sh][type="time"]', function() { // Slider
+    $(document).on("change", 'input[data-sh][type="time"]', function() { // Time
         shSendVal(this);
     });
     $(document).on("change", 'input[data-sh]:text', function() { // Text
@@ -197,9 +197,9 @@ function shSend(data){
 };
 
 function shBufferUpdate(path, val, src){
-    console.log(path + " changed to: " + val + " (" + typeof(val) + ")");
     if ( path in shBuffer) {
         if (shBuffer[path] !== val){
+            console.log(path + " changed to: " + val + " (" + typeof(val) + ")");
             shBuffer[path] = val;
             shSend([ 'item', [ path, val ]]);
             shUpdateItem(path, val, src);
@@ -359,7 +359,7 @@ function updateInput(obj, val) {
                 $(obj).val(val).slider("refresh");
             } catch (e) {};
             break;
-        case 'number': // slider
+        case 'number': // ?
             try {
                 $(obj).val(val).slider("refresh");
             } catch (e) {};
