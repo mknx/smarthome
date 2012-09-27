@@ -1,5 +1,5 @@
 ---
-title: Homepage
+title:
 layout: default
 summary:
 uid: index
@@ -31,10 +31,9 @@ See the [install](install) and [config](config) section to start your SmartHome.
       * sh.tools.ping(): moved ping to the tools object.
       * sh.tz => sh.tzinfo(): new function tzinfo().
 
-## Bug Fixes
+### Bug Fixes
 
   * CLI Plugin: update attribute negated
-
 
 ## 2012-06-21 New Release [0.6](http://sourceforge.net/projects/smarthome/files/)
 
