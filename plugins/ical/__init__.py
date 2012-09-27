@@ -106,7 +106,7 @@ class iCal():
     def __call__(self, file, delta=1, offset=0):
         event = {}
         events = {}
-        tzinfo = self._sh.tzinfo
+        tzinfo = self._sh.tzinfo()
         now = self._sh.now()
         start = now.replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=offset)
         end = start.replace(hour=23, minute=59, second=59) + datetime.timedelta(days=delta)
