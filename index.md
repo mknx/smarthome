@@ -8,7 +8,31 @@ changed: 2012-06-21T18:27:24+0200
 ---
 
 SmartHome.py is a modular framework to automate your (smart) home.
+
 See the [install](install) and [config](config) section to start your SmartHome.
+
+## 2012-09-27 New Release [0.7](https://github.com/mknx/smarthome/downloads)
+
+### Features
+   * Items
+      * Trees: You could now build unlimited item trees.
+      * id(): function to return the item id (path).
+      * eval: see the item configuration page for an explanation for 'eval' and 'eval_trigger'.
+   * [Asterisk plugin](plugins/asterisk): new function hangup(channel)
+   * [iCal plugin](plugins/ical): to parse iCal files
+   * [Visu Plugin](plugins/visu):
+      * autogenerate visu pages
+      * new input type 'time'
+    * SmartHome.py:
+       * sh.scheduler.change
+       * directory structure cleanup: logic => logics
+       * sh.tools.dewpoint(): new function to calculate the dewpoint
+       * sh.tools.ping(): moved ping to the tools object.
+       * sh.tz => sh.tzinfo(): new function tzinfo().
+
+## Bug Fixes
+    * CLI Plugin: update attribute negated
+
 
 ## 2012-06-21 New Release [0.6](http://sourceforge.net/projects/smarthome/files/)
 

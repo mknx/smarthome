@@ -11,6 +11,7 @@ Right now the WebSocket interface of SmartHome.py only supports nonencrypted con
 
 # Requirements
 This plugin needs just a webserver to serve the HTML and JavaScript files for the GUI.
+The example files in 'examples/visu' have to be placed in the _root directory_ of the webserver!
 
 # Configuration
 
@@ -38,7 +39,6 @@ Simply set the visu attribute to something to allow read/write access to the ite
         type = bool
         visu = rw
 </pre>
-
 
 ## logic.conf
 You could specify the `visu` attribute to every logic in your logic.conf. This way you could trigger the logic via the interface.
