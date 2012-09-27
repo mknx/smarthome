@@ -23,12 +23,13 @@ See the [install](install) and [config](config) section to start your SmartHome.
    * [Visu Plugin](plugins/visu):
       * autogenerate visu pages
       * new input type 'time'
-    * SmartHome.py:
-       * sh.scheduler.change
-       * directory structure cleanup: logic => logics
-       * sh.tools.dewpoint(): new function to calculate the dewpoint
-       * sh.tools.ping(): moved ping to the tools object.
-       * sh.tz => sh.tzinfo(): new function tzinfo().
+   * SmartHome.py:
+      * sh.scheduler.change
+      * directory structure cleanup: logic => logics
+      * items directory: to put multiple item configuration files in
+      * sh.tools.dewpoint(): new function to calculate the dewpoint
+      * sh.tools.ping(): moved ping to the tools object.
+      * sh.tz => sh.tzinfo(): new function tzinfo().
 
 ## Bug Fixes
     * CLI Plugin: update attribute negated
