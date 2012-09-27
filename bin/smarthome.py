@@ -49,7 +49,7 @@ import lib.plugin
 import lib.tools
 import lib.sun
 
-VERSION = 0.64
+VERSION = 0.7
 
 TZ = gettz('UTC')
 

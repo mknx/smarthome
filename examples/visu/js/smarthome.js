@@ -18,7 +18,7 @@
 //  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 //########################################################################
 
-var shVersion = 0.64;
+var shVersion = 0.7;
 var shWS = false; // WebSocket
 var shLock = false;
 var shURL = '';
