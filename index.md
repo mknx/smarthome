@@ -32,6 +32,7 @@ See the [install](install) and [config](config) section to start your SmartHome.
       * sh.tz => sh.tzinfo(): new function tzinfo().
 
 ## Bug Fixes
+
     * CLI Plugin: update attribute negated
 
 
