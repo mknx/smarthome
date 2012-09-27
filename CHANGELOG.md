@@ -6,11 +6,12 @@ Roadmap
    * Squeezeserver plugin
    * Russound plugin
 
-0.7
-===
+# 0.7
+
+## Features
    * Items
       * Trees: You could now build unlimited item trees.
-      * id(): function to return the item path.
+      * id(): function to return the item id (path).
       * eval: see the item configuration page for an explanation for 'eval' and 'eval_trigger'.
    * Asterisk Plugin: hangup(channel)
    * iCal Plugin: to parse iCal files
@@ -24,8 +25,7 @@ Roadmap
        * sh.tools.ping(): moved ping to the tools object.
        * sh.tz => sh.tzinfo(): new function tzinfo().
 
-Bug Fixes
----------
+## Bug Fixes
     * CLI Plugin: update attribute negated
 
 0.6
