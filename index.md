@@ -33,7 +33,7 @@ See the [install](install) and [config](config) section to start your SmartHome.
 
 ## Bug Fixes
 
-    * CLI Plugin: update attribute negated
+  * CLI Plugin: update attribute negated
 
 
 ## 2012-06-21 New Release [0.6](http://sourceforge.net/projects/smarthome/files/)
