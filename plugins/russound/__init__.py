@@ -46,6 +46,7 @@ class Russound(lib.my_asynchat.AsynChat):
             parts = path.split('.', 2)
             
             if len(parts) is not 3:
+                logger.warning("Invalid Russound path with value {}, format should be 'c.z.p' c = controller, z = zone, p = parameter name.".format(path))
                 return None
 
             c = parts[0]
@@ -63,16 +64,19 @@ class Russound(lib.my_asynchat.AsynChat):
                 z = item.conf['rus_zone']
                 path += z + '.'
             else:
+                logger.warning("No zone specified for controller {} in config of item {}".format(c,item))
                 return None
 
             if 'rus_parameter' in item.conf:
                 param = item.conf['rus_parameter']
                 path += param
             else:
+                logger.warning("No parameter specified for zone {} on controller {} in config of item {}".format(z,c,item))
                 return None
 
             item.conf['rus_path'] = path
-
+            
+        param = param.tolower()
         self.params[path] = {'c': int(c), 'z': int(z), 'param':param, 'item':item}
         return self.update_item
 
@@ -82,31 +86,30 @@ class Russound(lib.my_asynchat.AsynChat):
     def update_item(self, item, caller=None, source=None):
         if caller != 'Russound':
             p = self.params[item.conf['rus_path']]
-            self.update(p.c, p.z, p.param, item())
-            cmd = p.param.tolower()
+            cmd = p.param
 
             if cmd == 'bass':
-                self.send_set(self, cmd, round(item() / (128 / 10)))
+                self.send_set(self, p.c, p.z, cmd, round(item() / (128 / 10)))
             elif cmd == 'treble':
-                self.send_set(self, cmd, round(item() / (128 / 10)))
+                self.send_set(self, p.c, p.z, cmd, round(item() / (128 / 10)))
             elif cmd == 'balance':
-                self.send_set(self, cmd, round(item() / (128 / 10)))
+                self.send_set(self, p.c, p.z, cmd, round(item() / (128 / 10)))
             elif cmd == 'loudness':
-                self.send_set(self, cmd, 'ON' if item() else 'OFF')
+                self.send_set(self, p.c, p.z, cmd, 'ON' if item() else 'OFF')
             elif cmd == 'turnonvolume':
-                self.send_set(self, cmd, round(item() / (255 / 50)))
+                self.send_set(self, p.c, p.z, cmd, round(item() / (255 / 50)))
             elif cmd == 'status':
-                self.send_event(self, 'ZoneOn' if item() else 'ZoneOff')
+                self.send_event(self, p.c, p.z, 'ZoneOn' if item() else 'ZoneOff')
             elif cmd == 'partymode':
-                self.send_event(self, 'PartyMode', item().tolower())
+                self.send_event(self, p.c, p.z, 'PartyMode', item().tolower())
             elif cmd == 'donotdisturb':
-                self.send_event(self, 'DoNotDisturb', 'on' if item() else 'off')
+                self.send_event(self, p.c, p.z, 'DoNotDisturb', 'on' if item() else 'off')
             elif cmd == 'volume':
-                self.send_event(self, 'KeyPress', 'Volume', round(item() / (255 / 50)))
+                self.send_event(self, p.c, p.z, 'KeyPress', 'Volume', round(item() / (255 / 50)))
             elif cmd == 'currentsource':
-                self.send_event(self, 'SelectSource', item())
+                self.send_event(self, p.c, p.z, 'SelectSource', item())
             elif cmd == 'mute':
-                self.send_event(self, 'KeyRelease', 'Mute')
+                self.send_event(self, p.c, p.z, 'KeyRelease', 'Mute')
 
     def send_set(self, c, z, cmd, value):
         self.send_cmd('SET C[%d].Z[%d].%s="%s"\r' % c, z, cmd, value)
@@ -121,21 +124,22 @@ class Russound(lib.my_asynchat.AsynChat):
         self.send_cmd('WATCH System %s\r' % 'ON' if value else 'OFF')
 
     def _send_cmd(self, cmd):
-        logger.debug("Request: %s" % cmd)
+        logger.debug("Sending request: {}".format(cmd))
         self.push(cmd)
 
     def _parse_response(self, resp):
         if resp[0] == 'S':
             return 
         if resp[0] == 'E':
-            logger.debug("Response error: %s" %s resp)
+            logger.debug("Received response error: {}".format(resp))
         elif resp[0] == 'N':
             resp = resp[2:]
 
             if resp[0] == 'C':
-                c = int(resp[2])
-                z = int(resp[6])
-                resp = resp[10:]
+                resp = resp.split('.', 2)
+                c = int(resp[0][1:])
+                z = int(resp[1][1:])
+                resp = resp[2]
                 cmd = resp.split('=')[0]
                 value = resp.split('"')[1]
 
