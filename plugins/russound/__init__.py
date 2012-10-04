@@ -33,7 +33,7 @@ RESP_DELIMITER = '\r\n'
 
 class Russound(lib.my_asynchat.AsynChat):
 
-    def __init__(self, smarthome, host, port=9261):
+    def __init__(self, smarthome, host, port=9621):
         lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
         self.terminator = RESP_DELIMITER
         self._sh = smarthome
@@ -76,8 +76,9 @@ class Russound(lib.my_asynchat.AsynChat):
 
             item.conf['rus_path'] = path
             
-        param = param.tolower()
+        param = param.lower()
         self.params[path] = {'c': int(c), 'z': int(z), 'param':param, 'item':item}
+        logger.debug("Parameter {} with path {} added".format(item, path))
         return self.update_item
 
     def parse_logic(self, logic):
@@ -86,48 +87,51 @@ class Russound(lib.my_asynchat.AsynChat):
     def update_item(self, item, caller=None, source=None):
         if caller != 'Russound':
             p = self.params[item.conf['rus_path']]
-            cmd = p.param
+            cmd = p['param']
+            c = p['c']
+            z = p['z']
 
             if cmd == 'bass':
-                self.send_set(self, p.c, p.z, cmd, round(item() / (128 / 10)))
+                self.send_set(self, c, z, cmd, round(item() / (128 / 10)))
             elif cmd == 'treble':
-                self.send_set(self, p.c, p.z, cmd, round(item() / (128 / 10)))
+                self.send_set(self, c, z, cmd, round(item() / (128 / 10)))
             elif cmd == 'balance':
-                self.send_set(self, p.c, p.z, cmd, round(item() / (128 / 10)))
+                self.send_set(self, c, z, cmd, round(item() / (128 / 10)))
             elif cmd == 'loudness':
-                self.send_set(self, p.c, p.z, cmd, 'ON' if item() else 'OFF')
+                self.send_set(self, c, z, cmd, 'ON' if item() else 'OFF')
             elif cmd == 'turnonvolume':
-                self.send_set(self, p.c, p.z, cmd, round(item() / (255 / 50)))
+                self.send_set(self, c, z, cmd, round(item() / (255 / 50)))
             elif cmd == 'status':
-                self.send_event(self, p.c, p.z, 'ZoneOn' if item() else 'ZoneOff')
+                self.send_event(self, c, z, 'ZoneOn' if item() else 'ZoneOff')
             elif cmd == 'partymode':
-                self.send_event(self, p.c, p.z, 'PartyMode', item().tolower())
+                self.send_event(self, c, z, 'PartyMode', item().tolower())
             elif cmd == 'donotdisturb':
-                self.send_event(self, p.c, p.z, 'DoNotDisturb', 'on' if item() else 'off')
+                self.send_event(self, c, z, 'DoNotDisturb', 'on' if item() else 'off')
             elif cmd == 'volume':
-                self.send_event(self, p.c, p.z, 'KeyPress', 'Volume', round(item() / (255 / 50)))
+                self.send_event(self, c, z, 'KeyPress', 'Volume', round(item() / (255 / 50)))
             elif cmd == 'currentsource':
-                self.send_event(self, p.c, p.z, 'SelectSource', item())
+                self.send_event(self, c, z, 'SelectSource', item())
             elif cmd == 'mute':
-                self.send_event(self, p.c, p.z, 'KeyRelease', 'Mute')
+                self.send_event(self, c, z, 'KeyRelease', 'Mute')
 
     def send_set(self, c, z, cmd, value):
-        self.send_cmd('SET C[%d].Z[%d].%s="%s"\r' % c, z, cmd, value)
+        self._send_cmd('SET C[%d].Z[%d].%s="%s"\r' % (c, z, cmd, value))
 
     def send_event(self, c, z, cmd, value1=None, value2=None):
-        self.send_cmd('EVENT C[%d].Z[%d]!%s %s %s\r' % c, z, cmd, value)
+        self._send_cmd('EVENT C[%d].Z[%d]!%s %s %s\r' % (c, z, cmd, value))
         
     def _watch_zone(self, controller, zone, value):
-        self.send_cmd('WATCH C[%d].Z[%d] %s\r' % controller, zone, 'ON' if value else 'OFF')
+        self._send_cmd('WATCH C[%d].Z[%d] %s\r' % (controller, zone, 'ON' if value else 'OFF'))
 
     def _watch_system(self, value):
-        self.send_cmd('WATCH System %s\r' % 'ON' if value else 'OFF')
+        self._send_cmd('WATCH System %s\r' % 'ON' if value else 'OFF')
 
     def _send_cmd(self, cmd):
         logger.debug("Sending request: {}".format(cmd))
         self.push(cmd)
 
     def _parse_response(self, resp):
+        logger.debug("Parse response: {}".format(resp))
         if resp[0] == 'S':
             return 
         if resp[0] == 'E':
@@ -157,7 +161,7 @@ class Russound(lib.my_asynchat.AsynChat):
         if cmd == 'bass' or cmd == 'treble' or cmd == 'balance':
             return round(value * (128 / 10))
         elif cmd == 'loudness' or cmd == 'status' or cmd == 'mute':
-            return value == 'ON')
+            return value == 'ON'
         elif cmd == 'turnonvolume' or cmd == 'volume':
             return round(value * (255 / 50))
         elif cmd == 'partymode' or cmd == 'donotdisturb':
@@ -174,15 +178,17 @@ class Russound(lib.my_asynchat.AsynChat):
         self.alive = True
         self._watch_system(True)
 
-        for p in self.params:
-            self._watch_zone(p.c, p.z, True)
+        for path in self.params:
+            p = self.params[path]
+            self._watch_zone(p['c'], p['z'], True)
             
     def stop(self):
         self.alive = False
         self._watch_system(False)
 
-        for p in self.params:
-            self._watch_zone(p.c, p.z, False)
+        for path in self.params:
+            p = self.params[path]
+            self._watch_zone(p['c'], p['z'], False)
 
         self.handle_close()
 
