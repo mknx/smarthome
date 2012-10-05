@@ -118,7 +118,6 @@ class Russound(lib.my_asynchat.AsynChat):
         self._send_cmd('SET C[%d].Z[%d].%s="%s"\r' % (c, z, cmd, value))
 
     def send_event(self, c, z, cmd, value1=None, value2=None):
-        logger.debug("cmd = {}".format(cmd))
         if value1 is None and value2 is None:
             self._send_cmd('EVENT C[{}].Z[{}]!{}\r'.format(c, z, cmd))
         elif value2 is None:
@@ -136,10 +135,6 @@ class Russound(lib.my_asynchat.AsynChat):
         logger.debug("Sending request: {}".format(cmd))
         self.push(cmd)
 
-    def collect_incoming_data(self, data):
-        print data
-        self.buffer += data
-
     def _parse_response(self, resp):
         try:
             logger.debug("Parse response: {}".format(resp))
@@ -155,7 +150,7 @@ class Russound(lib.my_asynchat.AsynChat):
                     c = int(resp[0][2])
                     z = int(resp[1][2])
                     resp = resp[2]
-                    cmd = resp.split('=')[0]
+                    cmd = resp.split('=')[0].lower()
                     value = resp.split('"')[1]
 
                     path = '{}.{}.{}'.format(c, z, cmd)
@@ -180,7 +175,7 @@ class Russound(lib.my_asynchat.AsynChat):
         elif cmd == 'partymode' or cmd == 'donotdisturb':
             return value.lower()
         elif cmd == 'currentsource':
-            return value 
+            return value
 
     def found_terminator(self):
         data = self.buffer
@@ -191,16 +186,24 @@ class Russound(lib.my_asynchat.AsynChat):
         self.terminator = RESP_DELIMITER
         self._watch_system(True)
 
+	zones = []
         for path in self.params:
             p = self.params[path]
-            self._watch_zone(p['c'], p['z'], True)
+            key = '{}.{}'.format(p['c'], p['z'])
+            if not key in zones:
+                zones.append(key)
+                self._watch_zone(p['c'], p['z'], True)
             
     def handle_close(self):
         self._watch_system(False)
 
+        zones = []
         for path in self.params:
             p = self.params[path]
-            self._watch_zone(p['c'], p['z'], False)
+            key = '{}.{}'.format(p['c'], p['z'])
+            if not key in zones:
+                zones.append(key)
+                self._watch_zone(p['c'], p['z'], False)
 
     def run(self):
         self.alive = True
