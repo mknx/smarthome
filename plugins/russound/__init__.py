@@ -102,7 +102,7 @@ class Russound(lib.my_asynchat.AsynChat):
             elif cmd == 'turnonvolume':
                 self.send_set(c, z, cmd, int(round(float(item()) / (255.0 / 50.0))))
             elif cmd == 'status':
-                self.send_event(c, z, cmd, 'ZoneOn' if item() else 'ZoneOff')
+                self.send_event(c, z, 'ZoneOn' if item() else 'ZoneOff')
             elif cmd == 'partymode':
                 self.send_event(c, z, cmd, item().lower())
             elif cmd == 'donotdisturb':
