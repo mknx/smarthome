@@ -115,7 +115,7 @@ class Russound(lib.my_asynchat.AsynChat):
                 self.send_event(c, z, 'KeyRelease', 'Mute')
 
     def send_set(self, c, z, cmd, value):
-        self._send_cmd('SET C[%d].Z[%d].%s="%s"\r' % (c, z, cmd, value))
+        self._send_cmd('SET C[{}].Z[{}].{}="{}"\r'.format(c, z, cmd, value))
 
     def send_event(self, c, z, cmd, value1=None, value2=None):
         if value1 is None and value2 is None:
@@ -126,10 +126,10 @@ class Russound(lib.my_asynchat.AsynChat):
             self._send_cmd('EVENT C[{}].Z[{}]!{} {} {}\r'.format(c, z, cmd, value1, value2))
         
     def _watch_zone(self, controller, zone, value):
-        self._send_cmd('WATCH C[%d].Z[%d] %s\r' % (controller, zone, 'ON' if value else 'OFF'))
+        self._send_cmd('WATCH C[{}].Z[{}] {}\r'.format(controller, zone, 'ON' if value else 'OFF'))
 
     def _watch_system(self, value):
-        self._send_cmd('WATCH System %s\r' % 'ON' if value else 'OFF')
+        self._send_cmd('WATCH System {}\r'.format('ON' if value else 'OFF'))
 
     def _send_cmd(self, cmd):
         logger.debug("Sending request: {}".format(cmd))
@@ -193,17 +193,6 @@ class Russound(lib.my_asynchat.AsynChat):
             if not key in zones:
                 zones.append(key)
                 self._watch_zone(p['c'], p['z'], True)
-            
-    def handle_close(self):
-        self._watch_system(False)
-
-        zones = []
-        for path in self.params:
-            p = self.params[path]
-            key = '{}.{}'.format(p['c'], p['z'])
-            if not key in zones:
-                zones.append(key)
-                self._watch_zone(p['c'], p['z'], False)
 
     def run(self):
         self.alive = True
