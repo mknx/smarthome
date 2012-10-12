@@ -18,3 +18,8 @@ git config --global user.email you@example.com
 git clone -b gh-pages git@github.com:mknx/smarthome.git sh-pages
 ```
 
+# Coding
+
+## pep8
+`apt-get install pep8`
+`pep9 yourcode.py`
