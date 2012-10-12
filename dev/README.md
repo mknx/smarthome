@@ -22,4 +22,4 @@ git clone -b gh-pages git@github.com:mknx/smarthome.git sh-pages
 
 ## pep8
 `apt-get install pep8`
-`pep9 yourcode.py`
+`pep8 yourcode.py`
