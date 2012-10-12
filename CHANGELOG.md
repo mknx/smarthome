@@ -4,7 +4,13 @@ Roadmap
    * visu plugin: plot rrd with flot
    * dwd plugin: Deutscher Wetterdienst - weather forecast and warnings
    * Squeezeserver plugin
+
+# 0.8
+
+## Features
    * Russound plugin
+   * Visu plugin: adding visu_groupsi
+
 
 # 0.7
 
