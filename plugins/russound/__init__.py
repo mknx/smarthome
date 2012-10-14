@@ -125,11 +125,11 @@ class Russound(lib.my_asynchat.AsynChat):
         else:
             self._send_cmd('EVENT C[{}].Z[{}]!{} {} {}\r'.format(c, z, cmd, value1, value2))
         
-    def _watch_zone(self, controller, zone, value):
-        self._send_cmd('WATCH C[{}].Z[{}] {}\r'.format(controller, zone, 'ON' if value else 'OFF'))
+    def _watch_zone(self, controller, zone):
+        self._send_cmd('WATCH C[{}].Z[{}] ON\r'.format(controller, zone))
 
     def _watch_system(self, value):
-        self._send_cmd('WATCH System {}\r'.format('ON' if value else 'OFF'))
+        self._send_cmd('WATCH System ON\r') 
 
     def _send_cmd(self, cmd):
         logger.debug("Sending request: {}".format(cmd))
@@ -184,7 +184,7 @@ class Russound(lib.my_asynchat.AsynChat):
 
     def handle_connect(self):
         self.terminator = RESP_DELIMITER
-        self._watch_system(True)
+        self._watch_system()
 
 	zones = []
         for path in self.params:
@@ -192,7 +192,7 @@ class Russound(lib.my_asynchat.AsynChat):
             key = '{}.{}'.format(p['c'], p['z'])
             if not key in zones:
                 zones.append(key)
-                self._watch_zone(p['c'], p['z'], True)
+                self._watch_zone(p['c'], p['z'])
 
     def run(self):
         self.alive = True
@@ -200,8 +200,3 @@ class Russound(lib.my_asynchat.AsynChat):
     def stop(self):
         self.alive = False
         self.handle_close()
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    myplugin = Russound('smarthome-dummy')
-    myplugin.run()
