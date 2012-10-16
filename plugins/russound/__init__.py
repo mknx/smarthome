@@ -46,7 +46,7 @@ class Russound(lib.my_asynchat.AsynChat):
             parts = path.split('.', 2)
             
             if len(parts) is not 3:
-                logger.warning("Invalid Russound path with value {}, format should be 'c.z.p' c = controller, z = zone, p = parameter name.".format(path))
+                logger.warning("Invalid Russound path with value {0}, format should be 'c.z.p' c = controller, z = zone, p = parameter name.".format(path))
                 return None
 
             c = parts[0]
@@ -64,21 +64,21 @@ class Russound(lib.my_asynchat.AsynChat):
                 z = item.conf['rus_zone']
                 path += z + '.'
             else:
-                logger.warning("No zone specified for controller {} in config of item {}".format(c,item))
+                logger.warning("No zone specified for controller {0} in config of item {1}".format(c,item))
                 return None
 
             if 'rus_parameter' in item.conf:
                 param = item.conf['rus_parameter']
                 path += param
             else:
-                logger.warning("No parameter specified for zone {} on controller {} in config of item {}".format(z,c,item))
+                logger.warning("No parameter specified for zone {0} on controller {1} in config of item {2}".format(z,c,item))
                 return None
 
             item.conf['rus_path'] = path
             
         param = param.lower()
         self.params[path] = {'c': int(c), 'z': int(z), 'param':param, 'item':item}
-        logger.debug("Parameter {} with path {} added".format(item, path))
+        logger.debug("Parameter {0} with path {1} added".format(item, path))
         return self.update_item
 
     def parse_logic(self, logic):
@@ -115,33 +115,33 @@ class Russound(lib.my_asynchat.AsynChat):
                 self.send_event(c, z, 'KeyRelease', 'Mute')
 
     def send_set(self, c, z, cmd, value):
-        self._send_cmd('SET C[{}].Z[{}].{}="{}"\r'.format(c, z, cmd, value))
+        self._send_cmd('SET C[{0}].Z[{1}].{2}="{3}"\r'.format(c, z, cmd, value))
 
     def send_event(self, c, z, cmd, value1=None, value2=None):
         if value1 is None and value2 is None:
-            self._send_cmd('EVENT C[{}].Z[{}]!{}\r'.format(c, z, cmd))
+            self._send_cmd('EVENT C[{0}].Z[{1}]!{2}\r'.format(c, z, cmd))
         elif value2 is None:
-            self._send_cmd('EVENT C[{}].Z[{}]!{} {}\r'.format(c, z, cmd, value1))
+            self._send_cmd('EVENT C[{0}].Z[{1}]!{2} {3}\r'.format(c, z, cmd, value1))
         else:
-            self._send_cmd('EVENT C[{}].Z[{}]!{} {} {}\r'.format(c, z, cmd, value1, value2))
+            self._send_cmd('EVENT C[{0}].Z[{1}]!{2} {3} {4}\r'.format(c, z, cmd, value1, value2))
         
     def _watch_zone(self, controller, zone):
-        self._send_cmd('WATCH C[{}].Z[{}] ON\r'.format(controller, zone))
+        self._send_cmd('WATCH C[{0}].Z[{1}] ON\r'.format(controller, zone))
 
-    def _watch_system(self, value):
+    def _watch_system(self):
         self._send_cmd('WATCH System ON\r') 
 
     def _send_cmd(self, cmd):
-        logger.debug("Sending request: {}".format(cmd))
+        logger.debug("Sending request: {0}".format(cmd))
         self.push(cmd)
 
     def _parse_response(self, resp):
         try:
-            logger.debug("Parse response: {}".format(resp))
+            logger.debug("Parse response: {0}".format(resp))
             if resp[0] == 'S':
                 return 
             if resp[0] == 'E':
-                logger.debug("Received response error: {}".format(resp))
+                logger.debug("Received response error: {0}".format(resp))
             elif resp[0] == 'N':
                 resp = resp[2:]
 
@@ -153,7 +153,7 @@ class Russound(lib.my_asynchat.AsynChat):
                     cmd = resp.split('=')[0].lower()
                     value = resp.split('"')[1]
 
-                    path = '{}.{}.{}'.format(c, z, cmd)
+                    path = '{0}.{1}.{2}'.format(c, z, cmd)
                     if path in self.params.keys():
                         self.params[path]['item'](self._decode(cmd, value), 'Russound')
                 elif resp.startswith('System.status'):
@@ -189,7 +189,7 @@ class Russound(lib.my_asynchat.AsynChat):
 	zones = []
         for path in self.params:
             p = self.params[path]
-            key = '{}.{}'.format(p['c'], p['z'])
+            key = '{0}.{1}'.format(p['c'], p['z'])
             if not key in zones:
                 zones.append(key)
                 self._watch_zone(p['c'], p['z'])
