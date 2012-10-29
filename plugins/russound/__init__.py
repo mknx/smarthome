@@ -38,6 +38,7 @@ class Russound(lib.my_asynchat.AsynChat):
         self.terminator = RESP_DELIMITER
         self._sh = smarthome
         self.params = {}
+        self._timers = {}
         smarthome.monitor_connection(self)
 
     def parse_item(self, item):
@@ -79,6 +80,16 @@ class Russound(lib.my_asynchat.AsynChat):
         param = param.lower()
         self.params[path] = {'c': int(c), 'z': int(z), 'param':param, 'item':item}
         logger.debug("Parameter {0} with path {1} added".format(item, path))
+
+        if param == 'relativevolume':
+            if 'rus_intervall' in item.conf:
+                intervall = float(item.conf['rus_intervall'])
+            else:
+                intervall = 200.0
+
+            self._timers[path] = Timer(intervall / 1000.0, _dim_volume, path)
+            logger.debug("Timer for path {0} with intervall {1} added".format(path, intervall))
+
         return self.update_item
 
     def parse_logic(self, logic):
@@ -113,6 +124,11 @@ class Russound(lib.my_asynchat.AsynChat):
                 self.send_event(c, z, 'SelectSource', item())
             elif cmd == 'mute':
                 self.send_event(c, z, 'KeyRelease', 'Mute')
+            elif cmd == 'relativevolume':
+                if item()[1] == 0:
+                    self._timers[p].cancel()
+                else:
+                    self._timers[p].start()
 
     def send_set(self, c, z, cmd, value):
         self._send_cmd('SET C[{0}].Z[{1}].{2}="{3}"\r'.format(c, z, cmd, value))
@@ -125,6 +141,26 @@ class Russound(lib.my_asynchat.AsynChat):
         else:
             self._send_cmd('EVENT C[{0}].Z[{1}]!{2} {3} {4}\r'.format(c, z, cmd, value1, value2))
         
+    def _dim_volume(self, path):
+        p = self.params[path]
+        c = p['c']
+        z = p['z']
+        item = p['item']
+        direction = item()[0]
+        step = item()[1]
+
+        if step == 0:
+            return
+
+        if direction == 1:
+            self.send_event(c, z, 'KeyPress', 'VolumeUp')
+        else:
+            self.send_event(c, z, 'KeyPress', 'VolumeDown')
+
+        # restart the timer for continues in-/decreasing of the volume
+        # until we receive the stop command
+        self._timers[path].start()
+    
     def _watch_zone(self, controller, zone):
         self._send_cmd('WATCH C[{0}].Z[{1}] ON\r'.format(controller, zone))
 
@@ -133,6 +169,12 @@ class Russound(lib.my_asynchat.AsynChat):
 
     def _send_cmd(self, cmd):
         logger.debug("Sending request: {0}".format(cmd))
+        
+        # if connection is closed we don't wait for sh.con to reopen it
+        # instead we reconnect immediatly
+        if not self.is_connected:
+            self.connect()
+
         self.push(cmd)
 
     def _parse_response(self, resp):
@@ -186,7 +228,7 @@ class Russound(lib.my_asynchat.AsynChat):
         self.terminator = RESP_DELIMITER
         self._watch_system()
 
-	zones = []
+        zones = []
         for path in self.params:
             p = self.params[path]
             key = '{0}.{1}'.format(p['c'], p['z'])
@@ -199,4 +241,8 @@ class Russound(lib.my_asynchat.AsynChat):
 
     def stop(self):
         self.alive = False
+
+        for path in self._timers:
+            self._timers[path].cancel()
+
         self.handle_close()
