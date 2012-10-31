@@ -74,6 +74,9 @@ class Russound(lib.my_asynchat.AsynChat):
                 logger.warning("No parameter specified for zone {0} on controller {1} in config of item {2}".format(z,c,item))
                 return None
 
+            if param == 'relativevolume':
+                item._enforce_updates = True
+
             item.conf['rus_path'] = path
             
         param = param.lower()
@@ -115,9 +118,11 @@ class Russound(lib.my_asynchat.AsynChat):
                 self.send_event(c, z, 'SelectSource', item())
             elif cmd == 'mute':
                 self.send_event(c, z, 'KeyRelease', 'Mute')
-            elif cmd == 'relativevolume':
-                if item()[1] == 1:
-                    self._start_dim(path, item)
+            elif cmd == 'relativevolume' and item()[1] != 0:
+                if item()[0] == 1:
+                    self.send_event(c, z, 'KeyPress', 'VolumeUp')
+                else:
+                    self.send_event(c, z, 'KeyPress', 'VolumeDown')
 
     def send_set(self, c, z, cmd, value):
         self._send_cmd('SET C[{0}].Z[{1}].{2}="{3}"\r'.format(c, z, cmd, value))
@@ -130,34 +135,6 @@ class Russound(lib.my_asynchat.AsynChat):
         else:
             self._send_cmd('EVENT C[{0}].Z[{1}]!{2} {3} {4}\r'.format(c, z, cmd, value1, value2))
 
-    def _start_dim(self, path, item):
-        if 'rus_intervall' in item.conf:
-            intervall = float(item.conf['rus_intervall'])
-        else:
-            intervall = 200.0
-
-        threading.Timer(intervall / 1000.0, self._dim_volume, [path]).start()
-
-    def _dim_volume(self, path):
-        p = self.params[path]
-        c = p['c']
-        z = p['z']
-        item = p['item']
-        direction = item()[0]
-        step = item()[1]
-
-        if step == 0:
-            return
-
-        if direction == 1:
-            self.send_event(c, z, 'KeyPress', 'VolumeUp')
-        else:
-            self.send_event(c, z, 'KeyPress', 'VolumeDown')
-
-        # restart the timer for continues in-/decreasing of the volume
-        # until we receive the stop command
-        self._start_dim(path, item)
-    
     def _watch_zone(self, controller, zone):
         self._send_cmd('WATCH C[{0}].Z[{1}] ON\r'.format(controller, zone))
 
