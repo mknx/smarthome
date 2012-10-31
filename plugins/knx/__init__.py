@@ -173,11 +173,11 @@ class KNX(lib.my_asynchat.AsynChat):
         elif flg == 'read':
             logger.debug("{0} read {1}".format(src, dst))
             if dst in self.gar:  # read item
-                if self.gar[dst]['item']:
+                if self.gar[dst]['logic'] == False:
                     item = self.gar[dst]['item']
-                    self.groupwrite(dst, item(), item.knx_dpt, 'response')
+                    self.groupwrite(dst, item(), item.conf['knx_dpt'], 'response')
                 else:
-                    self.gar[ga]['logic'].trigger('KNX', dst, 'read')
+                    self.gar[dst]['logic'].trigger('KNX', dst, 'read')
 
     def run(self):
         self.alive = True
@@ -276,10 +276,10 @@ class KNX(lib.my_asynchat.AsynChat):
             for ga in knx_reply:
                 logger.debug("knx: {0} reply to {1}".format(logic, ga))
                 if ga in self.gar:
-                    if self.gar[ga]['logic']:
-                        obj = self.gar[ga]['logic']
-                    else:
+                    if self.gar[ga]['logic'] == False:
                         obj = self.gar[ga]['item']
+                    else:
+                        obj = self.gar[ga]['logic']
                     logger.warning("knx: {0} knx_reply ({1}) already defined for {2}".format(logic, ga, obj))
                 else:
                     self.gar[ga] = {'dpt': dpt, 'item': False, 'logic': logic}
