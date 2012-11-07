@@ -222,7 +222,7 @@ class KNX(lib.my_asynchat.AsynChat):
             self._init_ga[ga] = False
 
         if 'knx_cache' in item.conf:
-            ga = item['knx_cache']
+            ga = item.conf['knx_cache']
             logger.debug("knx: {0} listen on and init with cache {1}".format(item, ga))
             if not ga in self.gal:
                 self.gal[ga] = {'dpt': dpt, 'items': [item], 'logics': []}
