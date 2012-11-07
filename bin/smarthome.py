@@ -160,7 +160,6 @@ class SmartHome():
             os._exit(0)
 
         # Init Smarthome
-        logger.info("Init SmartHome.py v%s" % VERSION)
         # Tools
         self.tools = lib.tools.Tools()
         try:
@@ -169,7 +168,7 @@ class SmartHome():
                 if not isinstance(config[attr], dict):  # ignore sub items
                     vars(self)['_' + attr] = config[attr]
         except Exception, e:
-            pass
+            logger.warning("Problem reading smarthome.conf: {0}".format(e))
 
         # set tz to local tz
         if hasattr(self, '_tz'):
@@ -182,6 +181,7 @@ class SmartHome():
             os.environ['TZ'] = self.tz
             self._tzinfo = self._utctz
 
+        logger.info("Init SmartHome.py v%s" % VERSION)
         # init sun
         if hasattr(self, '_lon') and hasattr(self, '_lat'):
             if not hasattr(self, '_elev'):
