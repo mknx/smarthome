@@ -153,7 +153,7 @@ def de9(payload):
 
 
 def en10(time):
-    return [time.hour, time.minute, time.second]
+    return [0, time.hour, time.minute, time.second]
 
 
 def de10(payload):
@@ -165,7 +165,7 @@ def de10(payload):
 
 
 def en11(date):
-    return [date.day, date.month, date.year - 2000]
+    return [0, date.day, date.month, date.year - 2000]
 
 
 def de11(payload):
