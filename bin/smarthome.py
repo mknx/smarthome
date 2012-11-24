@@ -201,7 +201,7 @@ class SmartHome():
                 try: 
                     item_conf = ConfigObj(self._items_dir + item_file)
                 except Exception, e:
-                    logger.warning("Problem reading smarthome.conf: {0}".format(e))
+                    logger.warning("Problem reading {0}: {1}".format(item_file,e))
                     continue
                 for entry in item_conf:
                     if isinstance(item_conf[entry], dict):
