@@ -26,6 +26,7 @@ import rrdtool
 
 logger = logging.getLogger('')
 
+
 class RRD():
 
     def __init__(self, smarthome, step=300, style=[], rrd_dir='/usr/local/smarthome/var/rrd/', png_dir='/var/www/visu/rrd/', web_dir='/rrd/'):
@@ -41,18 +42,17 @@ class RRD():
 
     def run(self):
         self.alive = True
-
         # create rrds
-        #for itempath in self._rrds:
-        #    rrd = self._rrds[itempath]
-        #    if not os.path.isfile(rrd['rrdb']):
-        #        self._create(rrd)
+        for itempath in self._rrds:
+            rrd = self._rrds[itempath]
+            if not os.path.isfile(rrd['rrdb']):
+                self._create(rrd)
         #for area in self._sh.return_areas():
         #    if hasattr(area, 'rrd_graph'):
         #        self.parse_area(area)
 
-        #offset = 100 # wait 100 seconds for 1-Wire to update values
-        #self._sh.scheduler.add('rrd', self._update_rrd, cycle=self.step, offset=offset, prio=5)
+        offset = 100  # wait 100 seconds for 1-Wire to update values
+        self._sh.scheduler.add('rrd', self._update_rrd, cycle=self.step, offset=offset, prio=5)
 
         # create graphs
         #self.generate_graphs()
@@ -70,31 +70,27 @@ class RRD():
                     value
                 )
             except Exception, e:
-                logger.warning("error updating rrd for %s: %s" % ( itempath, e ) )
+                logger.warning("error updating rrd for %s: %s" % (itempath, e))
 
     def parse_item(self, item):
         if 'rrd' in item.conf:
+            rrd_min = False
+            rrd_max = False
             print item.conf['rrd']
+            if 'min' in item.conf['rrd']:
+                rrd_min = True
+            if 'max' in item.conf['rrd']:
+                rrd_max = True
+            # adding average method to the item
+            item.average = types.MethodType(self.average, item, item.__class__)
+            rrdb = self._rrd_dir + item.id() + '.rrd'
+            print rrdb
+            self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
+
+        if 'rrd_png' in item.conf:
+            print item.return_parent()
 
         return
-        if hasattr(item, 'rrd'):
-            if not self._sh.string2bool(item.rrd):
-                return
-        else:
-            return
-        # adding average method to the item
-        item.average = types.MethodType(self.average, item, item.__class__)
-        rrd_min = False
-        rrd_max = False
-        if hasattr(item, 'rrd_min'):
-            if self._sh.string2bool(item.rrd_min):
-                rrd_min = True
-        if hasattr(item, 'rrd_max'):
-            if self._sh.string2bool(item.rrd_max):
-                rrd_max = True
-
-        rrdb = self._rrd_dir + item.path + '.rrd'
-        self._rrds[item.path] = { 'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min }
 
         if hasattr(item, 'rrd_graph'):
             if not self._sh.string2bool(item.rrd_graph):
@@ -103,7 +99,7 @@ class RRD():
             area, sep, name = item.path.rpartition('.')
             area = item.area
             title = area.name + ': ' + item.name
-            graph.append('DEF:' + name  + '=' + rrdb + ':' + name + ':AVERAGE')
+            graph.append('DEF:' + name + '=' + rrdb + ':' + name + ':AVERAGE')
             graph.append('LINE1:' + name + '#' + self._linecolor + ':')
             if hasattr(item, 'rrd_opt'):
                 if isinstance(item.rrd_opt, list):
@@ -116,7 +112,7 @@ class RRD():
                 elif name == 'humidity':
                     graph += ['--vertical-label', '%']
 
-            self._graphs[item.path] = { 'obj': item, 'title': title, 'graph': graph }
+            self._graphs[item.path] = {'obj': item, 'title': title, 'graph': graph}
 
     def parse_area(self, area):
         if not hasattr(area, 'rrd_graph'):
@@ -137,14 +133,14 @@ class RRD():
                 return
             tmp, name = item.path.split('.')
             rrdb = self._rrd_dir + item.path + '.rrd'
-            graph.append('DEF:' + name  + '=' + rrdb + ':' + name + ':AVERAGE')
+            graph.append('DEF:' + name + '=' + rrdb + ':' + name + ':AVERAGE')
 
         if isinstance(area.rrd_opt, list):
             graph += area.rrd_opt
         else:
             graph.append(area.rrd_opt)
         title = area.name
-        self._graphs[area.path] = { 'obj': area, 'title': title, 'graph': graph }
+        self._graphs[area.path] = {'obj': area, 'title': title, 'graph': graph}
 
     def parse_logic(self, logic):
         pass
@@ -162,7 +158,7 @@ class RRD():
         png = self._png_dir + obj.path + '-' + timeframe + '.png'
         web = self._web_dir + obj.path + '-' + timeframe + '.png'
         try:
-            width, height, string =  rrdtool.graph(
+            width, height, string = rrdtool.graph(
                 png,
                 '--title', graph['title'],
                 '--imgformat', 'PNG',
@@ -173,7 +169,7 @@ class RRD():
             # adding rrd_img attribute to item
             vars(obj)['rrd_img_' + timeframe] = "<img src=\"%s\" width=\"%s\" height=\"%s\" alt=\"%s\" />" % (web, width, height, graph['title'])
         except Exception, e:
-            logger.warning("error creating graph for %s: %s" % ( png, e ))
+            logger.warning("error creating graph for %s: %s" % (png, e))
 
     def average(self, item, timeframe):
         values = self.read(item, timeframe)
@@ -187,7 +183,7 @@ class RRD():
 
     def read(self, item, timeframe='1d', cf='AVERAGE'):
         if not hasattr(item, 'rrd'):
-            logger.warning("rrd not enabled for %s" % item )
+            logger.warning("rrd not enabled for %s" % item)
             return
         rrdb = self._rrd_dir + item.path + '.rrd'
         try:
@@ -196,30 +192,28 @@ class RRD():
                 cf,
                 '--start', 'e-' + timeframe
             )
-            return list(i[0] for i in data) # flatten reply
+            return list(i[0] for i in data)  # flatten reply
         except Exception, e:
-            logger.warning("error reading %s data: %s" % ( item, e ))
+            logger.warning("error reading %s data: %s" % (item, e))
             return None
 
     def _create(self, rrd):
         insert = []
-        area, item = rrd['item'].path.split('.')
-        insert.append('DS:' + item + ':GAUGE:' + str(2*self.step) + ':U:U')
+        tmp, sep, item_id = rrd['item'].id().rpartition('.')
+        insert.append('DS:' + item_id + ':GAUGE:' + str(2 * self.step) + ':U:U')
         if rrd['min']:
-            insert.append('RRA:MIN:0.5:'   + str(int(86400/self.step)) + ':1825')  # 24h/5y
+            insert.append('RRA:MIN:0.5:' + str(int(86400 / self.step)) + ':1825')  # 24h/5y
         if rrd['max']:
-            insert.append('RRA:MAX:0.5:'   + str(int(86400/self.step)) + ':1825')  # 24h/5y
-
+            insert.append('RRA:MAX:0.5:' + str(int(86400 / self.step)) + ':1825')  # 24h/5y
         try:
             rrdtool.create(
                 rrd['rrdb'],
                 '--step', str(self.step),
                 insert,
-                'RRA:AVERAGE:0.5:1:' + str(int(86400/self.step)*30),        # 30 days
-                'RRA:AVERAGE:0.5:'   + str(int(3600/self.step))  + ':8760', # 1h/365 days
-                'RRA:AVERAGE:0.5:'   + str(int(86400/self.step)) + ':1825'  # 24h/5y
+                'RRA:AVERAGE:0.5:1:' + str(int(86400 / self.step) * 30),  # 30 days
+                'RRA:AVERAGE:0.5:' + str(int(3600 / self.step)) + ':8760',  # 1h/365 days
+                'RRA:AVERAGE:0.5:' + str(int(86400 / self.step)) + ':1825'  # 24h/5y
             )
-            logger.debug("Creating rrd ({0}) for {1}.".format( rrd['rrdb'], rrd['item'] ))
+            logger.debug("Creating rrd ({0}) for {1}.".format(rrd['rrdb'], rrd['item']))
         except Exception, e:
-            logger.warning("Error creating rrd ({0}) for {1}: {2}".format( rrd['rrdb'], rrd['item'], e ))
-
+            logger.warning("Error creating rrd ({0}) for {1}: {2}".format(rrd['rrdb'], rrd['item'], e))
