@@ -198,7 +198,11 @@ class SmartHome():
         logger.info("Init items")
         for item_file in sorted(os.listdir(self._items_dir)):
             if item_file.endswith('.conf'):
-                item_conf = ConfigObj(self._items_dir + item_file)
+                try: 
+                    item_conf = ConfigObj(self._items_dir + item_file)
+                except Exception, e:
+                    logger.warning("Problem reading smarthome.conf: {0}".format(e))
+                    continue
                 for entry in item_conf:
                     if isinstance(item_conf[entry], dict):
                         path = entry
