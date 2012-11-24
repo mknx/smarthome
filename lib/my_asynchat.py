@@ -40,6 +40,7 @@ class AsynChat(asynchat.async_chat):
         self.buffer = ''
         self.terminator = '\r\n'
         self.is_connected = False
+        self._sh = smarthome
 
     def connect(self):
         try:
@@ -48,6 +49,12 @@ class AsynChat(asynchat.async_chat):
         except Exception, e:
             self.connected = False
             logger.error('{0}: could not connect to {1}:{2}: {3}'.format(self.__class__.__name__, self.addr[0], self.addr[1], e))
+            self.del_channel(self._sh.socket_map)
+            return
+        if err != 0:
+            self.connected = False
+            logger.error('{0}: could not connect to {1}:{2}'.format(self.__class__.__name__, self.addr[0], self.addr[1]))
+            self.del_channel(self._sh.socket_map)
             return
         #if err in (EINPROGRESS, EALREADY, EWOULDBLOCK):
         #    print err
