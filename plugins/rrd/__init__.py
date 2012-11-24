@@ -43,16 +43,16 @@ class RRD():
         self.alive = True
 
         # create rrds
-        for itempath in self._rrds:
-            rrd = self._rrds[itempath]
-            if not os.path.isfile(rrd['rrdb']):
-                self._create(rrd)
-        for area in self._sh.return_areas():
-            if hasattr(area, 'rrd_graph'):
-                self.parse_area(area)
+        #for itempath in self._rrds:
+        #    rrd = self._rrds[itempath]
+        #    if not os.path.isfile(rrd['rrdb']):
+        #        self._create(rrd)
+        #for area in self._sh.return_areas():
+        #    if hasattr(area, 'rrd_graph'):
+        #        self.parse_area(area)
 
-        offset = 100 # wait 100 seconds for 1-Wire to update values
-        self._sh.scheduler.add('rrd', self._update_rrd, cycle=self.step, offset=offset, prio=5)
+        #offset = 100 # wait 100 seconds for 1-Wire to update values
+        #self._sh.scheduler.add('rrd', self._update_rrd, cycle=self.step, offset=offset, prio=5)
 
         # create graphs
         #self.generate_graphs()
@@ -73,6 +73,10 @@ class RRD():
                 logger.warning("error updating rrd for %s: %s" % ( itempath, e ) )
 
     def parse_item(self, item):
+        if 'rrd' in item.conf:
+            print item.conf['rrd']
+
+        return
         if hasattr(item, 'rrd'):
             if not self._sh.string2bool(item.rrd):
                 return
