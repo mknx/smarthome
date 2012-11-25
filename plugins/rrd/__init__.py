@@ -51,11 +51,11 @@ class RRD():
         #    if hasattr(area, 'rrd_graph'):
         #        self.parse_area(area)
 
-        offset = 100  # wait 100 seconds for 1-Wire to update values
+        offset = 1  # wait 100 seconds for 1-Wire to update values
         self._sh.scheduler.add('rrd', self._update_rrd, cycle=self.step, offset=offset, prio=5)
 
         # create graphs
-        #self.generate_graphs()
+        self.generate_graphs()
 
     def stop(self):
         self.alive = False
@@ -71,8 +71,10 @@ class RRD():
                 )
             except Exception, e:
                 logger.warning("error updating rrd for %s: %s" % (itempath, e))
+        self.generate_graphs()
 
     def parse_item(self, item):
+        rrdb = self._rrd_dir + item.id() + '.rrd'
         if 'rrd' in item.conf:
             rrd_min = False
             rrd_max = False
@@ -83,36 +85,47 @@ class RRD():
                 rrd_max = True
             # adding average method to the item
             item.average = types.MethodType(self.average, item, item.__class__)
-            rrdb = self._rrd_dir + item.id() + '.rrd'
-            print rrdb
             self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
 
         if 'rrd_png' in item.conf:
-            print item.return_parent()
-
-        return
-
-        if hasattr(item, 'rrd_graph'):
-            if not self._sh.string2bool(item.rrd_graph):
-                return
-            graph = []
-            area, sep, name = item.path.rpartition('.')
-            area = item.area
-            title = area.name + ': ' + item.name
-            graph.append('DEF:' + name + '=' + rrdb + ':' + name + ':AVERAGE')
-            graph.append('LINE1:' + name + '#' + self._linecolor + ':')
-            if hasattr(item, 'rrd_opt'):
-                if isinstance(item.rrd_opt, list):
-                    graph += item.rrd_opt
-                else:
-                    graph.append(item.rrd_opt)
+            parent = str(item.return_parent())
+            tmp, sep, item_id = item.id().rpartition('.')
+            if '__main__' in parent:
+                title = str(item)
             else:
-                if name == 'temperature':
-                    graph += ['--vertical-label', '°C']
-                elif name == 'humidity':
-                    graph += ['--vertical-label', '%']
+                title = parent + ': ' + str(item)
+            graph = []
+            if isinstance(item.conf['rrd_png'], list): # graph for multiple items
+                for i_path in item.conf['rrd_png']:
+                    i_item = self._sh.return_item(i_path)
+                    if i_item != None:
+                        graph += self._parse_item(i_item)
+                if 'rrd_opt' not in item.conf:
+                    logger.warning("rrd_opt not specified for {0}. Ignoring.".format(item.id()))
+                    return
+            else:  # graph for one item
+                graph += self._parse_item(item)
+                graph.append('LINE1:' + item_id + '#' + self._linecolor + ':')
+            if 'rrd_opt' in item.conf:
+                if isinstance(item.conf['rrd_opt'], list):
+                    graph += item.conf['rrd_opt']
+                else:
+                    graph.append(item.conf['rrd_opt'])
+            self._graphs[item.id()] = {'obj': item, 'title': title, 'graph': graph}
 
-            self._graphs[item.path] = {'obj': item, 'title': title, 'graph': graph}
+    def _parse_item(self, item):
+            if 'rrd' not in item.conf:
+                logger.warning("Could not generate png for {0}. No rrd available. Add 'rrd = yes' to {0}".format(item.id()))
+                return []
+            rrdb = self._rrd_dir + item.id() + '.rrd'
+            tmp, sep, item_id = item.id().rpartition('.')
+            graph = []
+            graph.append('DEF:' + item_id + '=' + rrdb + ':' + item_id + ':AVERAGE')
+            if item_id == 'temperature':
+                graph += ['--vertical-label', '°C']
+            elif item_id == 'humidity':
+                graph += ['--vertical-label', '%']
+            return graph
 
     def parse_area(self, area):
         if not hasattr(area, 'rrd_graph'):
@@ -155,8 +168,8 @@ class RRD():
     def _graph(self, graph, timeframe='1d'):
         defs = []
         obj = graph['obj']
-        png = self._png_dir + obj.path + '-' + timeframe + '.png'
-        web = self._web_dir + obj.path + '-' + timeframe + '.png'
+        png = self._png_dir + obj.id() + '-' + timeframe + '.png'
+        web = self._web_dir + obj.id() + '-' + timeframe + '.png'
         try:
             width, height, string = rrdtool.graph(
                 png,
