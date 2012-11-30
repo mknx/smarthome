@@ -23,10 +23,10 @@ import logging
 import os
 import types
 import rrdtool
-<<<<<<< HEAD
+
 logger = logging.getLogger('')
 
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
+
 class RRD():
 
     def __init__(self, smarthome, step=300, style=[], rrd_dir='/usr/local/smarthome/var/rrd/', png_dir='/var/www/visu/rrd/', web_dir='/rrd/'):
@@ -42,38 +42,29 @@ class RRD():
 
     def run(self):
         self.alive = True
-<<<<<<< HEAD
-
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
         # create rrds
         for itempath in self._rrds:
             rrd = self._rrds[itempath]
             if not os.path.isfile(rrd['rrdb']):
                 self._create(rrd)
-<<<<<<< HEAD
-
         offset = 100  # wait 100 seconds for 1-Wire to update values
         self._sh.scheduler.add('rrd', self._update_cycle, cycle=self.step, offset=offset, prio=5)
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
         # create graphs
         #self.generate_graphs()
 
     def stop(self):
         self.alive = False
 
-<<<<<<< HEAD
     def _update_cycle(self):
         for itempath in self._rrds:
             rrd = self._rrds[itempath]
             value = 'N:' + str(float(rrd['item']()))
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
             try:
                 rrdtool.update(
                     rrd['rrdb'],
                     value
                 )
             except Exception, e:
-<<<<<<< HEAD
                 logger.warning("error updating rrd for %s: %s" % (itempath, e))
                 return
             if 'visu' in rrd['item'].conf:
@@ -137,7 +128,6 @@ class RRD():
         while data[-1] == None and len(data) > 1:
             del data[-1]
         return {'id': item.id(), 'frame': frame, 'start': start, 'step': step, 'data': data}
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
 
     def parse_logic(self, logic):
         pass
@@ -145,9 +135,7 @@ class RRD():
     def update_item(self, item, caller=None, source=None):
         pass
 
-<<<<<<< HEAD
     def _average(self, item, timeframe):
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
         values = self.read(item, timeframe)
         if values == None:
             return None
@@ -159,9 +147,7 @@ class RRD():
 
     def read(self, item, timeframe='1d', cf='AVERAGE'):
         if not hasattr(item, 'rrd'):
-<<<<<<< HEAD
             logger.warning("rrd not enabled for %s" % item)
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
             return
         rrdb = self._rrd_dir + item.path + '.rrd'
         try:
@@ -170,29 +156,24 @@ class RRD():
                 cf,
                 '--start', 'e-' + timeframe
             )
-<<<<<<< HEAD
             return list(i[0] for i in data)  # flatten reply
         except Exception, e:
             logger.warning("error reading %s data: %s" % (item, e))
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
             return None
 
     def _create(self, rrd):
         insert = []
-<<<<<<< HEAD
         tmp, sep, item_id = rrd['item'].id().rpartition('.')
         insert.append('DS:' + item_id + ':GAUGE:' + str(2 * self.step) + ':U:U')
         if rrd['min']:
             insert.append('RRA:MIN:0.5:' + str(int(86400 / self.step)) + ':1825')  # 24h/5y
         if rrd['max']:
             insert.append('RRA:MAX:0.5:' + str(int(86400 / self.step)) + ':1825')  # 24h/5y
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
         try:
             rrdtool.create(
                 rrd['rrdb'],
                 '--step', str(self.step),
                 insert,
-<<<<<<< HEAD
                 'RRA:AVERAGE:0.5:1:' + str(int(86400 / self.step) * 7),     # 7 days
                 'RRA:AVERAGE:0.5:' + str(int(1800 / self.step)) + ':1488',  # 0.5h/31 days
                 'RRA:AVERAGE:0.5:' + str(int(3600 / self.step)) + ':8760',  # 1h/365 days
@@ -238,4 +219,3 @@ class RRD():
     #        vars(obj)['rrd_img_' + timeframe] = "<img src=\"%s\" width=\"%s\" height=\"%s\" alt=\"%s\" />" % (web, width, height, graph['title'])
     #    except Exception, e:
     #        logger.warning("error creating graph for %s: %s" % (png, e))
->>>>>>> 8bcc254322874b68c73fbc3f9d86b0226f266957
