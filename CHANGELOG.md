@@ -1,15 +1,16 @@
 Roadmap
 =======
-   * rrdtool plugin: build round robin databases and create graphs,  sh.office.temperature.average('1h')
-   * visu plugin: plot rrd with flot
    * dwd plugin: Deutscher Wetterdienst - weather forecast and warnings
    * Squeezeserver plugin
+   * Denon plugin
 
 # 0.8
 
 ## Features
-   * Russound plugin
+   * Russound plugin: RIO
    * Visu plugin: adding visu_groupsi
+   * visu plugin: plot rrd with flot
+   * rrdtool plugin: build round robin databases and create graphs,  sh.office.temperature.average('1h')
 
 
 # 0.7
