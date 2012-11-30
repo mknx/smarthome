@@ -92,6 +92,8 @@ def return_html(item):
                 html += '<div>{0}: <img data-sh="{1}" src="/img/t.png" class="switch" /></div>\n'.format(item, item.id())
             elif visu == 'push':
                 html += '<div>{0}: <img data-sh="{1}" src="/img/t.png" class="push" /></div>\n'.format(item, item.id())
+        elif visu == 'rrd':
+            html += '<div data-rrd="{1}=\'label\': \'{0}\'" data-frame="1d" style="margin:20px;width:device-width;height:300px"></div>\n'.format(item, item.id())
     return html
 
 
