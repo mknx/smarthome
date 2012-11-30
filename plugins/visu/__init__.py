@@ -28,6 +28,7 @@ import hashlib
 import base64
 import threading
 import json
+import time
 import array
 
 import generator
@@ -77,8 +78,8 @@ class WebSocket(asyncore.dispatcher):
         for item in self._sh:
             html = generator.return_tree(item)
             item_file = "/gen/{0}.html".format(item.id())
-            if 'data-sh' in html:
-                index += '<li><a href="{0}">{1}</a></li>\n'.format(item_file, item)
+            if 'data-sh' in html or 'data-rrd' in html:
+                index += '<li><a href="{0}" data-ajax="false">{1}</a></li>\n'.format(item_file, item)
                 page = header
                 page += '<div data-role="page" id="{0}">\n'.format(item.id())
                 page += '    <div data-role="header"><h3>{0}</h3></div>\n'.format(item)
@@ -135,6 +136,13 @@ class WebSocket(asyncore.dispatcher):
         data = json.dumps(['item', [item.id(), item()]])
         for client in self.clients:
             client.update(item.id(), data, source)
+
+    def update_rrd(self, item):
+        time = self._sh.now()
+        time = int(time.strftime("%s")) + time.utcoffset().seconds
+        data = json.dumps(['rrd', {'id': item.id(), 'time': time, 'value': float(item())}])
+        for client in self.clients:
+            client.json_send(data)
 
     def dialog(self, header, content):
         data = json.dumps(['dialog', [header, content]])
@@ -211,6 +219,16 @@ class WebSocketHandler(asynchat.async_chat):
             if name in self.logics:
                 logger.info("Client %s triggerd logic %s with '%s'" % (self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
+        elif command == 'rrd':
+            path = data[0]
+            frame = str(data[1])
+            if path in self.items:
+                if hasattr(self.items[path], 'export'):
+                    self.json_send(json.dumps(['rrd', self.items[path].export(frame)]))
+                else:
+                    logger.info("Client %s requested invalid rrd: %s." % (self.addr, path))
+            else:
+                logger.info("Client %s requested invalid item: %s" % (self.addr, path))
 
     def parse_header(self, data):
         for line in data.splitlines():
