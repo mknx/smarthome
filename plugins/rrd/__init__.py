@@ -58,7 +58,7 @@ class RRD():
     def _update_cycle(self):
         for itempath in self._rrds:
             rrd = self._rrds[itempath]
-            value = 'N:' + str(float(rrd['item']()))
+            value = 'N:' + str(round(rrd['item'](), 4))
             try:
                 rrdtool.update(
                     rrd['rrdb'],
@@ -67,8 +67,14 @@ class RRD():
             except Exception, e:
                 logger.warning("error updating rrd for %s: %s" % (itempath, e))
                 return
-            if 'visu' in rrd['item'].conf:
-                self._sh.visu.update_rrd(rrd['item'])
+        data = []
+        time = self._sh.now()
+        time = int(time.strftime("%s")) + time.utcoffset().seconds
+        for itempath in self._rrds:
+            item = self._rrds[itempath]['item']
+            if 'visu' in item.conf:
+                data.append([item.id(), item()])
+        self._sh.visu.send_data(['rrd', {'time': time, 'data': data}])
     #self.generate_graphs()
 
     def parse_item(self, item):
@@ -109,7 +115,6 @@ class RRD():
             #    else:
             #        graph.append(item.conf['rrd_opt'])
             #self._graphs[item.id()] = {'obj': item, 'title': title, 'graph': graph}
-
     def _simplify(self, value):
         if value[0] != None:
             return round(value[0], 2)
@@ -125,8 +130,10 @@ class RRD():
         start, end, step = meta
         start += self._sh.now().utcoffset().seconds
         data = map(self._simplify,  data)
-        while data[-1] == None and len(data) > 1:
-            del data[-1]
+        if data[-2] == None:
+            del data[-2]
+        if data[-1] == None:
+            data[-1] = item()
         return {'id': item.id(), 'frame': frame, 'start': start, 'step': step, 'data': data}
 
     def parse_logic(self, logic):

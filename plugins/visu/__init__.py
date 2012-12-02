@@ -137,10 +137,8 @@ class WebSocket(asyncore.dispatcher):
         for client in self.clients:
             client.update(item.id(), data, source)
 
-    def update_rrd(self, item):
-        time = self._sh.now()
-        time = int(time.strftime("%s")) + time.utcoffset().seconds
-        data = json.dumps(['rrd', {'id': item.id(), 'time': time, 'value': float(item())}])
+    def send_data(self, data):
+        data = json.dumps(data)
         for client in self.clients:
             client.json_send(data)
 
@@ -165,7 +163,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.logics = logics
 
     def json_send(self, data):
-        logger.debug("visu: dummy json_send with: {0}".format(data))
+        logger.warning("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
 
     def collect_incoming_data(self, data):
         self.ibuffer += data
@@ -204,6 +202,8 @@ class WebSocketHandler(asynchat.async_chat):
             else:
                 logger.info("Client %s want to update invalid item: %s" % (self.addr, path))
         elif command == 'monitor':
+            if data == [None]:
+                return
             for path in list(set(data).difference(set(self.monitor))):
                 if path in self.items:
                     if 'visu_img' in self.items[path].conf:
