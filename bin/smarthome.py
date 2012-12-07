@@ -160,8 +160,6 @@ class SmartHome():
             os._exit(0)
 
         # Init Smarthome
-        # Tools
-        self.tools = lib.tools.Tools()
         try:
             config = ConfigObj(smarthome_conf)
             for attr in config:
@@ -182,6 +180,8 @@ class SmartHome():
             self._tzinfo = self._utctz
 
         logger.info("Init SmartHome.py v%s" % VERSION)
+        # Tools
+        self.tools = lib.tools.Tools()
         # init sun
         if hasattr(self, '_lon') and hasattr(self, '_lat'):
             if not hasattr(self, '_elev'):

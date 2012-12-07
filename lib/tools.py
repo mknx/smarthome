@@ -21,13 +21,19 @@
 
 import logging
 import math
+import datetime
 
 logger = logging.getLogger('')
 
+
 class Tools():
+
+    def __init__(self):
+        self._start = datetime.datetime.now()
+
     def ping(self, host):
         try:
-            retcode = subprocess.call("ping -W 1 -c 1 " + host + " > /dev/null" , shell=True)
+            retcode = subprocess.call("ping -W 1 -c 1 " + host + " > /dev/null", shell=True)
             if retcode == 0:
                 return True
             else:
@@ -36,6 +42,8 @@ class Tools():
             return False
 
     def dewpoint(self, t, rf):
-        log = math.log((rf+0.01)/100) # + 0.01 to 'cast' float
-        return round((241.2*log+4222.03716*t/(241.2+t))/(17.5043-log-17.5043*t/(241.2+t)), 2)
+        log = math.log((rf + 0.01) / 100)  # + 0.01 to 'cast' float
+        return round((241.2 * log + 4222.03716 * t / (241.2 + t)) / (17.5043 - log - 17.5043 * t / (241.2 + t)), 2)
 
+    def runtime(self):
+        return datetime.datetime.now() - self._start
