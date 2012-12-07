@@ -46,8 +46,8 @@ class AsynChat(asynchat.async_chat):
         try:
             self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
             err = self.socket.connect_ex(self.addr)
-            if err != 0:
-                raise socket.error(err)
+            #if err != 0:
+            #    raise socket.error(err)
         except Exception, e:
             self.connected = False
             logger.error('{0}: could not connect to {1}:{2}: {3}'.format(self.__class__.__name__, self.addr[0], self.addr[1], e))

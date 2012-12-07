@@ -13,13 +13,16 @@ git config --global user.name "Your Name"
 git config --global user.email you@example.com
 ```
 
-## Webpage
-```
-git clone -b gh-pages git@github.com:mknx/smarthome.git sh-pages
-```
+## Getting the Source
+git clone git://github.com/mknx/smarthome.git
 
 # Coding
 
 ## pep8
 `apt-get install pep8`
 `pep8 yourcode.py`
+
+# Homepage
+```
+git clone -b gh-pages git@github.com:mknx/smarthome.git sh-pages
+```

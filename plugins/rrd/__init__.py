@@ -58,7 +58,7 @@ class RRD():
     def _update_cycle(self):
         for itempath in self._rrds:
             rrd = self._rrds[itempath]
-            value = 'N:' + str(round(rrd['item'](), 4))
+            value = 'N:' + str(float(rrd['item']()))
             try:
                 rrdtool.update(
                     rrd['rrdb'],
