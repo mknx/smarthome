@@ -23,7 +23,6 @@ import logging
 import os
 import types
 import rrdtool
-import subprocess
 
 logger = logging.getLogger('')
 
@@ -48,7 +47,6 @@ class RRD():
             rrd = self._rrds[itempath]
             if not os.path.isfile(rrd['rrdb']):
                 self._create(rrd)
-
         offset = 100  # wait 100 seconds for 1-Wire to update values
         self._sh.scheduler.add('rrd', self._update_cycle, cycle=self.step, offset=offset, prio=5)
         # create graphs
