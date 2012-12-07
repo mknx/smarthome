@@ -2,11 +2,11 @@
 #
 
 INDEX=0
-CONF=/usr/local/smarthome/etc/smarthome.conf
+CONF=/usr/local/smarthome/items/itemmania.conf
 
-echo "[nodemania]" >> $CONF
+echo "[itemmania]" >> $CONF
 while [ $INDEX -le 1000 ] ; do
-    echo "  [[node$INDEX]]" >> $CONF
+    echo "  [[item$INDEX]]" >> $CONF
     echo "    type = num" >> $CONF
     echo "    visu = div" >> $CONF
     INDEX=$(($INDEX+1))
