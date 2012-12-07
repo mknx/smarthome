@@ -10,6 +10,8 @@
         <link rel="stylesheet" href="/css/my.css" />
         <script src="/js/jquery.min.js"></script>
         <script src="/js/jquery.mobile.min.js"></script>
+        <script src="/js/jquery.flot.min.js"></script>
+        <script src="/js/jquery.flot.time.min.js"></script>
         <script src="/js/smarthome.min.js"></script>
         <script src="/js/my.smarthome.js"></script>
     </head>
@@ -57,6 +59,11 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
             <p><img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="22" src="/img/example.png" /> <img data-sh="example.set" class="set" style="width: 100px; height: 100px" value="77" src="/img/example.png" /> Value of example.set = <span data-sh="example.set"></span></p>
             <p>This button sets the value of the item to the specified value. Currently only numeric (integer and float) values are supported!</p>
         </div>
+        <h2>RRD Graphs</h2>
+        <div data-role="fieldcontain">
+            <div data-rrd="example.rrd" data-frame="1h" style="margin:1%;width:device-width;height:300px"></div>
+            <p>Print a graph for the item with the specified timeframe. For the frame you could choose beetwen 'h' = hour, 'd' = day, 'm' = month and 'y' = year.</p>
+        </div>
     </div> <!-- /content -->
 
     <div data-role="footer" data-position="fixed">
@@ -65,7 +72,7 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
                 <li><a href="/example.html#html">HTML</a></li>
                 <li><a href="/example.html#trigger">Logic Trigger</a></li>
                 <li><a href="/example.html#form">Form</a></li>
-                <li><a href="/gen/example.html">Generated</a></li>
+                <li><a href="/gen/" data-ajax="false">Generated</a></li>
             </ul>
         </div><!-- /navbar -->
     </div><!-- /footer -->
@@ -95,7 +102,7 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
                 <li><a href="/example.html#html">HTML</a></li>
                 <li><a href="/example.html#trigger">Logic Trigger</a></li>
                 <li><a href="/example.html#form">Form</a></li>
-                <li><a href="/gen/example.html">Generated</a></li>
+                <li><a href="/gen/" data-ajax="false">Generated</a></li>
             </ul>
         </div><!-- /navbar -->
     </div><!-- /footer -->
@@ -170,7 +177,7 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
                 <li><a href="/example.html#html">HTML</a></li>
                 <li><a href="/example.html#trigger">Logic Trigger</a></li>
                 <li><a href="/example.html#form">Form</a></li>
-                <li><a href="/gen/example.html">Generated</a></li>
+                <li><a href="/gen/" data-ajax="false">Generated</a></li>
             </ul>
         </div><!-- /navbar -->
     </div><!-- /footer -->

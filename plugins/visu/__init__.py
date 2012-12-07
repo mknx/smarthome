@@ -28,6 +28,7 @@ import hashlib
 import base64
 import threading
 import json
+import time
 import array
 
 import generator
@@ -75,10 +76,10 @@ class WebSocket(asyncore.dispatcher):
         index += '    <div data-role="content">\n\n'
         index += '<ul data-role="listview" data-inset="true">\n'
         for item in self._sh:
-            html = generator.return_tree(item)
+            html = generator.return_tree(self._sh, item)
             item_file = "/gen/{0}.html".format(item.id())
-            if 'data-sh' in html:
-                index += '<li><a href="{0}">{1}</a></li>\n'.format(item_file, item)
+            if 'data-sh' in html or 'data-rrd' in html:
+                index += '<li><a href="{0}" data-ajax="false">{1}</a></li>\n'.format(item_file, item)
                 page = header
                 page += '<div data-role="page" id="{0}">\n'.format(item.id())
                 page += '    <div data-role="header"><h3>{0}</h3></div>\n'.format(item)
@@ -136,6 +137,11 @@ class WebSocket(asyncore.dispatcher):
         for client in self.clients:
             client.update(item.id(), data, source)
 
+    def send_data(self, data):
+        data = json.dumps(data)
+        for client in self.clients:
+            client.json_send(data)
+
     def dialog(self, header, content):
         data = json.dumps(['dialog', [header, content]])
         for client in self.clients:
@@ -157,7 +163,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.logics = logics
 
     def json_send(self, data):
-        logger.debug("visu: dummy json_send with: {0}".format(data))
+        logger.warning("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
 
     def collect_incoming_data(self, data):
         self.ibuffer += data
@@ -196,6 +202,8 @@ class WebSocketHandler(asynchat.async_chat):
             else:
                 logger.info("Client %s want to update invalid item: %s" % (self.addr, path))
         elif command == 'monitor':
+            if data == [None]:
+                return
             for path in list(set(data).difference(set(self.monitor))):
                 if path in self.items:
                     if 'visu_img' in self.items[path].conf:
@@ -211,6 +219,16 @@ class WebSocketHandler(asynchat.async_chat):
             if name in self.logics:
                 logger.info("Client %s triggerd logic %s with '%s'" % (self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
+        elif command == 'rrd':
+            path = data[0]
+            frame = str(data[1])
+            if path in self.items:
+                if hasattr(self.items[path], 'export'):
+                    self.json_send(json.dumps(['rrd', self.items[path].export(frame)]))
+                else:
+                    logger.info("Client %s requested invalid rrd: %s." % (self.addr, path))
+            else:
+                logger.info("Client %s requested invalid item: %s" % (self.addr, path))
 
     def parse_header(self, data):
         for line in data.splitlines():
