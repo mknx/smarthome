@@ -76,7 +76,7 @@ class WebSocket(asyncore.dispatcher):
         index += '    <div data-role="content">\n\n'
         index += '<ul data-role="listview" data-inset="true">\n'
         for item in self._sh:
-            html = generator.return_tree(item)
+            html = generator.return_tree(self._sh, item)
             item_file = "/gen/{0}.html".format(item.id())
             if 'data-sh' in html or 'data-rrd' in html:
                 index += '<li><a href="{0}" data-ajax="false">{1}</a></li>\n'.format(item_file, item)

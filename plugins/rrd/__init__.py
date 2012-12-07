@@ -90,31 +90,32 @@ class RRD():
             item.average = types.MethodType(self._average, item, item.__class__)
             item.export = types.MethodType(self._export, item, item.__class__)
             self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
-        if 'rrd_png' in item.conf:
-            parent = str(item.return_parent())
-            tmp, sep, item_id = item.id().rpartition('.')
-            if '__main__' in parent:
-                title = str(item)
-            else:
-                title = parent + ': ' + str(item)
-            graph = []
-            #if isinstance(item.conf['rrd_png'], list):  # graph for multiple items
-            #    for i_path in item.conf['rrd_png']:
-            #        i_item = self._sh.return_item(i_path)
-            #        if i_item != None:
-            #            graph += self._parse_item(i_item)
-            #    if 'rrd_opt' not in item.conf:
-            #        logger.warning("rrd_opt not specified for {0}. Ignoring.".format(item.id()))
-            #        return
-            #else:  # graph for one item
-            #    graph += self._parse_item(item)
-            #    graph.append('LINE1:' + item_id + '#' + self._linecolor + ':')
-            #if 'rrd_opt' in item.conf:
-            #    if isinstance(item.conf['rrd_opt'], list):
-            #        graph += item.conf['rrd_opt']
-            #    else:
-            #        graph.append(item.conf['rrd_opt'])
-            #self._graphs[item.id()] = {'obj': item, 'title': title, 'graph': graph}
+#        if 'rrd_png' in item.conf:
+#            parent = str(item.return_parent())
+#            tmp, sep, item_id = item.id().rpartition('.')
+#            if '__main__' in parent:
+#                title = str(item)
+#            else:
+#                title = parent + ': ' + str(item)
+#            graph = []
+#            if isinstance(item.conf['rrd_png'], list):  # graph for multiple items
+#                for i_path in item.conf['rrd_png']:
+#                    i_item = self._sh.return_item(i_path)
+#                    if i_item != None:
+#                        graph += self._parse_item(i_item)
+#                if 'rrd_opt' not in item.conf:
+#                    logger.warning("rrd_opt not specified for {0}. Ignoring.".format(item.id()))
+#                    return
+#            else:  # graph for one item
+#                graph += self._parse_item(item)
+#                graph.append('LINE1:' + item_id + '#' + self._linecolor + ':')
+#            if 'rrd_opt' in item.conf:
+#                if isinstance(item.conf['rrd_opt'], list):
+#                    graph += item.conf['rrd_opt']
+#                else:
+#                    graph.append(item.conf['rrd_opt'])
+#            self._graphs[item.id()] = {'obj': item, 'title': title, 'graph': graph}
+
     def _simplify(self, value):
         if value[0] != None:
             return round(value[0], 2)
@@ -181,10 +182,10 @@ class RRD():
                 rrd['rrdb'],
                 '--step', str(self.step),
                 insert,
-                'RRA:AVERAGE:0.5:1:' + str(int(86400 / self.step) * 7),     # 7 days
-                'RRA:AVERAGE:0.5:' + str(int(1800 / self.step)) + ':1488',  # 0.5h/31 days
-                'RRA:AVERAGE:0.5:' + str(int(3600 / self.step)) + ':8760',  # 1h/365 days
-                'RRA:AVERAGE:0.5:' + str(int(86400 / self.step)) + ':1825'  # 24h/5y
+                'RRA:AVERAGE:0.5:1:' + str(int(86400 / self.step) * 7 + 8),  # 7 days
+                'RRA:AVERAGE:0.5:' + str(int(1800 / self.step)) + ':1536',   # 0.5h/32 days
+                'RRA:AVERAGE:0.5:' + str(int(3600 / self.step)) + ':9600',   # 1h/400 days
+                'RRA:AVERAGE:0.5:' + str(int(86400 / self.step)) + ':1826'   # 24h/5y
             )
             logger.debug("Creating rrd ({0}) for {1}.".format(rrd['rrdb'], rrd['item']))
         except Exception, e:

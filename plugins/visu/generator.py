@@ -24,7 +24,7 @@ import logging
 logger = logging.getLogger('')
 
 
-def return_html(item):
+def return_html(smarthome, item):
     html = ''
     if 'visu' in item.conf:
         visu = item.conf['visu']
@@ -93,13 +93,24 @@ def return_html(item):
             elif visu == 'push':
                 html += '<div>{0}: <img data-sh="{1}" src="/img/t.png" class="push" /></div>\n'.format(item, item.id())
         elif visu == 'rrd':
-            html += '<div data-rrd="{1}=\'label\': \'{0}\'" data-frame="1d" style="margin:20px;width:device-width;height:300px"></div>\n'.format(item, item.id())
+            if 'visu_opt' in item.conf:
+                if isinstance(item.conf['visu_opt'], list):
+                    rrd = []
+                    for path in item.conf['visu_opt']:
+                        vitem = smarthome.return_item(path)
+                        if vitem != None:
+                            if 'rrd' in vitem.conf:
+                                rrd.append("{0}='label': '{1}'".format(vitem.id(), vitem))
+                    rrd = "|".join(rrd)
+            else:
+                rrd = "{0}='label': '{1}'".format(item.id(), item)
+            html += '<div data-rrd="{0}" data-frame="1d" style="margin:20px;width:device-width;height:300px"></div>\n'.format(rrd)
     return html
 
 
-def return_tree(item):
+def return_tree(smarthome, item):
     html = ''
-    html += return_html(item)
+    html += return_html(smarthome, item)
     for child in item:
-        html += return_tree(child)
+        html += return_tree(smarthome, child)
     return html
