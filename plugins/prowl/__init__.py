@@ -54,6 +54,7 @@ class Prowl():
             data['url'] = url[:512]
 
         try:
-            urllib2.urlopen(self._apiuri, urllib.urlencode(data), 4)
+            p = urllib2.urlopen(self._apiuri, urllib.urlencode(data), 4)
+            p.close()
         except Exception, e:
             logger.warning("Could not send prowl notification: {0}. Error: {1}".format(event, e))
