@@ -16,6 +16,9 @@ git config --global user.email you@example.com
 ## Getting the Source
 git clone git://github.com/mknx/smarthome.git
 
+## Update the Code
+git pull
+
 # Coding
 
 ## pep8
