@@ -34,6 +34,7 @@ import types
 import datetime
 import locale
 import traceback
+import gc
 
 from configobj import ConfigObj
 from dateutil.tz import gettz
@@ -220,6 +221,9 @@ class SmartHome():
         self._plugins.start()
         self.__logics = lib.logic.Logics(self, configfile=self._logic_conf)
 
+        # garbage collection
+        self.scheduler.add('sh.gc', self._garbage_collection, prio=8, cron=['init', '4 2 * *'], offset=0)
+
         while self.alive:
             if self.socket_map != {}:
                 asyncore.loop(timeout=1, count=1, map=self.socket_map)
@@ -269,6 +273,10 @@ class SmartHome():
         logger.info("SmartHome.py stopped")
         logging.shutdown()
         exit()
+
+    def _garbage_collection(self):
+        c = gc.collect()
+        logger.debug("Garbage collector: collected {0} objects.".format(c))
 
     def restart_logics(self, signum=None, frame=None):
         pass
