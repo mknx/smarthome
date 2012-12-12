@@ -25,6 +25,7 @@ import asynchat
 import asyncore
 import socket
 import threading
+import urllib
 
 logger = logging.getLogger('')
 
@@ -53,6 +54,7 @@ class TCPHandler(asynchat.async_chat):
         data = self.buffer
         self.buffer = ''
         self.parser(self.source, self.dest, data.strip())
+        self.close()
 
 
 class TCPDispatcher(asyncore.dispatcher):
@@ -78,6 +80,62 @@ class TCPDispatcher(asyncore.dispatcher):
             sock, (ip, port) = pair
             logger.debug('%s Incoming connection from %s:%s' % (self.dest, ip, port))
             TCPHandler(self.socket_map, self.parser, self.dest, sock, ip)
+
+
+class HTTPHandler(asynchat.async_chat):
+
+    terminator = "\r\n\r\n"
+
+    def __init__(self, socket_map, parser, dest, sock, source):
+        asynchat.async_chat.__init__(self, sock=sock, map=socket_map)
+        self.parser = parser
+        self._lock = threading.Lock()
+        self.dest = dest
+        self.buffer = ''
+        self.source = source
+
+    def initiate_send(self):
+        self._lock.acquire()
+        asynchat.async_chat.initiate_send(self)
+        self._lock.release()
+
+    def collect_incoming_data(self, data):
+        self.buffer += data
+
+    def found_terminator(self):
+        data = self.buffer
+        self.buffer = ''
+        for line in data.splitlines():
+            if line.startswith('GET'):
+                request = line.split(' ')[1].strip('/')
+                self.parser(self.source, self.dest, urllib.unquote(request))
+                break
+        self.close()
+
+
+class HTTPDispatcher(asyncore.dispatcher):
+
+    def __init__(self, parser, socket_map, ip, port):
+        asyncore.dispatcher.__init__(self, map=socket_map)
+        self.socket_map = socket_map
+        self.parser = parser
+        self.dest = 'http:' + ip + ':' + port
+        try:
+            self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.set_reuse_addr()
+            self.bind((ip, int(port)))
+            self.listen(5)
+            self.listening = True
+        except Exception, e:
+            logger.error("Could not bind TCP socket for HTTP on %s:%s" % (ip, port))
+            self.listening = False
+
+    def handle_accept(self):
+        pair = self.accept()
+        if pair is not None:
+            sock, (ip, port) = pair
+            logger.debug('%s Incoming connection from %s:%s' % (self.dest, ip, port))
+            HTTPHandler(self.socket_map, self.parser, self.dest, sock, ip)
 
 
 class UDPDispatcher(asyncore.dispatcher):
@@ -141,15 +199,18 @@ class Network():
     socket_warning = 10
     socket_warning = 2
 
-    def __init__(self, smarthome, ip='0.0.0.0', port='2727', udp='no', tcp='no', udp_acl='*', tcp_acl='*'):
+    def __init__(self, smarthome, ip='0.0.0.0', port='2727', udp='no', tcp='no', http='no', udp_acl='*', tcp_acl='*', http_acl='*'):
         self._sh = smarthome
         self.socket_map = smarthome.socket_map
         self.tcp_acl = self.parse_acl(tcp_acl)
         self.udp_acl = self.parse_acl(udp_acl)
+        self.http_acl = self.parse_acl(http_acl)
         if tcp == 'yes':
             self.add_listener('tcp', ip, port, tcp_acl, generic=True)
         if udp == 'yes':
             self.add_listener('udp', ip, port, udp_acl, generic=True)
+        if http != 'no':
+            self.add_listener('http', ip, http, http_acl, generic=True)
 
     # XXX
     #def tcp(self, host, port, data):
@@ -165,14 +226,13 @@ class Network():
             dispatcher = TCPDispatcher(self.parse_input, self.socket_map, ip, port)
         elif proto == 'udp':
             dispatcher = UDPDispatcher(self.parse_input, self.socket_map, ip, port)
+        elif proto == 'http':
+            dispatcher = HTTPDispatcher(self.parse_input, self.socket_map, ip, port)
         else:
             return
-
         if not dispatcher.listening:
             return False
-
         acl = self.parse_acl(acl)
-
         if generic:
             self.generic_listeners[dest] = {'items': {}, 'logics': {}, 'acl': acl}
         else:
