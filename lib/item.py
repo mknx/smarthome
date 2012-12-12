@@ -150,6 +150,10 @@ class Item():
             sh = self._sh
             value = eval(self._eval)
             self._update(value, caller, source)
+ 
+    def __del__(self):
+        # dummy for garbage collection
+        logger.warning("Deleting Item: {0}".format(self._path))
 
     def __call__(self, value=None, caller='Logic', source=None):
         if value == None or self._type == None:
