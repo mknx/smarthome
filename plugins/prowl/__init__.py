@@ -55,6 +55,9 @@ class Prowl():
 
         try:
             p = urllib2.urlopen(self._apiuri, urllib.urlencode(data), 4)
+            p.read(1)
+            p.fp._sock.recv=None
             p.close()
+            del(p)
         except Exception, e:
             logger.warning("Could not send prowl notification: {0}. Error: {1}".format(event, e))

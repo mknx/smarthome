@@ -160,5 +160,6 @@ class iCal():
                         event['exdate'].append(self._parse_date(value, tzinfo, par))
                     except Exception, e:
                         logger.warning("Problem parsing: {0}: {1}".format(file, e))
+        ical.fp._sock.recv=None
         ical.close()
         return events
