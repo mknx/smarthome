@@ -29,6 +29,7 @@ from dateutil.tz import tzutc
 
 logger = logging.getLogger('')
 
+
 class Sun():
 
     def __init__(self, lon, lat, elev):
@@ -59,7 +60,7 @@ class Sun():
             next_setting = self.obs.next_setting(self.sun).datetime()
         return next_setting.replace(tzinfo=tzutc())
 
-    def pos(self, offset=None): # offset in minutes
+    def pos(self, offset=None):  # offset in minutes
         now = datetime.datetime.utcnow()
         if offset:
             self.obs.date = now + relativedelta(minutes=offset)
@@ -67,4 +68,3 @@ class Sun():
             self.obs.date = now
         angle = ephem.Sun(self.obs)
         return (angle.az, angle.alt)
-

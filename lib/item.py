@@ -20,7 +20,6 @@
 #########################################################################
 
 import logging
-import configobj
 import datetime
 import threading
 import time
