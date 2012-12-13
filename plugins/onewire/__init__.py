@@ -136,7 +136,7 @@ class Owconnection():
             return payload.strip('\x00').split(',')
         else:
             payload = payload.strip()
-            if payload.replace('.', '').isdigit():
+            if payload.replace('.', '').lstrip('-').isdigit():
                 return float(payload)
             else:
                 return payload
@@ -236,9 +236,7 @@ class OneWire(Owconnection):
             except Exception, e:
                 logger.debug("Could not read {0} ({1}). Exception e: {2}".format(item, sensor, e))
                 continue
-            try:
-                value = float(value)
-            except Exception, e:
+            if type(value) != float:
                 logger.warning("OneWire: value {0} for {1} is not a float.".format(repr(value), path))
                 continue
             if typ == 'temperature':
