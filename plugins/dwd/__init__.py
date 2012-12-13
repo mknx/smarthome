@@ -21,7 +21,8 @@
 
 import logging
 import csv
-import ftplib, socket
+import ftplib
+import socket
 import re
 import datetime
 import dateutil.parser
@@ -111,7 +112,7 @@ class DWD():
     def warnings(self, region, location):
         directory = 'gds/specials/warnings'
         warnings = []
-        filepath = "%s/%s/*_%s_*" % ( directory, region, location)
+        filepath = "{0}/{1}/*_{2}_*".format(directory, region, location)
         files = self._retr_list(filepath)
         for filename in files:
             fb = self._retr_file(filename)
@@ -125,18 +126,17 @@ class DWD():
             end = end.replace(tzinfo=tz)
             notice = dateutil.parser.parse(dates[2])
             notice = notice.replace(tzinfo=tz)
-
             if end > now:
                 area_splitter = re.compile(r'^\r\r\n', re.M)
                 area = area_splitter.split(fb)
                 code = int(re.findall(r"\d\d", area[0])[0])
-                desc = area[5].replace('\r\r\n','').strip()
+                desc = area[5].replace('\r\r\n', '').strip()
                 kind = self._warning_cat[code]['kind']
                 warnings.append({'start': start, 'end': end, 'kind': kind, 'notice': notice, 'desc': desc})
         return warnings
 
     def current(self, location):
-        directory='gds/specials/observations/tables/germany'
+        directory = 'gds/specials/observations/tables/germany'
         last = sorted(self._retr_list(directory)).pop()
         fb = self._retr_file(last)
         fb = fb.decode('iso-8859-1')
@@ -160,13 +160,13 @@ class DWD():
                         'gust': line[13]}
 
     def _forecast(self, filename, frame, location):
-            fb = self._retr_file(filename+frame)
+            fb = self._retr_file(filename + frame)
             fb = fb.decode('iso-8859-1')
             header = fb.splitlines()[0]
             for line in fb.splitlines():
                 if line.count('Termin ist nicht mehr'):
                     # already past
-                    return [ None, None, None, None ]
+                    return [None, None, None, None]
                 elif line.count(location):
                     header = re.sub(r"/\d\d?", '', header)
                     date = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
@@ -174,12 +174,12 @@ class DWD():
                     space = re.compile(r'  +')
                     line = space.split(line)
                     line[1] = float(line[1])
-                    return [ date ] + line[1:]
+                    return [date] + line[1:]
 
     def forecast(self, region, location):
         directory = 'gds/specials/forecasts/tables/germany/Daten_'
         forecast = {}
-        filename = "%s%s_" % ( directory, region)
+        filename = "%s%s_".format(directory, region)
         d0f = self._forecast(filename, 'frueh', location)
         d0m = self._forecast(filename, 'mittag', location)
         d0s = self._forecast(filename, 'spaet', location)
@@ -195,16 +195,16 @@ class DWD():
                             'temp-s': d0s[1], 'sky-s': d0s[2], 'gust-s': d0s[3],
                             'temp-n': d0n[1], 'sky-n': d0n[2], 'gust-n': d0n[3]
                         }
-        forecast[d1s[0]] = { 'temp-min': d1f[1], 'temp-max': d1s[1], 'sky-f': d1f[2], 'sky-s': d1s[2], 'gust-f': d1f[3], 'gust-s': d1s[3] }
-        forecast[d2s[0]] = { 'temp-min': d2f[1], 'temp-max': d2s[1], 'sky-f': d2f[2], 'sky-s': d2s[2], 'gust-f': d2f[3], 'gust-s': d2s[3] }
-        forecast[d3s[0]] = { 'temp-min': d3f[1], 'temp-max': d3s[1], 'sky-f': d3f[2], 'sky-s': d3s[2], 'gust-f': d3f[3], 'gust-s': d3s[3] }
+        forecast[d1s[0]] = {'temp-min': d1f[1], 'temp-max': d1s[1], 'sky-f': d1f[2], 'sky-s': d1s[2], 'gust-f': d1f[3], 'gust-s': d1s[3]}
+        forecast[d2s[0]] = {'temp-min': d2f[1], 'temp-max': d2s[1], 'sky-f': d2f[2], 'sky-s': d2s[2], 'gust-f': d2f[3], 'gust-s': d2s[3]}
+        forecast[d3s[0]] = {'temp-min': d3f[1], 'temp-max': d3s[1], 'sky-f': d3f[2], 'sky-s': d3s[2], 'gust-f': d3f[3], 'gust-s': d3s[3]}
         return forecast
 
     def uvi(self, location):
         directory = 'gds/specials/warnings/FG'
         forecast = {}
-        for frame in [ '12', '36', '60' ]:
-            filename ="{0}/u_vindex{1}.xml".format(directory, frame)
+        for frame in ['12', '36', '60']:
+            filename = "{0}/u_vindex{1}.xml".format(directory, frame)
             fb = self._retr_file(filename)
             date = re.findall(r"\d\d\d\d\-\d\d\-\d\d", fb)[0]
             uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)
@@ -212,17 +212,18 @@ class DWD():
         return forecast
 
     def pollen(self, region):
+        # XXX ftp path broken
         filename = 'gds/specials/warnings/FG/sb31fg.xml'
         filexml = self._retr_file(filename)
         fxp = xml.etree.ElementTree.fromstring(filexml)
         date = fxp.attrib['last_update'].split()[0].split('-')
         day0 = datetime.date(int(date[0]), int(date[1]), int(date[2]))
-        day1 = day0+dateutil.relativedelta.relativedelta(days=1)
-        day2 = day0+dateutil.relativedelta.relativedelta(days=2)
+        day1 = day0 + dateutil.relativedelta.relativedelta(days=1)
+        day2 = day0 + dateutil.relativedelta.relativedelta(days=2)
         day0 = day0.isoformat()
         day1 = day1.isoformat()
         day2 = day2.isoformat()
-        forecast = { day0: {}, day1: {}, day2: {} }
+        forecast = {day0: {}, day1: {}, day2: {}}
         for reg in fxp.findall('region'):
             for preg in reg.findall('partregion'):
                 if preg.attrib['name'] == region:
@@ -230,7 +231,7 @@ class DWD():
                         kindflag = False
                         kindforc = []
                         for day in kind:
-                            value = day.text.replace('/','')
+                            value = day.text.replace('/', '')
                             if value != '':
                                 kindflag = True
                             kindforc.append(value)
