@@ -143,7 +143,6 @@ class DWD():
         fb = fb.splitlines()
         header = fb[4]
         legend = fb[8].split()
-        print legend
         date = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
         date = "%s-%s-%s" % (date[2], date[1], date[0])
         for line in fb:
@@ -152,8 +151,8 @@ class DWD():
                 line = space.split(line)
                 return dict(zip(legend, line))
 
-    def _forecast(self, filename, frame, location):
-            fb = self._retr_file(filename + frame)
+    def _forecast(self, filename, location):
+            fb = self._retr_file(filename)
             fb = fb.decode('iso-8859-1')
             header = fb.splitlines()[0]
             for line in fb.splitlines():
@@ -172,17 +171,17 @@ class DWD():
     def forecast(self, region, location):
         directory = 'gds/specials/forecasts/tables/germany/Daten_'
         forecast = {}
-        filename = "%s%s_".format(directory, region)
-        d0f = self._forecast(filename, 'frueh', location)
-        d0m = self._forecast(filename, 'mittag', location)
-        d0s = self._forecast(filename, 'spaet', location)
-        d0n = self._forecast(filename, 'nacht', location)
-        d1f = self._forecast(filename, 'morgen_frueh', location)
-        d1s = self._forecast(filename, 'morgen_spaet', location)
-        d2f = self._forecast(filename, 'uebermorgen_frueh', location)
-        d2s = self._forecast(filename, 'uebermorgen_spaet', location)
-        d3f = self._forecast(filename, 'Tag4_frueh', location)
-        d3s = self._forecast(filename, 'Tag4_spaet', location)
+        filename = "{0}{1}_".format(directory, region)
+        d0f = self._forecast(filename + 'frueh', location)
+        d0m = self._forecast(filename + 'mittag', location)
+        d0s = self._forecast(filename + 'spaet', location)
+        d0n = self._forecast(filename + 'nacht', location)
+        d1f = self._forecast(filename + 'morgen_frueh', location)
+        d1s = self._forecast(filename + 'morgen_spaet', location)
+        d2f = self._forecast(filename + 'uebermorgen_frueh', location)
+        d2s = self._forecast(filename + 'uebermorgen_spaet', location)
+        d3f = self._forecast(filename + 'Tag4_frueh', location)
+        d3s = self._forecast(filename + 'Tag4_spaet', location)
         forecast[d0n[0]] = {'temp-f': d0f[1], 'sky-f': d0f[2], 'gust-f': d0f[3],
                             'temp-m': d0m[1], 'sky-m': d0m[2], 'gust-m': d0m[3],
                             'temp-s': d0s[1], 'sky-s': d0s[2], 'gust-s': d0s[3],
@@ -201,7 +200,7 @@ class DWD():
             fb = self._retr_file(filename)
             date = re.findall(r"\d\d\d\d\-\d\d\-\d\d", fb)[0]
             uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)
-            forecast[date] = int(uv)
+            forecast[date] = int(uv[0])
         return forecast
 
     def pollen(self, region):
