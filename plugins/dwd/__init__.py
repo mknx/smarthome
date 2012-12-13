@@ -44,7 +44,6 @@ class DWD():
         self._dwd_user = dwd_user
         self._dwd_password = dwd_password
         self.lock = threading.Lock()
-
         try:
             warnings = csv.reader(open(self._warnings_csv, "rb"), delimiter=';')
         except IOError, e:
@@ -147,7 +146,18 @@ class DWD():
         for line in fb.splitlines():
             if line.count(location):
                 line = line.split()
-                return {'date': date, 'pres': line[2], 'temp': line[3], 'rain': line[4], 'wind_dir': line[5], 'wind_speed': line[6], 'weather': line[8], 'gust': line[9]}
+                return {'date': date,
+                        'pressure': float(line[2]),
+                        'temp': float(line[3]),
+                        'temp-min': float(line[4]),
+                        'temp-max': float(line[5]),
+                        'rain': float(line[6]),
+                        'rain-12h': float(line[7]),
+                        'snow': int(line[8]),
+                        'wind-dir': line[9],
+                        'wind-speed': float(line[10]),
+                        'sky': line[12],
+                        'gust': line[13]}
 
     def _forecast(self, filename, frame, location):
             fb = self._retr_file(filename+frame)
@@ -156,15 +166,15 @@ class DWD():
             for line in fb.splitlines():
                 if line.count('Termin ist nicht mehr'):
                     # already past
-                    return [ '', '', '', '' ]
+                    return [ None, None, None, None ]
                 elif line.count(location):
                     header = re.sub(r"/\d\d?", '', header)
                     date = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
                     date = "%s-%s-%s" % (date[2], date[1], date[0])
-                    line = line.split()
-                    if len(line) == 3:
-                        line.append('')
-                    return [ date ] + line [1:4]
+                    space = re.compile(r'  +')
+                    line = space.split(line)
+                    line[1] = float(line[1])
+                    return [ date ] + line[1:]
 
     def forecast(self, region, location):
         directory = 'gds/specials/forecasts/tables/germany/Daten_'
@@ -174,38 +184,35 @@ class DWD():
         d0m = self._forecast(filename, 'mittag', location)
         d0s = self._forecast(filename, 'spaet', location)
         d0n = self._forecast(filename, 'nacht', location)
-
         d1f = self._forecast(filename, 'morgen_frueh', location)
         d1s = self._forecast(filename, 'morgen_spaet', location)
-
         d2f = self._forecast(filename, 'uebermorgen_frueh', location)
         d2s = self._forecast(filename, 'uebermorgen_spaet', location)
-
         d3f = self._forecast(filename, 'Tag4_frueh', location)
         d3s = self._forecast(filename, 'Tag4_spaet', location)
-        forecast[d0n[0]] = {'temp_f': d0f[1], 'sky_f': d0f[2], 'wind_f': d0f[3],
-                            'temp_m': d0m[1], 'sky_m': d0m[2], 'wind_m': d0m[3],
-                            'temp_s': d0s[1], 'sky_s': d0s[2], 'wind_s': d0s[3],
-                            'temp_n': d0n[1], 'sky_n': d0n[2], 'wind_n': d0n[3]
+        forecast[d0n[0]] = {'temp-f': d0f[1], 'sky-f': d0f[2], 'gust-f': d0f[3],
+                            'temp-m': d0m[1], 'sky-m': d0m[2], 'gust-m': d0m[3],
+                            'temp-s': d0s[1], 'sky-s': d0s[2], 'gust-s': d0s[3],
+                            'temp-n': d0n[1], 'sky-n': d0n[2], 'gust-n': d0n[3]
                         }
-        forecast[d1s[0]] = { 'temp_min': d1f[1], 'temp_max': d1s[1], 'sky_f': d1f[2], 'sky_s': d1s[2], 'wind_f': d1f[3], 'wind_s': d1s[3] }
-        forecast[d2s[0]] = { 'temp_min': d2f[1], 'temp_max': d2s[1], 'sky_f': d2f[2], 'sky_s': d2s[2], 'wind_f': d2f[3], 'wind_s': d2s[3] }
-        forecast[d3s[0]] = { 'temp_min': d3f[1], 'temp_max': d3s[1], 'sky_f': d3f[2], 'sky_s': d3s[2], 'wind_f': d3f[3], 'wind_s': d3s[3] }
+        forecast[d1s[0]] = { 'temp-min': d1f[1], 'temp-max': d1s[1], 'sky-f': d1f[2], 'sky-s': d1s[2], 'gust-f': d1f[3], 'gust-s': d1s[3] }
+        forecast[d2s[0]] = { 'temp-min': d2f[1], 'temp-max': d2s[1], 'sky-f': d2f[2], 'sky-s': d2s[2], 'gust-f': d2f[3], 'gust-s': d2s[3] }
+        forecast[d3s[0]] = { 'temp-min': d3f[1], 'temp-max': d3s[1], 'sky-f': d3f[2], 'sky-s': d3s[2], 'gust-f': d3f[3], 'gust-s': d3s[3] }
         return forecast
 
     def uvi(self, location):
-        directory = 'gds/specials/forecasts/biomet'
+        directory = 'gds/specials/warnings/FG'
         forecast = {}
         for frame in [ '12', '36', '60' ]:
-            filename ="%s/uvindex%s.xml" % (directory, frame)
+            filename ="{0}/u_vindex{1}.xml".format(directory, frame)
             fb = self._retr_file(filename)
             date = re.findall(r"\d\d\d\d\-\d\d\-\d\d", fb)[0]
             uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)
-            forecast[date] = uv
+            forecast[date] = int(uv)
         return forecast
 
     def pollen(self, region):
-        filename = 'gds/specials/forecasts/biomet/sb31fg.xml'
+        filename = 'gds/specials/warnings/FG/sb31fg.xml'
         filexml = self._retr_file(filename)
         fxp = xml.etree.ElementTree.fromstring(filexml)
         date = fxp.attrib['last_update'].split()[0].split('-')
@@ -232,7 +239,3 @@ class DWD():
                             forecast[day1][kind.tag] = kindforc[1]
                             forecast[day2][kind.tag] = kindforc[2]
         return forecast
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
