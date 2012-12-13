@@ -236,8 +236,10 @@ class OneWire(Owconnection):
             except Exception, e:
                 logger.debug("Could not read {0} ({1}). Exception e: {2}".format(item, sensor, e))
                 continue
-            if type(value) != float:
-                logger.warning("OneWire: value '{0}' for {1} is not a float.".format(repr(value), path))
+            try:
+                value = float(value)
+            except Exception, e:
+                logger.warning("OneWire: value {0} for {1} is not a float.".format(repr(value), path))
                 continue
             if typ == 'temperature':
                 value = round(value, 1)
