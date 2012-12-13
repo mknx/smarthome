@@ -140,24 +140,17 @@ class DWD():
         last = sorted(self._retr_list(directory)).pop()
         fb = self._retr_file(last)
         fb = fb.decode('iso-8859-1')
-        header = fb.splitlines()[4]
+        fb = fb.splitlines()
+        header = fb[4]
+        legend = fb[8].split()
+        print legend
         date = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
         date = "%s-%s-%s" % (date[2], date[1], date[0])
-        for line in fb.splitlines():
+        for line in fb:
             if line.count(location):
-                line = line.split()
-                return {'date': date,
-                        'pressure': float(line[2]),
-                        'temp': float(line[3]),
-                        'temp-min': float(line[4]),
-                        'temp-max': float(line[5]),
-                        'rain': float(line[6]),
-                        'rain-12h': float(line[7]),
-                        'snow': int(line[8]),
-                        'wind-dir': line[9],
-                        'wind-speed': float(line[10]),
-                        'sky': line[12],
-                        'gust': line[13]}
+                space = re.compile(r'  +')
+                line = space.split(line)
+                return dict(zip(legend, line))
 
     def _forecast(self, filename, frame, location):
             fb = self._retr_file(filename + frame)
