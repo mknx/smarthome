@@ -9,5 +9,6 @@ while [ $INDEX -le 1000 ] ; do
     echo "  [[item$INDEX]]" >> $CONF
     echo "    type = num" >> $CONF
     echo "    visu = div" >> $CONF
+    echo "    rrd = yes" >> $CONF
     INDEX=$(($INDEX+1))
 done
