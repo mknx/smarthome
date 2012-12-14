@@ -151,13 +151,12 @@ class Scheduler(threading.Thread):
         if isinstance(cron, str):
             cron = [cron]
         self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': None}
-        if offset == None:
-            offset = random.randint(2, 9) # spread init jobs
-        if cycle != None:
-            next_time = self._sh.now() + relativedelta(seconds=offset)
-            self._scheduler[name]['next'] = next_time
-        else:
-            self._next_time(name, offset)
+        if cron != None:
+            if 'init' in cron and offset == None:
+                offset = random.randint(1, 4) # spread init jobs
+        if cycle != None and offset == None:
+            offset = random.randint(10, 20) # spread cycle jobs
+        self._next_time(name, offset)
         self._lock.release()
 
     def _next_time(self, name, offset=None):
@@ -208,10 +207,10 @@ class Scheduler(threading.Thread):
         while self.alive:
             try:
                 prio, name, obj, by, source, value = self._runq.get(timeout=0.5)
+                self._runq.task_done()
             except Queue.Empty:
                 continue
             self._task(name, obj, by, source, value)
-            self._runq.task_done()
 
     def _task(self, name, obj, by, source, value):
         threading.current_thread().name = name

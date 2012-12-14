@@ -55,7 +55,7 @@ class Logics():
             sys.exit(0)
 
         for name in self._config:
-            #logger.debug("Logic: %s" % name)
+            logger.debug("Logic: %s" % name)
             logic = Logic(self._sh, name, self._config[name])
             self._logics[name] = logic
             if hasattr(logic, 'bytecode'):
