@@ -182,7 +182,6 @@ class Scheduler(threading.Thread):
                     self._scheduler[name]['cron'] = None
                 self._scheduler[name]['next'] = now
                 return
-
             for entry in job['cron']:
                 ct = self._crontab(entry)
                 if next_time != None:
@@ -190,7 +189,6 @@ class Scheduler(threading.Thread):
                         next_time = ct
                 else:
                     next_time = ct
-
         self._scheduler[name]['next'] = next_time
         logger.debug("{0} next time: {1}".format(name, next_time))
 
