@@ -73,7 +73,7 @@ class DWD():
 
     def ftp_quit(self):
         try:
-            self._ftp.quit()
+            self._ftp.close()
         except Exception, e:
             pass
         if hasattr(self, '_ftp'):
@@ -120,19 +120,20 @@ class DWD():
             dates = re.findall(r"\d\d\.\d\d\.\d\d\d\d \d\d:\d\d", fb)
             tz = dateutil.tz.gettz('Europe/Berlin')
             now = datetime.datetime.now(tz)
-            start = dateutil.parser.parse(dates[0])
-            start = start.replace(tzinfo=tz)
-            end = dateutil.parser.parse(dates[1])
-            end = end.replace(tzinfo=tz)
-            notice = dateutil.parser.parse(dates[2])
-            notice = notice.replace(tzinfo=tz)
-            if end > now:
-                area_splitter = re.compile(r'^\r\r\n', re.M)
-                area = area_splitter.split(fb)
-                code = int(re.findall(r"\d\d", area[0])[0])
-                desc = area[5].replace('\r\r\n', '').strip()
-                kind = self._warning_cat[code]['kind']
-                warnings.append({'start': start, 'end': end, 'kind': kind, 'notice': notice, 'desc': desc})
+            if len(dates) > 1:  # Entwarnungen haben nur ein Datum
+                start = dateutil.parser.parse(dates[0])
+                start = start.replace(tzinfo=tz)
+                end = dateutil.parser.parse(dates[1])
+                end = end.replace(tzinfo=tz)
+                notice = dateutil.parser.parse(dates[2])
+                notice = notice.replace(tzinfo=tz)
+                if end > now:
+                    area_splitter = re.compile(r'^\r\r\n', re.M)
+                    area = area_splitter.split(fb)
+                    code = int(re.findall(r"\d\d", area[0])[0])
+                    desc = area[5].replace('\r\r\n', '').strip()
+                    kind = self._warning_cat[code]['kind']
+                    warnings.append({'start': start, 'end': end, 'kind': kind, 'notice': notice, 'desc': desc})
         return warnings
 
     def current(self, location):
@@ -150,6 +151,7 @@ class DWD():
                 space = re.compile(r'  +')
                 line = space.split(line)
                 return dict(zip(legend, line))
+        return {}
 
     def _forecast(self, filename, location):
             fb = self._retr_file(filename)
