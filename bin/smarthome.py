@@ -48,7 +48,7 @@ import lib.scheduler
 import lib.logic
 import lib.plugin
 import lib.tools
-import lib.sun
+import lib.orb
 
 VERSION = 0.7
 
@@ -187,9 +187,10 @@ class SmartHome():
         if hasattr(self, '_lon') and hasattr(self, '_lat'):
             if not hasattr(self, '_elev'):
                 self.elev = None
-            self.sun = lib.sun.Sun(self._lon, self._lat, self._elev)
+            self.sun = lib.orb.Orb('sun', self._lon, self._lat, self._elev)
+            self.moon = lib.orb.Orb('moon', self._lon, self._lat, self._elev)
         else:
-            logger.info('No latitude/longitude specified => you could not use the sun object.')
+            logger.info('No latitude/longitude specified => you could not use the sun and moon object.')
 
         self.scheduler = lib.scheduler.Scheduler(self)
         self.trigger = self.scheduler.trigger
