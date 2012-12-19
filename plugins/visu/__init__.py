@@ -159,6 +159,8 @@ class WebSocketHandler(asynchat.async_chat):
         self.header = {}
         self.monitor = []
         self.items = items
+        self.rrd = False
+        self.log = False
         self._lock = threading.Lock()
         self.logics = logics
 
@@ -220,6 +222,7 @@ class WebSocketHandler(asynchat.async_chat):
                 logger.info("Client %s triggerd logic %s with '%s'" % (self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
         elif command == 'rrd':
+            self.rrd = True
             path = data[0]
             frame = str(data[1])
             if path in self.items:
@@ -229,6 +232,8 @@ class WebSocketHandler(asynchat.async_chat):
                     logger.info("Client %s requested invalid rrd: %s." % (self.addr, path))
             else:
                 logger.info("Client %s requested invalid item: %s" % (self.addr, path))
+        elif command == 'log':
+            self.log = True
 
     def parse_header(self, data):
         for line in data.splitlines():

@@ -45,6 +45,7 @@ class DWD():
         self._dwd_user = dwd_user
         self._dwd_password = dwd_password
         self.lock = threading.Lock()
+        self.tz = dateutil.tz.gettz('Europe/Berlin')
         try:
             warnings = csv.reader(open(self._warnings_csv, "rb"), delimiter=';')
         except IOError, e:
@@ -117,16 +118,16 @@ class DWD():
         for filename in files:
             fb = self._retr_file(filename)
             fb = fb.decode('iso-8859-1')
+            print fb
             dates = re.findall(r"\d\d\.\d\d\.\d\d\d\d \d\d:\d\d", fb)
-            tz = dateutil.tz.gettz('Europe/Berlin')
-            now = datetime.datetime.now(tz)
+            now = datetime.datetime.now(self.tz)
             if len(dates) > 1:  # Entwarnungen haben nur ein Datum
                 start = dateutil.parser.parse(dates[0])
-                start = start.replace(tzinfo=tz)
+                start = start.replace(tzinfo=self.tz)
                 end = dateutil.parser.parse(dates[1])
-                end = end.replace(tzinfo=tz)
+                end = end.replace(tzinfo=self.tz)
                 notice = dateutil.parser.parse(dates[2])
-                notice = notice.replace(tzinfo=tz)
+                notice = notice.replace(tzinfo=self.tz)
                 if end > now:
                     area_splitter = re.compile(r'^\r\r\n', re.M)
                     area = area_splitter.split(fb)
@@ -153,45 +154,38 @@ class DWD():
                 return dict(zip(legend, line))
         return {}
 
-    def _forecast(self, filename, location):
-            fb = self._retr_file(filename)
+    def forecast(self, region, location):
+        path = 'gds/specials/forecasts/tables/germany/Daten_'
+        frames = ['frueh', 'mittag', 'spaet', 'nacht', 'morgen_frueh', 'morgen_spaet', 'uebermorgen_frueh', 'uebermorgen_spaet', 'Tag4_frueh', 'Tag4_spaet']
+        forecast = {}
+        for frame in frames:
+            filepath = "{0}{1}_{2}".format(path, region, frame)
+            fb = self._retr_file(filepath)
             fb = fb.decode('iso-8859-1')
-            header = fb.splitlines()[0]
+            minute = 0
+            if frame.count('frueh'):
+                hour = 6
+            elif frame == 'mittag':
+                hour = 12
+            elif frame == 'nacht':
+                hour = 23
+                minute = 59
+            else:
+                hour = 18
             for line in fb.splitlines():
-                if line.count('Termin ist nicht mehr'):
-                    # already past
-                    return [None, None, None, None]
+                if line.count('Termin ist nicht mehr'):  # already past
+                    date = self._sh.now().replace(hour=hour, minute=minute, second=0, microsecond=0, tzinfo=self.tz)
+                    forecast[date] = ['', '', '']
+                    continue
+                elif line.startswith('Vorhersage'):
+                    header = line
                 elif line.count(location):
                     header = re.sub(r"/\d\d?", '', header)
-                    date = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
-                    date = "%s-%s-%s" % (date[2], date[1], date[0])
+                    day, month, year = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
+                    date = datetime.datetime(int(year), int(month), int(day), hour, tzinfo=self.tz)
                     space = re.compile(r'  +')
-                    line = space.split(line)
-                    line[1] = float(line[1])
-                    return [date] + line[1:]
-
-    def forecast(self, region, location):
-        directory = 'gds/specials/forecasts/tables/germany/Daten_'
-        forecast = {}
-        filename = "{0}{1}_".format(directory, region)
-        d0f = self._forecast(filename + 'frueh', location)
-        d0m = self._forecast(filename + 'mittag', location)
-        d0s = self._forecast(filename + 'spaet', location)
-        d0n = self._forecast(filename + 'nacht', location)
-        d1f = self._forecast(filename + 'morgen_frueh', location)
-        d1s = self._forecast(filename + 'morgen_spaet', location)
-        d2f = self._forecast(filename + 'uebermorgen_frueh', location)
-        d2s = self._forecast(filename + 'uebermorgen_spaet', location)
-        d3f = self._forecast(filename + 'Tag4_frueh', location)
-        d3s = self._forecast(filename + 'Tag4_spaet', location)
-        forecast[d0n[0]] = {'temp-f': d0f[1], 'sky-f': d0f[2], 'gust-f': d0f[3],
-                            'temp-m': d0m[1], 'sky-m': d0m[2], 'gust-m': d0m[3],
-                            'temp-s': d0s[1], 'sky-s': d0s[2], 'gust-s': d0s[3],
-                            'temp-n': d0n[1], 'sky-n': d0n[2], 'gust-n': d0n[3]
-                        }
-        forecast[d1s[0]] = {'temp-min': d1f[1], 'temp-max': d1s[1], 'sky-f': d1f[2], 'sky-s': d1s[2], 'gust-f': d1f[3], 'gust-s': d1s[3]}
-        forecast[d2s[0]] = {'temp-min': d2f[1], 'temp-max': d2s[1], 'sky-f': d2f[2], 'sky-s': d2s[2], 'gust-f': d2f[3], 'gust-s': d2s[3]}
-        forecast[d3s[0]] = {'temp-min': d3f[1], 'temp-max': d3s[1], 'sky-f': d3f[2], 'sky-s': d3s[2], 'gust-f': d3f[3], 'gust-s': d3s[3]}
+                    fc = space.split(line)
+                    forecast[date] = fc[1:]
         return forecast
 
     def uvi(self, location):
@@ -200,12 +194,14 @@ class DWD():
         for frame in ['12', '36', '60']:
             filename = "{0}/u_vindex{1}.xml".format(directory, frame)
             fb = self._retr_file(filename)
-            date = re.findall(r"\d\d\d\d\-\d\d\-\d\d", fb)[0]
-            uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)
-            forecast[date] = int(uv[0])
+            year, month, day = re.findall(r"\d\d\d\d\-\d\d\-\d\d", fb)[0].split('-')
+            date = datetime.datetime(int(year), int(month), int(day), tzinfo=self.tz)
+            uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)[0]
+            forecast[date] = int(uv)
         return forecast
 
     def pollen(self, region):
+        return
         # XXX ftp path broken
         filename = 'gds/specials/warnings/FG/sb31fg.xml'
         filexml = self._retr_file(filename)
