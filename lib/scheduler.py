@@ -109,7 +109,7 @@ class Scheduler(threading.Thread):
                 logger.warning("Logic name not found: {0}".format(name))
                 return
         if dt == None:
-            logger.debug("Triggering {0} - by: {1} source: {2} value: {3}".format(name, by, source, value))
+            logger.debug("Triggering {0} - by: {1} source: {2} value: {3}".format(name, by, source, str(value)[:20]))
             self._runq.put( (prio, name, obj, by, source, value) )
         else:
             if not isinstance(dt, datetime.datetime):
