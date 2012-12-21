@@ -249,8 +249,9 @@ class Item():
         except IOError, e:
             logger.warning("Could not write to {0}{1}".format(self._sh._cache_dir, self._path))
 
-    def __cmp__(self, compare):
-        return cmp(self._value, compare)
+    # don't compare value, compare object: if you want to compare value, do check item()
+    #def __cmp__(self, compare):
+    #    return cmp(self._value, compare)
 
     def id(self):
         return self._path
