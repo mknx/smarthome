@@ -22,6 +22,7 @@
 import logging
 import math
 import datetime
+import urllib2
 
 logger = logging.getLogger('')
 
@@ -47,3 +48,14 @@ class Tools():
 
     def runtime(self):
         return datetime.datetime.now() - self._start
+
+    def fetch_url(self, url):
+        try:
+            u = urllib2.urlopen(url, timeout=4)
+            data = u.read()
+            u.fp._sock.recv=None
+            u.close()
+            del(u)
+            return data
+        except Exception, e:
+            return False
