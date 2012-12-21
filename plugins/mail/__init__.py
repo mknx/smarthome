@@ -21,6 +21,7 @@
 
 import logging
 import imaplib
+import smtplib
 import email
 
 logger = logging.getLogger('')
@@ -28,7 +29,7 @@ logger = logging.getLogger('')
 
 class IMAP():
 
-    def __init__(self, smarthome, host, username, password, cycle=300, port=None, ssl=False ):
+    def __init__(self, smarthome, host, username, password, cycle=300, port=None, ssl=False):
         self._sh = smarthome
         self._ssl = ssl
         self._host = host
@@ -55,7 +56,11 @@ class IMAP():
         return imap
 
     def _cycle(self):
-        imap = self._connect()
+        try:
+            imap = self._connect()
+        except Exception, e:
+            logger.warning("Could not connect to {0}: {1}".format(self._host, e))
+            return
         rsp, data = imap.select()
         if rsp != 'OK':
             logger.warning("IMAP: Could not select mailbox")
@@ -84,12 +89,12 @@ class IMAP():
                 logic = False
             if logic:
                 logic.trigger('IMAP', fo, mail)
+                rsp, data = imap.uid('copy', uid, 'Trash')
+                if rsp == 'OK':
+                    typ, data = imap.uid('store', uid, '+FLAGS', '(\Deleted)')
+                    logger.debug("Moving mail to trash. {0} => {1}: {2}".format(fo, to, sub))
             else:
                 logger.info("Ingnoring mail. {0} => {1}: {2}".format(fo, to, sub))
-            rsp, data = imap.uid('copy', uid, 'Trash')
-            if rsp == 'OK':
-                typ, data = imap.uid('store', uid, '+FLAGS', '(\Deleted)')
-                logger.debug("Moving mail to trash. {0} => {1}: {2}".format(fo, to, sub))
         imap.close()
         imap.logout()
 
@@ -111,5 +116,51 @@ class IMAP():
             self._mail = logic
 
     def update_item(self, item, caller=None, source=None):
-        if caller != 'plugin':
-            logger.info("update item: {0}".format(item.id()))
+        pass
+
+
+class SMTP():
+
+    def __init__(self, smarthome, host, username, password, mail_from, port=25, ssl=False):
+        self._sh = smarthome
+        self._ssl = ssl
+        self._host = host
+        self._port = int(port)
+        self._from = mail_from
+        self._username = username
+        self._password = password
+
+    def __call__(self, to, sub, msg):
+        try:
+            smtp = self._connect()
+        except Exception, e:
+            logger.warning("Could not connect to {0}: {1}".format(self._host, e))
+            return
+        date = email.utils.formatdate()
+        msgid = email.utils.make_msgid('SmartHome.py')
+        mail = "From: {0}\r\nTo: {1}\r\nDate: {2}\r\nSubject: {3}\r\nMessage-ID:{4}\r\n\r\n{5}".format(self._from, to, date, sub, msgid, msg)
+        to = [x.strip() for x in to.split(',')]
+        smtp.sendmail(self._from, to, mail)
+        smtp.quit()
+
+    def _connect(self):
+        smtp = smtplib.SMTP(self._host, self._port)
+        if self._ssl:
+            smtp.starttls()
+        smtp.login(self._username, self._password)
+        return smtp
+
+    def run(self):
+        self.alive = True
+
+    def stop(self):
+        self.alive = False
+
+    def parse_item(self, item):
+        pass
+
+    def parse_logic(self, logic):
+        pass
+
+    def update_item(self, item, caller=None, source=None):
+        pass
