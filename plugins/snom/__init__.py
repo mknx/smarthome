@@ -20,6 +20,9 @@
 #########################################################################
 
 import logging
+import urllib
+import urllib2
+import base64
 import xml.etree.cElementTree
 
 logger = logging.getLogger('')
@@ -27,9 +30,11 @@ logger = logging.getLogger('')
 
 class Snom():
 
-    def __init__(self, smarthome, phonebook=None):
+    def __init__(self, smarthome, username=None, password=None, phonebook=None):
         self._sh = smarthome
         self._phonebook = phonebook
+        self._username = username
+        self._password = password
 
     def run(self):
         self.alive = True
@@ -40,20 +45,33 @@ class Snom():
         self.alive = False
 
     def parse_item(self, item):
-        if 'plugin_attr' in item.conf:
+        if 'snom_key' in item.conf:
             logger.debug("parse item: {0}".format(item))
-            return self.update_item
-        else:
-            return None
+            if 'snom_host' in item.conf:
+                return self.update_item
+            else:
+                parent = item.return_parent()
+                if hasattr(parent, 'conf'):
+                    if 'snom_host' in parent.conf:
+                        item.conf['snom_host'] = parent.conf['snom_host']
+                        return self.update_item
+            logger.warning("No 'snom_host' specified for {0}".format(item.id()))
 
     def parse_logic(self, logic):
-        if 'xxx' in logic.conf:
-            # self.function(logic['name'])
-            pass
+        pass
 
     def update_item(self, item, caller=None, source=None):
-        if caller != 'plugin':
-            logger.info("update item: {0}".format(item.id()))
+        if caller != 'HTTP':
+            uri = "https://{0}/dummy.htm".format(item.conf['snom_host'])
+            try:
+                req = urllib2.Request("{0}?settings=save&store_settings=save&{1}={2}".format(uri, item.conf['snom_key'], urllib.quote(str(item()))))
+                req.add_header('Authorization', 'Basic ' + base64.b64encode(self._username + ':' + self._password))
+                u = urllib2.urlopen(req, timeout=2)
+                u.fp._sock.recv=None
+                u.close()
+                del(u, req)
+            except Exception, e:
+                logger.warning("Error updating Snom Phone ({0}): {1}".format(item.conf['snom_host'], e))
 
     def phonebook_add(self, name, number):
         if self._phonebook == None:
