@@ -253,6 +253,7 @@ class Network():
                 logger.info("Ignoring input %s. Format not recognized." % data)
                 return False
             typ, name, value = inp
+            proto = dest.split(':')[0]
             gacl = self.generic_listeners[dest]['acl']
             if typ == 'item':
                 if name not in self.generic_listeners[dest]['items']:
@@ -268,7 +269,7 @@ class Network():
                         logger.error("Generic network acl doesn't permit updates from %s." % (source))
                         return False
                 item = self.generic_listeners[dest]['items'][name]['item']
-                item(value, 'network', source)
+                item(value, proto, source)
 
             elif typ == 'logic':
                 if name not in self.generic_listeners[dest]['logics']:
@@ -284,7 +285,7 @@ class Network():
                         logger.error("Generic network acl doesn't permit triggering from %s." % (source))
                         return False
                 logic = self.generic_listeners[dest]['logics'][name]['logic']
-                logic.trigger('network', source, value)
+                logic.trigger(proto, source, value)
 
             elif typ == 'log':
                 if gacl:
