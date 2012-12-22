@@ -91,7 +91,7 @@ class Item():
                 try:
                     self._value = getattr(self, '_return_' + self._type)(self._value)
                 except:
-                    logger.error("Item '{0}': value ({1}) does not match type ({2}). Ignoring!".format(path, self._value, self._type))
+                    logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Ignoring!".format(path, self._value, self._type))
                     return
         else:
             logger.debug("Item '{0}': No type specified.".format(self._path))
@@ -160,7 +160,7 @@ class Item():
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error("Item '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
+            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
             return
         if self._eval:
             args = {'value': value, 'caller': caller, 'source': source}
@@ -172,7 +172,7 @@ class Item():
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error("Item '{0}': value ({1}) does not match type ({2}). Via {3}  {4}".format(self._path, value, self._type, caller, source))
+            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3}  {4}".format(self._path, value, self._type, caller, source))
             return
         self._lock.acquire()
         if value != self._value or self._enforce_updates: # value change
@@ -180,7 +180,7 @@ class Item():
             if caller != "fade":
                 self.__fade = False
                 self._lock.notify_all()
-                logger.info("{0} = {1} via {2} {3}".format(self._path, value, caller, source))
+                logger.info(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
             self._value = value
             delta = self._sh.now() - self._last_change
             self._prev_change = delta.seconds + delta.days * 24 * 3600 # FIXME change to timedelta.total_seconds()
