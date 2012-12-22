@@ -79,7 +79,7 @@ class CLIHandler(asynchat.async_chat):
             item = self.sh.return_item(path)
             if hasattr(item, 'id'):
                 if item._type:
-                    self.push("{0} = {1}\n".format(item.id(), item()))
+                    self.push(u"{0} = {1}\n".format(item.id(), item()))
                 else:
                     self.push("%s\n" % (item.id()))
                 for child in item:
@@ -91,7 +91,7 @@ class CLIHandler(asynchat.async_chat):
         self.push("Items:\n======\n")
         for item in self.sh.return_items():
             if item._type:
-                self.push("{0} = {1}\n".format(item.id(), item()))
+                self.push(u"{0} = {1}\n".format(item.id(), item()))
             else:
                 self.push("{0}\n".format(item.id()))
 
