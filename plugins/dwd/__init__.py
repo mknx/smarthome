@@ -113,7 +113,7 @@ class DWD():
     def warnings(self, region, location):
         directory = 'gds/specials/warnings'
         warnings = []
-        filepath = "{0}/{1}/*_{2}_*".format(directory, region, location)
+        filepath = "{0}/{1}/W*_{2}_*".format(directory, region, location)
         files = self._retr_list(filepath)
         for filename in files:
             fb = self._retr_file(filename)
