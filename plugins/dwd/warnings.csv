@@ -1,9 +1,4 @@
-21;Bodenfrost;;"ganzjährig; spezielle Wetterwarnung, keine Grundversorgung"
-22;Frost (Temp. unter 0C);;"vom 01.11. bis 31.03.; spezielle Wetterwarnung, keine Grundversorgung"
-23;Frost/Glätte;;"vom 01.11. bis 31.03., für Glätte gem. ww84; spezielle Wetterwarnung, keine Grundversorgung"
-24;Glätte;;"durch Reif, überfrierende Nässe, Schneematsch, ganzjährig; spezielle Wetterwarnung, keine Grundversorgung"
-25;Frost/Glätte;;"für Kombiwarnungen mit Glätte gem. ww24, ganzjährig; spezielle Wetterwarnung, keine Grundversorgung"
-30;Gewitter;Blitze;nur elektr. Entladung
+30;Gewitter;Sturm;nur elektr. Entladung
 31;Gewitter;Sturm;mit Windböen
 32;Gewitter;Sturm;mit Sturmböen
 33;Gewitter;Sturm;mit schweren Sturmböen
