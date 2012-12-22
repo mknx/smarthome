@@ -29,7 +29,7 @@ logger = logging.getLogger('')
 
 
 class Item():
-    _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'foo': None}
+    _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None}
     def __init__(self, smarthome, parent, path, config):
         # basic attributes
         self._path = path
@@ -280,6 +280,12 @@ class Item():
 
     def _return_list(self, value):
         if isinstance(value, list):
+            return value
+        else:
+            raise ValueError
+
+    def _return_dict(self, value):
+        if isinstance(value, dict):
             return value
         else:
             raise ValueError
