@@ -118,7 +118,6 @@ class DWD():
         for filename in files:
             fb = self._retr_file(filename)
             fb = fb.decode('iso-8859-1')
-            print fb
             dates = re.findall(r"\d\d\.\d\d\.\d\d\d\d \d\d:\d\d", fb)
             now = datetime.datetime.now(self.tz)
             if len(dates) > 1:  # Entwarnungen haben nur ein Datum
@@ -184,6 +183,7 @@ class DWD():
                     day, month, year = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
                     date = datetime.datetime(int(year), int(month), int(day), hour, tzinfo=self.tz)
                     space = re.compile(r'  +')
+                    #line = unicode(line, 'utf-8')
                     fc = space.split(line)
                     forecast[date] = fc[1:]
         return forecast
