@@ -50,7 +50,7 @@ class Tools():
     def runtime(self):
         return datetime.datetime.now() - self._start
 
-    def fetch_url(self, uri, timeout=4, username=None, password=None):
+    def fetch_url(self, uri, username=None, password=None, timeout=2):
         try:
             r = urllib2.Request(uri)
             if username and password:
