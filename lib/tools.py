@@ -23,6 +23,7 @@ import logging
 import math
 import datetime
 import urllib2
+import base64
 
 logger = logging.getLogger('')
 
@@ -49,13 +50,17 @@ class Tools():
     def runtime(self):
         return datetime.datetime.now() - self._start
 
-    def fetch_url(self, url):
+    def fetch_url(self, uri, timeout=4, username=None, password=None):
         try:
-            u = urllib2.urlopen(url, timeout=4)
+            r = urllib2.Request(uri)
+            if username and password:
+                r.add_header('Authorization', 'Basic ' + base64.b64encode(username + ':' + password))
+            u = urllib2.urlopen(r, timeout=timeout)
             data = u.read()
             u.fp._sock.recv=None
             u.close()
-            del(u)
+            del(r, u)
             return data
         except Exception, e:
+            logger.warning("Problem fetching {0}: {1}".format(uri, e))
             return False
