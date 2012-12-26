@@ -18,7 +18,7 @@
 //  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 //########################################################################
 
-var shVersion = 0.71;
+var shVersion = 0.72;
 var shWS = false; // WebSocket
 var shLock = false;
 var shRRD = {};
@@ -409,6 +409,9 @@ function shUpdateItem(path, val, src) {
             case 'INPUT':
                 updateInput(this, val);
                 break;
+            case 'UL':
+                updateList(this, val);
+                break;
             case 'IMG':
                 if ( $(this).attr("class") != "set" ){
                     if ( path in shOpt ){
@@ -446,6 +449,15 @@ function updateSelect(obj, val) {
             $(obj).selectmenu("refresh");
         } catch (e) {};
     };
+};
+
+function updateList(obj, val) {
+    $(obj).html('')
+    for (var i = 0; i < val.length; i++) {
+        $(obj).append("<li>" + val[i] + "</li>\n")
+    };
+    $(obj).listview('refresh');
+
 };
 
 function updateInput(obj, val) {

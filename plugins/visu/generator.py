@@ -80,13 +80,15 @@ def return_html(smarthome, item):
                     html += '    <input id="{0}{1}" name="{0}" data-sh="{2}" value="{3}" type="radio" />\n'.format(dom, i, item.id(), value)
                 html += '</fieldset>\n'
             html += '</div>\n'
-        elif visu in ['div', 'span', 'img']:  # passive elements
+        elif visu in ['div', 'span', 'img', 'list']:  # passive elements
             if visu == 'div':
                 html += '<div>{0}: <span data-sh="{1}"></span></div>\n'.format(item, item.id())
             elif visu == 'span':
                 html += '<div>{0}: <span data-sh="{1}"></span></div>\n'.format(item, item.id())
             elif visu == 'img':
                 html += '<div>{0}: <img data-sh="{1}" src="{2}" /></div>\n'.format(item, item.id(), item())
+            elif visu == 'list':
+                html += '<h2>{0}</h2><ul data-sh="{1}" data-filter="true" data-role="listview" data-inset="true"></ul>\n'.format(item, item.id())
         elif visu in ['switch', 'push']:  # active elements
             if visu == 'switch':
                 html += '<div>{0}: <img data-sh="{1}" src="/img/t.png" class="switch" /></div>\n'.format(item, item.id())
