@@ -114,10 +114,10 @@ function shLogUpdate(path, data) {
     for (var i = 0; i < data.length; i++) {
         $(obj).prepend("<li>" + data[i] + "</li>\n")
     };
-    console.log($(obj).children().length, max);
-    if (max != null && $(obj).children().length > max) {
-        console.log('remove one');
-        $(obj).children().last().remove()
+    if (max != null) {
+        while ($(obj).children().length > max) {
+            $(obj).children().last().remove()
+        };
     };
     $(obj).listview('refresh');
 };
