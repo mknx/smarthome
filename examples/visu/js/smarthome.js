@@ -22,6 +22,7 @@ var shVersion = 0.72;
 var shWS = false; // WebSocket
 var shLock = false;
 var shRRD = {};
+var shLog = {};
 var shURL = '';
 var shBuffer = {};
 var shOpt = {};
@@ -99,6 +100,28 @@ function shInit(url) {
         shSendRadio(this);
     });
 };
+
+function shLogUpdate(path, data) {
+    var obj = $('[data-log="' + path + '"]');
+    var max = parseInt($(obj).attr('data-max'));
+    if (obj.length == 0) {
+        console.log("unknown id: "+ path);
+        return;
+    }
+    if (data.length > 1) {
+        $(obj).html('')
+    };
+    for (var i = 0; i < data.length; i++) {
+        $(obj).prepend("<li>" + data[i] + "</li>\n")
+    };
+    console.log($(obj).children().length, max);
+    if (max != null && $(obj).children().length > max) {
+        console.log('remove one');
+        $(obj).children().last().remove()
+    };
+    $(obj).listview('refresh');
+};
+
 
 function shRRDUpdate(data) {
     var id, frame, rrds, item, value;
@@ -210,6 +233,9 @@ function shWsInit() {
             case 'rrd':
                 shRRDUpdate(data[1]);
                 break;
+            case 'log':
+                shLogUpdate(data[1][0], data[1][1]);
+                break;
             case 'dialog':
                 shDialog(data[1][0], data[1][1]);
                 break;
@@ -248,6 +274,13 @@ function shRequestData() {
             } else if (!(frame in shRRD[id])) {
                 shSend(['rrd', [rrd[0], frame]]);
             };
+        };
+    });
+    $("[data-log]").each( function() {
+        var log = $(this).attr('data-log');
+        var max = $(this).attr('data-max');
+        if (!(log in shLog)) {
+            shSend(['log', [log, max]]);
         };
     });
 };

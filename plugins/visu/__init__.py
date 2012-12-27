@@ -41,6 +41,7 @@ class WebSocket(asyncore.dispatcher):
     def __init__(self, smarthome, generator_dir=False, ip='0.0.0.0', port=2121):
         asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
         self._sh = smarthome
+        smarthome.add_listener(self.send_data)
         self.clients = []
         self.visu_items = {}
         self.visu_logics = {}
@@ -102,7 +103,7 @@ class WebSocket(asyncore.dispatcher):
             sock, addr = pair
             addr = "{0}:{1}".format(addr[0], addr[1])
             logger.debug('Websocket: incoming connection from %s' % addr)
-            client = WebSocketHandler(sock, self._sh.socket_map, addr, self.visu_items, self.visu_logics)
+            client = WebSocketHandler(sock, self._sh.socket_map, addr, self.visu_items, self.visu_logics, self._sh.return_logs())
             self.clients.append(client)
 
     def run(self):
@@ -150,7 +151,7 @@ class WebSocket(asyncore.dispatcher):
 
 class WebSocketHandler(asynchat.async_chat):
 
-    def __init__(self, sock, socket_map, addr, items, logics):
+    def __init__(self, sock, socket_map, addr, items, logics, logs):
         asynchat.async_chat.__init__(self, sock, map=socket_map)
         self.set_terminator("\r\n\r\n")
         self.parse_data = self.parse_header
@@ -161,6 +162,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.items = items
         self.rrd = False
         self.log = False
+        self.logs = logs
         self._lock = threading.Lock()
         self.logics = logics
 
@@ -234,12 +236,17 @@ class WebSocketHandler(asynchat.async_chat):
                 logger.info("Client %s requested invalid item: %s" % (self.addr, path))
         elif command == 'log':
             self.log = True
+            name = data[0]
+            num = int(data[1])
+            if name in self.logs:
+                self.json_send(json.dumps(['log', [name, self.logs[name].export(num)]]))
+            else:
+                logger.info("Client %s requested invalid log: %s" % (self.addr, name))
 
     def parse_header(self, data):
         for line in data.splitlines():
             key, sep, value = line.partition(': ')
             self.header[key] = value
-        #logger.debug(self.header)
         if 'Sec-WebSocket-Version' in self.header:
             if self.header['Sec-WebSocket-Version'] == '13':
                 self.rfc6455_handshake()
@@ -265,7 +272,6 @@ class WebSocketHandler(asynchat.async_chat):
         self.push('Upgrade: websocket\r\n')
         self.push('Connection: Upgrade\r\n')
         self.push('Sec-WebSocket-Accept: %s\r\n' % key)
-        #self.push('Sec-WebSocket-Protocol: chat\r\n\r\n')
         self.push('\r\n')
 
     def rfc6455_parse(self, data):
@@ -342,8 +348,3 @@ class WebSocketHandler(asynchat.async_chat):
         self.parse_data = self.hixie76_parse
         self.json_send = self.hixie76_send
         self.set_terminator("\xff")
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    ws = WebSocket('asdf', '', 3033)
-    ws.run()

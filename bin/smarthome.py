@@ -20,15 +20,12 @@
 ##########################################################################
 
 import signal
-import subprocess
 import sys
 import os
 import threading
 import time
 import logging
 import logging.handlers
-import collections
-import configobj
 import asyncore
 import types
 import datetime
@@ -49,6 +46,7 @@ import lib.logic
 import lib.plugin
 import lib.tools
 import lib.orb
+import lib.log
 
 VERSION = 0.7
 
@@ -64,7 +62,7 @@ class LogHandler(logging.StreamHandler):
 
     def emit(self, record):
         timestamp = datetime.datetime.fromtimestamp(record.created, TZ)
-        self._log.append([timestamp, record.threadName, record.levelname, record.message])
+        self._log.add([timestamp, record.threadName, record.levelname, record.message])
 
 
 class SmartHome():
@@ -76,6 +74,8 @@ class SmartHome():
     _log_buffer = 50
     socket_map = {}
     connections = {}
+    __logs = {}
+    __listeners = []
     _plugins = []
     __items = []
     _sub_items = []
@@ -143,7 +143,7 @@ class SmartHome():
         log_file.setFormatter(formatter)
         logging.getLogger('').addHandler(log_file)
 
-        self.log = collections.deque(maxlen=self._log_buffer)
+        self.log = lib.log.Log(self, 'SmartHome.py', "{0:%H:%M} {1} {2} {3}", maxlen=self._log_buffer)
         log_mem = LogHandler(self.log)
         log_mem.setLevel(logging.WARNING)
         log_mem.setFormatter(formatter)
@@ -234,6 +234,18 @@ class SmartHome():
     def __iter__(self):
         for item in self._sub_items:
             yield item
+
+    def add_listener(self, method):
+        self.__listeners.append(method)
+
+    def return_listeners(self):
+        return self.__listeners
+
+    def add_log(self, name, log):
+        self.__logs[name] = log
+
+    def return_logs(self):
+        return self.__logs
 
     def add_item(self, path, item):
         if path not in self.__items:
