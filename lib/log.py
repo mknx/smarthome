@@ -34,10 +34,8 @@ class Log(collections.deque):
 
     def add(self, entry):
         self.append(entry)
-        print "new: {0}".format(entry)
         for listener in self._sh.return_listeners():
             listener(['log', [self._name, [self.log_string.format(*entry)]]])
-
 
     def last(self, number):
         return(list(self)[-number:])

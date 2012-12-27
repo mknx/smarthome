@@ -22,8 +22,10 @@
 import socket
 import threading
 import logging
+import dateutil.relativedelta
 
 import lib.my_asynchat
+import lib.log
 
 logger = logging.getLogger('')
 
@@ -33,13 +35,15 @@ class Asterisk(lib.my_asynchat.AsynChat):
     def __init__(self, smarthome, username, password, host='127.0.0.1', port=5038):
         lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
         self.terminator = '\r\n\r\n'
-        self._init_cmd = {'Action': 'Login', 'Username': username, 'Secret': password, 'Events': 'call,user'}
+        self._init_cmd = {'Action': 'Login', 'Username': username, 'Secret': password, 'Events': 'call,user,cdr'}
         self._sh = smarthome
         self._reply_lock = threading.Condition()
         self._cmd_lock = threading.Lock()
         self._aid = 0
         self._devices = {}
+        self._mailboxes = {}
         self._trigger_logics = {}
+        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', '<h3>{1}</h3>{0:%H:%M:%S} {2} {3}<p class="ui-li-aside">{0:%H:%M}</p><p class="ui-li-aside">({2})</p>')
         smarthome.monitor_connection(self)
 
     def _command(self, d, reply=True):
@@ -165,6 +169,27 @@ class Asterisk(lib.my_asynchat.AsynChat):
             self._reply_lock.acquire()
             self._reply_lock.notify()
             self._reply_lock.release()
+        elif event['Event'] == 'MessageWaiting':
+            mb = event['Mailbox'].split('@')[0]
+            if mb in self._mailboxes:
+                if 'New' in event:
+                    self._mailboxes[mb](event['New'])
+                else:
+                    self._mailboxes[mb](0)
+        elif event['Event'] == 'Cdr':
+            end = self._sh.now()
+            start = end - dateutil.relativedelta.relativedelta(seconds=int(event['Duration']))
+            if event['BillableSeconds'] != '0':
+                duration = event['BillableSeconds']
+            else:
+                duration = ''
+            if len(event['Source']) <= 4:
+                direction = '=>'
+                number = event['Destination']
+            else:
+                direction = '<='
+                number = event['Source']
+                self._log_in.add([start, number, duration, direction])
 
     def _update_devices(self):
         active_channels = self._command({'Action': 'CoreShowChannels'})
@@ -183,6 +208,8 @@ class Asterisk(lib.my_asynchat.AsynChat):
     def parse_item(self, item):
         if 'ast_dev' in item.conf:
             self._devices[item.conf['ast_dev']] = item
+        if 'ast_box' in item.conf:
+            self._mailboxes[item.conf['ast_box']] = item
 
     def parse_logic(self, logic):
         if 'ast_userevent' in logic.conf:
