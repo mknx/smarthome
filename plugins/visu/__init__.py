@@ -167,7 +167,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.logics = logics
 
     def json_send(self, data):
-        logger.warning("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
+        logger.debug("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
 
     def collect_incoming_data(self, data):
         self.ibuffer += data
