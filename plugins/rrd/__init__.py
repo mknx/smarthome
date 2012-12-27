@@ -74,7 +74,8 @@ class RRD():
             item = self._rrds[itempath]['item']
             if 'visu' in item.conf:
                 data.append([item.id(), item()])
-        self._sh.visu.send_data(['rrd', {'time': time, 'data': data}])
+        for listener in self._sh.return_listeners():
+            listener(['rrd', {'time': time, 'data': data}])
     #self.generate_graphs()
 
     def parse_item(self, item):
