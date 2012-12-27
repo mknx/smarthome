@@ -63,6 +63,8 @@ class CLIHandler(asynchat.async_chat):
             self.update(cmd.lstrip('update').strip())
         elif cmd.startswith('tr'):
             self.tr(cmd.lstrip('tr').strip())
+        elif cmd.startswith('rr'):
+            self.rr(cmd.lstrip('rr').strip())
         elif cmd == 'help' or cmd == 'h':
             self.usage()
         elif  cmd == 'quit' or cmd == 'q' or cmd == 'x':
@@ -115,7 +117,21 @@ class CLIHandler(asynchat.async_chat):
         if not self.updates_allowed:
             self.push("Logic triggering is not allowed.\n")
             return
-        self.sh.trigger(logic, by='CLI')
+        if logic in self.sh.return_logics():
+            self.sh.trigger(logic, by='CLI')
+        else:
+            self.push("Logic '{0}' not found.\n".format(logic))
+
+    def rr(self, name):
+        if not self.updates_allowed:
+            self.push("Logic triggering is not allowed.\n")
+            return
+        if name in self.sh.return_logics():
+            logic = self.sh.return_logic(name)
+            logic.generate_bytecode()
+            logic.trigger(by='CLI')
+        else:
+            self.push("Logic '{0}' not found.\n".format(logic))
 
     def lo(self):
         self.push("Logics:\n")
@@ -134,6 +150,7 @@ class CLIHandler(asynchat.async_chat):
         self.push('update item = value: update the specified item with the specified value\n')
         self.push('up: alias for update\n')
         self.push('tr logic: trigger logic\n')
+        self.push('rr logic: reload and rund logic\n')
         self.push('quit: quit the session\n')
         self.push('q: alias for quit\n')
 

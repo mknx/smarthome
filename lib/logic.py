@@ -20,17 +20,9 @@
 ##########################################################################
 
 import logging
-import time
-import datetime
 import sys
-import Queue
-import threading
 import os
-
 import configobj
-import ephem
-from dateutil.relativedelta import *
-from dateutil.tz import tzutc
 
 logger = logging.getLogger('')
 
@@ -44,16 +36,13 @@ class Logics():
         self._logics = {}
         self._bytecode = {}
         _num_workers = 10
-        self.runq = Queue.PriorityQueue()
         self.alive = True
-
         logger.debug("reading logics from %s" % configfile)
         try:
             self._config = configobj.ConfigObj(configfile, file_error=True)
         except Exception, e:
             logger.critical(e)
             sys.exit(0)
-
         for name in self._config:
             logger.debug("Logic: %s" % name)
             logic = Logic(self._sh, name, self._config[name])
@@ -62,12 +51,10 @@ class Logics():
                 self._sh.scheduler.add(name, logic, logic.prio, logic.crontab, logic.cycle)
             else:
                 return
-
             # plugin hook
             for plugin in self._sh._plugins:
                 if hasattr(plugin, 'parse_logic'):
                     plugin.parse_logic(logic)
-
             # item hook
             if hasattr(logic, 'watch_item'):
                 for watch_item in logic.watch_item:
@@ -78,6 +65,10 @@ class Logics():
     def __iter__(self):
         for logic in self._logics:
             yield logic
+
+    def __getitem__(self, name):
+        if name in self._logics:
+            return self._logics[name]
 
 
 class Logic():
@@ -92,7 +83,7 @@ class Logic():
         self.conf = attributes
         for attribute in attributes:
             vars(self)[attribute] = attributes[attribute]
-        self._generate_bytecode()
+        self.generate_bytecode()
         if hasattr(self, 'watch_item'):
             if isinstance(self.watch_item, str):
                 self.watch_item = [self.watch_item, ]
@@ -111,7 +102,7 @@ class Logic():
     def trigger(self, by='Logic', source=None, value=None, dt=None):
         self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=by, source=source, value=value, dt=dt)
 
-    def _generate_bytecode(self):
+    def generate_bytecode(self):
         if hasattr(self, 'filename'):
             filename = '/usr/local/smarthome/logics/' + self.filename
             if not os.access(filename, os.R_OK):

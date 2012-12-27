@@ -262,6 +262,9 @@ class SmartHome():
         for item in self.__items:
             yield self.__item_dict[item]
 
+    def return_logic(self, name):
+        return self.__logics[name]
+
     def return_logics(self):
         for logic in self.__logics:
             yield logic
