@@ -42,3 +42,13 @@ class Log(collections.deque):
 
     def export(self, number):
         return map(lambda x: self.log_string.format(*x), list(self)[:number])
+
+    def clean(self, dt):
+        while True:
+            try:
+                entry = self.popleft()
+            except Exception, e:
+                return
+            if entry[0] > dt:
+                self.appendleft(entry)
+                return
