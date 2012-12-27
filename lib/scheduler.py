@@ -36,12 +36,13 @@ from dateutil.tz import tzutc
 
 logger = logging.getLogger('')
 
+
 class Scheduler(threading.Thread):
 
     _workers = []
     _worker_num = 5
     _worker_max = 50
-    _worker_delta = 60 # wait 60 seconds before adding another worker thread
+    _worker_delta = 60  # wait 60 seconds before adding another worker thread
     _scheduler = {}
     _runq = Queue.PriorityQueue()
     _triggerq = Queue.PriorityQueue()
@@ -76,17 +77,17 @@ class Scheduler(threading.Thread):
                     logger.warning("Trigger queue exception: {0}".format(e))
                     break
 
-                if dt < now: # run it
-                    self._runq.put( (prio, name, obj, by, source, value) )
-                else: # put last entry back and break while loop
-                    self._triggerq.put( (dt, prio, name, obj, by, source, value) )
+                if dt < now:  # run it
+                    self._runq.put((prio, name, obj, by, source, value))
+                else:  # put last entry back and break while loop
+                    self._triggerq.put((dt, prio, name, obj, by, source, value))
                     break
             self._lock.acquire()
             for name in self._scheduler:
                 task = self._scheduler[name]
                 if task['next'] != None:
                     if task['next'] < now:
-                        self._runq.put( (task['prio'], name, task['obj'], 'Scheduler', None, task['value']) )
+                        self._runq.put((task['prio'], name, task['obj'], 'Scheduler', None, task['value']))
                         task['next'] = None
                     else:
                         continue
@@ -110,7 +111,7 @@ class Scheduler(threading.Thread):
                 return
         if dt == None:
             logger.debug("Triggering {0} - by: {1} source: {2} value: {3}".format(name, by, source, str(value)[:20]))
-            self._runq.put( (prio, name, obj, by, source, value) )
+            self._runq.put((prio, name, obj, by, source, value))
         else:
             if not isinstance(dt, datetime.datetime):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
@@ -119,7 +120,7 @@ class Scheduler(threading.Thread):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
                 return
             logger.debug("Triggering {0} - by: {1} source: {2} value: {3} at: {4}".format(name, by, source, value, dt))
-            self._triggerq.put( (dt, prio, name, obj, by, source, value) )
+            self._triggerq.put((dt, prio, name, obj, by, source, value))
 
     def change(self, name, **kwargs):
         if name in self._scheduler:
@@ -153,9 +154,9 @@ class Scheduler(threading.Thread):
         self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': None}
         if cron != None:
             if 'init' in cron and offset == None:
-                offset = random.randint(1, 4) # spread init jobs
+                offset = random.randint(1, 4)  # spread init jobs
         if cycle != None and offset == None:
-            offset = random.randint(10, 20) # spread cycle jobs
+            offset = random.randint(10, 20)  # spread cycle jobs
         self._next_time(name, offset)
         self._lock.release()
 
@@ -216,7 +217,7 @@ class Scheduler(threading.Thread):
         threading.current_thread().name = name
         logger = logging.getLogger(name)
 
-        if hasattr(obj, 'bytecode'): # logic
+        if hasattr(obj, 'bytecode'):  # logic
             trigger = {'by': by, 'source': source, 'value': value}
             logic = obj
             sh = self._sh
@@ -224,7 +225,7 @@ class Scheduler(threading.Thread):
                 exec(obj.bytecode)
             except Exception, e:
                 logger.warning("Logic {0} exception: {1}".format(name, e))
-        else: # method
+        else:  # method
             try:
                 if value == None:
                     obj()
@@ -263,9 +264,9 @@ class Scheduler(threading.Thread):
         now_str = now.strftime("%d-%H-%M")
         next_event = self._next(lambda event: event > now_str, event_range)
 
-        if next_event: # found an event after today
+        if next_event:  # found an event after today
             next_time = now
-        else: # skip to next month
+        else:  # skip to next month
             next_event = event_range[0]
             next_time = now + relativedelta(months=+1)
         day, hour, minute = next_event.split('-')
@@ -278,15 +279,17 @@ class Scheduler(threading.Thread):
                 return item
 
     def _sun(self, crontab):
-        if not hasattr(self._sh, 'sun'): # no sun object created
+        if not hasattr(self._sh, 'sun'):  # no sun object created
             logger.warning('No latitude/longitued specified. You could not use sunrise/sunset as crontab entry.')
-            return datetime.datetime.now(tzutc())+relativedelta(years=+10)
+            return datetime.datetime.now(tzutc()) + relativedelta(years=+10)
 
         offset = None
         tmp, op, os = crontab.rpartition('+')
-        if op: offset = float(os)
+        if op:
+            offset = float(os)
         tmp, op, os = crontab.rpartition('-')
-        if op: offset = -float(os)
+        if op:
+            offset = -float(os)
 
         if crontab.startswith('sunrise'):
             next_time = self._sh.sun.rise(offset)
@@ -294,7 +297,7 @@ class Scheduler(threading.Thread):
             next_time = self._sh.sun.set(offset)
         else:
             logger.error('Wrong syntax. Should be (sunrise|sunset)[+|-][offset]')
-            return datetime.datetime.now(tzutc())+relativedelta(years=+10)
+            return datetime.datetime.now(tzutc()) + relativedelta(years=+10)
 
         return next_time
 
@@ -323,4 +326,3 @@ class Scheduler(threading.Thread):
             day = now + relativedelta(weekday=wday(+2))
             result.append(day.strftime("%d"))
         return result
-
