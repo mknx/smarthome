@@ -48,6 +48,7 @@ class RRD():
             if not os.path.isfile(rrd['rrdb']):
                 self._create(rrd)
         offset = 100  # wait 100 seconds for 1-Wire to update values
+        offset = 10  # wait 100 seconds for 1-Wire to update values
         self._sh.scheduler.add('rrd', self._update_cycle, cycle=self.step, offset=offset, prio=5)
         # create graphs
         #self.generate_graphs()
@@ -75,7 +76,7 @@ class RRD():
             if 'visu' in item.conf:
                 data.append([item.id(), item()])
         for listener in self._sh.return_listeners():
-            listener(['rrd', {'time': time, 'data': data}])
+            listener({'k': 'r', 't': time, 'p': data})
     #self.generate_graphs()
 
     def parse_item(self, item):
@@ -136,7 +137,7 @@ class RRD():
             del data[-2]
         if data[-1] == None:
             data[-1] = item()
-        return {'id': item.id(), 'frame': frame, 'start': start, 'step': step, 'data': data}
+        return {'k': 'r', 'f': frame, 's': start, 'd': step, 'p': [[ item.id(), data]]}
 
     def parse_logic(self, logic):
         pass

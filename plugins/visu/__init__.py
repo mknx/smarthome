@@ -134,19 +134,17 @@ class WebSocket(asyncore.dispatcher):
             self.visu_logics[logic.name] = logic
 
     def update_item(self, item, caller=None, source=None):
-        data = json.dumps(['item', [item.id(), item()]])
+        data = {'k': 'i', 'p': [[item.id(), item()]]}
         for client in self.clients:
             client.update(item.id(), data, source)
 
     def send_data(self, data):
-        data = json.dumps(data)
         for client in self.clients:
-            client.json_send(data)
+            client.send_data(data)
 
     def dialog(self, header, content):
-        data = json.dumps(['dialog', [header, content]])
         for client in self.clients:
-            client.json_send(data)
+            client.json_send({'k': 'd', 'h': header, 'c': content})
 
 
 class WebSocketHandler(asynchat.async_chat):
@@ -158,13 +156,20 @@ class WebSocketHandler(asynchat.async_chat):
         self.addr = addr
         self.ibuffer = ""
         self.header = {}
-        self.monitor = []
+        self.monitor = {'i': [], 'r': [], 'l': []}
         self.items = items
         self.rrd = False
         self.log = False
         self.logs = logs
         self._lock = threading.Lock()
         self.logics = logics
+
+    def send_data(self, data):
+        data = data.copy()  # don't filter the orignal data dict
+        if data['k'] in self.monitor:  # data[0] == type
+            data['p'] = [i for i in data['p'] if i[0] in self.monitor[data['k']]]  # filter monitored
+            if data['p'] != []:
+                self.json_send(data)
 
     def json_send(self, data):
         logger.debug("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
@@ -183,7 +188,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.parse_data(data)
 
     def update(self, path, data, source):
-        if path in self.monitor:
+        if path in self.monitor['i']:
             if self.addr != source:
                 self.json_send(data)
 
@@ -193,55 +198,59 @@ class WebSocketHandler(asynchat.async_chat):
     def json_parse(self, data):
         logger.debug("%s sent %s" % (self.addr, repr(data)))
         try:
-            command, data = json.loads(data)
+            data = json.loads(data)
         except Exception, e:
             logger.debug("Problem decoding %s from %s: %s" % (repr(data), self.addr, e))
             return
-
-        if command == 'item':
-            path = data[0]
-            value = data[1]
+        command = data['k']
+        if command == 'i':
+            path = data['p']
+            value = data['v']
             if path in self.items:
                 self.items[path](value, 'Visu', self.addr)
             else:
                 logger.info("Client %s want to update invalid item: %s" % (self.addr, path))
-        elif command == 'monitor':
-            if data == [None]:
+        elif command == 'm':
+            if data['p'] == [None]:
                 return
-            for path in list(set(data).difference(set(self.monitor))):
+            for path in list(set(data['p']).difference(set(self.monitor['i']))):
                 if path in self.items:
                     if 'visu_img' in self.items[path].conf:
-                        self.json_send(json.dumps(['item', [path, self.items[path](), self.items[path].conf['visu_img']]]))
+                        self.json_send({'k': 'i', 'p': [[path, self.items[path](), self.items[path].conf['visu_img']]]})
                     else:
-                        self.json_send(json.dumps(['item', [path, self.items[path]()]]))
+                        self.json_send({'k': 'i', 'p': [[path, self.items[path]()]]})
                 else:
                     logger.info("Client %s requested invalid item: %s" % (self.addr, path))
-            self.monitor = data
-        elif command == 'logic':
-            name = data[0]
-            value = data[1]
+            self.monitor['i'] = data['p']
+        elif command == 'c':  # logic
+            name = data['l']
+            value = data['v']
             if name in self.logics:
                 logger.info("Client %s triggerd logic %s with '%s'" % (self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
-        elif command == 'rrd':
+        elif command == 'r':  # rrd
             self.rrd = True
-            path = data[0]
-            frame = str(data[1])
+            path = data['p']
+            frame = str(data['f'])
             if path in self.items:
                 if hasattr(self.items[path], 'export'):
-                    self.json_send(json.dumps(['rrd', self.items[path].export(frame)]))
+                    self.json_send(self.items[path].export(frame))
                 else:
                     logger.info("Client %s requested invalid rrd: %s." % (self.addr, path))
             else:
                 logger.info("Client %s requested invalid item: %s" % (self.addr, path))
-        elif command == 'log':
+            if path not in self.monitor['r']:
+                self.monitor['r'].append(path)
+        elif command == 'l':  # log
             self.log = True
-            name = data[0]
-            num = int(data[1])
+            name = data['l']
+            num = int(data['m'])
             if name in self.logs:
-                self.json_send(json.dumps(['log', [name, self.logs[name].export(num)]]))
+                self.json_send({ 'k': 'l', 'p': [[name, self.logs[name].export(num)]], 'i': 'y'})
             else:
                 logger.info("Client %s requested invalid log: %s" % (self.addr, name))
+            if name not in self.monitor['l']:
+                self.monitor['l'].append(name)
 
     def parse_header(self, data):
         for line in data.splitlines():
@@ -312,6 +321,7 @@ class WebSocketHandler(asynchat.async_chat):
         opcode = 1  # text frame
         mask = 0
         header = chr(((fin << 7) | (rsv1 << 6) | (rsv2 << 5) | (rsv3 << 4) | opcode))
+        data = json.dumps(data, separators=(',',':'))
         length = len(data)
         if length < 126:
             header += chr(mask | length)
@@ -325,6 +335,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.push(header + data)
 
     def hixie76_send(self, data):
+        data = json.dumps(data, separators=(',',':'))
         self.push("\x00%s\xff" % data)
 
     def hixie76_parse(self, data):

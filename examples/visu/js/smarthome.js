@@ -18,7 +18,7 @@
 //  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 //########################################################################
 
-var shVersion = 0.72;
+var shVersion = 0.73;
 var shWS = false; // WebSocket
 var shLock = false;
 var shRRD = {};
@@ -101,39 +101,45 @@ function shInit(url) {
     });
 };
 
-function shLogUpdate(path, data) {
-    var obj = $('[data-log="' + path + '"]');
-    var max = parseInt($(obj).attr('data-max'));
-    if (obj.length == 0) {
-        console.log("unknown id: "+ path);
-        return;
-    }
-    if (data.length > 1) {
-        $(obj).html('')
+function shLogUpdate(data) {
+    var path, obj, max, val;
+    for (var i = 0; i < data.p.length; i++) {
+        path = data.p[i][0];
+        obj = $('[data-log="' + path + '"]');
+        if (obj.length == 0) {
+            console.log("unknown id: "+ path);
+            return;
+        }
+        max = parseInt($(obj).attr('data-max'));
+        val = data.p[i][1];
+        if ('i' in data) {  // init
+            $(obj).html('')
+        };
+        for (var i = 0; i < val.length; i++) {
+            $(obj).prepend("<li>" + val[i] + "</li>\n")
+        };
+        $(obj).listview('refresh');
     };
-    for (var i = 0; i < data.length; i++) {
-        $(obj).prepend("<li>" + data[i] + "</li>\n")
-    };
+
     if (max != null) {
         while ($(obj).children().length > max) {
             $(obj).children().last().remove()
         };
     };
-    $(obj).listview('refresh');
 };
 
 
 function shRRDUpdate(data) {
-    var id, frame, rrds, item, value;
-    if ('frame' in data) {
-        id = data.id;
-        var time = data.start * 1000;
-        var step = data.step * 1000;
+    var id, time, step, frame, rrds, item, value;
+    if ('f' in data) {
+        id = data.p[0][0];
+        time = data.s * 1000;
+        step = data.d * 1000;
         var d = [];
-        frame = data.frame;
+        frame = data.f;
         //{color: 'blue', label: data.label, yaxis: 2, data: []};
-        for (i = 0; i < data.data.length; i++) {
-            d.push([time, data.data[i]]);
+        for (i = 0; i < data.p[0][1].length; i++) {
+            d.push([time, data.p[0][1][i]]);
             time += step
         };
         if (id in shRRD) {
@@ -159,10 +165,10 @@ function shRRDUpdate(data) {
             };
         });
     } else {
-        var time = data.time * 1000;
-        for (item in data.data) {
-            id = data.data[item][0];
-            value = data.data[item][1];
+        var time = data.t * 1000;
+        for (item in data.p) {
+            id = data.p[item][0];
+            value = data.p[item][1];
             if (id in shRRD) {
                 for (frame in shRRD[id]) {
                     if (frame.search(/^([0-9]+h)|([1-7]d)/) != -1) {
@@ -206,23 +212,27 @@ function shRRDDraw(div) {
 function shWsInit() {
     shWS = new WebSocket(shURL);
     shWS.onopen = function(){
-        shSend([ 'SmartHome.py', 1 ]);
+        shSend({'k': 'v', 'v': shVersion});
+        shRRD = {};
+        shLog = {};
         shRequestData();
         $('.ui-dialog').dialog('close');
     };
     shWS.onmessage = function(event) {
+        // msg format
+        // k (ey) = i(tem)|l(og)|r(rd)|d(ialog)
+        // p (aylod) = array with [id, value] arrays
+        // rrd: f (rame), s (tart), d (elta)
         var path, val;
         var data = JSON.parse(event.data);
         console.log("receiving data: " + event.data);
-        command = data[0];
-        delete data[0];
-        switch(command) {
-            case 'item':
-                for (var i = 1; i < data.length; i++) {
-                    path = data[i][0];
-                    val = data[i][1];
-                    if ( data[i].length > 2 ) {
-                        shOpt[path] = data[i][2];
+        switch(data.k) {
+            case 'i':
+                for (var i = 0; i < data.p.length; i++) {
+                    path = data.p[i][0];
+                    val = data.p[i][1];
+                    if ( data.p[i].length > 2 ) {
+                        shOpt[path] = data.p[i][2];
                     };
                     shLock = path;
                     shBuffer[path] = val;
@@ -230,14 +240,14 @@ function shWsInit() {
                     shLock = false;
                 };
                 break;
-            case 'rrd':
-                shRRDUpdate(data[1]);
+            case 'r':
+                shRRDUpdate(data);
                 break;
-            case 'log':
-                shLogUpdate(data[1][0], data[1][1]);
+            case 'l':
+                shLogUpdate(data);
                 break;
-            case 'dialog':
-                shDialog(data[1][0], data[1][1]);
+            case 'd':
+                shDialog(data.h, data.c);
                 break;
         };
     };
@@ -262,7 +272,7 @@ function shWSCheck() {
 function shRequestData() {
     shMonitor = $("[data-sh]").map(function() { if (this.tagName != 'A') { return $(this).attr("data-sh"); }}).get();
     shMonitor = shUnique(shMonitor);
-    shSend(['monitor', shMonitor]);
+    shSend({'k': 'm', 'p': shMonitor});
     $("[data-rrd]").each( function() {
         var rrds = $(this).attr('data-rrd').split('|');
         var frame = $(this).attr('data-frame');
@@ -270,9 +280,9 @@ function shRequestData() {
             var rrd = rrds[i].split('=');
             var id = rrd[0];
             if (!(id in shRRD)) {
-                shSend(['rrd', [rrd[0], frame]]);
+                shSend({'k': 'r', 'p': rrd[0], 'f': frame});
             } else if (!(frame in shRRD[id])) {
-                shSend(['rrd', [rrd[0], frame]]);
+                shSend({'k': 'r', 'p': rrd[0], 'f': frame});
             };
         };
     });
@@ -280,7 +290,7 @@ function shRequestData() {
         var log = $(this).attr('data-log');
         var max = $(this).attr('data-max');
         if (!(log in shLog)) {
-            shSend(['log', [log, max]]);
+            shSend({'k':'l', 'l': log, 'm': max});
         };
     });
 };
@@ -324,7 +334,7 @@ function shSend(data){
         shWsInit();
     };
     if ( shWS.readyState == 1 ) {
-        console.log('sending data: ' + data);
+        console.log('sending data: ' + JSON.stringify(data));
         shWS.send(unescape(encodeURIComponent(JSON.stringify(data))));
         return true;
     } else {
@@ -338,14 +348,14 @@ function shBufferUpdate(path, val, src){
         if (shBuffer[path] !== val){
             console.log(path + " changed to: " + val + " (" + typeof(val) + ")");
             shBuffer[path] = val;
-            shSend([ 'item', [ path, val ]]);
+            shSend({'k': 'i', 'p': path, 'v': val});
             shUpdateItem(path, val, src);
         };
     };
 };
 
 function shTriggerLogic(obj){
-    shSend(['logic', [ $(obj).attr('data-logic'), $(obj).attr('value') ]]);
+    shSend({'k':'c', 'l': $(obj).attr('data-logic'), 'v': $(obj).attr('value')});
 };
 
 function shSwitchButton(obj){
