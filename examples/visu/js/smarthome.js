@@ -188,6 +188,9 @@ function shRRDDraw(div) {
     var rrds = $(div).attr('data-rrd').split('|');
     var frame = $(div).attr('data-frame')
     var series = [];
+    var options = {xaxis: {mode: "time"}};
+    if ($(div).attr('data-options'))
+        options = JSON.parse("{" + $(div).attr('data-options').replace(/'/g, '"') + "}") ;
     for (i = 0; i < rrds.length; i++) {
         var serie = {};
         rrd = rrds[i].split('=');
@@ -205,7 +208,7 @@ function shRRDDraw(div) {
         };
     };
     if (series.length > 0) {
-        $.plot($(div), series, {xaxis: {mode: "time"}});
+        $.plot($(div), series, options);
     };
 };
 
