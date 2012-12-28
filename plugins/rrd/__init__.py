@@ -29,15 +29,10 @@ logger = logging.getLogger('')
 
 class RRD():
 
-    def __init__(self, smarthome, step=300, style=[], rrd_dir='/usr/local/smarthome/var/rrd/', png_dir='/var/www/visu/rrd/', web_dir='/rrd/'):
+    def __init__(self, smarthome, step=300, rrd_dir='/usr/local/smarthome/var/rrd/'):
         self._sh = smarthome
         self._rrd_dir = rrd_dir
-        self._png_dir = png_dir
-        self._web_dir = web_dir
-        self._style = style
         self._rrds = {}
-        self._graphs = {}
-        self._linecolor = '222222'
         self.step = int(step)
 
     def run(self):
@@ -50,8 +45,6 @@ class RRD():
         offset = 100  # wait 100 seconds for 1-Wire to update values
         offset = 10  # wait 100 seconds for 1-Wire to update values
         self._sh.scheduler.add('rrd', self._update_cycle, cycle=self.step, offset=offset, prio=5)
-        # create graphs
-        #self.generate_graphs()
 
     def stop(self):
         self.alive = False
@@ -77,7 +70,6 @@ class RRD():
                 data.append([item.id(), item()])
         for listener in self._sh.return_listeners():
             listener({'k': 'r', 't': time, 'p': data})
-    #self.generate_graphs()
 
     def parse_item(self, item):
         rrdb = self._rrd_dir + item.id() + '.rrd'
@@ -92,31 +84,6 @@ class RRD():
             item.average = types.MethodType(self._average, item, item.__class__)
             item.export = types.MethodType(self._export, item, item.__class__)
             self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
-#        if 'rrd_png' in item.conf:
-#            parent = str(item.return_parent())
-#            tmp, sep, item_id = item.id().rpartition('.')
-#            if '__main__' in parent:
-#                title = str(item)
-#            else:
-#                title = parent + ': ' + str(item)
-#            graph = []
-#            if isinstance(item.conf['rrd_png'], list):  # graph for multiple items
-#                for i_path in item.conf['rrd_png']:
-#                    i_item = self._sh.return_item(i_path)
-#                    if i_item != None:
-#                        graph += self._parse_item(i_item)
-#                if 'rrd_opt' not in item.conf:
-#                    logger.warning("rrd_opt not specified for {0}. Ignoring.".format(item.id()))
-#                    return
-#            else:  # graph for one item
-#                graph += self._parse_item(item)
-#                graph.append('LINE1:' + item_id + '#' + self._linecolor + ':')
-#            if 'rrd_opt' in item.conf:
-#                if isinstance(item.conf['rrd_opt'], list):
-#                    graph += item.conf['rrd_opt']
-#                else:
-#                    graph.append(item.conf['rrd_opt'])
-#            self._graphs[item.id()] = {'obj': item, 'title': title, 'graph': graph}
 
     def _simplify(self, value):
         if value[0] != None:
@@ -192,40 +159,3 @@ class RRD():
             logger.debug("Creating rrd ({0}) for {1}.".format(rrd['rrdb'], rrd['item']))
         except Exception, e:
             logger.warning("Error creating rrd ({0}) for {1}: {2}".format(rrd['rrdb'], rrd['item'], e))
-
-    #def _parse_item(self, item):
-    #        if 'rrd' not in item.conf:
-    #            logger.warning("Could not generate png for {0}. No rrd available. Add 'rrd = yes' to {0}".format(item.id()))
-    #            return []
-    #        rrdb = self._rrd_dir + item.id() + '.rrd'
-    #        tmp, sep, item_id = item.id().rpartition('.')
-    #        graph = []
-    #        graph.append('DEF:' + item_id + '=' + rrdb + ':' + item_id + ':AVERAGE')
-    #        if item_id == 'temperature':
-    #            graph += ['--vertical-label', '°C']
-    #        elif item_id == 'humidity':
-    #            graph += ['--vertical-label', '%']
-    #        return graph
-
-    #def generate_graphs(self, timeframe='1d'):
-    #    for graph in self._graphs:
-    #        self._graph(self._graphs[graph], timeframe)
-
-    #def _graph(self, graph, timeframe='1d'):
-    #    defs = []
-    #    obj = graph['obj']
-    #    png = self._png_dir + obj.id() + '-' + timeframe + '.png'
-    #    web = self._web_dir + obj.id() + '-' + timeframe + '.png'
-    #    try:
-    #        width, height, string = rrdtool.graph(
-    #            png,
-    #            '--title', graph['title'],
-    #            '--imgformat', 'PNG',
-    #            self._style,
-    #            '--start', 'e-' + timeframe,
-    #            graph['graph']
-    #        )
-    #        # adding rrd_img attribute to item
-    #        vars(obj)['rrd_img_' + timeframe] = "<img src=\"%s\" width=\"%s\" height=\"%s\" alt=\"%s\" />" % (web, width, height, graph['title'])
-    #    except Exception, e:
-    #        logger.warning("error creating graph for %s: %s" % (png, e))
