@@ -81,10 +81,14 @@ def return_html(smarthome, item):
                 html += '</fieldset>\n'
             html += '</div>\n'
         elif visu in ['div', 'span', 'img', 'list']:  # passive elements
+            if 'unit' in item.conf:
+                unit = ' data-unit="{0}"'.format(item.conf['unit'])
+            else:
+                unit = ''
             if visu == 'div':
-                html += '<div>{0}: <span data-sh="{1}"></span></div>\n'.format(item, item.id())
+                html += '<div>{0}: <span data-sh="{1}"{2}></span></div>\n'.format(item, item.id(), unit)
             elif visu == 'span':
-                html += '<div>{0}: <span data-sh="{1}"></span></div>\n'.format(item, item.id())
+                html += '<div>{0}: <span data-sh="{1}"{2}></span></div>\n'.format(item, item.id(), unit)
             elif visu == 'img':
                 html += '<div>{0}: <img data-sh="{1}" src="{2}" /></div>\n'.format(item, item.id(), item())
             elif visu == 'list':

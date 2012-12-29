@@ -441,9 +441,17 @@ function shUpdateItem(path, val, src) {
         };
         switch(element) {
             case 'DIV':
+                var unit = $(obj).attr('data-unit');
+                if (unit != null) {
+                    val = val + ' ' + unit
+                };
                 $(this).html(val);
                 break;
             case 'SPAN':
+                var unit = $(obj).attr('data-unit');
+                if (unit != null) {
+                    val = val + ' ' + unit
+                };
                 $(this).html(val);
                 break;
             case 'TEXTAREA':
