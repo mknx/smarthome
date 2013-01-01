@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -61,6 +61,7 @@ class Owconnection():
             self._lock.release()
         logger.info('Onewire: connected to {0}:{1}'.format(self.host, self.port))
         self.is_connected = True
+        self.read('/system/process/pid')  # workaround read to avoid owserver timeout
 
     def read(self, path):
         return self._request(path, cmd=2)
@@ -103,6 +104,10 @@ class Owconnection():
                 self._lock.release()
                 self.close()
                 raise owex("error receiving header: {0}".format(e))
+            if len(header) == 0:
+                self._lock.release()
+                self.close()
+                raise owex("error receiving header: no data")
             header = struct.unpack('IIIIII', header)
             header = map(socket.ntohl, header)
             fields = ['version', 'payload', 'ret', 'flags', 'size', 'offset']
@@ -171,15 +176,16 @@ class OneWire(Owconnection):
     _intruders = []
     alive = True
 
-    def __init__(self, smarthome, host='127.0.0.1', port=4304):
+    def __init__(self, smarthome, cycle=300 host='127.0.0.1', port=4304):
         Owconnection.__init__(self, host, port)
         self._sh = smarthome
         smarthome.monitor_connection(self)
+        self._cycle = int(cycle)
 
     def run(self):
         self.alive = True
         self._sh.scheduler.add('ow.bus', self._busmaster_discovery, prio=5, cycle=600)
-        self._sh.scheduler.add('ow', self._sensor_cycle, cycle=300, prio=5)
+        self._sh.scheduler.add('ow', self._sensor_cycle, cycle=self._cycle, prio=5)
         if self._ibutton_masters != {}:
             self._ibutton_loop()
 
