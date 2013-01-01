@@ -121,9 +121,9 @@ class DWD():
             dates = re.findall(r"\d\d\.\d\d\.\d\d\d\d \d\d:\d\d", fb)
             now = datetime.datetime.now(self.tz)
             if len(dates) > 1:  # Entwarnungen haben nur ein Datum
-                start = dateutil.parser.parse(dates[0])
+                start = dateutil.parser.parse(dates[0], dayfirst=True)
                 start = start.replace(tzinfo=self.tz)
-                end = dateutil.parser.parse(dates[1])
+                end = dateutil.parser.parse(dates[1], dayfirst=True)
                 end = end.replace(tzinfo=self.tz)
                 notice = dateutil.parser.parse(dates[2])
                 notice = notice.replace(tzinfo=self.tz)
