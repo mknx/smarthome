@@ -48,7 +48,7 @@ import lib.tools
 import lib.orb
 import lib.log
 
-VERSION = 0.7
+VERSION = 0.8-Beta
 
 TZ = gettz('UTC')
 
