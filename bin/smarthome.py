@@ -218,7 +218,7 @@ class SmartHome():
             item.init_eval_run()
         if self._connections != []:
             #self._connection_monitor()
-            self.scheduler.add('sh.con', self._connection_monitor, cycle=120, offset=0)
+            self.scheduler.add('sh.con', self._connection_monitor, cycle=60, offset=0)
         self._plugins.start()
         self.__logics = lib.logic.Logics(self, configfile=self._logic_conf)
 
