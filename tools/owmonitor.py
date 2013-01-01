@@ -26,7 +26,7 @@ sys.path.append("/usr/local/smarthome")
 
 import plugins.onewire
 
-host = 'smart.home'
+host = '127.0.0.1'
 port = 4304
 
 ow = plugins.onewire.Owconnection(host, port)
