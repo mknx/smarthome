@@ -179,7 +179,7 @@ class OneWire(Owconnection):
     _intruders = []
     alive = True
 
-    def __init__(self, smarthome, cycle=300 host='127.0.0.1', port=4304):
+    def __init__(self, smarthome, cycle=300, host='127.0.0.1', port=4304):
         Owconnection.__init__(self, host, port)
         self._sh = smarthome
         smarthome.monitor_connection(self)
