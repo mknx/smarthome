@@ -97,9 +97,11 @@ class KNX(lib.my_asynchat.AsynChat):
         self._send(init)
         self.terminator = 2
         self.parse_data = self.parse_length
-        logger.debug('knx: init ga')
-        for ga in self._init_ga:
-            self.groupread(ga, self._init_ga[ga])
+        if self._init_ga != {}:
+            logger.debug('knx: init ga')
+            for ga in self._init_ga:
+                self.groupread(ga, self._init_ga[ga])
+            self._init_ga = {}
 
     #def collect_incoming_data(self, data):
         #ba = bytearray(data)
