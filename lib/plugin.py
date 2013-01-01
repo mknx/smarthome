@@ -31,7 +31,6 @@ class Plugins():
     _threads = []
 
     def __init__(self, smarthome, configfile):
-        logger.info('Init Plugins')
         try:
             _conf = configobj.ConfigObj(configfile, file_error=True)
         except IOError, e:
