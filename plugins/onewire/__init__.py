@@ -61,7 +61,10 @@ class Owconnection():
             self._lock.release()
         logger.info('Onewire: connected to {0}:{1}'.format(self.host, self.port))
         self.is_connected = True
-        self.read('/system/process/pid')  # workaround read to avoid owserver timeout
+        try:
+            self.read('/system/process/pid')  # workaround read to avoid owserver timeout
+        except Exception, e:
+            pass
 
     def read(self, path):
         return self._request(path, cmd=2)
@@ -184,8 +187,8 @@ class OneWire(Owconnection):
 
     def run(self):
         self.alive = True
-        self._sh.scheduler.add('ow.bus', self._busmaster_discovery, prio=5, cycle=600)
-        self._sh.scheduler.add('ow', self._sensor_cycle, cycle=self._cycle, prio=5)
+        self._sh.scheduler.add('ow.bus', self._busmaster_discovery, prio=5, cycle=600, offset=1)
+        self._sh.scheduler.add('ow', self._sensor_cycle, cycle=self._cycle, prio=5, offset=4)
         if self._ibutton_masters != {}:
             self._ibutton_loop()
 
@@ -200,11 +203,9 @@ class OneWire(Owconnection):
             listing = self.dir('/')
         except Exception, e:
             return
-
         if type(listing) != list:
             logger.warning("OneWire: listing '{0}' is not a list.".format(listing))
             return
-
         for path in listing:
             if path.startswith('/bus.'):
                 bus = path.split("/")[-2]
@@ -241,11 +242,14 @@ class OneWire(Owconnection):
                 value = self.read(path)
             except Exception, e:
                 logger.debug("Could not read {0} ({1}). Exception e: {2}".format(item, sensor, e))
-                continue
+                if self.is_connected:
+                    continue
+                else:
+                    break
             if type(value) != float:
                 logger.warning("OneWire: value {0} for {1} is not a float.".format(repr(value), path))
                 continue
-            if typ == 'temperature':
+            if typ.startswith('temperature'):
                 value = round(value, 1)
             elif typ == 'humidity':
                 value = round(value)
