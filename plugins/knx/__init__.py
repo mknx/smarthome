@@ -23,9 +23,10 @@ import logging
 import socket
 import threading
 import struct
-import dpts
+import time
 
 import lib.my_asynchat
+import dpts
 
 KNXREAD = 0x00
 KNXRESP = 0x40
@@ -93,15 +94,17 @@ class KNX(lib.my_asynchat.AsynChat):
             self.groupwrite(date_ga, now.date(), '11')
 
     def handle_connect(self):
+        self.discard_buffers()
         init = [0, 38, 0, 0, 0]
         self._send(init)
         self.terminator = 2
         self.parse_data = self.parse_length
         if self._init_ga != {}:
-            logger.debug('knx: init ga')
-            for ga in self._init_ga:
-                self.groupread(ga, self._init_ga[ga])
-            self._init_ga = {}
+            if self.is_connected:
+                logger.debug('knx: read init/cache ga')
+                for ga in self._init_ga:
+                    self.groupread(ga, self._init_ga[ga])
+                self._init_ga = {}
 
     #def collect_incoming_data(self, data):
         #ba = bytearray(data)
