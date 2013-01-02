@@ -23,8 +23,6 @@ import logging
 import socket
 import threading
 import struct
-import time
-
 import lib.my_asynchat
 import dpts
 
