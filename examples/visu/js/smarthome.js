@@ -18,7 +18,7 @@
 //  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 //########################################################################
 
-var shVersion = 0.73;
+var shVersion = '0.8-Beta';
 var shWS = false; // WebSocket
 var shLock = false;
 var shRRD = {};
@@ -32,6 +32,7 @@ var shMonitor = [];
 Array.prototype.diff = function(a) {
         return this.filter(function(i) {return !(a.indexOf(i) > -1);});
 };
+
 function shUnique(arr) {
     arr = arr.sort();
     var ret = [arr[0]];
@@ -43,11 +44,16 @@ function shUnique(arr) {
     return ret;
 };
 
+function shPushCycle(obj, timeout) {
+    shSendPush(obj, true);
+    $(obj).data('cycle', setTimeout(function(){shPushCycle(obj, timeout)}, timeout));
+};
+
 function shInit(url) {
     // Init WebSocket
     shURL = url;
     shWsInit();
-    setTimeout(shWSCheckInit , 2000);
+    setTimeout(shWSCheckInit, 2000);
     $(window).unload(function(){ shWS.close(); shWS = null });
     // Adding Listeners
     $(document).on( "pagecreate", function(){
@@ -73,9 +79,16 @@ function shInit(url) {
     });
     $(document).on("vmousedown", 'img.push[data-sh]', function(event) { // Push Button
         event.preventDefault();
-        shSendPush(this, true);
+        var cycle = $(this).attr('data-cycle');
+        if (cycle == undefined) {
+            cycle = 1000;
+        } else {
+            cycle = parseInt(cycle);
+        };
+        shPushCycle(this, cycle);
     });
     $(document).on("vmouseup", 'img.push[data-sh]', function() { // Push Button
+        clearTimeout($(this).data('cycle'))
         shSendPush(this, false);
     });
     $(document).on("change", 'select[data-sh]', function() { // Select
@@ -110,7 +123,6 @@ function shLogUpdate(data) {
             console.log("unknown id: "+ path);
             return;
         }
-        max = parseInt($(obj).attr('data-max'));
         val = data.p[i][1];
         if ('i' in data) {  // init
             $(obj).html('')
@@ -120,8 +132,9 @@ function shLogUpdate(data) {
         };
         $(obj).listview('refresh');
     };
-
-    if (max != null) {
+    max = $(obj).attr('data-max');
+    if (max != undefined) {
+        max = parseInt(max);
         while ($(obj).children().length > max) {
             $(obj).children().last().remove()
         };
@@ -394,7 +407,7 @@ function shSendFix(obj){
 function shSendPush(obj, val){
     var path = $(obj).attr('data-sh');
     if ( path == shLock) { return; };
-    shBufferUpdate(path, val, obj);
+    shSend({'k': 'i', 'p': path, 'v': val});
 };
 
 function shSendVal(obj){
