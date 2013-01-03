@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
+# Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -21,6 +21,7 @@
 
 import time
 import sys
+
 sys.path.append("/usr/local/smarthome")
 
 import plugins.onewire
@@ -31,15 +32,4 @@ port = 4304
 ow = plugins.onewire.Owconnection(host, port)
 ow.connect()
 
-old = []
-while 1:
-    new = ow.dir()
-    dif = list(set(new)-set(old))
-    for sensor in dif:
-        try:
-            typ = ow.read(sensor + 'type')
-            print "new sensor: %s (%s)" % (sensor, typ)
-        except Exception, e:
-            pass
-    old = new
-    time.sleep(1)
+ow.tree('/')
