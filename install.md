@@ -26,8 +26,8 @@ The base system needs two modules:
 <code>apt-get install python-configobj python-dateutil</code>
 
 If you want to use sunset/sunrise triggers, you have to install pyephem as well.
-<code>apt-get install python-setuptools python-dev</code>
-<code>easy_install pyephem</code>
+<code># apt-get install python-setuptools python-dev
+# easy_install pyephem</code>
 
 ### User
 You may want to create an separate user to run SmartHome.py. <code>adduser smarthome</code>
