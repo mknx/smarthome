@@ -217,12 +217,12 @@ def en16000(value):
         value = value.encode('ascii')
     else:
         value = str(value)
-    yield 0x00
     value = value[:14]
+    a = [0]
     for c in value:
-        yield ord(c)
-    for i in range(len(value), 14):
-        yield 0x00
+        a.append(ord(c))
+    a = a + [0]*(15 - len(a))
+    return a
 
 
 def en16001(value):
@@ -230,12 +230,12 @@ def en16001(value):
         value = value.encode('iso-8859-1')
     else:
         value = str(value)
-    yield 0x00
     value = value[:14]
+    a = [0]
     for c in value:
-        yield ord(c)
-    for i in range(len(value), 14):
-        yield 0x00
+        a.append(ord(c))
+    a = a + [0]*(15 - len(a))
+    return a
 
 
 def de16000(payload):
