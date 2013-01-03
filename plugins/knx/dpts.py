@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.
 #
@@ -212,6 +212,40 @@ def de14(payload):
     return struct.unpack('>f', payload)[0]
 
 
+def en16000(value):
+    if isinstance(value, unicode):
+        value = value.encode('ascii')
+    else:
+        value = str(value)
+    yield 0x00
+    value = value[:14]
+    for c in value:
+        yield ord(c)
+    for i in range(len(value), 14):
+        yield 0x00
+
+
+def en16001(value):
+    if isinstance(value, unicode):
+        value = value.encode('iso-8859-1')
+    else:
+        value = str(value)
+    yield 0x00
+    value = value[:14]
+    for c in value:
+        yield ord(c)
+    for i in range(len(value), 14):
+        yield 0x00
+
+
+def de16000(payload):
+    return str(payload)
+
+
+def de16001(payload):
+    return str(payload)
+
+
 def en24(value):
     if isinstance(value, unicode):
         value = value.encode('iso-8859-1')
@@ -251,6 +285,7 @@ def dehex(payload):
     xlist = ["{0:x}".format(ord(char)) for char in payload]
     return ' '.join(xlist)
 
+
 decode = {
     '1': de1,
     '2': de2,
@@ -267,6 +302,8 @@ decode = {
     '12': de12,
     '13': de13,
     '14': de14,
+    '16000': de16000,
+    '16001': de16001,
     '24': de24,
     'pa': depa,
     'ga': dega,
@@ -289,6 +326,8 @@ encode = {
     '12': en12,
     '13': en13,
     '14': en14,
+    '16000': en16000,
+    '16001': en16001,
     '24': en24,
     'ga': enga
 }
