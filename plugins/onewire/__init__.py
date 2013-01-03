@@ -152,14 +152,12 @@ class Owconnection():
     def tree(self, path='/'):
         try:
             items = self.dir(path)
-        except:
+        except Exception, e:
             return
         for item in items:
+            print item
             if item.endswith('/'):
-                logger.info(item)
                 self.tree(item)
-            else:
-                logger.info(item)
 
     def close(self):
         self.is_connected = False
