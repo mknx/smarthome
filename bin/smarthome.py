@@ -36,6 +36,7 @@ import gc
 from configobj import ConfigObj
 from dateutil.tz import gettz
 
+# os.path.realpath(__file__) # use for BASE evaluation
 BASE = '/usr/local/smarthome'
 PID_FILE = BASE + '/var/run/smarthome.pid'
 sys.path.append(BASE)
