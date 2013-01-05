@@ -43,7 +43,6 @@ class RRD():
             if not os.path.isfile(rrd['rrdb']):
                 self._create(rrd)
         offset = 100  # wait 100 seconds for 1-Wire to update values
-        offset = 10  # wait 100 seconds for 1-Wire to update values
         self._sh.scheduler.add('rrd', self._update_cycle, cycle=self.step, offset=offset, prio=5)
 
     def stop(self):
