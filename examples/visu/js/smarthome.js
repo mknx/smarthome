@@ -79,17 +79,29 @@ function shInit(url) {
     });
     $(document).on("vmousedown", 'img.push[data-sh]', function(event) { // Push Button
         event.preventDefault();
+        var value = true;
         var cycle = $(this).attr('data-cycle');
         if (cycle == undefined) {
             cycle = 1000;
         } else {
             cycle = parseInt(cycle);
         };
-        shPushCycle(this, cycle, true);
+        var arr = $(this).attr('data-arr');
+        if (arr != undefined) {
+            value = [parseInt(arr), 1];
+        };
+        var path = $(this).attr('data-sh');
+        shPushCycle(this, cycle, value);
     });
     $(document).on("vmouseup", 'img.push[data-sh]', function() { // Push Button
         clearTimeout($(this).data('cycle'))
-        shSendPush(this, false);
+        var value = false;
+        var arr = $(this).attr('data-arr');
+        if (arr != undefined) {
+            value = [parseInt(arr), 0];
+        };
+        var path = $(this).attr('data-sh');
+        shSendPush(this, value);
     });
     $(document).on("change", 'select[data-sh]', function() { // Select
         shSendSelect(this);
@@ -213,7 +225,7 @@ function shRRDDraw(div) {
             if (frame in shRRD[tid]) {
                 if (rrd[1] != undefined) {
                     serie = JSON.parse("{" + rrd[1].replace(/'/g, '"') + "}") ;
-                }else {
+                } else {
                     serie = {}
                 };
                 serie['data'] = shRRD[tid][frame]
@@ -481,7 +493,7 @@ function shUpdateItem(path, val, src) {
                 updateList(this, val);
                 break;
             case 'IMG':
-                if ( $(this).attr("class") != "set" ){
+                if ( $(this).attr("class") != "set" && $(this).attr("class") != "push"){
                     if ( path in shOpt ){
                         $(this).attr("src", shOpt[path][Number(val)]);
                         $(this).val(Number(val));

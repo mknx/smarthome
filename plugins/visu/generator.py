@@ -93,11 +93,21 @@ def return_html(smarthome, item):
                 html += '<div>{0}: <img data-sh="{1}" src="{2}" /></div>\n'.format(item, item.id(), item())
             elif visu == 'list':
                 html += '<h2>{0}</h2><ul data-sh="{1}" data-filter="true" data-role="listview" data-inset="true"></ul>\n'.format(item, item.id())
-        elif visu in ['switch', 'push']:  # active elements
+        elif visu in ['switch', 'push', 'dpt3']:  # active elements
             if visu == 'switch':
                 html += '<div>{0}: <img data-sh="{1}" src="/img/t.png" class="switch" /></div>\n'.format(item, item.id())
             elif visu == 'push':
-                html += '<div>{0}: <img data-sh="{1}" src="/img/t.png" class="push" /></div>\n'.format(item, item.id())
+                if 'visu_opt' not in item.conf:
+                    logger.warning('No viso_opt img specified for push button {0}'.format(item.id()))
+                    return
+                if 'knx_dpt' in item.conf:
+                    if item.conf['knx_dpt'] == '3':
+                        html += '<div>{0}: <img data-sh="{1}" src="{2}" class="push" data-cycle="500" data-arr="0" />\n'.format(item, item.id(), item.conf['visu_opt'][0])
+                        html += '<img data-sh="{1}" src="{2}" class="push" data-cycle="500" data-arr="1" /></div>\n'.format(item, item.id(), item.conf['visu_opt'][1])
+                    else:
+                        html += '<div>{0}: <img data-sh="{1}" src="{2}" class="push" /></div>\n'.format(item, item.id(), item.conf['visu_opt'])
+                else:
+                    html += '<div>{0}: <img data-sh="{1}" src="{2}" class="push" /></div>\n'.format(item, item.id(), item.conf['visu_opt'])
         elif visu == 'rrd':
             if 'visu_opt' in item.conf:
                 if isinstance(item.conf['visu_opt'], list):
