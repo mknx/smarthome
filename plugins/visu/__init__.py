@@ -71,7 +71,7 @@ class WebSocket(asyncore.dispatcher):
         except IOError, e:
             logger.error("Could not find footer file: {0}".format(footer_file))
             return
-        index = header
+        index = header.replace(': ','').replace('TITLE', '')
         index += '<div data-role="page" id="index">\n'
         index += '    <div data-role="header"><h3>SmartHome</h3></div>\n'
         index += '    <div data-role="content">\n\n'
@@ -81,7 +81,7 @@ class WebSocket(asyncore.dispatcher):
             item_file = "/gen/{0}.html".format(item.id())
             if 'data-sh' in html or 'data-rrd' in html:
                 index += '<li><a href="{0}" data-ajax="false">{1}</a></li>\n'.format(item_file, item)
-                page = header
+                page = header.replace('TITLE', str(item))
                 page += '<div data-role="page" id="{0}">\n'.format(item.id())
                 page += '    <div data-role="header"><h3>{0}</h3></div>\n'.format(item)
                 page += '    <div data-role="content">\n\n'
