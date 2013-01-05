@@ -44,9 +44,9 @@ function shUnique(arr) {
     return ret;
 };
 
-function shPushCycle(obj, timeout) {
-    shSendPush(obj, true);
-    $(obj).data('cycle', setTimeout(function(){shPushCycle(obj, timeout)}, timeout));
+function shPushCycle(obj, timeout, value) {
+    shSendPush(obj, value);
+    $(obj).data('cycle', setTimeout(function(){shPushCycle(obj, timeout, value)}, timeout));
 };
 
 function shInit(url) {
@@ -85,7 +85,7 @@ function shInit(url) {
         } else {
             cycle = parseInt(cycle);
         };
-        shPushCycle(this, cycle);
+        shPushCycle(this, cycle, true);
     });
     $(document).on("vmouseup", 'img.push[data-sh]', function() { // Push Button
         clearTimeout($(this).data('cycle'))
