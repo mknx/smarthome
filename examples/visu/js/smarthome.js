@@ -127,17 +127,18 @@ function shLogUpdate(data) {
         if ('i' in data) {  // init
             $(obj).html('')
         };
-        for (var i = 0; i < val.length; i++) {
-            $(obj).prepend("<li>" + val[i] + "</li>\n")
+        for (var j = val.length -1; j >= 0; j--) {
+            console.log(j);
+            $(obj).prepend("<li>" + val[j] + "</li>\n")
+        };
+        max = $(obj).attr('data-max');
+        if (max != undefined) {
+            max = parseInt(max);
+            while ($(obj).children().length > max) {
+                $(obj).children().last().remove()
+            };
         };
         $(obj).listview('refresh');
-    };
-    max = $(obj).attr('data-max');
-    if (max != undefined) {
-        max = parseInt(max);
-        while ($(obj).children().length > max) {
-            $(obj).children().last().remove()
-        };
     };
 };
 

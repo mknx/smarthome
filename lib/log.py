@@ -33,7 +33,7 @@ class Log(collections.deque):
         smarthome.add_log(name, self)
 
     def add(self, entry):
-        self.append(entry)
+        self.appendleft(entry)
         for listener in self._sh.return_listeners():
             listener({'k': 'l', 'p': [[self._name, [self.log_string.format(*entry)]]]})
 
@@ -46,9 +46,9 @@ class Log(collections.deque):
     def clean(self, dt):
         while True:
             try:
-                entry = self.popleft()
+                entry = self.pop()
             except Exception, e:
                 return
             if entry[0] > dt:
-                self.appendleft(entry)
+                self.append(entry)
                 return
