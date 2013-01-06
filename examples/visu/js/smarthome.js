@@ -140,8 +140,7 @@ function shLogUpdate(data) {
             $(obj).html('')
         };
         for (var j = val.length -1; j >= 0; j--) {
-            console.log(j);
-            $(obj).prepend("<li>" + val[j] + "</li>\n")
+            $(obj).prepend(val[j] + "\n")
         };
         max = $(obj).attr('data-max');
         if (max != undefined) {
@@ -534,7 +533,7 @@ function updateSelect(obj, val) {
 function updateList(obj, val) {
     $(obj).html('')
     for (var i = 0; i < val.length; i++) {
-        $(obj).append("<li>" + val[i] + "</li>\n")
+        $(obj).append(val[i] + "\n")
     };
     $(obj).listview('refresh');
 

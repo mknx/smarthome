@@ -44,7 +44,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._mailboxes = {}
         self._trigger_logics = {}
         # [start, number, duration, direction]
-        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', '<h3><a href="tel:{2}">{1}</a></h3><p class="ui-li-aside">{0:%a %H:%M}<br />{3} s</p>')
+        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', '<li><h3><a href="tel:{2}">{1}</a></h3><p class="ui-li-aside">{0:%a %H:%M}<br />{3} s</p></li>')
         smarthome.monitor_connection(self)
 
     def _command(self, d, reply=True):

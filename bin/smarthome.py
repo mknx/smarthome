@@ -144,7 +144,7 @@ class SmartHome():
         log_file.setFormatter(formatter)
         logging.getLogger('').addHandler(log_file)
 
-        self.log = lib.log.Log(self, 'SmartHome.py', '<p style="font-weight:bold;">{1}</p><p>{3}</p><p class="ui-li-aside">{0:%a %H:%M:%S}<br />{2}</p>', maxlen=self._log_buffer)
+        self.log = lib.log.Log(self, 'SmartHome.py', '<li><p style="font-weight:bold;">{1}</p><p>{3}</p><p class="ui-li-aside">{0:%a %H:%M:%S}<br />{2}</p></li>', maxlen=self._log_buffer)
         log_mem = LogHandler(self.log)
         log_mem.setLevel(logging.WARNING)
         log_mem.setFormatter(formatter)
