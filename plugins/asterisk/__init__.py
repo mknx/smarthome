@@ -43,7 +43,8 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._devices = {}
         self._mailboxes = {}
         self._trigger_logics = {}
-        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', '<h3>{1}</h3>{0:%H:%M:%S} {2} {3}<p class="ui-li-aside">{0:%H:%M}</p><p class="ui-li-aside">({2})</p>')
+        # [start, number, duration, direction]
+        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', '<h3><a href="tel:{2}">{1}</a></h3><p class="ui-li-aside">{0:%a %H:%M}<br />{3} s</p>')
         smarthome.monitor_connection(self)
 
     def _command(self, d, reply=True):
@@ -179,17 +180,17 @@ class Asterisk(lib.my_asynchat.AsynChat):
         elif event['Event'] == 'Cdr':
             end = self._sh.now()
             start = end - dateutil.relativedelta.relativedelta(seconds=int(event['Duration']))
-            if event['BillableSeconds'] != '0':
-                duration = event['BillableSeconds']
-            else:
-                duration = ''
+            duration = event['BillableSeconds']
+            print event
             if len(event['Source']) <= 4:
                 direction = '=>'
                 number = event['Destination']
             else:
                 direction = '<='
                 number = event['Source']
-                self._log_in.add([start, number, duration, direction])
+                name = event['CallerID'].split('<')[0].strip('" ')
+                print ([start, name, number, duration, direction])
+                self._log_in.add([start, name, number, duration, direction])
 
     def _update_devices(self):
         active_channels = self._command({'Action': 'CoreShowChannels'})
