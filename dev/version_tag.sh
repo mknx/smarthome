@@ -26,5 +26,6 @@ echo "$1" > VERSION
 git add VERSION bin/smarthome.py $JS.js $JS.min.js
 git tag -a -m "set version to $1" $1
 git commit -m "set version to $1"
+git push origin tag $1
 git archive master --prefix='/usr/local/smarthome/' | gzip > release/`git describe master`.tgz
 git archive master --prefix='/usr/local/smarthome/' --format=zip > release/`git describe master`.zip
