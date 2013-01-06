@@ -20,10 +20,13 @@ git clone git://github.com/mknx/smarthome.git
 git pull
 
 # Coding
-
 ## pep8
 `apt-get install pep8`
 `pep8 yourcode.py`
+
+# Release
+## Changes
+`git log --pretty=format:"%s" VERSIONTAG..HEAD`
 
 # Homepage
 ```
