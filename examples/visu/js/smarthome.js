@@ -18,7 +18,7 @@
 //  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 //########################################################################
 
-var shProto = '1';
+var shProto = 1;
 var shWS = false; // WebSocket
 var shLock = false;
 var shRRD = {};
@@ -278,7 +278,7 @@ function shWsInit() {
                 shDialog(data.h, data.c);
                 break;
             case 'p':
-                var proto = data['p'];
+                var proto = parseInt(data['p']);
                 if (proto != shProto) {
                     shDialog('Protcol missmatch', 'Update smarthome(.min).js');
                 };
