@@ -50,7 +50,7 @@ import lib.tools
 import lib.orb
 import lib.log
 
-VERSION = '0.8'
+VERSION = '0.8-Beta'
 try:
     os.chdir(BASE)
     VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty'], stderr=subprocess.STDOUT)
