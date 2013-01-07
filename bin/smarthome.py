@@ -22,6 +22,7 @@
 import signal
 import sys
 import os
+import subprocess
 import threading
 import time
 import logging
@@ -49,7 +50,11 @@ import lib.tools
 import lib.orb
 import lib.log
 
-VERSION = '0.8-Beta'
+try:
+    os.chdir(BASE)
+    VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty'], stderr=subprocess.STDOUT)
+except Exception, e:
+    VERSION = '0.8-Beta'
 
 TZ = gettz('UTC')
 
