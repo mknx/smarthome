@@ -1,16 +1,43 @@
 Roadmap
 =======
-   * dwd plugin: Deutscher Wetterdienst - weather forecast and warnings
-   * Squeezeserver plugin
-   * Denon plugin
+   * Denon Plugin
+   * MPD Plugin
 
 # 0.8
+## Contributions from:
+   * Niko Will
+   * Alexander Rieger
+
+## New Plugins
+   * DWD Plugin: new plugin to fetch weather warnings and forecast from Deutscher Wetterrdienst (DWD)
+   * Mail Plugin: IMAP, SMTP
+   * RRDTool Plugin: build round robin databases and create graphs, sh.office.temperature.average('1h')
+   * Russound Plugin: RIO
+   * Snom Plugin: XML phonebook
 
 ## Features
-   * Russound plugin: RIO
-   * Visu plugin: adding visu_groupsi
-   * visu plugin: plot rrd with flot
-   * rrdtool plugin: build round robin databases and create graphs,  sh.office.temperature.average('1h')
+   * Base
+    * sh.tools.fetch_url()
+    * item.conf: new types list, dict
+    * sh.moon() with set(), rise(), pos(), light(), phase()
+   * Asterisk plugin: Call Log,
+   * CLI plugin: adding 'rl' to reload logic, and 'rr' to reload and run logic
+   * KNX plugin: DPT 16 support
+   * Network plugin: adding simple http interface
+   * Visu plugin: plot rrd with flot,
+        push buttond sends now cyclic,
+        list view
+        dpt3 push buttons,
+        TITLE header template,
+        adding 'unit' attribute to item.conf
+        JQuery: 1.8.3, JQuery Mobile 1.2
+        Log view  SmartHome.py, Asterisk
+
+## Bug Fixes
+   * KNX plugin: knx_init/knx_cache could not work if first connection attempt failed
+        dpt 10, 11 encoding
+   * Onewire plugin: improve error handling
+   * Workaround for urllib2 memory leakage
 
 
 # 0.7
