@@ -163,6 +163,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.logs = logs
         self._lock = threading.Lock()
         self.logics = logics
+        self.proto = 1
 
     def send_data(self, data):
         data = data.copy()  # don't filter the orignal data dict
@@ -251,6 +252,11 @@ class WebSocketHandler(asynchat.async_chat):
                 logger.info("Client %s requested invalid log: %s" % (self.addr, name))
             if name not in self.monitor['l']:
                 self.monitor['l'].append(name)
+        elif command == 'p':  # protocol version
+            proto = data['v']
+            if proto != self.proto:
+                logger.warning("Protocol missmatch. Update smarthome(.min).js. Client: {0}".format(self.addr))
+            self.json_send({'k': 'p', 'p': self.proto})
 
     def parse_header(self, data):
         for line in data.splitlines():
