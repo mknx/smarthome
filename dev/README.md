@@ -20,6 +20,9 @@ git clone git://github.com/mknx/smarthome.git
 git pull
 
 # Coding
+
+## Python Version
+You should use Python =< 2.6 methods only. If not make it clear in the documentation.
 ## pep8
 `apt-get install pep8`
 `pep8 yourcode.py`
