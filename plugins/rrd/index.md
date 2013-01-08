@@ -23,17 +23,15 @@ Configuration
 plugin.conf
 -----------
 <pre>
-['rrd']
+[rrd]
     class_name = RRD
     class_path = plugins.rrd
-    # rrd_style = --color, 'ARROW#00000000', --color, 'FRAME#00000000', --color, 'BACK#00000000', --slope-mode
+    # step = 300
     # rrd_dir = /usr/local/smarthome/var/rrd/
-    # rrd_png = /var/www/visu/rrd/
-    # rrd_web = /rrd/
 </pre>
 
-`rrd_style` is a list of graph style options. See man rrdgraph for creating your own style.
-`rrd_dir` specify the rrd storage location. `rrd_png` location for the png graphs. `rrd_web` is used for the relative path name used in the img tag.
+`step` sets the cycle time how often entries will be updated.
+`rrd_dir` specify the rrd storage location.
 
 items.conf
 --------------
@@ -42,45 +40,35 @@ items.conf
 To active rrd logging (for an item) simply set this attribute to yes.
 
 ### rrd_min
-Set this item attribute to log the minimum as well.
+Set this item attribute to log the minimum as well. Default is no.
 
 ### rrd_max
-Set this item attribute to log the maximum as well.
-
-### rrd_graph
-If this attribute ist set to 'yes' a graph for this item would be created.
-With `rrd_opt` you could specify item specific graph style options.
-
+Set this item attribute to log the maximum as well. Default is no.
 
 <pre>
-['outside']
+[outside]
     name = Outside
-    [['temperature']]
-        name = Temp
+    [[temperature]]
+        name = Temperatur
         type = num
         rrd = 1
         rrd_min = 1
         rrd_max = 1
-        rrd_graph = 1
 
-['office']
-    name = 'Büro'
-    rrd_graph = office.temperature, office.humidity
-    rrd_opt = '--right-axis', '4:-50', '--right-axis-label', '%', '--rigid', '--lower-limit', '20', '--upper-limit', '26', 'CDEF:hum=humidity,4,/,12,+', 'LINE1:temperature#FF0000:Temperatur', 'LINE1:hum#0000FF:Luftfeuchte'
-    [['temperature']]
+[office]
+    name = Büro
+    [[temperature]]
         name = Temperatur
-        type = num
-        rrd = 1
-    [['humidity']]
-        name = Luftfeuchtigkeit
         type = num
         rrd = 1
 </pre>
 
-Functions
-=========
+# Functions
+This plugin adds two item! functions to every item which has rrd enabled.
 
-generate_graphs(timeframe)
---------------------------
+## sh.item.average(frame)
+Return the average for the specified time frame. See the rrdtool documentation for supported time frames.
+e.g. `sh.office.temperature.average('1h')` return the average of the last hour
 
-
+## sh.item.export(frame)
+Export/dumps the rrd database for the time frame.
