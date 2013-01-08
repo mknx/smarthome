@@ -47,6 +47,8 @@ class Owconnection():
         self._flag += 0x00000004  # persistence
         self._flag += 0x00000002  # list special directories
         self.is_connected = False
+        self._connection_attempts = 0
+        self._connection_errorlog = 60
 
     def connect(self):
         self._lock.acquire()
@@ -55,12 +57,16 @@ class Owconnection():
             self._sock.connect((self.host, self.port))
             self._sock.settimeout(2)
         except Exception, e:
-            logger.error('Onewire: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
+            self._connection_attempts -= 1
+            if self._connection_attempts <= 0:
+                logger.error('Onewire: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
+                self._connection_attempts = self._connection_errorlog
             return
         finally:
             self._lock.release()
         logger.info('Onewire: connected to {0}:{1}'.format(self.host, self.port))
         self.is_connected = True
+        self._connection_attempts = 0
         try:
             self.read('/system/process/pid')  # workaround read to avoid owserver timeout
         except Exception, e:

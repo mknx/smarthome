@@ -53,7 +53,7 @@ import lib.log
 VERSION = '0.8-Beta'
 try:
     os.chdir(BASE)
-    VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty'], stderr=subprocess.STDOUT)
+    VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty=+'], stderr=subprocess.STDOUT).strip('\n')
 except Exception, e:
     pass
 
@@ -224,8 +224,7 @@ class SmartHome():
         for item in self.return_items():
             item.init_eval_run()
         if self._connections != []:
-            #self._connection_monitor()
-            self.scheduler.add('sh.con', self._connection_monitor, cycle=120, offset=0)
+            self.scheduler.add('sh.con', self._connection_monitor, cycle=10, offset=0)
         self._plugins.start()
         self.__logics = lib.logic.Logics(self, configfile=self._logic_conf)
 
