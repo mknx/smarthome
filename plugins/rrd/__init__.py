@@ -71,18 +71,19 @@ class RRD():
             listener({'k': 'r', 't': time, 'p': data})
 
     def parse_item(self, item):
+        if 'rrd' not in item.conf:
+            return
         rrdb = self._rrd_dir + item.id() + '.rrd'
-        if 'rrd' in item.conf:
-            rrd_min = False
-            rrd_max = False
-            if 'min' in item.conf['rrd']:
-                rrd_min = True
-            if 'max' in item.conf['rrd']:
-                rrd_max = True
-            # adding average and export method to the item
-            item.average = types.MethodType(self._average, item, item.__class__)
-            item.export = types.MethodType(self._export, item, item.__class__)
-            self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
+        rrd_min = False
+        rrd_max = False
+        if 'rrd_min' in item.conf['rrd']:
+            rrd_min = True
+        if 'rrd_max' in item.conf['rrd']:
+            rrd_max = True
+        # adding average and export method to the item
+        item.average = types.MethodType(self._average, item, item.__class__)
+        item.export = types.MethodType(self._export, item, item.__class__)
+        self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
 
     def _simplify(self, value):
         if value[0] != None:
@@ -103,7 +104,7 @@ class RRD():
             del data[-2]
         if data[-1] == None:
             data[-1] = item()
-        return {'k': 'r', 'f': frame, 's': start, 'd': step, 'p': [[ item.id(), data]]}
+        return {'k': 'r', 'f': frame, 's': start, 'd': step, 'p': [[item.id(), data]]}
 
     def parse_logic(self, logic):
         pass
