@@ -64,7 +64,7 @@ class CLIHandler(asynchat.async_chat):
         elif cmd.startswith('tr'):
             self.tr(cmd.lstrip('tr').strip())
         elif cmd.startswith('rl'):
-            self.rr(cmd.lstrip('rl').strip())
+            self.rl(cmd.lstrip('rl').strip())
         elif cmd.startswith('rr'):
             self.rr(cmd.lstrip('rr').strip())
         elif cmd == 'help' or cmd == 'h':
@@ -132,7 +132,7 @@ class CLIHandler(asynchat.async_chat):
             logic = self.sh.return_logic(name)
             logic.generate_bytecode()
         else:
-            self.push("Logic '{0}' not found.\n".format(logic))
+            self.push("Logic '{0}' not found.\n".format(name))
 
     def rr(self, name):
         if not self.updates_allowed:
@@ -143,7 +143,7 @@ class CLIHandler(asynchat.async_chat):
             logic.generate_bytecode()
             logic.trigger(by='CLI')
         else:
-            self.push("Logic '{0}' not found.\n".format(logic))
+            self.push("Logic '{0}' not found.\n".format(name))
 
     def lo(self):
         self.push("Logics:\n")
