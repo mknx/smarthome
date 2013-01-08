@@ -48,14 +48,14 @@ class iCal():
             tzinfo = dateutil.tz.gettz(timezone)
         else:
             tzinfo = dtzinfo
-        if 'T' in value:  # ISO
+        if 'T' in value:  # ISO datetime
             value, sep, offset = value.partition('Z')
             dt = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
         else:  # date
             y = int(value[0:4])
             m = int(value[4:6])
             d = int(value[6:8])
-            dt = datetime.datetime(y, m, d)
+            dt = datetime.datetime(y, m, d, second=1)
         dt = dt.replace(tzinfo=tzinfo)
         return dt
 
