@@ -7,83 +7,58 @@ created: 2011-06-08T20:58:06+0200
 changed: 2011-06-08T20:58:06+0200
 ---
 
-Requirements
-============
+# Requirements
 This plugin has no requirements or dependencies.
 
-Configuration
-=============
+# Configuration
 
-plugin.conf
------------
+## plugin.conf
 <pre>
-[mail]
-    class_name = SMTP
-    class_path = plugins.mail
-    host = mail.example.com
-    mail_from = mail@example.com
-    # ssl = False
-    # username = False
-    # password = False
-
-[imap]
-    class_name = IMAP
-    class_path = plugins.mail
-    host = mail.example.com
-    username = smarthome
-    password = secret
-    # ssl = False
-    # port = default
-    # cycle = 300
+[snom]
+    class_name = Snom
+    class_path = plugins.snom
+    # phonebook = None
+    # username = None
+    # password = None
 </pre>
 
 ### Attributes
   * `host`: specifies the hostname of your mail server.
   * `port`: if you want to use a nonstandard port.
-  * `username`/`password`: login information
-  * `ssl`: specifies if you want to use SSL/TLS.
-  * `mail_from`: for SMTP you have to specify an origin mail address.
-  * `cycle`: for IMAP you could specify the intervall how often the inbox is checked
+  * `username`/`password`: login information for _all_ snom phones
+  * `phonebook`: path to a xml phonebook file e.g. '/var/www/voip/phonebook.xml'
 
 ## items.conf
 
-There is no item specific configuration.
+### snom_host
+With 'snom_host' you specify the host name or IP address of a snom phone.
+
+### snom_key
+This is the key name of an item in the snom configuration. You have to specify the 'snom_host' in the same or the item above to make the link to the phone.
+
+<pre>
+[phone]
+    snom_host = 10.0.0.4
+    [[display]]
+        type = str
+        snom_key = user_realname1
+    [[mailbox]]
+        type = num
+        ast_box = 33
+    [[hook]]
+        type = bool
+        nw = yes
+</pre>
 
 ## logic.conf
 
-You could assign the following keywords to a logic. The matching order is as listed.
-
-### mail_subject
-If the incoming mail subject matches the value of this key the logic will be triggerd.
-
-### mail_to
-If the mail is sent to specified address the logic will be triggerd.
-
-### mail
-A genric flag to trigger the logic on receiving a mail.
-
-Attention:
-   * You could only call one logic per mail!
-   * If a mail is processed by a logic it will be delteted (moved to Deleted folder).
-   * There is no email security. You have to use an infrastructure which provides security (e.g. own mail server which only accepts authenticated messages for the inbox).
-
-<pre>
-[sauna]
-    filename = sauna.py
-    mail_to = sauna@example.com
-
-[mailbox]
-    filename = mailbox.py
-    mail = yes
-</pre>
-
-A mail to `sauna@example.com` will only trigger the logic 'sauna'. Every other mail is process by the 'mailbox' logic.
-
-# Usage
-If a logic is triggered by this plugin it will set the trigger `source` to the from address and the `value` contains an [email object](http://docs.python.org/2.6/library/email.message.html).
-
-See the [phonebook logic](/mknx/smarthome/wiki/Phonebook) for a logic which is triggerd by IMAP.
+Currently there is no logic configuration for this plugin.
 
 # Functions
-The SMTP object provides one function (sending) and you access without specifing a method name.
-e.g. `sh.mail(to, subject, message)`
+
+## phonebook_add(name, number)
+
+If you have specified a phonebook, you could add or change existing entries by calling this function.
+You to provide the (unique) name and a number. It will replace the number of an existing entry with exactly the same name.
+
+See the [phonebook logic](https://github.com/mknx/smarthome/wiki/Phonebook) for a logic which is using this function.
