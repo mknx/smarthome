@@ -245,7 +245,7 @@ class OneWire(Owconnection):
             try:
                 value = self.read(path)
             except Exception, e:
-                logger.debug("Could not read {0} ({1}). Exception e: {2}".format(item, sensor, e))
+                logger.info("Could not read {0} ({1}): {2}".format(item, sensor, e))
                 if self.is_connected:
                     continue
                 else:
