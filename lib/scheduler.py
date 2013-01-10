@@ -190,7 +190,7 @@ class Scheduler(threading.Thread):
                 else:
                     next_time = ct
         self._scheduler[name]['next'] = next_time
-        logger.debug("{0} next time: {1}".format(name, next_time))
+        #logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):
         for job in self._scheduler:
