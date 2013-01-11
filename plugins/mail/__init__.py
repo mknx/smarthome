@@ -31,7 +31,7 @@ class IMAP():
 
     def __init__(self, smarthome, host, username, password, cycle=300, port=None, ssl=False):
         self._sh = smarthome
-        self._ssl = ssl
+        self._ssl = smarthome.string2bool(ssl)
         self._host = host
         self._port = port
         self._username = username
@@ -121,9 +121,9 @@ class IMAP():
 
 class SMTP():
 
-    def __init__(self, smarthome, host, username, password, mail_from, port=25, ssl=False):
+    def __init__(self, smarthome, host, mail_from, username=False, password=False, port=25, ssl=False):
         self._sh = smarthome
-        self._ssl = ssl
+        self._ssl = smarthome.string2bool(ssl)
         self._host = host
         self._port = int(port)
         self._from = mail_from
@@ -147,7 +147,8 @@ class SMTP():
         smtp = smtplib.SMTP(self._host, self._port)
         if self._ssl:
             smtp.starttls()
-        smtp.login(self._username, self._password)
+        if self._username:
+            smtp.login(self._username, self._password)
         return smtp
 
     def run(self):

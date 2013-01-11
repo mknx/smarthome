@@ -11,16 +11,16 @@ Roadmap
 ## New Plugins
    * DWD Plugin: new plugin to fetch weather warnings and forecast from Deutscher Wetterrdienst (DWD)
    * Mail Plugin: IMAP, SMTP
-   * RRDTool Plugin: build round robin databases and create graphs, sh.office.temperature.average('1h')
+   * RRD Plugin: build round robin databases and create graphs with flot.
    * Russound Plugin: RIO
-   * Snom Plugin: XML phonebook
+   * Snom Plugin: to handle snom VOIP phones.
 
 ## Features
    * Base
     * sh.tools.fetch_url()
     * item.conf: new types list, dict
     * sh.moon() with set(), rise(), pos(), light(), phase()
-   * Asterisk plugin: Call Log,
+   * Asterisk plugin: Call Log, mailbox count
    * CLI plugin: adding 'rl' to reload logic, and 'rr' to reload and run logic
    * KNX plugin: DPT 16 support
    * Network plugin: adding simple http interface
