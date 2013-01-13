@@ -59,6 +59,26 @@ Within <code>/usr/local/smarthome/</code> is the following structure:
  * tools/: contains little programms helping to maintain SmartHome.py
  * var/log/ contains the logfiles
 
+### Developement
+If you want to follow the current developement:
+
+as root:
+<pre># mkdir -p /usr/local/smarthome/
+# chown <USER> /usr/local/smarthome/
+</pre>
+
+as USER:
+<pre>
+$ cd /usr/local
+$ git clone git://github.com/mknx/smarthome.git
+</pre>
+
+To get the latest updates:
+<pre>
+$ cd /usr/local/smarthome
+$ git pull
+</pre>
+
 Confguration
 ============
 [There is a dedicated page for the configuration.](/smarthome/config)
