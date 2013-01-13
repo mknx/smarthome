@@ -179,10 +179,10 @@ class KNX(lib.my_asynchat.AsynChat):
         elif flg == 'read':
             logger.debug("{0} read {1}".format(src, dst))
             if dst in self.gar:  # read item
-                if self.gar[dst]['logic'] == False:
+                if self.gar[dst]['item'] != None:
                     item = self.gar[dst]['item']
                     self.groupwrite(dst, item(), item.conf['knx_dpt'], 'response')
-                else:
+                if self.gar[dst]['logic'] != None:
                     self.gar[dst]['logic'].trigger('KNX', dst, 'read')
 
     def run(self):
@@ -240,7 +240,7 @@ class KNX(lib.my_asynchat.AsynChat):
             for ga in knx_reply:
                 logger.debug("knx: {0} reply to {1}".format(item, ga))
                 if ga not in self.gar:
-                    self.gar[ga] = {'dpt': dpt, 'item': item, 'logic': False}
+                    self.gar[ga] = {'dpt': dpt, 'item': item, 'logic': None}
                 else:
                     logger.warning("knx: {0} knx_reply ({1}) already defined for {2}".format(item, ga, self.gar[ga]['item']))
 
@@ -284,7 +284,7 @@ class KNX(lib.my_asynchat.AsynChat):
                         obj = self.gar[ga]['logic']
                     logger.warning("knx: {0} knx_reply ({1}) already defined for {2}".format(logic, ga, obj))
                 else:
-                    self.gar[ga] = {'dpt': dpt, 'item': False, 'logic': logic}
+                    self.gar[ga] = {'dpt': dpt, 'item': None, 'logic': logic}
 
     def update_item(self, item, caller=None, source=None):
         if caller != 'KNX':
