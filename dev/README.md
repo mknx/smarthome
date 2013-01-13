@@ -24,6 +24,7 @@ git pull
 ## Python Version
 You should use Python =< 2.6 methods only. If not make it clear in the documentation.
 ## pep8
+Test the code style with pep8. I'm ignoring "E501 line too long".
 `apt-get install pep8`
 `pep8 yourcode.py`
 
