@@ -20,6 +20,7 @@ Roadmap
     * sh.tools.fetch_url()
     * item.conf: new types list, dict
     * sh.moon() with set(), rise(), pos(), light(), phase()
+    * sh.find_items('config_string'), sh.find_children(self, parent, 'config_string')
    * Asterisk plugin: Call Log, mailbox count
    * CLI plugin: adding 'rl' to reload logic, and 'rr' to reload and run logic
    * KNX plugin: DPT 16 support
