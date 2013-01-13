@@ -93,13 +93,17 @@ def de5001(payload):
 
 
 def en6(value):
-    return [0, int(value + 128) & 0xff]
+    if value < -128:
+        value = -128
+    elif value > 127:
+        value = 127
+    return [0, ord(struct.pack('b', value)[0])]
 
 
 def de6(payload):
     if len(payload) != 1:
         return None
-    return struct.unpack('>B', payload)[0] - 128
+    return struct.unpack('b', payload)[0]
 
 
 def en7(value):
@@ -115,15 +119,19 @@ def de7(payload):
 
 
 def en8(value):
+    if value < -32768:
+        value = -32768
+    elif value > 32767:
+        value = 32767
     yield 0
-    for c in struct.pack('>H', value + 32768 & 0xffff):
+    for c in struct.pack('>h', value):
         yield ord(c)
 
 
 def de8(payload):
     if len(payload) != 2:
         return None
-    return struct.unpack('>H', payload)[0] - 32768
+    return struct.unpack('>h', payload)[0]
 
 
 def en9(value):
@@ -177,6 +185,10 @@ def de11(payload):
 
 
 def en12(value):
+    if value < 0:
+        value = 0
+    elif value > 4294967295:
+        value = 4294967295
     yield 0
     for c in struct.pack('>I', value):
         yield ord(c)
@@ -189,6 +201,10 @@ def de12(payload):
 
 
 def en13(value):
+    if value < -2147483648:
+        value = -2147483648
+    elif value > 2147483647:
+        value = 2147483647
     yield 0
     for c in struct.pack('>i', value):
         yield ord(c)
@@ -221,7 +237,7 @@ def en16000(value):
     a = [0]
     for c in value:
         a.append(ord(c))
-    a = a + [0]*(15 - len(a))
+    a = a + [0] * (15 - len(a))
     return a
 
 
@@ -234,7 +250,7 @@ def en16001(value):
     a = [0]
     for c in value:
         a.append(ord(c))
-    a = a + [0]*(15 - len(a))
+    a = a + [0] * (15 - len(a))
     return a
 
 
