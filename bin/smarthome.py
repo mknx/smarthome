@@ -277,7 +277,8 @@ class SmartHome():
         for item in parent:
             if conf in item.conf:
                 yield item
-            self.find_children(item, conf)
+            for child in self.find_children(item, conf):
+                yield child
 
     def return_logic(self, name):
         return self.__logics[name]
