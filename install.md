@@ -37,7 +37,7 @@ You may want to create an separate user to run SmartHome.py. <code>adduser smart
 ## Stable Release
 
 ### Download
-At [https://github.com/mknx/smarthome/downloads](https://github.com/mknx/smarthome/downloads) you could download the latest stable version.
+At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/tags) you could download the latest stable version.
 
 ### Install
 <pre>$ cd /
