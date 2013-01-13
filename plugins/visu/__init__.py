@@ -31,14 +31,13 @@ import json
 import time
 import array
 
-import generator
 
 logger = logging.getLogger('')
 
 
 class WebSocket(asyncore.dispatcher):
 
-    def __init__(self, smarthome, generator_dir=False, ip='0.0.0.0', port=2121):
+    def __init__(self, smarthome, generator_dir=False, ip='0.0.0.0', port=2121, smartvisu_dir=False):
         asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
         self._sh = smarthome
         smarthome.add_listener(self.send_data)
@@ -46,6 +45,7 @@ class WebSocket(asyncore.dispatcher):
         self.visu_items = {}
         self.visu_logics = {}
         self.generator_dir = generator_dir
+        self.smartvisu_dir = smartvisu_dir
         try:
             self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
             self.set_reuse_addr()
@@ -54,20 +54,23 @@ class WebSocket(asyncore.dispatcher):
         except Exception, e:
             logger.error("Could not bind to socket %s:%s" % (ws_ip, ws_port))
 
+    def _smartvisu_pages(self, directory):
+        import smartvisu
+        smartvisu.pages(self._sh, directory)
+
     def _generate_pages(self, directory):
+        import generator
         header_file = directory + '/tpl/header.html'
         footer_file = directory + '/tpl/footer.html'
         try:
             with open(header_file, 'r') as f:
                 header = f.read()
-            f.closed
         except IOError, e:
             logger.error("Could not find header file: {0}".format(header_file))
             return
         try:
             with open(footer_file, 'r') as f:
                 footer = f.read()
-            f.closed
         except IOError, e:
             logger.error("Could not find footer file: {0}".format(footer_file))
             return
@@ -89,11 +92,9 @@ class WebSocket(asyncore.dispatcher):
                 page += footer
                 with open(directory + item_file, 'w') as f:
                     f.write(page)
-                f.closed
         index += '</ul>\n' + footer
         with open(directory + '/gen/index.html', 'w') as f:
             f.write(index)
-        f.closed
 
     def handle_accept(self):
         pair = self.accept()
@@ -110,6 +111,8 @@ class WebSocket(asyncore.dispatcher):
         self.alive = True
         if self.generator_dir:
             self._generate_pages(self.generator_dir)
+        if self.smartvisu_dir:
+            self._smartvisu_pages(self.smartvisu_dir)
 
     def stop(self):
         self.alive = False
