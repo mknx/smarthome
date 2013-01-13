@@ -64,7 +64,7 @@ If you want to follow the current developement:
 
 as root:
 <pre># mkdir -p /usr/local/smarthome/
-# chown <USER> /usr/local/smarthome/
+# chown USER /usr/local/smarthome/
 </pre>
 
 as USER:
