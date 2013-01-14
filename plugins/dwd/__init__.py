@@ -28,7 +28,6 @@ import datetime
 import dateutil.parser
 import dateutil.tz
 import dateutil.relativedelta
-import StringIO
 import xml.etree.ElementTree
 import threading
 
@@ -40,10 +39,10 @@ class DWD():
     _warning_cat = {}
     _warnings_csv = '/usr/local/smarthome/plugins/dwd/warnings.csv'
 
-    def __init__(self, smarthome, dwd_user, dwd_password=True):
+    def __init__(self, smarthome, username, password=True):
         self._sh = smarthome
-        self._dwd_user = dwd_user
-        self._dwd_password = dwd_password
+        self._dwd_user = username
+        self._dwd_password = password
         self.lock = threading.Lock()
         self.tz = dateutil.tz.gettz('Europe/Berlin')
         try:
