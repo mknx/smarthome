@@ -118,11 +118,8 @@ class Russound(lib.my_asynchat.AsynChat):
                 self.send_event(c, z, 'SelectSource', item())
             elif cmd == 'mute':
                 self.send_event(c, z, 'KeyRelease', 'Mute')
-            elif cmd == 'relativevolume' and item()[1] != 0:
-                if item()[0] == 1:
-                    self.send_event(c, z, 'KeyPress', 'VolumeUp')
-                else:
-                    self.send_event(c, z, 'KeyPress', 'VolumeDown')
+            elif cmd == 'relativevolume':
+                self.send_event(c, z, 'KeyPress', 'VolumeUp' if item() else 'VolumeDown')
 
     def send_set(self, c, z, cmd, value):
         self._send_cmd('SET C[{0}].Z[{1}].{2}="{3}"\r'.format(c, z, cmd, value))
