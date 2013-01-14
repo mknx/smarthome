@@ -163,7 +163,7 @@ class CLIHandler(asynchat.async_chat):
         self.push('up: alias for update\n')
         self.push('tr logic: trigger logic\n')
         self.push('rl logic: reload logic\n')
-        self.push('rr logic: reload and rund logic\n')
+        self.push('rr logic: reload and run logic\n')
         self.push('quit: quit the session\n')
         self.push('q: alias for quit\n')
 
