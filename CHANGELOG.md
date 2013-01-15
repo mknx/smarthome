@@ -9,7 +9,7 @@ Roadmap
    * Alexander Rieger
 
 ## New Plugins
-   * DWD Plugin: new plugin to fetch weather warnings and forecast from Deutscher Wetterrdienst (DWD)
+   * DWD Plugin: new plugin to fetch weather warnings and forecasts from Deutscher Wetterrdienst (DWD)
    * Mail Plugin: IMAP, SMTP
    * RRD Plugin: build round robin databases and create graphs with flot.
    * Russound Plugin: RIO
@@ -26,13 +26,13 @@ Roadmap
    * KNX plugin: DPT 16 support
    * Network plugin: adding simple http interface
    * Visu plugin: plot rrd with flot,
-        push buttond sends now cyclic,
-        list view
-        dpt3 push buttons,
-        TITLE header template,
-        adding 'unit' attribute to item.conf
-        JQuery: 1.8.3, JQuery Mobile 1.2
-        Log view  SmartHome.py, Asterisk
+      * push buttond sends now cyclic,
+      * list view
+      * dpt3 push buttons,
+      * TITLE header template,
+      * adding 'unit' attribute to item.conf
+      * JQuery: 1.8.3, JQuery Mobile 1.2
+      * Log view  SmartHome.py, Asterisk
 
 ## Bug Fixes
    * KNX plugin: knx_init/knx_cache could not work if first connection attempt failed

@@ -63,6 +63,17 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
         <div data-role="fieldcontain">
             <div data-rrd="example.rrd" data-frame="1h" style="margin:1%;width:device-width;height:300px"></div>
             <p>Print a graph for the item with the specified timeframe. For the frame you could choose beetwen 'h' = hour, 'd' = day, 'm' = month and 'y' = year.</p>
+            <p>You could specify options as described at the <a href="https://github.com/flot/flot/blob/master/API.md">flot homepage</a> in the 'data-options' attribute:
+        </div>
+        <h2>Lists</h2>
+        <div data-role="fieldcontain">
+            <ul data-sh="example.list" data-filter="true" data-role="listview" data-inset="true"></ul>
+            <p>It fills an unsorted list ul with the elements specified in the item array.</p>
+        </div>
+        <h2>Logs</h2>
+        <div data-role="fieldcontain">
+            <ul data-log="SmartHome.py" data-max="5" data-filter="true" data-role="listview" data-inset="true"></ul>
+            <p>Shows the the entries of the log file for the number of data-max.</p>
         </div>
     </div> <!-- /content -->
 
