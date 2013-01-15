@@ -296,14 +296,14 @@ class SmartHome():
         asyncore.close_all(self.socket_map)
         self.scheduler.stop()
         self._plugins.stop()
-        time.sleep(0.6)
+        time.sleep(0.5)
         if threading.active_count() > 1:
             for thread in threading.enumerate():
                 logger.info("Thread: %s, still alive" % thread.name)
         try:
             os.remove(PID_FILE)
-        except OSError:
-            logger.critical("Could not remove pid file: %s" % PID_FILE)
+        except OSError, e:
+            logger.critical("Could not remove pid file: {0} - {1}".format(PID_FILE, e))
         logger.info("SmartHome.py stopped")
         logging.shutdown()
         exit()
@@ -340,7 +340,7 @@ class SmartHome():
 
     def _excepthook(self, typ, value, tb):
         mytb = "".join(traceback.format_tb(tb))
-        logger.critical("Unhandeld exception: {1}\n{0}\n{2}".format(typ, value, mytb))
+        logger.critical("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
 
     def object_refcount(self):
         objects = {}
@@ -367,9 +367,8 @@ class SmartHome():
 
 def read_pid():
     try:
-        fd = open(PID_FILE, 'r')
-        pid = int(fd.read().strip())
-        fd.close()
+        with open(PID_FILE, 'r') as fd:
+            pid = int(fd.read().strip())
     except IOError:
         pid = False
     return pid
@@ -383,18 +382,14 @@ def stop_sh():
                 os.kill(pid, signal.SIGTERM)
             except OSError:
                 os._exit(0)
-            time.sleep(0.5)
+            time.sleep(0.7)
 
         # FIXME shutdown doesn't work all the time :-(
         try:
             os.kill(pid, signal.SIGKILL)
+            print("Hard kill SmartHome.py")
         except OSError:
             os._exit(0)
-        try:
-            os.remove(PID_FILE)
-        except OSError:
-            print("Could not remove pid file: %s" % PID_FILE)
-        print("Hard kill SmartHome.py")
 
 
 def logic_update():
@@ -439,18 +434,19 @@ if __name__ == '__main__':
             usage()
             exit(0)
 
-    pid = read_pid()
-    try:
-        os.getpgid(pid)  # check if the process is running
-    except OSError:
+    pid = read_pid() # check if there is a PID_FILE
+    if pid:
         try:
-            os.remove(PID_FILE)
+            os.getpgid(pid)  # check if the process is running
         except OSError:
-            print("Could not remove pid file: %s" % PID_FILE)
+            try:
+                os.remove(PID_FILE)
+            except OSError, e:
+                print("Could not remove pid file: {0} - {1}".format(PID_FILE, e))
 
     pid = read_pid()
     if pid:
-        print("SmartHome.py already running with pid %s" % pid)
+        print("SmartHome.py already running with pid {0}".format(pid))
         print("Run 'smarthome.py --stop' to stop it.")
         exit()
     sh = SmartHome()
