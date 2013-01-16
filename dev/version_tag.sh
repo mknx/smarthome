@@ -10,9 +10,9 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-TAG = "$1"
+TAG="$1"
 if [ $1 -eq '-r' ]; then
-    TAG = "$2"
+    TAG="$2"
 fi
 
 if ! sed -i "s/^VERSION = '.*$/VERSION = '$TAG'/g" bin/smarthome.py; then
@@ -31,7 +31,7 @@ rm -f $JS.tmp.js
 git add bin/smarthome.py $JS.js $JS.min.js
 git commit -m "set version to $TAG"
 
-if [ $1 -eq '-r' ]; then
+if [ "$1" -eq '-r' ]; then
     git tag -a -m "set version to $TAG" $TAG
     git push origin tag $TAG
     git archive master --prefix='/usr/local/smarthome/' | gzip > release/`git describe master`.tgz
