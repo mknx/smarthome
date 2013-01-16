@@ -40,12 +40,18 @@ secret=very
 context=internal
 </pre>
 
+### ast_box
+The mailbox number of this phone. It will be set to the number of new messages in this mailbox.
+
 And in your items.conf:
 <pre>
-['office']
-    [['fon']]
+[office]
+    [[fon]]
         type = bool
         ast_dev = 2222
+        [[[box]]]
+            type = num
+            ast_box = 22
 </pre>
 
 If you call the '2222' sip client or making a call from it, <code>office.fon</code> will be set to True. If you finish the call it will be set to False.

@@ -88,6 +88,11 @@ sunrise = sh.sun.rise() # Returns a utc! based datetime object with the next
 sunrise_tw = sh.sun.rise(-6) # Would return the start of the twilight.
 </pre>
 
+## sh.moon
+Besides the the three functions (pos, set, rise) it provide two more.
+`sh.moon.light(offset)` provides a value from 0 - 100 of the iluminated surface at the current time + offset.
+`sh.moon.phase(offset)` returns the lunar phase as an integer [0-7]. 0 = new moon, 4 = full moon, 7 = waning crescent moon
+
 ## sh.tools
 The `sh.tools` object provide some useful functions:
 
@@ -98,6 +103,14 @@ Pings a computer and return True if the computer respondes and False if not.
 ### sh.tools.dewpoint()
 Calculate the dewpoint for the provided temperature and humidity.
 `sh.office.dew(sh.tools.dewpoint(sh.office.temp(), sh.office.hum())`
+
+### sh.tools.fetch_url()
+Return a website as a String or 'False' if it fails.
+`sh.tools.fetch_url('https://www.regular.com')`
+You could specify an 'username' and 'password' to authenticate against a website.
+`sh.tools.fetch_url('https://www.special.com', 'username', 'password')`
+Or change the default 'timeout' of two seconds.
+`sh.tools.fetch_url('https://www.regular.com', timeout=4)`
 
 # Loaded modules
 In the logic enviroment are several python modules already loaded:

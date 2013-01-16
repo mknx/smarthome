@@ -1,7 +1,6 @@
 ---
 title: Network Plugin
-summary: A Network Plugin to send and receive TCP/UDP Messages and trigger logics.
-uid: index
+summary: A Network Plugin to send and receive TCP/UDP and basic HTTP Messages and trigger logics.
 layout: default
 created: 2011-06-08T20:58:06+0200
 changed: 2011-06-08T20:58:06+0200
@@ -34,7 +33,9 @@ plugin.conf
   * `tcp`: by default the plugin doesn't accept incoming TCP connections. You have to set this attribute to 'yes' to accept them.
   * `tcp_acl`: with this attribute you could specify a list or a single IP address to allow TCP updates from. By default it accepts every incoming request.
   * `udp`: by default the plugin doesn't accept incoming UDP connections. You have to set this attribute to 'yes' to accept them.
-  * `udp_acl`: with this attribute you could specify a list or a single IP address to allow UDP updates from. By default it accepts every incoming request.
+  * `udp_acl`: with this attribute you could specify a list or a single IP address to allow UDP updates fyyrom. By default it accepts every incoming request.
+  * `http`: port to listen for HTTP GET request
+  * `http_acl`: with this attribute you could specify a list or a single IP address to allow HTTP updates from. By default it accepts every incoming request.
 
 
 items.conf
@@ -93,6 +94,9 @@ $ echo "logic|say|hello" | nc -w 1 XX.XX.XX.XX 2727`
 
 # send a udp message to add an log entry with loglevel 'warning' and the message 'lost internet connection'
 $ echo "log|warning|lost internet connection" | nc -uw 1 XX.XX.XX.XX 2727`
+
+# http request to set the item 'network.incoming' to '123'
+$ wget "http://XX.XX.XX.XX:8090/item|network.incoming|123"
 </pre>
 
 Functions

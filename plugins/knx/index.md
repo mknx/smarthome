@@ -57,6 +57,8 @@ Right know the following datapoint types are supported:
 * 12 = 12.x: type must be num
 * 13 = 13.x: type must be num
 * 14 = 14.x: type must be num
+* 16000 = 16.000: type must be str
+* 16001 = 16.001: type must be str
 * 24 = 24.x: type must be str
 
 If you are missing one, open a bug report or drop me a message in the knx user forum.

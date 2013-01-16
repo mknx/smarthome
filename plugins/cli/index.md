@@ -30,14 +30,15 @@ Usage
 Just telnet the port: <code>telnet 127.0.0.1 2323</code> and enter <code>help</code> for a list of commands.
 
 It would return:
-<pre>ls: list all areas
-ls area: list every item (with values) of the specified area
-ls area.item: list the specified item and value
+<pre>ls: list the first level items
+ls item: list item and every child item (with values)
 la: list all items (with values)
-update area.item = value: update the specified item with the specified value
+lo: list all logics and next execution time
+update item = value: update the specified item with the specified value
 up: alias for update
-lo: list all logics
 tr logic: trigger logic
+rl logic: reload logic
+rr logic: reload and run logic
 quit: quit the session
 q: alias for quit</pre>
 

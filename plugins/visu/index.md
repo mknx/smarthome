@@ -116,3 +116,5 @@ The following elements attribute values for `visu` in the items configuration ar
    * img: generate an image element with the value of the item as image path.
    * push: special image element which set the item to True if you push the image element and false if you release it. You have to specify `visu_img = /path/to/false.img, /path/to/true.img`
    * switch: special image element acting as a switch. You have to specify `visu_img = /path/to/false.img, /path/to/true.img`
+   * rrd: generate a plot with a default frame of one day.
+   * list: shows the content of an array as a list (ul)

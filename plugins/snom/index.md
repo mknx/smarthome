@@ -1,6 +1,6 @@
 ---
 title: snom Plugin
-summary: A snom Plugin to handle snom VOIP phones.
+summary: A plugin to handle snom VOIP phones.
 uid: index
 layout: default
 created: 2011-06-08T20:58:06+0200

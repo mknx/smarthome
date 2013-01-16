@@ -159,8 +159,9 @@ You could nest items to build a tree representing your enviroment.
  * `type`: if you want to use an item for storing values and/or triggering actions you have to specify this attribute. If you do not specify this attribute the item is only usefull for structuring your item tree. You could choose between:
    * bool: you could init this type with on, 1, True or off, 0, False. It will be set to True or False internally. So you could use `if sh.item(): ...`.
    * num: it could be any number (integer or float).
-   * str: well a string or unicode string.
+   * str: well a regular string or unicode string.
    * list: a list/array of values. Usefull for some KNX dpts.
+   * dict: a python dictionary for generic purposes.
    * foo: this type is for special purposes. No validation is done.
  * `value`: this is the initial value of that item.
  * `name`: you could specify a name which would be the str representation of the item.

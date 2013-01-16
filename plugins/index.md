@@ -16,7 +16,7 @@ changed: 2012-04-12T21:32:39+0200
 * [iCal](ical/): read and parse iCal files.
 * [KNX](knx/): interact with the KNX home automation bus.
 * [Mail](mail/): sending (SMTP) and receiving (IMAP) mail.
-* [Network](network/): to receive TCP/UDP and send UDP messages and trigger logics.
+* [Network](network/): to receive HTTP/TCP/UDP messages and send UDP messages.
 * [Prowl](prowl/): a plugin for the notification service/app.
 * [RRD](rrd/): build round robin databases.
 * [Russound](russound/): control a Russound audio device with RIO over TCP.
