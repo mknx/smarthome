@@ -42,7 +42,7 @@ with contributions from: Niko Will and Alexander Rieger. Thank you.
 
 ### Bug Fixes
    * KNX plugin: knx_init/knx_cache could not work if first connection attempt failed
-        dpt 10, 11 encoding
+     * dpt 10, 11, 16 handling fix
    * Onewire plugin: improve error handling
    * Workaround for urllib2 memory leakage
 
