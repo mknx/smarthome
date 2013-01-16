@@ -92,3 +92,8 @@ mailbox_count(mailbox, context='default')
 ## hangup(device)
 `sh.ast.hangup('30')` would close all connections from or to the device '30'.
 
+# Log
+
+This plugin provides one logfile `sh.ast.log`. In the Visu you could show it with:
+`<ul data-log="Asterisk-Incoming" data-max="5" data-filter="true" data-role="listview" data-inset="true"></ul>`.
+

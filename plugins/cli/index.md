@@ -27,7 +27,7 @@ By default you could only list the values of your items. If you want to change t
 Usage
 =====
 
-Just telnet the port: <code>telnet 127.0.0.1 2323</code> and enter <code>help</code> for a list of commands.
+Just telnet to the port: <code>telnet 127.0.0.1 2323</code> and enter <code>help</code> for a list of commands.
 
 It would return:
 <pre>ls: list the first level items

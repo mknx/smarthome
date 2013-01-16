@@ -11,7 +11,42 @@ SmartHome.py is a modular framework to automate your (smart) home.
 
 See the [install](install) and [config](config) section to start your SmartHome.
 
-## 2012-09-27 New Release [0.7](https://github.com/mknx/smarthome/downloads)
+## 2013-01-16 Beta Release [0.8-Beta](https://github.com/mknx/smarthome/tags)
+with contributions from: Niko Will and Alexander Rieger. Thank you.
+
+### New Plugins
+   * [DWD Plugin](plugins/dwd): fetch weather warnings and forecasts from Deutscher Wetterrdienst (DWD).
+   * [Mail Plugin](plugins/mail): sending (SMTP) and receiving (IMAP) mail.
+   * [RRD Plugin](plugins/rrd): build round robin databases.
+   * [Russound Plugin](plugins/russound): control a Russound audio device with RIO over TCP.
+   * [Snom Plugin](plugins/snom): to handle snom VOIP phones.
+
+### Features
+   * Base
+    * sh.tools.fetch_url()
+    * item.conf: new types list, dict
+    * sh.moon() with set(), rise(), pos(), light(), phase()
+    * sh.find_items('config_string'), sh.find_children(self, parent, 'config_string')
+   * Asterisk plugin: Call Log and mailbox count
+   * CLI plugin: adding 'rl' to reload and 'rr' to reload and run logic
+   * KNX plugin: DPT 16 support
+   * Network plugin: adding a simple http interface
+   * Visu plugin:
+      * plot rrd with flot
+      * list view
+      * dpt3 push buttons
+      * TITLE header template
+      * adding 'unit' attribute to item.conf
+      * JQuery: 1.8.3, JQuery Mobile 1.2
+      * Log view  SmartHome.py, Asterisk
+
+### Bug Fixes
+   * KNX plugin: knx_init/knx_cache could not work if first connection attempt failed
+        dpt 10, 11 encoding
+   * Onewire plugin: improve error handling
+   * Workaround for urllib2 memory leakage
+
+## 2012-09-27 New Release [0.7](https://github.com/mknx/smarthome/tags)
 
 ### Features
    * Items

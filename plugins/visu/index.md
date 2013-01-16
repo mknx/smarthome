@@ -118,3 +118,4 @@ The following elements attribute values for `visu` in the items configuration ar
    * switch: special image element acting as a switch. You have to specify `visu_img = /path/to/false.img, /path/to/true.img`
    * rrd: generate a plot with a default frame of one day.
    * list: shows the content of an array as a list (ul)
+   * dpt3: push to control shutters and dim lights
