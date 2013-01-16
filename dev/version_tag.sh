@@ -11,7 +11,7 @@ if [ $# -eq 0 ]; then
 fi
 
 TAG="$1"
-if [ $1 -eq '-r' ]; then
+if [ "$1" = '-r' ]; then
     TAG="$2"
 fi
 
@@ -31,9 +31,9 @@ rm -f $JS.tmp.js
 git add bin/smarthome.py $JS.js $JS.min.js
 git commit -m "set version to $TAG"
 
-if [ "$1" -eq '-r' ]; then
-    git tag -a -m "set version to $TAG" $TAG
-    git push origin tag $TAG
+if [ "$1" = '-r' ]; then
+    git tag -a -m "set version to $TAG" "$TAG"
+    git push origin tag "$TAG"
     git archive master --prefix='/usr/local/smarthome/' | gzip > release/`git describe master`.tgz
     git archive master --prefix='/usr/local/smarthome/' --format=zip > release/`git describe master`.zip
 fi
