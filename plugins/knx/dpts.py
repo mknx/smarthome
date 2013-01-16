@@ -254,12 +254,8 @@ def en16001(value):
     return a
 
 
-def de16000(payload):
-    return str(payload)
-
-
-def de16001(payload):
-    return str(payload)
+def de16(payload):
+    return str(payload).rstrip('\0')
 
 
 def en24(value):
@@ -274,7 +270,7 @@ def en24(value):
 
 
 def de24(payload):
-    return str(payload)
+    return str(payload).rstrip('\0')
 
 
 def depa(string):
@@ -318,8 +314,8 @@ decode = {
     '12': de12,
     '13': de13,
     '14': de14,
-    '16000': de16000,
-    '16001': de16001,
+    '16000': de16,
+    '16001': de16,
     '24': de24,
     'pa': depa,
     'ga': dega,
