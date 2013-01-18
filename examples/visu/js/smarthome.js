@@ -18,7 +18,7 @@
 //  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 //########################################################################
 
-var shVersion = 0.8-Beta;
+var shVersion = '0.8-Beta';
 var shProto = 1;
 var shWS = false; // WebSocket
 var shLock = false;
