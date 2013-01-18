@@ -18,7 +18,7 @@
 //  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 //########################################################################
 
-var shVersion = '0.8-Beta';
+var shVersion = '0.8-Dev';
 var shProto = 1;
 var shWS = false; // WebSocket
 var shLock = false;
@@ -44,6 +44,12 @@ function shUnique(arr) {
     }
     return ret;
 };
+
+if (typeof String.prototype.startsWith != 'function') {
+  String.prototype.startsWith = function (str){
+    return this.slice(0, str.length) == str;
+  };
+}
 
 function shPushCycle(obj, timeout, value) {
     shSendPush(obj, value);
@@ -153,7 +159,6 @@ function shLogUpdate(data) {
         $(obj).listview('refresh');
     };
 };
-
 
 function shRRDUpdate(data) {
     var id, time, step, frame, rrds, item, value;
@@ -540,7 +545,11 @@ function updateSelect(obj, val) {
 function updateList(obj, val) {
     $(obj).html('')
     for (var i = 0; i < val.length; i++) {
-        $(obj).append(val[i] + "\n")
+        if (val[i].startsWith('<li')) {
+            $(obj).append(val[i] + "\n")
+        } else {
+            $(obj).append("<li>" + val[i] + "</li>\n")
+        };
     };
     $(obj).listview('refresh');
 
