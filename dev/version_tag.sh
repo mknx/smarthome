@@ -20,7 +20,7 @@ if ! sed -i "s/^VERSION = '.*$/VERSION = '$TAG'/g" bin/smarthome.py; then
     exit 2
 fi
 JS=examples/visu/js/smarthome
-if ! sed -i "s/^var shVersion = .*/var shVersion = $TAG;/g" $JS.js; then
+if ! sed -i "s/^var shVersion = .*/var shVersion = '$TAG';/g" $JS.js; then
     echo "Could not replace shVersion variable." >&2
     exit 2
 fi
