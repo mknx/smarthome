@@ -47,8 +47,8 @@ def room(smarthome, room, directory):
             widget = ', '.join(item.conf['visu_widget'])
         else:
             widget = item.conf['visu_widget']
-        widgets += parse_tpl(directory + '/base/tpl/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget)])
-    return parse_tpl(directory + '/base/tpl/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets), ('__ID__', item.id()), ('__NAME__',str(item))])
+        widgets += parse_tpl(directory + '/base/tpl/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('__ID__', item.id()), ('__NAME__',str(item))])
+    return parse_tpl(directory + '/base/tpl/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets)])
 
 
 def pages(smarthome, directory):
