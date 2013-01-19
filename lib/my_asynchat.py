@@ -43,11 +43,11 @@ class AsynChat(asynchat.async_chat):
         self._sh = smarthome
         self._connection_attempts = 0
         self._connection_errorlog = 60
-        socket.settimeout(4)
 
     def connect(self):
         try:
             self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.settimeout(4)
             err = self.socket.connect_ex(self.addr)
             #if err != 0:
             #    raise socket.error(err)

@@ -49,14 +49,13 @@ class Owconnection():
         self.is_connected = False
         self._connection_attempts = 0
         self._connection_errorlog = 60
-        socket.settimeout(4)
 
     def connect(self):
         self._lock.acquire()
         try:
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._sock.connect((self.host, self.port))
             self._sock.settimeout(2)
+            self._sock.connect((self.host, self.port))
         except Exception, e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
