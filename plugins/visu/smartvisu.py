@@ -20,6 +20,8 @@
 #########################################################################
 
 import logging
+import os
+import shutil
 
 logger = logging.getLogger('')
 
@@ -31,7 +33,7 @@ def parse_tpl(template, replace):
     except IOError, e:
         logger.error("Could not read template file: {0}".format(template))
         return
-    for s,r in replace:
+    for s, r in replace:
         tpl = tpl.replace(s, r)
     return tpl
 
@@ -47,12 +49,32 @@ def room(smarthome, room, directory):
             widget = ', '.join(item.conf['visu_widget'])
         else:
             widget = item.conf['visu_widget']
-        widgets += parse_tpl(directory + '/base/tpl/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('__ID__', item.id()), ('__NAME__',str(item))])
+        widgets += parse_tpl(directory + '/base/tpl/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.id', item.id()), ('item.name', str(item))])
     return parse_tpl(directory + '/base/tpl/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets)])
 
 
 def pages(smarthome, directory):
     nav_lis = ''
+    outdir = directory + '/smarthome'
+    tmpdir = directory + '/temp'
+    # clear temp directory
+    for dn in os.listdir(tmpdir):
+        if len(dn) != 2:  # only delete Twig temp files
+            continue
+        dp = os.path.join(tmpdir, dn)
+        try:
+            if os.path.isdir(dp):
+                shutil.rmtree(dp)
+        except Exception, e:
+            logger.warning("Could not delete directory {0}: {1}".format(dp, e))
+    # remove old dynamic files
+    for fn in os.listdir(outdir):
+        fp = os.path.join(outdir, fn)
+        try:
+            if os.path.isfile(fp):
+                os.unlink(fp)
+        except Exception, e:
+            logger.warning("Could not delete file {0}: {1}".format(fp, e))
     for item in smarthome.find_items('visu_page'):
         r = room(smarthome, item, directory)
         if 'visu_img' in item.conf:
