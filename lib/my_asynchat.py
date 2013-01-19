@@ -43,6 +43,7 @@ class AsynChat(asynchat.async_chat):
         self._sh = smarthome
         self._connection_attempts = 0
         self._connection_errorlog = 60
+        socket.settimeout(4)
 
     def connect(self):
         try:

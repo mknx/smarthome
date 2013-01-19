@@ -55,7 +55,7 @@ class iCal():
     def __call__(self, ics, delta=1, offset=0):
         if ics.startswith('http://'):
             try:
-                f = urllib2.urlopen(ics)
+                f = urllib2.urlopen(ics, timeout=2)
                 ical = f.read()
                 f.fp._sock.recv = None
                 f.close()

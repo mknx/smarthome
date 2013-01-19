@@ -49,6 +49,7 @@ class Owconnection():
         self.is_connected = False
         self._connection_attempts = 0
         self._connection_errorlog = 60
+        socket.settimeout(4)
 
     def connect(self):
         self._lock.acquire()
