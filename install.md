@@ -40,7 +40,7 @@ You may want to create an separate user to run SmartHome.py. <code>adduser smart
 At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/tags) you could download the latest stable version.
 
 ### Install
-<pre>$ cd /
+<pre>$ cd /usr/local
 $ sudo tar --owner=smarthome xvzf path-to-tgz/smarthome-X.X.tgz
 </pre>
 Now everything is extracted to <code>/usr/local/smarthome/</code>.
@@ -57,7 +57,8 @@ Within <code>/usr/local/smarthome/</code> is the following structure:
  * logics/: should contain your logic scripts
  * plugins/: contains the available plugins
  * tools/: contains little programms helping to maintain SmartHome.py
- * var/log/ contains the logfiles
+ * var/log/: contains the logfiles
+ * var/rrd/: contains the Round Robin Databases
 
 ### Developement
 If you want to follow the current developement:
