@@ -32,13 +32,13 @@ def parse_tpl(template, replace):
             tpl = f.read()
     except IOError, e:
         logger.error("Could not read template file: {0}".format(template))
-        return
+        return ''
     for s, r in replace:
         tpl = tpl.replace(s, r)
     return tpl
 
 
-def room(smarthome, room, directory):
+def room(smarthome, room, tpldir):
     widgets = ''
     for item in smarthome.find_children(room, 'visu_widget'):
         if 'visu_img' in item.conf:
@@ -49,8 +49,8 @@ def room(smarthome, room, directory):
             widget = ', '.join(item.conf['visu_widget'])
         else:
             widget = item.conf['visu_widget']
-        widgets += parse_tpl(directory + '/pages/base/tpl/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.id', item.id()), ('item.name', str(item))])
-    return parse_tpl(directory + '/pages/base/tpl/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets)])
+        widgets += parse_tpl(tpldir + '/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.id', item.id()), ('item.name', str(item))])
+    return parse_tpl(tpldir + '/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets)])
 
 
 def pages(smarthome, directory):
@@ -77,7 +77,7 @@ def pages(smarthome, directory):
         except Exception, e:
             logger.warning("Could not delete file {0}: {1}".format(fp, e))
     for item in smarthome.find_items('visu_page'):
-        r = room(smarthome, item, directory)
+        r = room(smarthome, item, tpldir)
         if 'visu_img' in item.conf:
             img = item.conf['visu_img']
         else:
