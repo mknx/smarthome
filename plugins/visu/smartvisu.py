@@ -49,13 +49,14 @@ def room(smarthome, room, directory):
             widget = ', '.join(item.conf['visu_widget'])
         else:
             widget = item.conf['visu_widget']
-        widgets += parse_tpl(directory + '/base/tpl/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.id', item.id()), ('item.name', str(item))])
-    return parse_tpl(directory + '/base/tpl/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets)])
+        widgets += parse_tpl(directory + '/pages/base/tpl/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.id', item.id()), ('item.name', str(item))])
+    return parse_tpl(directory + '/pages/base/tpl/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets)])
 
 
 def pages(smarthome, directory):
     nav_lis = ''
-    outdir = directory + '/smarthome'
+    outdir = directory + '/pages/smarthome'
+    tpldir = directory + '/pages/base/tpl'
     tmpdir = directory + '/temp'
     # clear temp directory
     for dn in os.listdir(tmpdir):
@@ -81,9 +82,9 @@ def pages(smarthome, directory):
             img = item.conf['visu_img']
         else:
             img = ''
-        nav_lis += parse_tpl(directory + '/base/tpl/nav.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img)])
-        with open("{0}/smarthome/{1}.html".format(directory, item.id()), 'w') as f:
+        nav_lis += parse_tpl(tpldir + '/nav.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img)])
+        with open("{0}/{1}.html".format(outdir, item.id()), 'w') as f:
             f.write(r)
-    nav = parse_tpl(directory + '/base/tpl/navigation.html', [('{{ visu_navis }}', nav_lis)])
-    with open(directory + '/smarthome/navigation.html', 'w') as f:
+    nav = parse_tpl(tpldir + '/navigation.html', [('{{ visu_navis }}', nav_lis)])
+    with open(outdir + '/navigation.html', 'w') as f:
         f.write(nav)
