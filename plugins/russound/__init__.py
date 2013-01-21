@@ -88,6 +88,11 @@ class Russound(lib.my_asynchat.AsynChat):
     def parse_logic(self, logic):
         pass
 
+    def _restrict(self, value, minval, maxval):
+        if val < minval: return minval
+        if val > maxval: return maxval
+        return val        
+
     def update_item(self, item, caller=None, source=None):
         if caller != 'Russound':
             path = item.conf['rus_path']
@@ -97,15 +102,15 @@ class Russound(lib.my_asynchat.AsynChat):
             z = p['z']
 
             if cmd == 'bass':
-                self.send_set(c, z, cmd, int(round(float(item()) / (128.0 / 10.0))))
+                self.send_set(c, z, cmd, self._restrict(item(), -10, 10)
             elif cmd == 'treble':
-                self.send_set(c, z, cmd, int(round(float(item()) / (128.0 / 10.0))))
+                self.send_set(c, z, cmd, self._restrict(item(), -10, 10)
             elif cmd == 'balance':
-                self.send_set(c, z, cmd, int(round(float(item()) / (128.0 / 10.0))))
+                self.send_set(c, z, cmd, self_restrict(item(), -10, 10)
             elif cmd == 'loudness':
                 self.send_set(c, z, cmd, 'ON' if item() else 'OFF')
             elif cmd == 'turnonvolume':
-                self.send_set(c, z, cmd, int(round(float(item()) / (255.0 / 50.0))))
+                self.send_set(c, z, cmd, self._restrict(item(), 0, 50))
             elif cmd == 'status':
                 self.send_event(c, z, 'ZoneOn' if item() else 'ZoneOff')
             elif cmd == 'partymode':
@@ -113,7 +118,7 @@ class Russound(lib.my_asynchat.AsynChat):
             elif cmd == 'donotdisturb':
                 self.send_event(c, z, cmd, 'on' if item() else 'off')
             elif cmd == 'volume':
-                self.send_event(c, z, 'KeyPress', 'Volume', int(round(float(item()) / (255.0 / 50.0))))
+                self.send_event(c, z, 'KeyPress', 'Volume', self._restrict(item(), 0, 50))
             elif cmd == 'currentsource':
                 self.send_event(c, z, 'SelectSource', item())
             elif cmd == 'mute':
@@ -179,16 +184,16 @@ class Russound(lib.my_asynchat.AsynChat):
     def _decode(self, cmd, value):
         cmd = cmd.lower()
 
-        if cmd == 'bass' or cmd == 'treble' or cmd == 'balance':
-            return int(round(float(value) * (128.0 / 10.0)))
+        if cmd == 'bass' or cmd == 'treble' or cmd == 'balance' or cmd == 'turnonvolume' or cmd == 'volume':
+            return int(value)
         elif cmd == 'loudness' or cmd == 'status' or cmd == 'mute':
             return value == 'ON'
-        elif cmd == 'turnonvolume' or cmd == 'volume':
-            return int(round(float(value) * (255.0 / 50.0)))
         elif cmd == 'partymode' or cmd == 'donotdisturb':
             return value.lower()
         elif cmd == 'currentsource':
             return value
+        elif cmd == 'name':
+            return unicode(value, 'utf-8')
 
     def found_terminator(self):
         data = self.buffer
@@ -196,6 +201,7 @@ class Russound(lib.my_asynchat.AsynChat):
         self._parse_response(data)
 
     def handle_connect(self):
+        self.discard_buffers()
         self.terminator = RESP_DELIMITER
         self._watch_system()
 
