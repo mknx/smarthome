@@ -42,10 +42,11 @@ class Russound(lib.my_asynchat.AsynChat):
         smarthome.monitor_connection(self)
 
     def parse_item(self, item):
-        if 'rus_src' in item.conf:
-            s = int(item.conf['rus_src'])
-            self.sources[s] = {'s': s, 'item':item}
-            return None
+#        if 'rus_src' in item.conf:
+#            s = int(item.conf['rus_src'])
+#            self.sources[s] = {'s': s, 'item':item}
+#            logger.debug("Source {0} added".format(s))
+#            return None
 
         if 'rus_path' in item.conf:
             path = item.conf['rus_path']
@@ -108,11 +109,11 @@ class Russound(lib.my_asynchat.AsynChat):
             z = p['z']
 
             if cmd == 'bass':
-                self.send_set(c, z, cmd, self._restrict(item(), -10, 10)
+                self.send_set(c, z, cmd, self._restrict(item(), -10, 10))
             elif cmd == 'treble':
-                self.send_set(c, z, cmd, self._restrict(item(), -10, 10)
+                self.send_set(c, z, cmd, self._restrict(item(), -10, 10))
             elif cmd == 'balance':
-                self.send_set(c, z, cmd, self_restrict(item(), -10, 10)
+                self.send_set(c, z, cmd, self._restrict(item(), -10, 10))
             elif cmd == 'loudness':
                 self.send_set(c, z, cmd, 'ON' if item() else 'OFF')
             elif cmd == 'turnonvolume':
@@ -129,6 +130,8 @@ class Russound(lib.my_asynchat.AsynChat):
                 self.send_event(c, z, 'SelectSource', item())
             elif cmd == 'relativevolume':
                 self.send_event(c, z, 'KeyPress', 'VolumeUp' if item() else 'VolumeDown')
+            elif cmd == 'name':
+                return
             else:
                 self.key_release(c, z, cmd)
 
@@ -198,10 +201,10 @@ class Russound(lib.my_asynchat.AsynChat):
                     cmd = resp.split('=')[0].lower()
                     value = resp.split('"')[1]
 
-                    if s in self.sources.keys():
-                        for child in self.sources[s]['item'].return_children():
-                            if child.name == cmd:
-                                child(unicode(value, 'utf-8'), 'Russound')
+#                    if s in self.sources.keys():
+#                        for child in self.sources[s]['item'].return_children():
+#                            if str(child).lower() == cmd.lower():
+#                                child(unicode(value, 'utf-8'), 'Russound')
                     return
         except Exception, e:
             logger.error(e)
