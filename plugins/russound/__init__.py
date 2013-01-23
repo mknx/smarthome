@@ -95,7 +95,7 @@ class Russound(lib.my_asynchat.AsynChat):
     def parse_logic(self, logic):
         pass
 
-    def _restrict(self, value, minval, maxval):
+    def _restrict(self, val, minval, maxval):
         if val < minval: return minval
         if val > maxval: return maxval
         return val        
