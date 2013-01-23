@@ -34,16 +34,23 @@ The value must be given with the following format c.z.p where c is the number of
 Right know the following russound parameter types are supported:
 
 * status = zone On/Off: type must be bool
-* volume = volume of the zone: type must be num [0..255]
-* bass = bass of the zone: type must be num [-128..127]
-* treble = treble of the zone: type must be num [-128..127]
-* balance = balance of the zone: type must be num [-128..127]
-* turnonvolume = volume on zone on: type must be num [0..255]
-* source = number of the source: type must be num
+* volume = volume of the zone: type must be num [0..50]
+* bass = bass of the zone: type must be num [-10..10]
+* treble = treble of the zone: type must be num [-10..10]
+* balance = balance of the zone: type must be num [-10..10]
+* turnonvolume = volume on zone on: type must be num [0..50]
+* currentsource = number of the source: type must be num
 * mute = mute the zone volume: type must be bool
 * loudness = loudness of the zone: type must be bool
 * partymode = party mode setting of the zone: type must be string [ON/OFF/MASTER]
 * donotdisturb = do not disturb setting of the zone: type must be string
+* name = name of the zone (readonly)
+
+For all parameters with specified ranges (volume, turnonvolume, bass, treble, balance) all values out of range are ignored and the minimum or maximum value will be taken. So if you set balance to 15 the plugin will send 10 to the Russound audio device.
+
+Besides the above parameters there are so called key codes. This are special values send like from a remote control which effects the current state of the Russound audio device itself or maybe a connected device if the Russound audio device can communicate with it. Look in the manual of your Russound which key codes are possible. If you specify a parameter not on the above list it will be interpreted as key code and send to the russound audio device as a "KeyRelease" event. This way you can e.g. define rus_path=1.5.channelup which will send the key code "channelup" to the russound. In case of the internal radio tuner this will change the current channel. 
+
+For such key codes it will be best to define the item with the aditional attribute enforce_updates=true so that the value of the item is not important. That means you can e.g. use a KNX push device that sends a ONE on every push to a group address and smarthome.py listens for that address. With this on every push the channelup key code is sent.
 
 # Example
 <pre>
@@ -52,13 +59,22 @@ Right know the following russound parameter types are supported:
                 [[['audio']]]
                         type=bool
                         rus_path=1.1.status
+                        knx_dpt=1
+                        knx_send=12/1/0
+                        knx_listen=12/1/0
 
                         [[[['volume']]]]
                                 type=num
                                 rus_path=1.1.volume
+                                knx_dpt=5
+                                knx_send=12/1/1
+                                knx_listen=12/1/1
                         [[[['bass']]]]
                                 type=num
                                 rus_path=1.1.bass
+                                knx_dpt=6
+                                knx_send=12/1/2
+                                knx_listen=12/1/2
                         [[[['treble']]]]
                                 type=num
                                 rus_path=1.1.treble
@@ -74,6 +90,12 @@ Right know the following russound parameter types are supported:
                         [[[['mute']]]]
                                 type=bool
                                 rus_path=1.1.mute
+                        [[[['channelup']]]]
+                                type=bool
+                                rus_path=1.1.channelup
+                                knx_dpt=1
+                                knx_listen=12/1/9
+                                enforce_updates=true
                         [[[['loudness']]]]
                                 type=bool
                                 rus_path=1.1.loudness
