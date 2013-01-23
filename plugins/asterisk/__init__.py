@@ -181,7 +181,6 @@ class Asterisk(lib.my_asynchat.AsynChat):
             end = self._sh.now()
             start = end - dateutil.relativedelta.relativedelta(seconds=int(event['Duration']))
             duration = event['BillableSeconds']
-            print event
             if len(event['Source']) <= 4:
                 direction = '=>'
                 number = event['Destination']
@@ -189,7 +188,6 @@ class Asterisk(lib.my_asynchat.AsynChat):
                 direction = '<='
                 number = event['Source']
                 name = event['CallerID'].split('<')[0].strip('" ')
-                print ([start, name, number, duration, direction])
                 self._log_in.add([start, name, number, duration, direction])
 
     def _update_devices(self):
