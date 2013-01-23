@@ -93,8 +93,8 @@ Specify one or more group addresses to allow reading the item value.
     [['temperature']]
         type = num
         knx_dpt = 9
-        knx_send = 1/1/2
-        knx_reply = 1/1/2
+        knx_send = 1/1/6
+        knx_reply = 1/1/6
         ow_id = 28.BBBBB20000 # see 1-Wire plugin
         ow_sensor = temperature # see 1-Wire plugin
 </pre>
@@ -105,11 +105,11 @@ You could specify the `knx_listen` and `knx_reply` attribute to every logic in y
 <pre>
 ['logic1']
     knx_dpt = 9
-    knx_listen = 1/1/3
+    knx_listen = 1/1/7
 
 ['logic2']
     knx_dpt = 9
-    knx_reply = 1/1/3, 1/1/6
+    knx_reply = 1/1/8, 1/1/8
 </pre>
 If there is a packet directed to the according group address, SmartHome.py would trigger the logic and will pass the payload (via the trigger object) to the logic.
 
@@ -124,7 +124,7 @@ This function encodes your data according to the specified datapoint.
 groupwrite(ga, data, dpt)
 -------------------------
 With this function you could send the data to the specified group address.
-<pre>sh.knx.groupwrite('1/1/2', 10.3, '9')</pre>
+<pre>sh.knx.groupwrite('1/1/10', 10.3, '9')</pre>
 
 groupread(ga, cache=False)
 --------------------------
@@ -133,8 +133,8 @@ This function triggers a read request on the specified group address. It doesn't
 send_time(time_ga, date_ga)
 -----------------------------
 This funcion send the current time and or date to the specified group address.
-<pre>sh.knx.send_time('1/1/5', '1/1/6') # send the time to 1/1/5 and the date to 1/1/6
-sh.knx.send_time('1/1/5') # only send the time to 1/1/5
-sh.knx.send_time(data_ga='1/1/6') # only send the date to 1/1/6
+<pre>sh.knx.send_time('1/1/1', '1/1/2') # send the time to 1/1/1 and the date to 1/1/2
+sh.knx.send_time('1/1/1') # only send the time to 1/1/1
+sh.knx.send_time(data_ga='1/1/2') # only send the date to 1/1/2
 </pre>
 Hint: instead of this function you could use the plugin attribute 'send_time' as described above.
