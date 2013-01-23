@@ -9,7 +9,7 @@ changed: 2011-08-08T20:58:06+0200
 
 Requirements
 ============
-You need a running asterisk daemon with a configured Asterisk Manager Interface (AMI). In the manager.config you have to enable at least: <code>read = system,call,user</code> and `write = system,call,orginate`.
+You need a running asterisk daemon with a configured Asterisk Manager Interface (AMI). In the manager.config you have to enable at least: <code>read = system,call,user,cdr</code> and `write = system,call,orginate`.
 In misc/asterisk you could find some configuration files from my asterisk setup to guide you.
 
 Configuration
