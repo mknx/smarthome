@@ -59,6 +59,9 @@ def pages(smarthome, directory):
     tpldir = directory + '/pages/base/tpl'
     tmpdir = directory + '/temp'
     # clear temp directory
+    if not os.path.isdir(tmpdir):
+        logger.warning("Could not find directory: {0}".format(tmpdir))
+        return
     for dn in os.listdir(tmpdir):
         if len(dn) != 2:  # only delete Twig temp files
             continue
@@ -69,6 +72,9 @@ def pages(smarthome, directory):
         except Exception, e:
             logger.warning("Could not delete directory {0}: {1}".format(dp, e))
     # remove old dynamic files
+    if not os.path.isdir(outdir):
+        logger.warning("Could not find directory: {0}".format(outdir))
+        return
     for fn in os.listdir(outdir):
         fp = os.path.join(outdir, fn)
         try:
