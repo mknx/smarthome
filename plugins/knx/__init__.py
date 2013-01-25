@@ -193,6 +193,9 @@ class KNX(lib.my_asynchat.AsynChat):
         self.handle_close()
 
     def parse_item(self, item):
+        if 'knx_dtp' in item.conf:
+            logger.warning("knx: Ignoring {0}: please change knx_dtp to knx_dpt.".format(item))
+            return None
         if 'knx_dpt' in item.conf:
             dpt = item.conf['knx_dpt']
             if dpt not in dpts.decode:
