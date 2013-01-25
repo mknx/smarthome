@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -35,7 +35,7 @@ class Log(collections.deque):
     def add(self, entry):
         self.appendleft(entry)
         for listener in self._sh.return_listeners():
-            listener({'k': 'l', 'p': [[self._name, [self.log_string.format(*entry)]]]})
+            listener({'cmd': 'log', 'pay': [[self._name, [self.log_string.format(*entry)]]]})
 
     def last(self, number):
         return(list(self)[-number:])

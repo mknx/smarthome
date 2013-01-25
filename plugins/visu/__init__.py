@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -137,7 +137,7 @@ class WebSocket(asyncore.dispatcher):
             self.visu_logics[logic.name] = logic
 
     def update_item(self, item, caller=None, source=None):
-        data = {'k': 'i', 'p': [[item.id(), item()]]}
+        data = {'cmd': 'item', 'items': [[item.id(), item()]]}
         for client in self.clients:
             client.update(item.id(), data, source)
 
@@ -147,7 +147,7 @@ class WebSocket(asyncore.dispatcher):
 
     def dialog(self, header, content):
         for client in self.clients:
-            client.json_send({'k': 'd', 'h': header, 'c': content})
+            client.json_send({'cmd': 'dialog', 'header': header, 'content': content})
 
 
 class WebSocketHandler(asynchat.async_chat):
@@ -159,7 +159,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.addr = addr
         self.ibuffer = ""
         self.header = {}
-        self.monitor = {'i': [], 'r': [], 'l': []}
+        self.monitor = {'item': [], 'rrd': [], 'log': []}
         self.items = items
         self.rrd = False
         self.log = False
@@ -170,9 +170,9 @@ class WebSocketHandler(asynchat.async_chat):
 
     def send_data(self, data):
         data = data.copy()  # don't filter the orignal data dict
-        if data['k'] in self.monitor:  # data[0] == type
-            data['p'] = [i for i in data['p'] if i[0] in self.monitor[data['k']]]  # filter monitored
-            if data['p'] != []:
+        if data['cmd'] in self.monitor:  # data[0] == type
+            data['pay'] = [i for i in data['pay'] if i[0] in self.monitor[data['cmd']]]  # filter monitored
+            if data['pay'] != []:
                 self.json_send(data)
 
     def json_send(self, data):
@@ -192,7 +192,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.parse_data(data)
 
     def update(self, path, data, source):
-        if path in self.monitor['i']:
+        if path in self.monitor['item']:
             if self.addr != source:
                 self.json_send(data)
 
@@ -206,36 +206,36 @@ class WebSocketHandler(asynchat.async_chat):
         except Exception, e:
             logger.debug("Problem decoding %s from %s: %s" % (repr(data), self.addr, e))
             return
-        command = data['k']
-        if command == 'i':
-            path = data['p']
-            value = data['v']
+        command = data['cmd']
+        if command == 'item':
+            path = data['id']
+            value = data['val']
             if path in self.items:
                 self.items[path](value, 'Visu', self.addr)
             else:
                 logger.info("Client %s want to update invalid item: %s" % (self.addr, path))
-        elif command == 'm':
-            if data['p'] == [None]:
+        elif command == 'monitor':
+            if data['items'] == [None]:
                 return
-            for path in list(set(data['p']).difference(set(self.monitor['i']))):
+            for path in list(set(data['items']).difference(set(self.monitor['item']))):
                 if path in self.items:
                     if 'visu_img' in self.items[path].conf:
-                        self.json_send({'k': 'i', 'p': [[path, self.items[path](), self.items[path].conf['visu_img']]]})
+                        self.json_send({'cmd': 'item', 'items': [[path, self.items[path](), self.items[path].conf['visu_img']]]})
                     else:
-                        self.json_send({'k': 'i', 'p': [[path, self.items[path]()]]})
+                        self.json_send({'cmd': 'item', 'items': [[path, self.items[path]()]]})
                 else:
                     logger.info("Client %s requested invalid item: %s" % (self.addr, path))
-            self.monitor['i'] = data['p']
-        elif command == 'c':  # logic
-            name = data['l']
-            value = data['v']
+            self.monitor['item'] = data['items']
+        elif command == 'logic':  # logic
+            name = data['name']
+            value = data['val']
             if name in self.logics:
                 logger.info("Client %s triggerd logic %s with '%s'" % (self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
-        elif command == 'r':  # rrd
+        elif command == 'rrd':
             self.rrd = True
-            path = data['p']
-            frame = str(data['f'])
+            path = data['id']
+            frame = str(data['frame'])
             if path in self.items:
                 if hasattr(self.items[path], 'export'):
                     self.json_send(self.items[path].export(frame))
@@ -243,23 +243,23 @@ class WebSocketHandler(asynchat.async_chat):
                     logger.info("Client %s requested invalid rrd: %s." % (self.addr, path))
             else:
                 logger.info("Client %s requested invalid item: %s" % (self.addr, path))
-            if path not in self.monitor['r']:
-                self.monitor['r'].append(path)
-        elif command == 'l':  # log
+            if path not in self.monitor['rrd']:
+                self.monitor['rrd'].append(path)
+        elif command == 'log':
             self.log = True
-            name = data['l']
-            num = int(data['m'])
+            name = data['log']
+            num = int(data['max'])
             if name in self.logs:
-                self.json_send({ 'k': 'l', 'p': [[name, self.logs[name].export(num)]], 'i': 'y'})
+                self.json_send({ 'cmd': 'log', 'log': [[name, self.logs[name].export(num)]], 'init': 'y'})
             else:
                 logger.info("Client %s requested invalid log: %s" % (self.addr, name))
-            if name not in self.monitor['l']:
-                self.monitor['l'].append(name)
-        elif command == 'p':  # protocol version
-            proto = data['v']
+            if name not in self.monitor['log']:
+                self.monitor['log'].append(name)
+        elif command == 'proto':  # protocol version
+            proto = data['ver']
             if proto != self.proto:
                 logger.warning("Protocol missmatch. Update smarthome(.min).js. Client: {0}".format(self.addr))
-            self.json_send({'k': 'p', 'p': self.proto})
+            self.json_send({'cmd': 'proto', 'ver': self.proto})
 
     def parse_header(self, data):
         for line in data.splitlines():

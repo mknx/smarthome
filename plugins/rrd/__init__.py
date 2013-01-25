@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -68,7 +68,7 @@ class RRD():
             if 'visu' in item.conf:
                 data.append([item.id(), item()])
         for listener in self._sh.return_listeners():
-            listener({'k': 'r', 't': time, 'p': data})
+            listener({'cmd': 'rrd', 'time': time, 'pay': data})
 
     def parse_item(self, item):
         if 'rrd' not in item.conf:
@@ -104,7 +104,7 @@ class RRD():
             del data[-2]
         if data[-1] == None:
             data[-1] = item()
-        return {'k': 'r', 'f': frame, 's': start, 'd': step, 'p': [[item.id(), data]]}
+        return {'cmd': 'rrd', 'frame': frame, 'start': start, 'step': step, 'pay': [[item.id(), data]]}
 
     def parse_logic(self, logic):
         pass

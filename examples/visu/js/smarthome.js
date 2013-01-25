@@ -1,6 +1,6 @@
 // vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 //########################################################################
-// Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+// Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
 //########################################################################
 //  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 //
@@ -143,7 +143,7 @@ function shLogUpdate(data) {
             return;
         }
         val = data.p[i][1];
-        if ('i' in data) {  // init
+        if ('init' in data) {  // init
             $(obj).html('')
         };
         for (var j = val.length -1; j >= 0; j--) {
@@ -162,15 +162,15 @@ function shLogUpdate(data) {
 
 function shRRDUpdate(data) {
     var id, time, step, frame, rrds, item, value;
-    if ('f' in data) {
-        id = data.p[0][0];
-        time = data.s * 1000;
-        step = data.d * 1000;
+    if ('frame' in data) {
+        id = data.pay[0][0];
+        time = data.start * 1000;
+        step = data.step * 1000;
         var d = [];
-        frame = data.f;
+        frame = data.frame;
         //{color: 'blue', label: data.label, yaxis: 2, data: []};
-        for (i = 0; i < data.p[0][1].length; i++) {
-            d.push([time, data.p[0][1][i]]);
+        for (i = 0; i < data.pay[0][1].length; i++) {
+            d.push([time, data.pay[0][1][i]]);
             time += step
         };
         if (id in shRRD) {
@@ -196,10 +196,10 @@ function shRRDUpdate(data) {
             };
         });
     } else {
-        var time = data.t * 1000;
-        for (item in data.p) {
-            id = data.p[item][0];
-            value = data.p[item][1];
+        var time = data.time * 1000;
+        for (item in data.pay) {
+            id = data.pay[item][0];
+            value = data.pay[item][1];
             if (id in shRRD) {
                 for (frame in shRRD[id]) {
                     if (frame.search(/^([0-9]+h)|([1-7]d)/) != -1) {
@@ -246,7 +246,7 @@ function shRRDDraw(div) {
 function shWsInit() {
     shWS = new WebSocket(shURL);
     shWS.onopen = function(){
-        shSend({'k': 'p', 'v': shProto});
+        shSend({'cmd': 'proto', 'ver': shProto});
         shRRD = {};
         shLog = {};
         shRequestData();
@@ -260,13 +260,13 @@ function shWsInit() {
         var path, val;
         var data = JSON.parse(event.data);
         console.log("receiving data: " + event.data);
-        switch(data.k) {
-            case 'i':
-                for (var i = 0; i < data.p.length; i++) {
-                    path = data.p[i][0];
-                    val = data.p[i][1];
-                    if ( data.p[i].length > 2 ) {
-                        shOpt[path] = data.p[i][2];
+        switch(data.cmd) {
+            case 'item':
+                for (var i = 0; i < data.items.length; i++) {
+                    path = data.items[i][0];
+                    val = data.items[i][1];
+                    if ( data.items[i].length > 2 ) {
+                        shOpt[path] = data.items[i][2];
                     };
                     shLock = path;
                     shBuffer[path] = val;
@@ -274,17 +274,17 @@ function shWsInit() {
                     shLock = false;
                 };
                 break;
-            case 'r':
+            case 'rrd':
                 shRRDUpdate(data);
                 break;
-            case 'l':
+            case 'log':
                 shLogUpdate(data);
                 break;
-            case 'd':
-                shDialog(data.h, data.c);
+            case 'dialog':
+                shDialog(data.header, data.content);
                 break;
-            case 'p':
-                var proto = parseInt(data['p']);
+            case 'proto':
+                var proto = parseInt(data.ver);
                 if (proto != shProto) {
                     shDialog('Protcol missmatch', 'Update smarthome(.min).js');
                 };
@@ -312,17 +312,17 @@ function shWSCheck() {
 function shRequestData() {
     shMonitor = $("[data-sh]").map(function() { if (this.tagName != 'A') { return $(this).attr("data-sh"); }}).get();
     shMonitor = shUnique(shMonitor);
-    shSend({'k': 'm', 'p': shMonitor});
+    shSend({'cmd': 'monitor', 'items': shMonitor});
     $("[data-rrd]").each( function() {
         var rrds = $(this).attr('data-rrd').split('|');
         var frame = $(this).attr('data-frame');
-        for (i = 0; i < rrds.length; i++) { 
+        for (i = 0; i < rrds.length; i++) {
             var rrd = rrds[i].split('=');
             var id = rrd[0];
             if (!(id in shRRD)) {
-                shSend({'k': 'r', 'p': rrd[0], 'f': frame});
+                shSend({'cmd': 'rrd', 'id': rrd[0], 'frame': frame});
             } else if (!(frame in shRRD[id])) {
-                shSend({'k': 'r', 'p': rrd[0], 'f': frame});
+                shSend({'cmd': 'rrd', 'id': rrd[0], 'frame': frame});
             };
         };
     });
@@ -330,7 +330,7 @@ function shRequestData() {
         var log = $(this).attr('data-log');
         var max = $(this).attr('data-max');
         if (!(log in shLog)) {
-            shSend({'k':'l', 'l': log, 'm': max});
+            shSend({'cmd': 'log', 'log': log, 'max': max});
         };
     });
 };
@@ -388,14 +388,14 @@ function shBufferUpdate(path, val, src){
         if (shBuffer[path] !== val){
             console.log(path + " changed to: " + val + " (" + typeof(val) + ")");
             shBuffer[path] = val;
-            shSend({'k': 'i', 'p': path, 'v': val});
+            shSend({'cmd': 'item', 'id': path, 'val': val});
             shUpdateItem(path, val, src);
         };
     };
 };
 
 function shTriggerLogic(obj){
-    shSend({'k':'c', 'l': $(obj).attr('data-logic'), 'v': $(obj).attr('value')});
+    shSend({'cmd':'logic', 'name': $(obj).attr('data-logic'), 'val': $(obj).attr('value')});
 };
 
 function shSwitchButton(obj){
@@ -431,7 +431,7 @@ function shSendFix(obj){
 function shSendPush(obj, val){
     var path = $(obj).attr('data-sh');
     if ( path == shLock) { return; };
-    shSend({'k': 'i', 'p': path, 'v': val});
+    shSend({'cmd': 'item', 'id': path, 'val': val});
 };
 
 function shSendVal(obj){
