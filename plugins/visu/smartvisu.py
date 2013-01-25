@@ -88,9 +88,11 @@ def pages(smarthome, directory):
             img = item.conf['visu_img']
         else:
             img = ''
-        nav_lis += parse_tpl(tpldir + '/nav.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img)])
+        nav_lis += parse_tpl(tpldir + '/navi.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img)])
         with open("{0}/{1}.html".format(outdir, item.id()), 'w') as f:
             f.write(r)
     nav = parse_tpl(tpldir + '/navigation.html', [('{{ visu_navis }}', nav_lis)])
     with open(outdir + '/navigation.html', 'w') as f:
         f.write(nav)
+    shutil.copy(tpldir + '/rooms.html', outdir + '/')
+    shutil.copy(tpldir + '/index.html', outdir + '/')
