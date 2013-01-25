@@ -40,6 +40,10 @@ def parse_tpl(template, replace):
 
 def room(smarthome, room, tpldir):
     widgets = ''
+    if 'visu_img' in room.conf:
+        rimg = room.conf['visu_img']
+    else:
+        rimg = ''
     for item in smarthome.find_children(room, 'visu_widget'):
         if 'visu_img' in item.conf:
             img = item.conf['visu_img']
@@ -50,7 +54,7 @@ def room(smarthome, room, tpldir):
         else:
             widget = item.conf['visu_widget']
         widgets += parse_tpl(tpldir + '/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.id', item.id().replace('.','_')), ('item.name', str(item))])
-    return parse_tpl(tpldir + '/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets)])
+    return parse_tpl(tpldir + '/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets), ('{{ visu_img }}', rimg)])
 
 
 def pages(smarthome, directory):
