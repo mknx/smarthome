@@ -135,14 +135,14 @@ function shInit(url) {
 
 function shLogUpdate(data) {
     var path, obj, max, val;
-    for (var i = 0; i < data.p.length; i++) {
-        path = data.p[i][0];
+    for (var i = 0; i < data.log.length; i++) {
+        path = data.log[i][0];
         obj = $('[data-log="' + path + '"]');
         if (obj.length == 0) {
             console.log("unknown id: "+ path);
             return;
         }
-        val = data.p[i][1];
+        val = data.log[i][1];
         if ('init' in data) {  // init
             $(obj).html('')
         };
