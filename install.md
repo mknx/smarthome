@@ -39,26 +39,11 @@ You may want to create an separate user to run SmartHome.py. <code>adduser smart
 ### Download
 At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/tags) you could download the latest stable version.
 
-### Install
+### Install Latest Release
 <pre>$ cd /usr/local
 $ sudo tar --owner=smarthome xvzf path-to-tgz/smarthome-X.X.tgz
 </pre>
 Now everything is extracted to <code>/usr/local/smarthome/</code>.
-
-# Structure
-Within <code>/usr/local/smarthome/</code> is the following structure:
-
- * bin/: contains <code>smarthome.py</code>
- * dev/ developer files
- * etc/: should contain the basic configuration files (smarthome.conf, plugin.conf, logic.conf)
- * examples/: contain some example files for the configaration and the visu plugin
- * items/: should contain one or more item configuration files.
- * lib/: contains the core libraries of SmartHome.py
- * logics/: should contain your logic scripts
- * plugins/: contains the available plugins
- * tools/: contains little programms helping to maintain SmartHome.py
- * var/log/: contains the logfiles
- * var/rrd/: contains the Round Robin Databases
 
 ### Developement
 If you want to follow the current developement:
@@ -80,8 +65,28 @@ $ cd /usr/local/smarthome
 $ git pull
 </pre>
 
-Confguration
-============
+You have to copy the `smarthome.js` files if the have changed:
+<pre>
+$ cp /usr/local/smarthome/exampleis/visu/js/smarthome.* /var/www/smarthome/js/*
+</pre>
+
+
+# Structure
+Within <code>/usr/local/smarthome/</code> is the following structure:
+
+ * bin/: contains <code>smarthome.py</code>
+ * dev/ developer files
+ * etc/: should contain the basic configuration files (smarthome.conf, plugin.conf, logic.conf)
+ * examples/: contain some example files for the configaration and the visu plugin
+ * items/: should contain one or more item configuration files.
+ * lib/: contains the core libraries of SmartHome.py
+ * logics/: should contain your logic scripts
+ * plugins/: contains the available plugins
+ * tools/: contains little programms helping to maintain SmartHome.py
+ * var/log/: contains the logfiles
+ * var/rrd/: contains the Round Robin Databases
+
+#Configuration
 [There is a dedicated page for the configuration.](/smarthome/config)
 
 Plugins
