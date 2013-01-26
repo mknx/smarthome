@@ -85,6 +85,9 @@ class Item():
                 else:
                     self.conf[attr] = config[attr]
         if self._type != None:
+            if self._type not in self._defaults:
+                logger.warning(u"Item {0}: type '{1}' unknown. Please use one of: {2}.".format(path, self._type, ', '.join(self._defaults.keys())))
+                return
             if self._value == None:
                 self._value = self._defaults[self._type]
             else:
