@@ -37,7 +37,7 @@ logger = logging.getLogger('')
 
 class WebSocket(asyncore.dispatcher):
 
-    def __init__(self, smarthome, generator_dir=False, ip='0.0.0.0', port=2121, smartvisu_dir=False):
+    def __init__(self, smarthome, generator_dir=False, ip='0.0.0.0', port=2424, smartvisu_dir=False):
         asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
         self._sh = smarthome
         smarthome.add_listener(self.send_data)
