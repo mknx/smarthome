@@ -277,7 +277,7 @@ class WebSocketHandler(asynchat.async_chat):
             self.handshake_failed()
 
     def handshake_failed(self):
-        logger.debug("Handshake for %s with the following header failed! %s" % (self.addr, repr(self.header)))
+        logger.debug("Handshake for {0} with the following header failed! {1}".format(self.addr, repr(self.header)))
         self.close()
 
     def rfc6455_handshake(self):
@@ -297,6 +297,10 @@ class WebSocketHandler(asynchat.async_chat):
         byte1, byte2 = struct.unpack_from('!BB', data)
         fin = (byte1 >> 7) & 0x01
         opcode = byte1 & 0x0f
+        if opcode == 8:
+            logger.debug("Websocket: closing connection to {0}.".format(self.addr))
+            self.close()
+            return
         masked = (byte2 >> 7) & 0x01
         if masked:
             offset = 4
