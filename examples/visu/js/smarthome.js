@@ -169,7 +169,7 @@ function shRRDUpdate(data) {
         var d = [];
         frame = data.frame;
         //{color: 'blue', label: data.label, yaxis: 2, data: []};
-        for (i = 0; i < data.rdd[0][1].length; i++) {
+        for (i = 0; i < data.rrd[0][1].length; i++) {
             d.push([time, data.rrd[0][1][i]]);
             time += step
         };
