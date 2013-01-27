@@ -163,14 +163,14 @@ function shLogUpdate(data) {
 function shRRDUpdate(data) {
     var id, time, step, frame, rrds, item, value;
     if ('frame' in data) {
-        id = data.pay[0][0];
+        id = data.rrd[0][0];
         time = data.start * 1000;
         step = data.step * 1000;
         var d = [];
         frame = data.frame;
         //{color: 'blue', label: data.label, yaxis: 2, data: []};
-        for (i = 0; i < data.pay[0][1].length; i++) {
-            d.push([time, data.pay[0][1][i]]);
+        for (i = 0; i < data.rdd[0][1].length; i++) {
+            d.push([time, data.rrd[0][1][i]]);
             time += step
         };
         if (id in shRRD) {
@@ -197,9 +197,9 @@ function shRRDUpdate(data) {
         });
     } else {
         var time = data.time * 1000;
-        for (item in data.pay) {
-            id = data.pay[item][0];
-            value = data.pay[item][1];
+        for (item in data.rrd) {
+            id = data.rrd[item][0];
+            value = data.rrd[item][1];
             if (id in shRRD) {
                 for (frame in shRRD[id]) {
                     if (frame.search(/^([0-9]+h)|([1-7]d)/) != -1) {

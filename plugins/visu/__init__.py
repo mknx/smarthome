@@ -171,8 +171,8 @@ class WebSocketHandler(asynchat.async_chat):
     def send_data(self, data):
         data = data.copy()  # don't filter the orignal data dict
         if data['cmd'] in self.monitor:  # data[0] == type
-            data['pay'] = [i for i in data['pay'] if i[0] in self.monitor[data['cmd']]]  # filter monitored
-            if data['pay'] != []:
+            data[data['cmd']] = [i for i in data[data['cmd']] if i[0] in self.monitor[data['cmd']]]  # filter monitored
+            if data[data['cmd']] != []:
                 self.json_send(data)
 
     def json_send(self, data):

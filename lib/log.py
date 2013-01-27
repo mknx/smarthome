@@ -35,7 +35,7 @@ class Log(collections.deque):
     def add(self, entry):
         self.appendleft(entry)
         for listener in self._sh.return_listeners():
-            listener({'cmd': 'log', 'pay': [[self._name, [self.log_string.format(*entry)]]]})
+            listener({'cmd': 'log', 'log': [[self._name, [self.log_string.format(*entry)]]]})
 
     def last(self, number):
         return(list(self)[-number:])

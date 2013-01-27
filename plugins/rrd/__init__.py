@@ -68,7 +68,7 @@ class RRD():
             if 'visu' in item.conf:
                 data.append([item.id(), item()])
         for listener in self._sh.return_listeners():
-            listener({'cmd': 'rrd', 'time': time, 'pay': data})
+            listener({'cmd': 'rrd', 'time': time, 'rrd': data})
 
     def parse_item(self, item):
         if 'rrd' not in item.conf:
@@ -104,7 +104,7 @@ class RRD():
             del data[-2]
         if data[-1] == None:
             data[-1] = item()
-        return {'cmd': 'rrd', 'frame': frame, 'start': start, 'step': step, 'pay': [[item.id(), data]]}
+        return {'cmd': 'rrd', 'frame': frame, 'start': start, 'step': step, 'rrd': [[item.id(), data]]}
 
     def parse_logic(self, logic):
         pass
