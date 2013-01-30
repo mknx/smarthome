@@ -368,7 +368,11 @@ class SmartHome():
 def read_pid():
     try:
         with open(PID_FILE, 'r') as fd:
-            pid = int(fd.read().strip())
+            pid = fd.read().strip()
+            if pid == '':
+                pid = False
+            else:
+                pid = int(pid)
     except IOError:
         pid = False
     return pid
