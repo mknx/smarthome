@@ -27,7 +27,7 @@ logger = logging.getLogger('')
 
 try:
     import ephem
-except ImportError:
+except ImportError, e:
     logger.warning('Could not find pyephem. Error creating sun and moon object')
     ephem = None
 
@@ -38,6 +38,8 @@ from dateutil.tz import tzutc
 class Orb():
 
     def __init__(self, orb, lon, lat, elev=False):
+        if ephem == None:
+            return False
         self._obs = ephem.Observer()
         self._obs.long = str(lon)
         self._obs.lat = str(lat)
