@@ -23,7 +23,11 @@
 import logging
 import datetime
 
-import ephem
+try:
+    import ephem
+except ImportError:
+    logger.warning('Could not find pyephem')
+    ephem = None
 from dateutil.relativedelta import *
 from dateutil.tz import tzutc
 
