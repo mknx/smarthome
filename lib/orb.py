@@ -39,7 +39,7 @@ class Orb():
 
     def __init__(self, orb, lon, lat, elev=False):
         if ephem == None:
-            return False
+            return
         self._obs = ephem.Observer()
         self._obs.long = str(lon)
         self._obs.lat = str(lat)
