@@ -40,19 +40,19 @@ def parse_tpl(template, replace):
 
 def room(smarthome, room, tpldir):
     widgets = ''
-    if 'visu_img' in room.conf:
-        rimg = room.conf['visu_img']
+    if 'sv_img' in room.conf:
+        rimg = room.conf['sv_img']
     else:
         rimg = ''
-    for item in smarthome.find_children(room, 'visu_widget'):
-        if 'visu_img' in item.conf:
-            img = item.conf['visu_img']
+    for item in smarthome.find_children(room, 'sv_widget'):
+        if 'sv_img' in item.conf:
+            img = item.conf['sv_img']
         else:
             img = ''
-        if isinstance(item.conf['visu_widget'], list):
-            widget = ', '.join(item.conf['visu_widget'])
+        if isinstance(item.conf['sv_widget'], list):
+            widget = ', '.join(item.conf['sv_widget'])
         else:
-            widget = item.conf['visu_widget']
+            widget = item.conf['sv_widget']
         widgets += parse_tpl(tpldir + '/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.name', str(item)), ("'item", "'" + item.id())])
     return parse_tpl(tpldir + '/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets), ('{{ visu_img }}', rimg)])
 
@@ -86,10 +86,10 @@ def pages(smarthome, directory):
                 os.unlink(fp)
         except Exception, e:
             logger.warning("Could not delete file {0}: {1}".format(fp, e))
-    for item in smarthome.find_items('visu_page'):
+    for item in smarthome.find_items('sv_page'):
         r = room(smarthome, item, tpldir)
-        if 'visu_img' in item.conf:
-            img = item.conf['visu_img']
+        if 'sv_img' in item.conf:
+            img = item.conf['sv_img']
         else:
             img = ''
         nav_lis += parse_tpl(tpldir + '/navi.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img)])
