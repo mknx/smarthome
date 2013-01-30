@@ -23,15 +23,16 @@
 import logging
 import datetime
 
+logger = logging.getLogger('')
+
 try:
     import ephem
 except ImportError:
-    logger.warning('Could not find pyephem')
+    logger.warning('Could not find pyephem. Error creating sun and moon object')
     ephem = None
+
 from dateutil.relativedelta import *
 from dateutil.tz import tzutc
-
-logger = logging.getLogger('')
 
 
 class Orb():
