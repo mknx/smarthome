@@ -30,7 +30,6 @@ import types
 import random
 import subprocess
 
-import ephem
 from dateutil.relativedelta import *
 from dateutil.tz import tzutc
 
