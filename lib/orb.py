@@ -28,7 +28,6 @@ logger = logging.getLogger('')
 try:
     import ephem
 except ImportError, e:
-    logger.warning('Could not find pyephem. Error creating sun and moon object')
     ephem = None
 
 from dateutil.relativedelta import *

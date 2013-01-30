@@ -87,7 +87,6 @@ class SmartHome():
     __items = []
     _sub_items = []
     __item_dict = {}
-
     _utctz = TZ
 
     def __init__(self, smarthome_conf='/usr/local/smarthome/etc/smarthome.conf'):
@@ -411,7 +410,7 @@ if __name__ == '__main__':
     LOGLEVEL = 'info'
     DAEMON = True
 
-    locale.setlocale(locale.LC_ALL, '')
+    locale.setlocale(locale.LC_ALL, 'C')
 
     if '--stop' in sys.argv[1:]:
         stop_sh()
