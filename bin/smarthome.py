@@ -193,7 +193,7 @@ class SmartHome():
         # init sun
         if hasattr(self, '_lon') and hasattr(self, '_lat'):
             if not hasattr(self, '_elev'):
-                self.elev = None
+                self._elev = None
             self.sun = lib.orb.Orb('sun', self._lon, self._lat, self._elev)
             self.moon = lib.orb.Orb('moon', self._lon, self._lat, self._elev)
         else:
