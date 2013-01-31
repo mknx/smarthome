@@ -39,6 +39,6 @@ if [ "$1" = '-r' ]; then
     git archive master --prefix='/usr/local/smarthome/' --format=zip > release/`git describe master`.zip
     echo "Want to remove a tag?"
     echo "git tag -d TAG"
-    echo "git push origin :refs/tags/12345"
+    echo "git push origin :refs/tags/TAG"
     echo
 fi
