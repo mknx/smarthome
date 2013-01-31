@@ -37,14 +37,16 @@ logger = logging.getLogger('')
 
 class WebSocket(asyncore.dispatcher):
 
-    def __init__(self, smarthome, generator_dir=False, ip='0.0.0.0', port=2424, smartvisu_dir=False):
+    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, smartvisu_dir=False):
         asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
         self._sh = smarthome
         smarthome.add_listener(self.send_data)
         self.clients = []
         self.visu_items = {}
         self.visu_logics = {}
-        self.generator_dir = generator_dir
+        self.generator_dir = visu_dir
+        if generator_dir: # transition feature
+            self.generator_dir = generator_dir
         self.smartvisu_dir = smartvisu_dir
         try:
             self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
