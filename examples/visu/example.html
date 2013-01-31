@@ -64,6 +64,8 @@ sh.example.img(1) # or sh.example.img(True) would change the displayed image to 
             <div data-rrd="example.rrd" data-frame="1h" style="margin:1%;width:device-width;height:300px"></div>
             <p>Print a graph for the item with the specified timeframe. For the frame you could choose beetwen 'h' = hour, 'd' = day, 'm' = month and 'y' = year.</p>
             <p>You could specify options as described at the <a href="https://github.com/flot/flot/blob/master/API.md">flot homepage</a> in the 'data-options' attribute:
+            <p>Simply place multiple items into one graph:</p>
+            <div data-rrd="example.rrd|example.rrd2" data-frame="12h" style="margin:1%;width:device-width;height:300px"></div>
         </div>
         <h2>Lists</h2>
         <div data-role="fieldcontain">
