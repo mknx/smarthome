@@ -11,7 +11,7 @@ SmartHome.py is a modular framework to automate your (smart) home.
 
 See the [install](install) and [config](config) section to start your SmartHome.
 
-* 2013-02-02 Preview: Releasing an Raspberry Pi image with SmartHome.py and smartVISU. *
+# 2013-02-02 Preview: Releasing an Raspberry Pi image with SmartHome.py and smartVISU. *
 
 ## 2013-01-31 New Release [0.8](https://github.com/mknx/smarthome/tags)
 with contributions from: Niko Will and Alexander Rieger. Thank you.
