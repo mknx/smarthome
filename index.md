@@ -11,8 +11,12 @@ SmartHome.py is a modular framework to automate your (smart) home.
 
 See the [install](install) and [config](config) section to start your SmartHome.
 
-## 2013-01-16 Beta Release [0.8-Beta](https://github.com/mknx/smarthome/tags)
+* 2013-02-02 Preview: Releasing an Raspberry Pi image with SmartHome.py and smartVISU. *
+
+## 2013-01-31 New Release [0.8](https://github.com/mknx/smarthome/tags)
 with contributions from: Niko Will and Alexander Rieger. Thank you.
+
+I am happy to announce a new cooperation with [smartVISU](http://code.google.com/p/smartvisu/) to give you the best user interface experience.
 
 ### New Plugins
    * [DWD Plugin](plugins/dwd): fetch weather warnings and forecasts from Deutscher Wetterrdienst (DWD).
@@ -32,6 +36,7 @@ with contributions from: Niko Will and Alexander Rieger. Thank you.
    * KNX plugin: DPT 16 support
    * Network plugin: adding a simple http interface
    * Visu plugin:
+      * [smartVISU](http://code.google.com/p/smartvisu/) support: to generate pages for and communicate with this visualisation framework.
       * plot rrd with flot
       * list view
       * dpt3 push buttons

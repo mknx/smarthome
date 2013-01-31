@@ -125,7 +125,7 @@ The following elements attribute values for `visu` in the items configuration ar
 
 ### smartVISU
 
-You could generate pages for the [smartVISU](http://code.google.com/p/smartvisu/) visualisation if you have specified the `smartvisu_dir` which should be set to the root directory of your smartVISU installation.
+You could generate pages for the [smartVISU](http://code.google.com/p/smartvisu/) visualisation if you specify the `smartvisu_dir` which should be set to the root directory of your smartVISU installation.
 In the examples directory you could find a configuration with every supported element. `examples/items/smartvisu.conf`  
 
 The attribute keywords are:
@@ -144,7 +144,7 @@ The attribute keywords are:
             name = Light
             type = bool
             visu = yes
-            sv_widget = "{{ device.dimmer('second.sleeping.light', 'Light', 'second.sleeping.light', 'second.sleeping.light.level') }}"
+            sv_widget = "&#123;&#123; device.dimmer('second.sleeping.light', 'Light', 'second.sleeping.light', 'second.sleeping.light.level') &#125;&#125;"
             knx_dpt = 1
             knx_listen = 3/2/12
             knx_send = 3/2/12
@@ -168,7 +168,7 @@ The page generator will replace it with the current path. This way you could eas
             name = Light
             type = bool
             visu = yes
-            sv_widget = "{{ device.dimmer('item', 'item.name', 'item', 'item.level') }}"
+            sv_widget = "&#123;&#123; device.dimmer('item', 'item.name', 'item', 'item.level') &#125;&#125;"
             knx_dpt = 1
             knx_listen = 3/2/12
             knx_send = 3/2/12
