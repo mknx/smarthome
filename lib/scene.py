@@ -32,7 +32,7 @@ class Scenes():
         self._scenes = {}
         self._scenes_dir = smarthome._base_dir + '/scenes/'
         if not os.path.isdir(self._scenes_dir):
-            logger.warning("No directory for scenes '{0}' not found. Ignoring scenes.".format(self._scenes_dir))
+            logger.warning("Directory scenes not found. Ignoring scenes.".format(self._scenes_dir))
             return
         for item in smarthome.return_items():
             if item._type == 'scene':
@@ -43,17 +43,25 @@ class Scenes():
                         for row in reader:
                             ditem = smarthome.return_item(row[1])
                             if ditem == None:
-                                logger.warning("Could not find item '{0}' specified in {1}".format(row[1], scene_file))
-                                continue
+                                ditem = smarthome.return_logic(row[1])
+                                if ditem == None:
+                                    logger.warning("Could not find item or logic '{0}' specified in {1}".format(row[1], scene_file))
+                                    continue
                             if item.id() in self._scenes:
                                 if row[0] in self._scenes[item.id()]:
                                     self._scenes[item.id()][row[0]].append([ditem, row[2]])
                                 else:
                                     self._scenes[item.id()][row[0]] = [[ditem, row[2]]]
                             else:
-                                self._scenes[item.id()] = { row[0]: [[ditem, row[2]]] }
+                                self._scenes[item.id()] = {row[0]: [[ditem, row[2]]]}
                 except Exception, e:
                     logger.warning("Problem reading scene file {0}: {1}".format(scene_file, e))
                     continue
-                item.add_trigger_method(self.trigger)
-                print self._scenes
+                item.add_trigger_method(self._trigger)
+
+    def _trigger(self, item, caller, source):
+        if not item.id() in self._scenes:
+            return
+        if str(item()) in self._scenes[item.id()]:
+            for ditem, value in self._scenes[item.id()][str(item())]:
+                ditem(value=value, caller='Scene', source=item.id())

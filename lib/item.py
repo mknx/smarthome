@@ -317,6 +317,9 @@ class Item():
         else:
             raise TypeError
 
+    def _return_scene(self, value):
+        return self._return_num(value)
+
     def _return_num(self, value):
         if isinstance(value, float):
             return value

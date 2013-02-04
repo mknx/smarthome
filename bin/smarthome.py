@@ -224,11 +224,11 @@ class SmartHome():
             item.init_prerun()
         for item in self.return_items():
             item.init_run()
-        lib.scene.Scenes(self)
         if self._connections != []:
             self.scheduler.add('sh.con', self._connection_monitor, cycle=10, offset=0)
         self._plugins.start()
-        self.__logics = lib.logic.Logics(self, configfile=self._logic_conf)
+        self._logics = lib.logic.Logics(self, configfile=self._logic_conf)
+        lib.scene.Scenes(self)
 
         # garbage collection
         self.scheduler.add('sh.gc', self._garbage_collection, prio=8, cron=['init', '4 2 * *'], offset=0)
@@ -263,8 +263,6 @@ class SmartHome():
     def return_item(self, string):
         if string in self.__items:
             return self.__item_dict[string]
-        else:
-            return None
 
     def return_items(self):
         for item in self.__items:
@@ -283,10 +281,10 @@ class SmartHome():
                 yield child
 
     def return_logic(self, name):
-        return self.__logics[name]
+        return self._logics[name]
 
     def return_logics(self):
-        for logic in self.__logics:
+        for logic in self._logics:
             yield logic
 
     def return_plugins(self):

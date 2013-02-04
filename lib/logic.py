@@ -67,6 +67,7 @@ class Logics():
             yield logic
 
     def __getitem__(self, name):
+        print 'YYY'
         if name in self._logics:
             return self._logics[name]
 
@@ -98,6 +99,9 @@ class Logic():
 
     def id(self):
         return self.name
+
+    def __call__(self, caller='Logic', source=None, value=None, dt=None):
+        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=caller, source=source, value=value, dt=dt)
 
     def trigger(self, by='Logic', source=None, value=None, dt=None):
         self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=by, source=source, value=value, dt=dt)
