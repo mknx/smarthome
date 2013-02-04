@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V             http://knx-user-forum.de/
+# Copyright 2012-2013 KNX-User-Forum e.V        http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.
 #
@@ -29,7 +29,7 @@ logger = logging.getLogger('')
 
 
 class Item():
-    _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None}
+    _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None, 'scene': ''}
     def __init__(self, smarthome, parent, path, config):
         # basic attributes
         self._path = path
@@ -50,7 +50,7 @@ class Item():
         self._enforce_updates = False
         self._parent = parent
         self._sub_items = []
-        self._plugins_to_trigger = []
+        self._methods_to_trigger = []
         self._logics_to_trigger = []
         self._items_to_trigger = []
         self.__fade = False
@@ -123,16 +123,19 @@ class Item():
             if hasattr(plugin, 'parse_item'):
                 update = plugin.parse_item(self)
                 if update:
-                    self._plugins_to_trigger.append(update)
+                    self.add_trigger_method(update)
 
-    def init_eval_trigger(self):
+    def add_trigger_method(self, method):
+        self._methods_to_trigger.append(method)
+
+    def init_prerun(self):
         if 'eval_trigger' in self.conf:
             for item in self.conf['eval_trigger']:
                 item = self._sh.return_item(item)
                 if item != None:
                     item._items_to_trigger.append(self)
 
-    def init_eval_run(self):
+    def init_run(self):
         if 'eval_trigger' in self.conf:
             if self._eval:
                 self._sh.trigger(name=self._path, obj=self._run_eval, by='Init')
@@ -190,7 +193,7 @@ class Item():
             self._last_change = self._sh.now()
             self._changed_by = "{0}:{1}".format(caller, source)
             self._lock.release()
-            for update_plugin in self._plugins_to_trigger:
+            for update_plugin in self._methods_to_trigger:
                 try:
                     update_plugin(self, caller, source)
                 except Exception, e:

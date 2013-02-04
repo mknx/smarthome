@@ -49,6 +49,7 @@ import lib.plugin
 import lib.tools
 import lib.orb
 import lib.log
+import lib.scene
 
 VERSION = '0.9-Dev'
 try:
@@ -73,6 +74,7 @@ class LogHandler(logging.StreamHandler):
 
 
 class SmartHome():
+    _base_dir = BASE
     _plugin_conf = BASE + '/etc/plugin.conf'
     _items_dir = BASE + '/items/'
     _logic_conf = BASE + '/etc/logic.conf'
@@ -219,9 +221,10 @@ class SmartHome():
                         self.add_item(path, sub_item)
                         self._sub_items.append(sub_item)
         for item in self.return_items():
-            item.init_eval_trigger()
+            item.init_prerun()
         for item in self.return_items():
-            item.init_eval_run()
+            item.init_run()
+        lib.scene.Scenes(self)
         if self._connections != []:
             self.scheduler.add('sh.con', self._connection_monitor, cycle=10, offset=0)
         self._plugins.start()
