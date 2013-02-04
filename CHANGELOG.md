@@ -3,6 +3,10 @@ Roadmap
    * Denon Plugin
    * MPD Plugin
 
+# 0.9
+## Features
+   * Scene support
+
 # 0.8
 ## Contributions from:
    * Niko Will
