@@ -258,6 +258,16 @@ def de16(payload):
     return str(payload).rstrip('\0')
 
 
+def en17(value):
+    return [0, int(value) & 0x3f]
+
+
+def de17(payload):
+    if len(payload) != 1:
+        return None
+    return struct.unpack('>B', payload)[0] & 0x3f
+
+
 def en24(value):
     if isinstance(value, unicode):
         value = value.encode('iso-8859-1')
