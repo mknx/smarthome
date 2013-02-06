@@ -6,6 +6,8 @@ Roadmap
 # 0.9
 ## Features
    * Scene support
+   * Item: setting values by crontab and cycle
+   * Logic: calling with values by crontab and cycle
 
 # 0.8
 ## Contributions from:

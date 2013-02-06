@@ -67,7 +67,6 @@ class Logics():
             yield logic
 
     def __getitem__(self, name):
-        print 'YYY'
         if name in self._logics:
             return self._logics[name]
 
@@ -89,13 +88,9 @@ class Logic():
             if isinstance(self.watch_item, str):
                 self.watch_item = [self.watch_item, ]
         self.prio = int(self.prio)
-        if self.cycle != None:
-            self.cycle = float(self.cycle)
         if self.crontab != None:
             if isinstance(self.crontab, list):
-                self.crontab = ','.join(self.crontab)
-            self.crontab = self.crontab.split('|')
-            self.crontab = [x.strip() for x in self.crontab]
+                self.crontab = ','.join(self.crontab)  # rejoin crontab entry to a string
 
     def id(self):
         return self.name

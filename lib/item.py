@@ -30,6 +30,7 @@ logger = logging.getLogger('')
 
 class Item():
     _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None, 'scene': ''}
+
     def __init__(self, smarthome, parent, path, config):
         # basic attributes
         self._path = path
@@ -45,6 +46,8 @@ class Item():
         self._sh = smarthome
         self._lock = threading.Condition()
         self._cache = False
+        self._crontab = None
+        self._cycle = None
         self._eval = False
         self._threshold = False
         self._enforce_updates = False
@@ -56,13 +59,13 @@ class Item():
         self.__fade = False
         # parse config
         for attr in config:
-            if isinstance(config[attr], dict): # sub item
+            if isinstance(config[attr], dict):  # sub item
                 sub_path = self._path + '.' + attr
                 sub_item = Item(smarthome, self, sub_path, config[attr])
                 vars(self)[attr] = sub_item
                 smarthome.add_item(sub_path, sub_item)
                 self._sub_items.append(sub_item)
-            else: # attribute
+            else:  # attribute
                 if attr == 'type':
                     self._type = config[attr]
                 elif attr == 'value':
@@ -82,6 +85,13 @@ class Item():
                         self.conf[attr] = [config[attr], ]
                     else:
                         self.conf[attr] = config[attr]
+                elif attr == 'cycle':
+                    self._cycle = config[attr]
+                elif attr == 'crontab':
+                    if isinstance(config[attr], list):
+                        self._crontab = ','.join(config[attr])
+                    else:
+                        self._crontab = config[attr]
                 else:
                     self.conf[attr] = config[attr]
         if self._type != None:
@@ -119,6 +129,8 @@ class Item():
             self._th_high = float(high)
             logger.debug("Item '{0}': set threshold => low: {1} high: {2}".format(self._path, self._th_low, self._th_high))
             self._th = False
+        if self._crontab != None or self._cycle != None:
+            self._sh.scheduler.add(self.id(), self, cron=self._crontab, cycle=self._cycle)
         for plugin in self._sh.return_plugins():
             if hasattr(plugin, 'parse_item'):
                 update = plugin.parse_item(self)
@@ -155,7 +167,7 @@ class Item():
             sh = self._sh
             value = eval(self._eval)
             self._update(value, caller, source)
- 
+
     def __del__(self):
         # dummy for garbage collection
         logger.warning("Deleting Item: {0}".format(self._path))
@@ -181,7 +193,7 @@ class Item():
             logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3}  {4}".format(self._path, value, self._type, caller, source))
             return
         self._lock.acquire()
-        if value != self._value or self._enforce_updates: # value change
+        if value != self._value or self._enforce_updates:  # value change
             #logger.debug("update item: %s" % self._path)
             if caller != "fade":
                 self.__fade = False
@@ -189,7 +201,7 @@ class Item():
                 logger.info(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
             self._value = value
             delta = self._sh.now() - self._last_change
-            self._prev_change = delta.seconds + delta.days * 24 * 3600 # FIXME change to timedelta.total_seconds()
+            self._prev_change = delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
             self._last_change = self._sh.now()
             self._changed_by = "{0}:{1}".format(caller, source)
             self._lock.release()
@@ -199,10 +211,10 @@ class Item():
                 except Exception, e:
                     logger.error("Problem running {0}: {1}".format(update_plugin, e))
             if self._threshold and self._logics_to_trigger:
-                if self._th and self._value <= self._th_low: # cross lower bound
+                if self._th and self._value <= self._th_low:  # cross lower bound
                     self._th = False
                     self._trigger_logics()
-                elif not self._th and self._value >= self._th_high: # cross upper bound
+                elif not self._th and self._value >= self._th_high:  # cross upper bound
                     self._th = True
                     self._trigger_logics()
             elif self._logics_to_trigger:
@@ -210,7 +222,8 @@ class Item():
             for item in self._items_to_trigger:
                 args = {'value': value, 'source': self._path}
                 self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source)
-            if self._cache and not self.__fade: self._db_update(value)
+            if self._cache and not self.__fade:
+                self._db_update(value)
         else:
             self._lock.release()
 
@@ -251,7 +264,7 @@ class Item():
     def _db_update(self, value):
         try:
             with open(self._sh._cache_dir + self._path, 'w') as f:
-                cPickle.dump(value,f)
+                cPickle.dump(value, f)
         except IOError, e:
             logger.warning("Could not write to {0}{1}".format(self._sh._cache_dir, self._path))
 

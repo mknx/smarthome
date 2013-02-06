@@ -231,7 +231,7 @@ class SmartHome():
         lib.scene.Scenes(self)
 
         # garbage collection
-        self.scheduler.add('sh.gc', self._garbage_collection, prio=8, cron=['init', '4 2 * *'], offset=0)
+        self.scheduler.add('sh.gc', self._garbage_collection, prio=8, cron="init | 4 2 * *", offset=0)
 
         while self.alive:
             if self.socket_map != {}:
