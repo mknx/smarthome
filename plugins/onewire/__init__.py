@@ -124,14 +124,15 @@ class Owconnection():
             header = map(socket.ntohl, header)
             fields = ['version', 'payload', 'ret', 'flags', 'size', 'offset']
             header = dict(zip(fields, header))
-
             if not header['payload'] == 4294967295:
                 break
 
         if header['ret'] == 4294967295:  # unknown path
             self._lock.release()
-            raise owexpath("path '{0}' not found.".format(path))
-            #raise owex("error: unknown path {0}".format(path))
+            if cmd == 6:  # present
+                return False
+            else:
+                raise owexpath("path '{0}' not found.".format(path))
 
         if header['payload'] == 0:
             self._lock.release()
@@ -148,6 +149,8 @@ class Owconnection():
             raise owex("error receiving payload: {0}".format(e))
 
         self._lock.release()
+        if cmd == 6:  # present
+            return True
 
         if payload.startswith('/'):
             return payload.strip('\x00').split(',')
