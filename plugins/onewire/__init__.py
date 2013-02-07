@@ -75,11 +75,14 @@ class Owconnection():
     def read(self, path):
         return self._request(path, cmd=2)
 
-    def dir(self, path='/'):
-        return self._request(path, cmd=9)
-
     def write(self, path, value):
         return self._request(path, cmd=3)
+
+    def present(self, sensor):
+        return self._request(sensor, cmd=6)
+
+    def dir(self, path='/'):
+        return self._request(path, cmd=9)
 
     def _request(self, path, cmd=10, value=None):
         payload = path + '\x00'
