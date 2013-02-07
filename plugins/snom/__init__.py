@@ -84,6 +84,7 @@ class Snom():
             root = tree.parse(self._phonebook)
         except Exception, e:
             logger.warning("Could not read {0}: {1}".format(self._phonebook, e))
+            return
         found = False
         for entry in tree.findall('DirectoryEntry'):
             ename = entry.findtext('Name')
