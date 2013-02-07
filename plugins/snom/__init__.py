@@ -82,8 +82,10 @@ class Snom():
         tree = xml.etree.cElementTree.ElementTree(root)
         try:
             root = tree.parse(self._phonebook)
-        except Exception, e:
+        except IOError, e:
             logger.warning("Could not read {0}: {1}".format(self._phonebook, e))
+        except Exception, e:
+            logger.warning("Problem reading {0}: {1}".format(self._phonebook, e))
             return
         found = False
         for entry in tree.findall('DirectoryEntry'):
@@ -105,4 +107,7 @@ class Snom():
                 data.append((key, entry))
             data.sort()
             root[:] = [item[-1] for item in data]
-        tree.write(self._phonebook, encoding="UTF-8", xml_declaration=True)
+        try:
+            tree.write(self._phonebook, encoding="UTF-8", xml_declaration=True)
+        except Exception, e:
+            logger.warning("Problem writing {0}: {1}".format(self._phonebook, e))
