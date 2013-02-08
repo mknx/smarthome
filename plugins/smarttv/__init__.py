@@ -35,7 +35,7 @@ class SmartTV():
         self._sh = smarthome
         self._host = host
         self._port = port
-        self._tvid = tvid
+        self._tvid = int(tvid)
 
     def push(self, key):
         try:
@@ -83,7 +83,7 @@ class SmartTV():
             return None
 
         if 'smarttv' in item.conf:
-            logger.debug("Smart TV Item {0} with value {1} found!".format(item, item.conf['smarttv']))
+            logger.debug("Smart TV Item {0} with value {1} for TV ID {2} found!".format(item, item.conf['smarttv'], tvid))
             return self.update_item
         else:
             return None
