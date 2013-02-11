@@ -11,6 +11,12 @@ SmartHome.py is a modular framework to automate your (smart) home.
 
 See the [install](install) and [config](config) section to start your SmartHome.
 
+## 2013-02-11: Big Picture SmartHome.py with KNX, 1-Wire and smartVISU
+
+[Martin](http://knx-user-forum.de/members/sipple.html) has created an overview how SmartHome.py interacts with KNX, 1-Wire and the smartVISU.
+
+![Big Picture](/smarthome/img/big_picture.pdf)
+
 ## 2013-02-02: [Release of an Raspberry Pi image with SmartHome.py and smartVISU](https://github.com/mknx/smarthome/wiki/SmartHome.pi)
 
 ## 2013-01-31 New Release [0.8](https://github.com/mknx/smarthome/tags)
