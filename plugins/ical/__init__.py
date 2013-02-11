@@ -72,6 +72,7 @@ class iCal():
                 return {}
         now = self._sh.now()
         offset = offset - 1  # start at 23:59:59 the day before
+        delta += 1 # extend delta for negetiv offset
         start = now.replace(hour=23, minute=59, second=59, microsecond=0) + datetime.timedelta(days=offset)
         end = start + datetime.timedelta(days=delta)
         events = self._parse_ical(ical, ics)
@@ -201,8 +202,3 @@ class iCal():
         for par in rrule:
             args[par.lower()] = rrule[par]
         return dateutil.rrule.rrule(freq, **args)
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    ical = iCal('smarthome-dummy')
-    print ical('big.ics')
