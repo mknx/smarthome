@@ -335,12 +335,12 @@ class SmartHome():
         return self._utctz
 
     def string2bool(self, string):
+        if isinstance(string, bool):
+            return string
         if string.lower() in ['0', 'false', 'n', 'no', 'off']:
             return False
-        elif string.lower() in ['1', 'true', 'y', 'yes', 'on']:
+        if string.lower() in ['1', 'true', 'y', 'yes', 'on']:
             return True
-        elif isinstance(string, bool):
-            return string
         else:
             return None
 
