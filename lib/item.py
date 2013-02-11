@@ -57,14 +57,21 @@ class Item():
         self._logics_to_trigger = []
         self._items_to_trigger = []
         self.__fade = False
+        self.parse(smarthome, parent, path, config)
+
+    def parse(self, smarthome, parent, path, config):
         # parse config
         for attr in config:
             if isinstance(config[attr], dict):  # sub item
                 sub_path = self._path + '.' + attr
-                sub_item = Item(smarthome, self, sub_path, config[attr])
-                vars(self)[attr] = sub_item
-                smarthome.add_item(sub_path, sub_item)
-                self._sub_items.append(sub_item)
+                sub_item = smarthome.return_item(sub_path)
+                if sub_item == None:  # new item
+                    sub_item = Item(smarthome, self, sub_path, config[attr])
+                    vars(self)[attr] = sub_item
+                    smarthome.add_item(sub_path, sub_item)
+                    self._sub_items.append(sub_item)
+                else:  # existing item
+                    sub_item.parse(smarthome, self, sub_path, config[attr])
             else:  # attribute
                 if attr == 'type':
                     self._type = config[attr]

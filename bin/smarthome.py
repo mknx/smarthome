@@ -208,18 +208,22 @@ class SmartHome():
         logger.info("Init items")
         for item_file in sorted(os.listdir(self._items_dir)):
             if item_file.endswith('.conf'):
-                try: 
+                try:
                     item_conf = ConfigObj(self._items_dir + item_file)
                 except Exception, e:
-                    logger.warning("Problem reading {0}: {1}".format(item_file,e))
+                    logger.warning("Problem reading {0}: {1}".format(item_file, e))
                     continue
                 for entry in item_conf:
                     if isinstance(item_conf[entry], dict):
                         path = entry
-                        sub_item = lib.item.Item(self, self, path, item_conf[path])
-                        vars(self)[path] = sub_item
-                        self.add_item(path, sub_item)
-                        self._sub_items.append(sub_item)
+                        sub_item = self.return_item(path)
+                        if sub_item == None:  # new item
+                            sub_item = lib.item.Item(self, self, path, item_conf[path])
+                            vars(self)[path] = sub_item
+                            self.add_item(path, sub_item)
+                            self._sub_items.append(sub_item)
+                        else:  # existing item
+                            sub_item.parse(self, self, path, item_conf[path])
         for item in self.return_items():
             item.init_prerun()
         for item in self.return_items():
@@ -440,7 +444,7 @@ if __name__ == '__main__':
             usage()
             exit(0)
 
-    pid = read_pid() # check if there is a PID_FILE
+    pid = read_pid()  # check if there is a PID_FILE
     if pid:
         try:
             os.getpgid(pid)  # check if the process is running
