@@ -142,7 +142,7 @@ class Scheduler(threading.Thread):
                 _cron[desc] = value
             cron = _cron
             if 'init' in cron and offset == None:
-                offset = random.randint(1, 4)  # spread init jobs
+                offset = random.randint(3, 7)  # spread init jobs
         if isinstance(cycle, str):
             cycle, sep, value = cycle.partition('=')
             try:
