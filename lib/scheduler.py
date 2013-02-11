@@ -269,8 +269,9 @@ class Scheduler(threading.Thread):
 
     def _crontab(self, crontab):
         # process sunrise/sunset
-        if crontab.startswith('sun'):
-            return self._sun(crontab)
+        for entry in crontab.split('<'):
+            if entry.startswith('sun'):
+                return self._sun(crontab)
 
         minute, hour, day, wday = crontab.split(' ')
         # evaluate the crontab strings
@@ -313,23 +314,74 @@ class Scheduler(threading.Thread):
         if not hasattr(self._sh, 'sun'):  # no sun object created
             logger.warning('No latitude/longitued specified. You could not use sunrise/sunset as crontab entry.')
             return datetime.datetime.now(tzutc()) + relativedelta(years=+10)
-
-        offset = None
-        tmp, op, os = crontab.rpartition('+')
-        if op:
-            offset = float(os)
-        tmp, op, os = crontab.rpartition('-')
-        if op:
-            offset = -float(os)
-
-        if crontab.startswith('sunrise'):
-            next_time = self._sh.sun.rise(offset)
-        elif crontab.startswith('sunset'):
-            next_time = self._sh.sun.set(offset)
+        # find min/max times
+        tabs = crontab.split('<')
+        if len(tabs) == 1:
+            smin = None
+            cron = tabs[0].strip()
+            smax = None
+        elif len(tabs) == 2:
+            if tabs[0].startswith('sun'):
+                smin = None
+                cron = tabs[0].strip()
+                smax = tabs[1].strip()
+            else:
+                smin = tabs[0].strip()
+                cron = tabs[1].strip()
+                smax = None
+        elif len(tabs) == 3:
+            smin = tabs[0].strip()
+            cron = tabs[1].strip()
+            smax = tabs[2].strip()
         else:
-            logger.error('Wrong syntax. Should be (sunrise|sunset)[+|-][offset]')
+            logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
             return datetime.datetime.now(tzutc()) + relativedelta(years=+10)
 
+        doff = 0  # degree offset
+        moff = None  # minute offset
+        tmp, op, os = cron.rpartition('+')
+        if op:
+            if os.endswith('m'):
+                moff = int(os.strip('m'))
+            else:
+                doff = float(os)
+        else:
+            tmp, op, os = cron.rpartition('-')
+            if op:
+                if os.endswith('m'):
+                    moff = -int(os.strip('m'))
+                else:
+                    doff = -float(os)
+
+        if cron.startswith('sunrise'):
+            next_time = self._sh.sun.rise(doff)
+        elif cron.startswith('sunset'):
+            next_time = self._sh.sun.set(doff)
+        else:
+            logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
+            return datetime.datetime.now(tzutc()) + relativedelta(years=+10)
+
+        if moff != None:
+            next_time += relativedelta(minutes=moff)
+
+        if smin != None:
+            h, sep, m = smin.partition(':')
+            try:
+                dmin = next_time.replace(hour=int(h), minute=int(m), second=0, tzinfo=self._sh.tzinfo())
+            except Exception, e:
+                logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
+                return datetime.datetime.now(tzutc()) + relativedelta(years=+10)
+            if dmin > next_time:
+                next_time = dmin
+        if smax != None:
+            h, sep, m = smax.partition(':')
+            try:
+                dmax = next_time.replace(hour=int(h), minute=int(m), second=0, tzinfo=self._sh.tzinfo())
+            except Exception, e:
+                logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
+                return datetime.datetime.now(tzutc()) + relativedelta(years=+10)
+            if dmax < next_time:
+                next_time = dmax
         return next_time
 
     def _range(self, entry, low, high):
