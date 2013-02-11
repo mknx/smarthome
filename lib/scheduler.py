@@ -142,7 +142,7 @@ class Scheduler(threading.Thread):
                 _cron[desc] = value
             cron = _cron
             if 'init' in cron and offset == None:
-                offset = random.randint(3, 7)  # spread init jobs
+                offset = 4
         if isinstance(cycle, str):
             cycle, sep, value = cycle.partition('=')
             try:
@@ -156,11 +156,11 @@ class Scheduler(threading.Thread):
                 value = None
             cycle = {cycle: value}
             if offset == None:
-                offset = random.randint(10, 20)  # spread cycle jobs
+                offset = random.randint(6, 12)  # spread cycle jobs
         elif isinstance(cycle, int):
             cycle = {cycle: None}
             if offset == None:
-                offset = random.randint(10, 20)  # spread cycle jobs
+                offset = random.randint(6, 12)  # spread cycle jobs
         self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': None}
         self._next_time(name, offset)
         self._lock.release()
