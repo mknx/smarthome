@@ -201,7 +201,10 @@ class Scheduler(threading.Thread):
                 del self._scheduler[name]['cron']['init']
                 if self._scheduler[name]['cron'] == {}:
                     self._scheduler[name]['cron'] = None
-                self._scheduler[name]['next'] = now
+                if offset == None:
+                    self._scheduler[name]['next'] = now
+                else:
+                    self._scheduler[name]['next'] = now + relativedelta(seconds=offset)
                 self._scheduler[name]['value'] = value
                 return
             for entry in job['cron']:

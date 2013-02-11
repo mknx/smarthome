@@ -30,7 +30,7 @@ logger = logging.getLogger('')
 class Logics():
 
     def __init__(self, smarthome, configfile):
-        logger.info('Starting logics')
+        logger.info('Start Logics')
         self._sh = smarthome
         self._workers = []
         self._logics = {}

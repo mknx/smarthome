@@ -203,9 +203,9 @@ class SmartHome():
         self.scheduler = lib.scheduler.Scheduler(self)
         self.trigger = self.scheduler.trigger
         self.scheduler.start()
-        logger.info("Init plugins")
+        logger.info("Init Plugins")
         self._plugins = lib.plugin.Plugins(self, configfile=self._plugin_conf)
-        logger.info("Init items")
+        logger.info("Init Items")
         for item_file in sorted(os.listdir(self._items_dir)):
             if item_file.endswith('.conf'):
                 try:
