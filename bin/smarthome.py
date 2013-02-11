@@ -335,6 +335,8 @@ class SmartHome():
             return False
         elif string.lower() in ['1', 'true', 'y', 'yes', 'on']:
             return True
+        elif isinstance(string, bool):
+            return string
         else:
             return None
 
