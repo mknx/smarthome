@@ -15,7 +15,7 @@ See the [install](install) and [config](config) section to start your SmartHome.
 
 [Martin](http://knx-user-forum.de/members/sipple.html) has created an overview how SmartHome.py interacts with KNX, 1-Wire and the smartVISU.
 
-![Big Picture](/smarthome/img/big_picture.pdf)
+[Big Picture](/smarthome/img/big_picture.pdf)
 
 ## 2013-02-02: [Release of an Raspberry Pi image with SmartHome.py and smartVISU](https://github.com/mknx/smarthome/wiki/SmartHome.pi)
 
