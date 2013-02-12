@@ -20,8 +20,6 @@
 #########################################################################
 
 import logging
-import socket
-import threading
 import struct
 import lib.my_asynchat
 import dpts
@@ -163,7 +161,7 @@ class KNX(lib.my_asynchat.AsynChat):
                 return
             dpt = self.gal[dst]['dpt']
             val = self.decode(payload, dpt)
-            if val != None:
+            if val is not None:
                 logger.debug("{0} set {1} to {2}".format(src, dst, val))
                 #print "in:  {0}".format(self.decode(payload, 'hex'))
                 #out = ''
@@ -179,10 +177,10 @@ class KNX(lib.my_asynchat.AsynChat):
         elif flg == 'read':
             logger.debug("{0} read {1}".format(src, dst))
             if dst in self.gar:  # read item
-                if self.gar[dst]['item'] != None:
+                if self.gar[dst]['item'] is not None:
                     item = self.gar[dst]['item']
                     self.groupwrite(dst, item(), item.conf['knx_dpt'], 'response')
-                if self.gar[dst]['logic'] != None:
+                if self.gar[dst]['logic'] is not None:
                     self.gar[dst]['logic'].trigger('KNX', dst, 'read')
 
     def run(self):
@@ -281,7 +279,7 @@ class KNX(lib.my_asynchat.AsynChat):
             for ga in knx_reply:
                 logger.debug("knx: {0} reply to {1}".format(logic, ga))
                 if ga in self.gar:
-                    if self.gar[ga]['logic'] == False:
+                    if self.gar[ga]['logic'] is False:
                         obj = self.gar[ga]['item']
                     else:
                         obj = self.gar[ga]['logic']
