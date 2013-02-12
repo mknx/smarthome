@@ -74,7 +74,7 @@ class DWD():
     def ftp_quit(self):
         try:
             self._ftp.close()
-        except Exception, e:
+        except Exception:
             pass
         if hasattr(self, '_ftp'):
             del self._ftp
@@ -94,7 +94,7 @@ class DWD():
         self._buffer = ''
         try:
             self._ftp.retrbinary("RETR %s" % filename, self._buffer_file)
-        except Exception, e:
+        except Exception:
             pass
         self.lock.release()
         return self._buffer
@@ -104,7 +104,7 @@ class DWD():
         self._connect()
         try:
             filelist = self._ftp.nlst(dirname)
-        except Exception, e:
+        except Exception:
             filelist = []
         self.lock.release()
         return filelist

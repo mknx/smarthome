@@ -20,7 +20,6 @@
 #########################################################################
 
 import logging
-import time
 import asynchat
 import asyncore
 import socket
@@ -70,7 +69,7 @@ class TCPDispatcher(asyncore.dispatcher):
             self.bind((ip, int(port)))
             self.listen(5)
             self.listening = True
-        except Exception, e:
+        except Exception:
             logger.error("Could not bind TCP socket on %s:%s" % (ip, port))
             self.listening = False
 
@@ -126,7 +125,7 @@ class HTTPDispatcher(asyncore.dispatcher):
             self.bind((ip, int(port)))
             self.listen(5)
             self.listening = True
-        except Exception, e:
+        except Exception:
             logger.error("Could not bind TCP socket for HTTP on %s:%s" % (ip, port))
             self.listening = False
 
@@ -149,7 +148,7 @@ class UDPDispatcher(asyncore.dispatcher):
             self.set_reuse_addr()
             self.bind((ip, int(port)))
             self.listening = True
-        except Exception, e:
+        except Exception:
             logger.error("Could not bind UDP socket on %s:%s" % (ip, port))
             self.listening = False
 
@@ -169,7 +168,7 @@ class UDPSend(asyncore.dispatcher_with_send):
         try:
             self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.connect((host, int(port)))
-        except Exception, e:
+        except Exception:
             logger.warning("Could not connect to %s:%s, to send data: %s." % (host, port, data))
             return
         self.send(data)

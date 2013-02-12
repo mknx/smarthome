@@ -72,7 +72,7 @@ class iCal():
                 return {}
         now = self._sh.now()
         offset = offset - 1  # start at 23:59:59 the day before
-        delta += 1 # extend delta for negetiv offset
+        delta += 1  # extend delta for negetiv offset
         start = now.replace(hour=23, minute=59, second=59, microsecond=0) + datetime.timedelta(days=offset)
         end = start + datetime.timedelta(days=delta)
         events = self._parse_ical(ical, ics)
@@ -102,7 +102,6 @@ class iCal():
     def _parse_date(self, val, dtzinfo, par=''):
         if par.startswith('TZID='):
             tmp, par, timezone = par.partition('=')
-            tzinfo = dateutil.tz.gettz(timezone)
         if 'T' in val:  # ISO datetime
             val, sep, off = val.partition('Z')
             dt = datetime.datetime.strptime(val, "%Y%m%dT%H%M%S")

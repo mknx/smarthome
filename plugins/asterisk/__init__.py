@@ -19,7 +19,6 @@
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-import socket
 import threading
 import logging
 import dateutil.relativedelta
@@ -76,7 +75,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
         fam, sep, key = key.partition('/')
         try:
             return self._command({'Action': 'DBGet', 'Family': fam, 'Key': key})
-        except Exception, e:
+        except Exception:
             logger.warning("Asterisk: Problem reading {0}/{1}.".format(fam, key))
 
     def db_write(self, key, value):
@@ -103,7 +102,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
 
     def hangup(self, hang):
         active_channels = self._command({'Action': 'CoreShowChannels'})
-        if active_channels == None:
+        if active_channels is None:
             active_channels = []
         for channel in active_channels:
             device = self._get_device(channel)
@@ -145,7 +144,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
         elif event['Event'] == 'Hangup':
             self._sh.scheduler.trigger('Ast.UpDev', self._update_devices, by='Asterisk')
         elif event['Event'] == 'CoreShowChannel':
-            if self._reply == None:
+            if self._reply is None:
                 self._reply = [event['Channel']]
             else:
                 self._reply.append(event['Channel'])
@@ -192,7 +191,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
 
     def _update_devices(self):
         active_channels = self._command({'Action': 'CoreShowChannels'})
-        if active_channels == None:
+        if active_channels is None:
             active_channels = []
         active_devices = map(self._get_device, active_channels)
         for device in self._devices:
@@ -231,5 +230,5 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._reply_lock.release()
         try:
             self.close()
-        except Exception, e:
+        except Exception:
             pass

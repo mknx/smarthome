@@ -86,7 +86,7 @@ class RRD():
         self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
 
     def _simplify(self, value):
-        if value[0] != None:
+        if value[0] is not None:
             return round(value[0], 2)
 
     def _export(self, item, frame='1d'):
@@ -99,10 +99,10 @@ class RRD():
             return None
         start, end, step = meta
         start += self._sh.now().utcoffset().seconds
-        data = map(self._simplify,  data)
-        if data[-2] == None:
+        data = map(self._simplify, data)
+        if data[-2] is None:
             del data[-2]
-        if data[-1] == None:
+        if data[-1] is None:
             data[-1] = item()
         return {'cmd': 'rrd', 'frame': frame, 'start': start, 'step': step, 'rrd': [[item.id(), data]]}
 
@@ -114,7 +114,7 @@ class RRD():
 
     def _average(self, item, timeframe):
         values = self.read(item, timeframe)
-        if values == None:
+        if values is None:
             return None
         values = filter(None, values)
         if len(values) == 0:

@@ -67,14 +67,14 @@ class Snom():
                 req = urllib2.Request("{0}?settings=save&store_settings=save&{1}={2}".format(uri, item.conf['snom_key'], urllib.quote(str(item()))))
                 req.add_header('Authorization', 'Basic ' + base64.b64encode(self._username + ':' + self._password))
                 u = urllib2.urlopen(req, timeout=2)
-                u.fp._sock.recv=None
+                u.fp._sock.recv = None
                 u.close()
                 del(u, req)
             except Exception, e:
                 logger.warning("Error updating Snom Phone ({0}): {1}".format(item.conf['snom_host'], e))
 
     def phonebook_add(self, name, number):
-        if self._phonebook == None:
+        if self._phonebook is None:
             logger.warning("Snom: No Phonebook specified")
             return
         root = xml.etree.cElementTree.Element('SnomIPPhoneDirectory')

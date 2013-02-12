@@ -69,7 +69,7 @@ class CLIHandler(asynchat.async_chat):
             self.rr(cmd.lstrip('rr').strip())
         elif cmd == 'help' or cmd == 'h':
             self.usage()
-        elif  cmd == 'quit' or cmd == 'q' or cmd == 'x':
+        elif cmd == 'quit' or cmd == 'q' or cmd == 'x':
             self.push('bye\n')
             self.close()
             return
@@ -149,7 +149,7 @@ class CLIHandler(asynchat.async_chat):
         self.push("Logics:\n")
         for logic in self.sh.return_logics():
             nt = self.sh.scheduler.return_next(logic)
-            if nt != None:
+            if nt is not None:
                 self.push("{0} (scheduled for {1})\n".format(logic, nt.strftime('%Y-%m-%d %H:%M:%S')))
             else:
                 self.push("{0}\n".format(logic))
@@ -179,7 +179,7 @@ class CLI(asyncore.dispatcher):
             self.set_reuse_addr()
             self.bind((ip, int(port)))
             self.listen(5)
-        except Exception, e:
+        except Exception:
             logger.error("Could not bind socket on %s:%s" % (ip, port))
 
     def handle_accept(self):

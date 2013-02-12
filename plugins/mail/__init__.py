@@ -43,12 +43,12 @@ class IMAP():
 
     def _connect(self):
         if self._ssl:
-            if self._port != None:
+            if self._port is not None:
                 imap = imaplib.IMAP4_SSL(self._host, self._port)
             else:
                 imap = imaplib.IMAP4_SSL(self._host)
         else:
-            if self._port != None:
+            if self._port is not None:
                 imap = imaplib.IMAP4(self._host, self._port)
             else:
                 imap = imaplib.IMAP4(self._host)

@@ -28,7 +28,6 @@ import hashlib
 import base64
 import threading
 import json
-import time
 import array
 
 
@@ -45,7 +44,7 @@ class WebSocket(asyncore.dispatcher):
         self.visu_items = {}
         self.visu_logics = {}
         self.generator_dir = visu_dir
-        if generator_dir: # transition feature
+        if generator_dir:  # transition feature
             self.generator_dir = generator_dir
         self.smartvisu_dir = smartvisu_dir
         try:
@@ -53,8 +52,8 @@ class WebSocket(asyncore.dispatcher):
             self.set_reuse_addr()
             self.bind((ip, int(port)))
             self.listen(5)
-        except Exception, e:
-            logger.error("Could not bind to socket %s:%s" % (ws_ip, ws_port))
+        except Exception:
+            logger.error("Could not bind to socket %s:%s" % (ip, port))
 
     def _smartvisu_pages(self, directory):
         import smartvisu
@@ -67,16 +66,16 @@ class WebSocket(asyncore.dispatcher):
         try:
             with open(header_file, 'r') as f:
                 header = f.read()
-        except IOError, e:
+        except IOError:
             logger.error("Could not find header file: {0}".format(header_file))
             return
         try:
             with open(footer_file, 'r') as f:
                 footer = f.read()
-        except IOError, e:
+        except IOError:
             logger.error("Could not find footer file: {0}".format(footer_file))
             return
-        index = header.replace(': ','').replace('TITLE', '')
+        index = header.replace(': ', '').replace('TITLE', '')
         index += '<div data-role="page" id="index">\n'
         index += '    <div data-role="header"><h3>SmartHome</h3></div>\n'
         index += '    <div data-role="content">\n\n'
@@ -252,7 +251,7 @@ class WebSocketHandler(asynchat.async_chat):
             name = data['log']
             num = int(data['max'])
             if name in self.logs:
-                self.json_send({ 'cmd': 'log', 'log': [[name, self.logs[name].export(num)]], 'init': 'y'})
+                self.json_send({'cmd': 'log', 'log': [[name, self.logs[name].export(num)]], 'init': 'y'})
             else:
                 logger.info("Client %s requested invalid log: %s" % (self.addr, name))
             if name not in self.monitor['log']:
@@ -297,7 +296,7 @@ class WebSocketHandler(asynchat.async_chat):
     def rfc6455_parse(self, data):
         offset = 0
         byte1, byte2 = struct.unpack_from('!BB', data)
-        fin = (byte1 >> 7) & 0x01
+        #fin = (byte1 >> 7) & 0x01
         opcode = byte1 & 0x0f
         if opcode == 8:
             logger.debug("Websocket: closing connection to {0}.".format(self.addr))
@@ -336,7 +335,7 @@ class WebSocketHandler(asynchat.async_chat):
         opcode = 1  # text frame
         mask = 0
         header = chr(((fin << 7) | (rsv1 << 6) | (rsv2 << 5) | (rsv3 << 4) | opcode))
-        data = json.dumps(data, separators=(',',':'))
+        data = json.dumps(data, separators=(',', ':'))
         length = len(data)
         if length < 126:
             header += chr(mask | length)
@@ -350,7 +349,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.push(header + data)
 
     def hixie76_send(self, data):
-        data = json.dumps(data, separators=(',',':'))
+        data = json.dumps(data, separators=(',', ':'))
         self.push("\x00%s\xff" % data)
 
     def hixie76_parse(self, data):
