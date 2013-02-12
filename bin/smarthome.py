@@ -217,7 +217,7 @@ class SmartHome():
                     if isinstance(item_conf[entry], dict):
                         path = entry
                         sub_item = self.return_item(path)
-                        if sub_item == None:  # new item
+                        if sub_item is None:  # new item
                             sub_item = lib.item.Item(self, self, path, item_conf[path])
                             vars(self)[path] = sub_item
                             self.add_item(path, sub_item)
@@ -353,7 +353,7 @@ class SmartHome():
         for module in sys.modules.values():
             for sym in dir(module):
                 obj = getattr(module, sym)
-                if type(obj) is types.ClassType:
+                if isinstance(obj, types.ClassType):
                     objects[obj] = sys.getrefcount(obj)
         objects = map(lambda x: (x[1], x[0]), objects.items())
         objects.sort(reverse=True)

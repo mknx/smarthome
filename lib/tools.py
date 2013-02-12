@@ -41,7 +41,7 @@ class Tools():
                 return True
             else:
                 return False
-        except OSError, e:
+        except OSError:
             return False
 
     def dewpoint(self, t, rf):
@@ -58,7 +58,7 @@ class Tools():
                 r.add_header('Authorization', 'Basic ' + base64.b64encode(username + ':' + password))
             u = urllib2.urlopen(r, timeout=timeout)
             data = u.read()
-            u.fp._sock.recv=None
+            u.fp._sock.recv = None
             u.close()
             del(r, u)
             return data

@@ -42,9 +42,9 @@ class Scenes():
                         reader = csv.reader(f, delimiter=' ')
                         for row in reader:
                             ditem = smarthome.return_item(row[1])
-                            if ditem == None:
+                            if ditem is None:
                                 ditem = smarthome.return_logic(row[1])
-                                if ditem == None:
+                                if ditem is None:
                                     logger.warning("Could not find item or logic '{0}' specified in {1}".format(row[1], scene_file))
                                     continue
                             if item.id() in self._scenes:

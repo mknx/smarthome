@@ -35,7 +35,6 @@ class Logics():
         self._workers = []
         self._logics = {}
         self._bytecode = {}
-        _num_workers = 10
         self.alive = True
         logger.debug("reading logics from %s" % configfile)
         try:
@@ -59,7 +58,7 @@ class Logics():
             if hasattr(logic, 'watch_item'):
                 for watch_item in logic.watch_item:
                     item = self._sh.return_item(watch_item)
-                    if item != None:
+                    if item is not None:
                         item.add_logic_trigger(logic)
 
     def __iter__(self):
@@ -88,7 +87,7 @@ class Logic():
             if isinstance(self.watch_item, str):
                 self.watch_item = [self.watch_item, ]
         self.prio = int(self.prio)
-        if self.crontab != None:
+        if self.crontab is not None:
             if isinstance(self.crontab, list):
                 self.crontab = ','.join(self.crontab)  # rejoin crontab entry to a string
 

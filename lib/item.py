@@ -20,9 +20,7 @@
 #########################################################################
 
 import logging
-import datetime
 import threading
-import time
 import cPickle
 
 logger = logging.getLogger('')
@@ -65,7 +63,7 @@ class Item():
             if isinstance(config[attr], dict):  # sub item
                 sub_path = self._path + '.' + attr
                 sub_item = smarthome.return_item(sub_path)
-                if sub_item == None:  # new item
+                if sub_item is None:  # new item
                     sub_item = Item(smarthome, self, sub_path, config[attr])
                     vars(self)[attr] = sub_item
                     smarthome.add_item(sub_path, sub_item)
@@ -101,11 +99,11 @@ class Item():
                         self._crontab = config[attr]
                 else:
                     self.conf[attr] = config[attr]
-        if self._type != None:
+        if self._type is not None:
             if self._type not in self._defaults:
                 logger.warning(u"Item {0}: type '{1}' unknown. Please use one of: {2}.".format(path, self._type, ', '.join(self._defaults.keys())))
                 return
-            if self._value == None:
+            if self._value is None:
                 self._value = self._defaults[self._type]
             else:
                 try:
@@ -136,7 +134,7 @@ class Item():
             self._th_high = float(high)
             logger.debug("Item '{0}': set threshold => low: {1} high: {2}".format(self._path, self._th_low, self._th_high))
             self._th = False
-        if self._crontab != None or self._cycle != None:
+        if self._crontab is not None or self._cycle is not None:
             self._sh.scheduler.add(self.id(), self, cron=self._crontab, cycle=self._cycle)
         for plugin in self._sh.return_plugins():
             if hasattr(plugin, 'parse_item'):
@@ -151,7 +149,7 @@ class Item():
         if 'eval_trigger' in self.conf:
             for item in self.conf['eval_trigger']:
                 item = self._sh.return_item(item)
-                if item != None:
+                if item is not None:
                     item._items_to_trigger.append(self)
 
     def init_run(self):
@@ -171,7 +169,7 @@ class Item():
 
     def _run_eval(self, value=None, caller='Eval', source=None):
         if self._eval:
-            sh = self._sh
+            sh = self._sh  # noqa
             value = eval(self._eval)
             self._update(value, caller, source)
 
@@ -180,7 +178,7 @@ class Item():
         logger.warning("Deleting Item: {0}".format(self._path))
 
     def __call__(self, value=None, caller='Logic', source=None):
-        if value == None or self._type == None:
+        if value is None or self._type is None:
             return self._value
         try:
             value = getattr(self, '_return_' + self._type)(value)
@@ -255,13 +253,13 @@ class Item():
         try:
             with open(self._sh._cache_dir + self._path, 'r') as f:
                 return cPickle.load(f)
-        except IOError, e:
+        except IOError:
             logger.info("Could not read {0}{1}".format(self._sh._cache_dir, self._path))
             try:
                 return getattr(self, '_return_' + self._type)(0)
             except:
                 return False
-        except EOFError, e:
+        except EOFError:
             logger.info("{0}{1} is empty".format(self._sh._cache_dir, self._path))
             try:
                 return getattr(self, '_return_' + self._type)(0)
@@ -272,7 +270,7 @@ class Item():
         try:
             with open(self._sh._cache_dir + self._path, 'w') as f:
                 cPickle.dump(value, f)
-        except IOError, e:
+        except IOError:
             logger.warning("Could not write to {0}{1}".format(self._sh._cache_dir, self._path))
 
     # don't compare value, compare object: if you want to compare value, do check item()

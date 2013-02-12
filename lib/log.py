@@ -47,7 +47,7 @@ class Log(collections.deque):
         while True:
             try:
                 entry = self.pop()
-            except Exception, e:
+            except Exception:
                 return
             if entry[0] > dt:
                 self.append(entry)

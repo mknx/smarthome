@@ -26,6 +26,7 @@ import configobj
 
 logger = logging.getLogger('')
 
+
 class Plugins():
     _plugins = []
     _threads = []
@@ -45,7 +46,7 @@ class Plugins():
                     value = _conf[plugin][arg]
                     if isinstance(value, str):
                         value = "'%s'" % value
-                    args = args + ", %s=%s" % ( arg, value )
+                    args = args + ", %s=%s" % (arg, value)
             classname = _conf[plugin]['class_name']
             classpath = _conf[plugin]['class_path']
             try:
@@ -83,4 +84,3 @@ class Plugin(threading.Thread):
 
     def stop(self):
         self.plugin.stop()
-

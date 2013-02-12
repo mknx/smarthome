@@ -28,16 +28,16 @@ logger = logging.getLogger('')
 try:
     import ephem
 except ImportError, e:
-    ephem = None
+    ephem = None  # noqa
 
-from dateutil.relativedelta import *
+import dateutil.relativedelta
 from dateutil.tz import tzutc
 
 
 class Orb():
 
     def __init__(self, orb, lon, lat, elev=False):
-        if ephem == None:
+        if ephem is None:
             return
         self._obs = ephem.Observer()
         self._obs.long = str(lon)
@@ -53,7 +53,7 @@ class Orb():
 
     def rise(self, offset=0, center=True):
         # workaround if rise is 0.001 seconds in the past
-        self._obs.date = datetime.datetime.utcnow() + relativedelta(seconds=2)
+        self._obs.date = datetime.datetime.utcnow() + dateutil.relativedelta.relativedelta(seconds=2)
         self._obs.horizon = str(offset)
         if offset != 0:
             next_rising = self._obs.next_rising(self._orb, use_center=center).datetime()
@@ -63,7 +63,7 @@ class Orb():
 
     def set(self, offset=0, center=True):
         # workaround if set is 0.001 seconds in the past
-        self._obs.date = datetime.datetime.utcnow() + relativedelta(seconds=2)
+        self._obs.date = datetime.datetime.utcnow() + dateutil.relativedelta.relativedelta(seconds=2)
         self._obs.horizon = str(offset)
         if offset != 0:
             next_setting = self._obs.next_setting(self._orb, use_center=center).datetime()
@@ -74,7 +74,7 @@ class Orb():
     def pos(self, offset=None):  # offset in minutes
         date = datetime.datetime.utcnow()
         if offset:
-            date += relativedelta(minutes=offset)
+            date += dateutil.relativedelta.relativedelta(minutes=offset)
         self._obs.date = date
         angle = self._orb.compute(self._obs)
         return (angle.az, angle.alt)
@@ -82,7 +82,7 @@ class Orb():
     def _light(self, offset=None):  # offset in minutes
         date = datetime.datetime.utcnow()
         if offset:
-            date += relativedelta(minutes=offset)
+            date += dateutil.relativedelta.relativedelta(minutes=offset)
         self._obs.date = date
         self._orb.compute(self._obs)
         return int(round(self._orb.moon_phase * 100))
@@ -91,7 +91,7 @@ class Orb():
         date = datetime.datetime.utcnow()
         cycle = 29.530588861
         if offset:
-            date += relativedelta(minutes=offset)
+            date += dateutil.relativedelta.relativedelta(minutes=offset)
         self._obs.date = date
         self._orb.compute(self._obs)
         last = ephem.previous_new_moon(self._obs.date)

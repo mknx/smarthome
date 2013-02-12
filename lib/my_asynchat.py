@@ -23,9 +23,10 @@ import asynchat
 import socket
 import threading
 import logging
-from errno import EINPROGRESS, EALREADY, EWOULDBLOCK
+#from errno import EINPROGRESS, EALREADY, EWOULDBLOCK
 
 logger = logging.getLogger('')
+
 
 class AsynChat(asynchat.async_chat):
 
@@ -48,9 +49,7 @@ class AsynChat(asynchat.async_chat):
         try:
             self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
             self.settimeout(4)
-            err = self.socket.connect_ex(self.addr)
-            #if err != 0:
-            #    raise socket.error(err)
+            self.socket.connect_ex(self.addr)
         except Exception, e:
             self.connected = False
             self._connection_attempts -= 1
@@ -82,4 +81,3 @@ class AsynChat(asynchat.async_chat):
             self.close()
         except:
             pass
-
