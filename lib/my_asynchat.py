@@ -63,6 +63,7 @@ class AsynChat(asynchat.async_chat):
                 logger.error('{0}: could not connect to {1}:{2}: {3}'.format(self.__class__.__name__, self.addr[0], self.addr[1], e))
                 self._connection_attempts = self._connection_errorlog
             self.del_channel(self._sh.socket_map)
+            self._conn_lock.release()
             return
         logger.info('{0}: connected to {1}:{2}'.format(self.__class__.__name__, self.addr[0], self.addr[1]))
         self.connected = True
