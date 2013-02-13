@@ -57,14 +57,14 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._error = False
         if reply:
             d['ActionID'] = self._aid
-        logger.debug("Request {0} - sending: {1}".format(self._aid, d))
+        #logger.debug("Request {0} - sending: {1}".format(self._aid, d))
         self._reply_lock.acquire()
         self.push('\r\n'.join(['{0}: {1}'.format(key, value) for (key, value) in d.items()]) + '\r\n\r\n')
         if reply:
             self._reply_lock.wait(2)
         self._reply_lock.release()
         reply = self._reply
-        logger.debug("Request {0} - reply: {1}".format(self._aid, reply))
+        #logger.debug("Request {0} - reply: {1}".format(self._aid, reply))
         error = self._error
         self._cmd_lock.release()
         if error:

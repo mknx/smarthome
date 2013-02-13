@@ -112,7 +112,7 @@ class Item():
                     logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Ignoring!".format(path, self._value, self._type))
                     return
         else:
-            logger.debug("Item '{0}': No type specified.".format(self._path))
+            #logger.debug("Item '{0}': No type specified.".format(self._path))
             return
         if self._cache:
             self._value = self._db_read()
