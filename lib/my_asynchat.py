@@ -42,10 +42,16 @@ class AsynChat(asynchat.async_chat):
         self.terminator = '\r\n'
         self.is_connected = False
         self._sh = smarthome
+        self._conn_lock = threading.Lock()
         self._connection_attempts = 0
         self._connection_errorlog = 60
 
     def connect(self):
+        self._conn_lock.acquire()
+        if self.is_connected:  # only allow one connection at a time
+            logger.debug("Don't be hasty. Reduce connection attempts from: {0}".format(self.__class__.__name__))
+            self._conn_lock.release()
+            return
         try:
             self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
             self.settimeout(4)
@@ -63,6 +69,7 @@ class AsynChat(asynchat.async_chat):
         self.is_connected = True
         self._connection_attempts = 0
         self.handle_connect()
+        self._conn_lock.release()
 
     def collect_incoming_data(self, data):
         self.buffer += data
