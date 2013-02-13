@@ -102,7 +102,7 @@ class Logic():
 
     def generate_bytecode(self):
         if hasattr(self, 'filename'):
-            filename = '/usr/local/smarthome/logics/' + self.filename
+            filename = self._sh.base_dir + '/logics/' + self.filename
             if not os.access(filename, os.R_OK):
                 logger.warning("%s: Could not access logic file (%s) => ignoring." % (self.name, self.filename))
                 return

@@ -29,8 +29,10 @@ logger = logging.getLogger('')
 
 class RRD():
 
-    def __init__(self, smarthome, step=300, rrd_dir='/usr/local/smarthome/var/rrd/'):
+    def __init__(self, smarthome, step=300, rrd_dir=None):
         self._sh = smarthome
+        if rrd_dir is None:
+            rrd_dir = smarthome.base_dir + '/var/rrd/'
         self._rrd_dir = rrd_dir
         self._rrds = {}
         self.step = int(step)

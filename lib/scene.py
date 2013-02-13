@@ -30,7 +30,7 @@ class Scenes():
 
     def __init__(self, smarthome):
         self._scenes = {}
-        self._scenes_dir = smarthome._base_dir + '/scenes/'
+        self._scenes_dir = smarthome.base_dir + '/scenes/'
         if not os.path.isdir(self._scenes_dir):
             logger.warning("Directory scenes not found. Ignoring scenes.".format(self._scenes_dir))
             return

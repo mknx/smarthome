@@ -37,8 +37,7 @@ import gc
 from configobj import ConfigObj
 from dateutil.tz import gettz
 
-# os.path.realpath(__file__) # use for BASE evaluation
-BASE = '/usr/local/smarthome'
+BASE = '/'.join(os.path.realpath(__file__).split('/')[:-2])
 PID_FILE = BASE + '/var/run/smarthome.pid'
 sys.path.append(BASE)
 
@@ -74,7 +73,7 @@ class LogHandler(logging.StreamHandler):
 
 
 class SmartHome():
-    _base_dir = BASE
+    base_dir = BASE
     _plugin_conf = BASE + '/etc/plugin.conf'
     _items_dir = BASE + '/items/'
     _logic_conf = BASE + '/etc/logic.conf'
@@ -91,7 +90,7 @@ class SmartHome():
     __item_dict = {}
     _utctz = TZ
 
-    def __init__(self, smarthome_conf='/usr/local/smarthome/etc/smarthome.conf'):
+    def __init__(self, smarthome_conf=BASE + 'etc/smarthome.conf'):
         self.version = VERSION
         global TZ
         threading.currentThread().name = 'SmartHome.py'

@@ -37,10 +37,10 @@ logger = logging.getLogger('')
 class DWD():
     _dwd_host = 'ftp-outgoing2.dwd.de'
     _warning_cat = {}
-    _warnings_csv = '/usr/local/smarthome/plugins/dwd/warnings.csv'
 
     def __init__(self, smarthome, username, password=True):
         self._sh = smarthome
+        self._warnings_csv = smarthome.base_dir + '/plugins/dwd/warnings.csv'
         self._dwd_user = username
         self._dwd_password = password
         self.lock = threading.Lock()
