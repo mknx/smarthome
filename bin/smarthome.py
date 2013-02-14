@@ -90,7 +90,7 @@ class SmartHome():
     __item_dict = {}
     _utctz = TZ
 
-    def __init__(self, smarthome_conf=BASE + 'etc/smarthome.conf'):
+    def __init__(self, smarthome_conf=BASE + '/etc/smarthome.conf'):
         self.version = VERSION
         global TZ
         threading.currentThread().name = 'SmartHome.py'
