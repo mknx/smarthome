@@ -3,11 +3,14 @@ Roadmap
    * Denon Plugin
    * MPD Plugin
 
-# 0.9
+# 0.9 - Developement
 ## Features
    * Scene support
    * Item: setting values by crontab and cycle
    * Logic: calling with values by crontab and cycle
+   * Samsung Smart TV Plugin
+   * XBMC Plugin
+   * 1-Wire Plugin rewritten to support many different sensors
 
 # 0.8
 ## Contributions from:
