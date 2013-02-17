@@ -1,0 +1,203 @@
+"
+" VERSION = 30
+"
+
+set nocompatible  " not vi compatible
+filetype off
+
+" No Backup Files! "
+set nobackup
+set noswapfile
+set autowrite " automatically save changes when executing critical commands
+set autoread " automatically detect changes and re-read the file
+
+let &titlestring = expand("%:T") . '@' . hostname()
+set title
+
+set shell=sh
+set wildignore=*.pyc,
+" Search
+set hlsearch   " highlight search
+set ignorecase " search ignores case
+set incsearch  " incremental search
+set smartcase  " match "word" case-insensitive and "Word" case-sensitive
+nmap <silent> ,/ :nohlsearch<CR>
+
+" Replace
+set gdefault   " global
+
+" Edit
+set nojoinspaces
+set encoding=utf-8
+set termencoding=utf-8
+setglobal fileencoding=utf-8
+set expandtab    " use spaces in place of tabs
+set tabstop=4    " use n spaces in place of one tab
+set smarttab     " delete "tabs" with backspace
+retab            " replace all existing tabs
+set autoindent   " use autoindent
+set smartindent  " smart autoindenting
+set shiftwidth=4 " use n spaces for autoindent
+set shiftround   " round to multiple tabs
+
+" Visual
+set ruler     " show status bar
+set number    " show line numbers
+set showmatch " show matching bracket
+set list listchars=tab:>-,trail:.,extends:>,nbsp:_
+set ttyfast
+set scrolloff=20
+set sidescroll=10
+set nowrap    " don't autowrap
+
+" Status line
+set laststatus=2
+set statusline=
+set statusline+=\[%n]\                          " buffer
+set statusline+=%F\                             " filename
+set statusline+=%M%R\                           " status flags
+set statusline+=\[%{strlen(&ft)?&ft:'none'},\   " file type
+set statusline+=%{&fileformat},\                " file format
+set statusline+=%{strlen(&fenc)?&fenc:&enc}]\   " encoding
+if isdirectory(expand("~/.vim/bundle/vim-fugitive", ":p"))
+    set statusline+=%{fugitive#head()}    " git status
+endif
+set statusline+=%=                              " right align
+set statusline+=%(%l,%c%)\                      " line, character
+set statusline+=%03b\ 0x%02B\                   " character value
+set statusline+=%3l/%L\ %3p%%                   " line/total percent
+
+"" misc
+imap \ae ä
+imap \Ae Ä
+imap \oe ö
+imap \Oe Ö
+imap \ue ü
+imap \Ue Ü
+imap \ss ß
+
+set showcmd " display incomplete commands.
+
+if isdirectory(expand("~/.vim/bundle/vundle", ":p"))
+" init vundle
+" git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+" run :BundleInstall
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
+Bundle 'gmarik/vundle'
+
+" pip install flake8
+" :cc 1 " jump to first warning
+" :cn " jump to next warning
+Bundle 'nvie/vim-flake8'
+    let g:flake8_ignore="E501"
+    autocmd BufWritePost *.py call Flake8()
+
+Bundle 'tpope/vim-fugitive'
+endif
+
+filetype plugin indent on
+
+" Python Files
+function! PyHeader()
+  let line = 1 
+  call setline (line, "#!/usr/bin/env python")
+  call append  (line, "#")
+  call append  (line + 1, "") 
+  :3  
+endfunction
+
+function! PythonScript()
+  write
+  !clear; python %
+endfunction
+
+"autocmd FileType python set colorcolumn=80
+autocmd BufNewFile   *.py : call PyHeader()
+autocmd BufNewFile   /usr/local/smarthome/**.py  0r /usr/local/smarthome/dev/skeleton.py
+autocmd BufWritePost *.py  : !chmod +x %
+autocmd BufEnter     *.py  : map <C-X> :call PythonScript()<CR>
+autocmd BufWritePost .vimrc,.vimrc.local so %
+
+" Shell Scripts
+function! ShHeader()
+  let filename = expand("%:p")
+  let author = system("id -un | tr -d '\n'")
+  let line = 1
+  call setline (line, "#!/bin/sh")
+  call append  (line, "#")
+  call append  (line + 1, "")
+  :3
+endfunction
+function! ShellScript()
+  write
+  !clear; sh -x %
+endfunction
+
+autocmd BufNewFile   *.sh  : call ShHeader()
+autocmd BufWritePost *.sh  : !chmod +x %
+autocmd BufEnter     *.sh  : map <C-X> :call ShellScript()<CR>
+autocmd BufNewFile   /*/func/*  : call ShHeader()
+autocmd BufWritePost /*/func/*  : !chmod +x %
+autocmd BufEnter     /*/func/*  : map <C-X> :call ShellScript()<CR>
+autocmd BufRead,BufNewFile /*/func/*  set filetype=sh
+
+" Zone Files
+function! ZoneFile()
+  normal mi
+  let line = 0
+  while line < 10
+    if getline(line) =~ "Serial"
+      exe line . 's/\d\+/'.strftime("%Y%m%d%H").'/'
+    endif
+    let line = line + 1
+  endwhile
+  return "normal mi"
+endfunction
+
+" Mail
+autocmd FileType    mail    : setlocal textwidth=72
+" HTML
+autocmd BufWritePost *.html : !chmod 0755 %
+" Bind Zone Files
+autocmd BufWrite     /*/zones/* : ks|call ZoneFile()|'s
+
+" Syntax highlighting
+set synmaxcol=200  " limit syntax coloring
+syntax on
+set background=light
+
+highlight clear Normal
+
+if exists("syntax_on")
+    syntax reset
+endif
+
+hi Normal cterm=NONE ctermfg=Black ctermbg=252
+hi LineNr ctermfg=236 ctermbg=249
+hi StatusLine cterm=NONE ctermfg=236 ctermbg=249
+hi Search ctermfg=27 ctermbg=111
+hi Comment ctermfg=240
+
+hi PreProc ctermfg=88
+hi Identifier ctermfg=22  " Functions
+hi Type ctermfg=22  " Exceptions
+hi Special ctermfg=22
+hi Statement ctermfg=130
+hi def link pythonRawEscape Special
+hi def link pythonBuiltinObj Special
+
+let python_highlight_builtin_objs = 1
+let python_highlight_builtin_funcs = 1
+let python_print_as_function = 1
+let python_highlight_exceptions = 1
+let python_highlight_space_errors = 1
+
+" Local config
+let vimrc_local = expand("~/.vimrc.local", ":p")
+if filereadable(vimrc_local)
+    execute 'source' vimrc_local
+endif
+unlet vimrc_local
+
+set secure
