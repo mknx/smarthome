@@ -35,7 +35,7 @@ This is a name for the defined sensor information.
 This is the type of the sensor data. Currently 'num' and 'bool' are supported.
 
 ### ow_addr
-'ow_addr' defines the 1wire adress of the sensor (formerly 'ow_id'). If 'ow_addr' is specified, the 1wire plugin monitors this sensor. 
+'ow_addr' defines the 1wire adress of the sensor (formerly 'ow_id'). If 'ow_addr' is specified, the 1wire plugin monitors this sensor.
 
 ### ow_sensor
 'ow_sensor' defines the particular data of the sensor. Currently are supported:
@@ -52,7 +52,7 @@ for ibuttons:
 
 If an ibutton master ('BM') is specified, the 1-wire plugin will monitor this bus with a higher frequency for changes.
 The ibutton sensor ('B') returns 'true', if the ibutton is present or 'false', if not.
-The same frequency will be used, if I/O sensors (2406) are spcified.
+If I/O sensors (2406) are specified they will be monitored within a shorter timeframe.
 
 Currently the following 1wire devices are tested by users:
 * DS9490 busmaster
