@@ -44,6 +44,7 @@ This is the type of the sensor data. Currently 'num' and 'bool' are supported.
 
 ### ow_sensor
 'ow_sensor' defines the particular data of the sensor. Currently are supported:
+
 * 'T' - temperature - could be T, T9, T10, T11, T12 (depends on accuracy, but more accuracy needs more time!)
 * 'H' - humidity
 * 'L' - light intensity (lux)
@@ -52,6 +53,7 @@ This is the type of the sensor data. Currently 'num' and 'bool' are supported.
 * 'Ox' - output - could be OA or OB (depends on the choosen output)
 
 for ibuttons:
+
 * 'BM' - ibutton master
 * 'B' - ibutton
 
@@ -60,6 +62,7 @@ The ibutton sensor ('B') returns 'true', if the ibutton is present or 'false', i
 If I/O sensors (2406) are specified they will be monitored within a shorter timeframe.
 
 Currently the following 1wire devices are tested by users:
+
 * DS9490 busmaster
 * DS18B20 (temperature)
 * Elabnet BMS v1.3  (MS-THS-13)
