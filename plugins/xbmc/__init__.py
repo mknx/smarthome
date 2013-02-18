@@ -67,6 +67,8 @@ class MediaCenter(lib.my_asynchat.AsynChat):
         if id is None:
             self._id += 1
             id = self._id
+            if id > 100:
+                self._id = 0
         self._rid = id
         if params is not None:
             data = {"jsonrpc": "2.0", "id": id, "method": method, 'params': params}
