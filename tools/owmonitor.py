@@ -21,25 +21,35 @@
 
 import time
 import sys
+import logging
 sys.path.append("/usr/local/smarthome")
 
 import plugins.onewire
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('')
+
 host = '127.0.0.1'
 port = 4304
 
-ow = plugins.onewire.Owconnection(host, port)
+ow = plugins.onewire.OwBase(host, port)
 ow.connect()
 
 old = []
 while 1:
-    new = ow.dir()
-    dif = list(set(new)-set(old))
+    try:
+        new = ow.dir('/uncached')
+    except Exception, e:
+        logger.error(e)
+        sys.exit()
+    dif = list(set(new) - set(old))
     for sensor in dif:
         try:
+            sensor = sensor.replace('/uncached', '')
             typ = ow.read(sensor + 'type')
-            print "new sensor: %s (%s)" % (sensor, typ)
+            sensors = ow.identify_sensor(sensor)
+            print("new sensor {0} ({1}) provides: {2}".format(sensor, typ, sensors))
         except Exception, e:
             pass
-    old = new
+    old += dif
     time.sleep(1)
