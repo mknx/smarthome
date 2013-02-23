@@ -183,7 +183,10 @@ class Item():
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
+            try:
+                logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
+            except:
+                pass
             return
         if self._eval:
             args = {'value': value, 'caller': caller, 'source': source}
