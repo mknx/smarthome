@@ -171,7 +171,7 @@ class KNX(lib.my_asynchat.AsynChat):
                 for item in self.gal[dst]['items']:
                     item(val, 'KNX', src)
                 for logic in self.gal[dst]['logics']:
-                    logic.trigger('KNX', src, val)
+                    logic.trigger('KNX', src, val, dst)
             else:
                 logger.warning("Wrong payload '{2}' for ga '{1}' with dpt '{0}'.".format(dpt, dst, self.decode(payload, 'hex')))
         elif flg == 'read':
@@ -181,7 +181,7 @@ class KNX(lib.my_asynchat.AsynChat):
                     item = self.gar[dst]['item']
                     self.groupwrite(dst, item(), item.conf['knx_dpt'], 'response')
                 if self.gar[dst]['logic'] is not None:
-                    self.gar[dst]['logic'].trigger('KNX', dst, 'read')
+                    self.gar[dst]['logic'].trigger('KNX', src, 'read', dst)
 
     def run(self):
         self.alive = True
