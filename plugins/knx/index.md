@@ -113,6 +113,12 @@ You could specify the `knx_listen` and `knx_reply` attribute to every logic in y
 </pre>
 If there is a packet directed to the according group address, SmartHome.py would trigger the logic and will pass the payload (via the trigger object) to the logic.
 
+In the context of the KNX plugin the trigger dictionary consists of the following elements:
+
+* trigger['by']     protocol ('KNX')
+* trigger['source']     PA (physical adress of the KNX packet source) 
+* trigger['value']     payload
+
 Functions
 =========
 

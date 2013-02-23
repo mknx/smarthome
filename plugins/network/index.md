@@ -75,6 +75,13 @@ logic.conf
 ----------
 You could use the same network attributes as in items.conf to trigger logics.
 
+In the context of the KNX plugin the trigger dictionary consists of the following elements:
+
+* trigger['by']     protocol (tcp, udp, http)
+* trigger['source']     IP adress of the sender
+* trigger['value']     payload 
+
+
 Usage
 =====
 
