@@ -51,6 +51,7 @@ This is the type of the sensor data. Currently 'num' and 'bool' are supported.
 * 'V' - voltage
 * 'Ix' - input - could be IA or IB (depends on the choosen input)
 * 'Ox' - output - could be OA or OB (depends on the choosen output)
+* 'VDD' - voltage of sensor powering (most DS2438 based sensors)
 
 for ibuttons:
 
