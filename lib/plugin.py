@@ -36,6 +36,7 @@ class Plugins():
             _conf = configobj.ConfigObj(configfile, file_error=True)
         except IOError, e:
             logger.critical(e)
+            smarthome.stop()
             sys.exit(1)
 
         for plugin in _conf:

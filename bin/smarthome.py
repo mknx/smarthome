@@ -297,9 +297,18 @@ class SmartHome():
 
     def stop(self, signum=None, frame=None):
         self.alive = False
-        asyncore.close_all(self.socket_map)
-        self.scheduler.stop()
-        self._plugins.stop()
+        try:
+            asyncore.close_all(self.socket_map)
+        except:
+            pass
+        try:
+            self.scheduler.stop()
+        except:
+            pass
+        try:
+            self._plugins.stop()
+        except:
+            pass
         time.sleep(0.5)
         if threading.active_count() > 1:
             for thread in threading.enumerate():

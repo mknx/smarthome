@@ -40,7 +40,8 @@ class Logics():
         try:
             self._config = configobj.ConfigObj(configfile, file_error=True)
         except Exception, e:
-            logger.critical(e)
+            logger.critical("Shutting down: {0}".format(e))
+            smarthome.stop()
             sys.exit(0)
         for name in self._config:
             logger.debug("Logic: %s" % name)
