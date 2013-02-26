@@ -38,6 +38,8 @@ tz = 'Europe/Berlin'
 
 ## etc/logic.conf
 
+This file is mandatory. For first experiments, it is possible to use a blanc file (touch logic.conf).
+
 Logic items within SmartHome.py are simple python scripts, which are placed in <code>/usr/local/smarthome/logics/</code>. See the [logic introduction](/smarthome/logic) for howto write logics.
 
 A very simple logic.conf would look like this:
@@ -109,6 +111,8 @@ Every other attribute could be accessed from the the logic with <code>self.attri
 
 
 ## etc/plugin.conf
+This file is mandatory. For first experiments, it is possible to use a blanc file (touch plugin.conf).
+
 Plugins extend the core functionality of SmartHome.py. You could access these plugins from every logic script.
 For example there is a plugin for the prowl notification service to send small push messages to your iPhone/iPad.
 Plugins are placed in <code>/usr/local/smarthome/plugins/</code>.
