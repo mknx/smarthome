@@ -19,7 +19,6 @@
 #  along with SmartHome.py.  If not, see <http://www.gnu.org/licenses/>.
 ##########################################################################
 
-import sys
 import logging
 import threading
 import configobj
@@ -36,8 +35,7 @@ class Plugins():
             _conf = configobj.ConfigObj(configfile, file_error=True)
         except IOError, e:
             logger.critical(e)
-            smarthome.stop()
-            sys.exit(1)
+            return
 
         for plugin in _conf:
             args = ''
