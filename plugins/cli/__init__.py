@@ -77,8 +77,8 @@ class CLIHandler(asynchat.async_chat):
 
     def ls(self, path):
         if not path:
-            for path in self.sh:
-                self.push("{0}\n".format(path))
+            for item in self.sh:
+                self.push("{0}\n".format(item.id()))
         else:
             item = self.sh.return_item(path)
             if hasattr(item, 'id'):
