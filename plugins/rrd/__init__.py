@@ -93,7 +93,7 @@ class RRD():
 
     def _export(self, item, frame='1d'):
         rrdb = self._rrd_dir + item.id() + '.rrd'
-        tmp, name = item.id().split('.')
+        #name = item.id().rpartition('.')[-1]
         try:
             meta, names, data = rrdtool.fetch(rrdb, 'AVERAGE', '--start', 'now-' + frame)
         except Exception, e:
