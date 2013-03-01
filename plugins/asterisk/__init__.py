@@ -90,6 +90,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
             return self._command({'Action': 'MailboxCount', 'Mailbox': mailbox + '@' + context})
         except Exception, e:
             logger.warning("Asterisk: Problem reading mailbox count {0}@{1}: {2}.".format(mailbox, context, e))
+            return (0, 0)
 
     def call(self, source, dest, context, callerid=None):
         cmd = {'Action': 'Originate', 'Channel': source, 'Exten': dest, 'Context': context, 'Priority': '1', 'Async': 'true'}
@@ -222,6 +223,9 @@ class Asterisk(lib.my_asynchat.AsynChat):
 
     def handle_connect(self):
         self._command(self._init_cmd, reply=False)
+        for mb in self._mailboxes:
+            mbc = self.mailbox_count(mb)
+            self._mailboxes[mb](mbc[1])
 
     def stop(self):
         self.alive = False
