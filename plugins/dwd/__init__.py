@@ -28,7 +28,7 @@ import datetime
 import dateutil.parser
 import dateutil.tz
 import dateutil.relativedelta
-import xml.etree.ElementTree
+import xml.etree.cElementTree
 import threading
 
 logger = logging.getLogger('')
@@ -94,7 +94,8 @@ class DWD():
         self._buffer = ''
         try:
             self._ftp.retrbinary("RETR %s" % filename, self._buffer_file)
-        except Exception:
+        except Exception, e:
+            logger.warning("problem fetching {0}: {1}".format(filename, e))
             pass
         self.lock.release()
         return self._buffer
@@ -193,24 +194,21 @@ class DWD():
             filename = "{0}/u_vindex{1}.xml".format(directory, frame)
             fb = self._retr_file(filename)
             year, month, day = re.findall(r"\d\d\d\d\-\d\d\-\d\d", fb)[0].split('-')
-            date = datetime.datetime(int(year), int(month), int(day), tzinfo=self.tz)
+            date = datetime.datetime(int(year), int(month), int(day), 12, 0, 0, 0, tzinfo=self.tz)
             uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)[0]
             forecast[date] = int(uv)
         return forecast
 
     def pollen(self, region):
-        return
-        # XXX ftp path broken
-        filename = 'gds/specials/warnings/FG/sb31fg.xml'
+        filename = 'gds/specials/warnings/FG/s_b31fg.xml'
         filexml = self._retr_file(filename)
-        fxp = xml.etree.ElementTree.fromstring(filexml)
+        if filexml == '':
+            return
+        fxp = xml.etree.cElementTree.fromstring(filexml)
         date = fxp.attrib['last_update'].split()[0].split('-')
-        day0 = datetime.date(int(date[0]), int(date[1]), int(date[2]))
+        day0 = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), 12, 0, 0, 0, tzinfo=self.tz)
         day1 = day0 + dateutil.relativedelta.relativedelta(days=1)
         day2 = day0 + dateutil.relativedelta.relativedelta(days=2)
-        day0 = day0.isoformat()
-        day1 = day1.isoformat()
-        day2 = day2.isoformat()
         forecast = {day0: {}, day1: {}, day2: {}}
         for reg in fxp.findall('region'):
             for preg in reg.findall('partregion'):
@@ -227,4 +225,5 @@ class DWD():
                             forecast[day0][kind.tag] = kindforc[0]
                             forecast[day1][kind.tag] = kindforc[1]
                             forecast[day2][kind.tag] = kindforc[2]
+        fxp.clear()
         return forecast
