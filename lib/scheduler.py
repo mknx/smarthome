@@ -28,6 +28,7 @@ import traceback
 import threading
 import os  # noqa
 import random
+import types  # noqa
 import subprocess  # noqa
 
 import dateutil.relativedelta
