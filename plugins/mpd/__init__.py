@@ -54,8 +54,8 @@ class MPD():
 
 class mpd(lib.my_asynchat.AsynChat):
 
-    _listen_keys = ['state', 'volume', 'repeat', 'random', 'single', 'time', 'total', 'percent', 'state']
-    _current_keys = ['title', 'name', 'album', 'artist', 'albumartist', 'track', 'disc']
+    _listen_keys = ['state', 'volume', 'repeat', 'random', 'single', 'time', 'total', 'percent', 'play', 'pause', 'stop']
+    _current_keys = {'title': 'Title', 'name': 'Name', 'album': 'Album', 'artist': 'Artist', 'albumartist': 'AlbumArtist', 'track': 'Track', 'disc': 'Disc'}
     _bool_keys = ['repeat', 'random', 'single']
 
     def __init__(self, smarthome, item):
@@ -78,7 +78,7 @@ class mpd(lib.my_asynchat.AsynChat):
             if listen_to in self._listen_keys:
                 self._items[listen_to] = child
             if listen_to in self._current_keys:
-                self._items[listen_to.capitalize()] = child
+                self._items[self._current_keys[listen_to]] = child
         for child in self._sh.find_children(item, 'mpd_send'):
             send_to = child.conf['mpd_send']
             if send_to in self._bool_keys:
@@ -94,6 +94,7 @@ class mpd(lib.my_asynchat.AsynChat):
         # adding item methods
         item.command = self.command
         item.play_url = self.play_url
+        item.add_url = self.add_url
 
     def command(self, command, wait=True):
         return self._send(command, wait)
@@ -176,7 +177,8 @@ class mpd(lib.my_asynchat.AsynChat):
         status = self._send('status')
         if 'state' not in status:
             return
-        status.update({'Album': '', 'Name': '', 'Artist': '', 'Albumartist': '', 'Disc': '', 'Track': '', 'Title': ''})
+        status.update({'Album': '', 'Name': '', 'Artist': '', 'AlbumArtist': '', 'Disc': '', 'Track': '', 'Title': '', 'play': False, 'pause': False, 'stop': False})
+        status[status.state] = True  # set only the current state to True
         if 'time' in status:
             status['time'], sep, status['total'] = status['time'].partition(':')
             if 'percent' in self._items:
@@ -185,7 +187,7 @@ class mpd(lib.my_asynchat.AsynChat):
                 else:
                     status['percent'] = 0
         else:
-            status.update({'time': 0, 'totals': 0, 'percent': 0})
+            status.update({'time': 0, 'total': 0, 'percent': 0})
         if status['state'] != 'stop':
             status.update(self._send('currentsong'))
         for attr in self._items:
