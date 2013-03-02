@@ -54,9 +54,9 @@ class MPD():
 
 class mpd(lib.my_asynchat.AsynChat):
 
-    _listen_keys = ['state', 'volume', 'repeat', 'random', 'single', 'time', 'total', 'percent', 'play', 'pause', 'stop']
-    _current_keys = {'title': 'Title', 'name': 'Name', 'album': 'Album', 'artist': 'Artist', 'albumartist': 'AlbumArtist', 'track': 'Track', 'disc': 'Disc'}
-    _bool_keys = ['repeat', 'random', 'single']
+    _listen_keys = ['state', 'volume', 'repeat', 'random', 'single', 'time', 'total', 'percent', 'play', 'pause', 'stop', 'song', 'playlistlength', 'nextsongid']
+    _current_keys = {'title': 'Title', 'name': 'Name', 'album': 'Album', 'artist': 'Artist', 'albumartist': 'AlbumArtist', 'track': 'Track', 'disc': 'Disc', 'file': 'file'}
+    _bool_keys = ['repeat', 'random', 'single', 'consume']
 
     def __init__(self, smarthome, item):
         if 'mpd_port' in item.conf:
