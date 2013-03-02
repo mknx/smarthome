@@ -178,7 +178,7 @@ class mpd(lib.my_asynchat.AsynChat):
         if 'state' not in status:
             return
         status.update({'Album': '', 'Name': '', 'Artist': '', 'AlbumArtist': '', 'Disc': '', 'Track': '', 'Title': '', 'play': False, 'pause': False, 'stop': False})
-        status[status.state] = True  # set only the current state to True
+        status[status['state']] = True  # set only the current state to True
         if 'time' in status:
             status['time'], sep, status['total'] = status['time'].partition(':')
             if 'percent' in self._items:
