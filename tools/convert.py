@@ -24,33 +24,35 @@ import ConfigParser, io, sys
 
 conf = ''
 # read conf and skip header entries (no section)
-with open(sys.argv[1], 'r') as cfg:
-    found_section = False
-    for l in cfg.readlines():
-        if len(l.strip()) == 0: 
-            continue
-        if l[0] != '[' and found_section == False:
-            continue
-        found_section = True
-        conf += l
+try:
 
-with open(sys.argv[2], 'w') as out:
-    config = ConfigParser.ConfigParser()
-    config.readfp(io.BytesIO(conf))
-    for section in config.sections():
-        try:
-            name = config.get(section, 'name')
-            typ = config.get(section, 'type')
-        except ConfigParser.NoOptionError:
-            continue
-        if typ == 'DS1820':
-            sensor = 'T' + config.get(section, 'resolution')
-        elif typ == 'DS2438Hum' or typ == 'DS2438Datanab':
-            sensor = 'H'
-        else:
-            continue
+    with open(sys.argv[1], 'r') as cfg:
+        found_section = False
+        for l in cfg.readlines():
+            if len(l.strip()) == 0: 
+                continue
+            if l[0] != '[' and found_section == False:
+                continue
+            found_section = True
+            conf += l
 
-        out.write('''
+    with open(sys.argv[2], 'w') as out:
+        config = ConfigParser.ConfigParser()
+        config.readfp(io.BytesIO(conf))
+        for section in config.sections():
+            try:
+                name = config.get(section, 'name')
+                typ = config.get(section, 'type')
+            except ConfigParser.NoOptionError:
+                continue
+            if typ == 'DS1820':
+                sensor = 'T' + config.get(section, 'resolution')
+            elif typ == 'DS2438Hum' or typ == 'DS2438Datanab':
+                sensor = 'H'
+            else:
+                continue
+
+            out.write('''
 [[{0}]]
     name = {0}
     type = {1}
@@ -58,3 +60,6 @@ with open(sys.argv[2], 'w') as out:
     ow_sensor = {3}
         '''.format(name, typ, section, sensor))
 
+except:
+    print "usage: convert.py <input_file> <output_file>"
+    sys.exit()
