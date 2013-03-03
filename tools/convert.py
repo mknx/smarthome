@@ -27,11 +27,12 @@ conf = ''
 with open(sys.argv[1], 'r') as cfg:
     found_section = False
     for l in cfg.readlines():
-        if len(l.strip()) == 0: continue
-            if l[0] != '[' and found_section == False:
-                continue
-            found_section = True
-            conf += l
+        if len(l.strip()) == 0: 
+            continue
+        if l[0] != '[' and found_section == False:
+            continue
+        found_section = True
+        conf += l
 
 with open(sys.argv[2], 'w') as out:
     config = ConfigParser.ConfigParser()
@@ -49,11 +50,11 @@ with open(sys.argv[2], 'w') as out:
         else:
             continue
 
-out.write('''
-    [[{0}]]
+        out.write('''
+[[{0}]]
     name = {0}
     type = {1}
     ow_addr = {2}
     ow_sensor = {3}
-    '''.format(name, typ, section, sensor))
+        '''.format(name, typ, section, sensor))
 
