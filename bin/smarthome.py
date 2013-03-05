@@ -426,7 +426,7 @@ if __name__ == '__main__':
     LOGLEVEL = 'info'
     DAEMON = True
 
-    locale.setlocale(locale.LC_ALL, 'C')
+    locale.setlocale(locale.LC_ALL, '')
 
     if '--stop' in sys.argv[1:]:
         stop_sh()
