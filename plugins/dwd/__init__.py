@@ -95,8 +95,7 @@ class DWD():
         try:
             self._ftp.retrbinary("RETR %s" % filename, self._buffer_file)
         except Exception, e:
-            logger.warning("problem fetching {0}: {1}".format(filename, e))
-            pass
+            logger.info("problem fetching {0}: {1}".format(filename, e))
         self.lock.release()
         return self._buffer
 
@@ -203,7 +202,7 @@ class DWD():
         filename = 'gds/specials/warnings/FG/s_b31fg.xml'
         filexml = self._retr_file(filename)
         if filexml == '':
-            return
+            return {}
         fxp = xml.etree.cElementTree.fromstring(filexml)
         date = fxp.attrib['last_update'].split()[0].split('-')
         day0 = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), 12, 0, 0, 0, tzinfo=self.tz)
@@ -214,16 +213,13 @@ class DWD():
             for preg in reg.findall('partregion'):
                 if preg.attrib['name'] == region:
                     for kind in preg:
-                        kindflag = False
-                        kindforc = []
                         for day in kind:
                             value = day.text.replace('/', '')
-                            if value != '':
-                                kindflag = True
-                            kindforc.append(value)
-                        if kindflag:
-                            forecast[day0][kind.tag] = kindforc[0]
-                            forecast[day1][kind.tag] = kindforc[1]
-                            forecast[day2][kind.tag] = kindforc[2]
+                            if day.tag == 'today':
+                                forecast[day0][kind.tag] = value
+                            elif day.tag == 'tomorrow':
+                                forecast[day1][kind.tag] = value
+                            else:
+                                logger.debug("unknown day: {0}".format(day.tag))
         fxp.clear()
         return forecast
