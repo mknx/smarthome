@@ -22,41 +22,75 @@
 import logging
 import threading
 import json
+import lib.my_asynchat
 
 logger = logging.getLogger('')
 
-import lib.my_asynchat
+
+class XBMC():
+
+    def __init__(self, smarthome):
+        self._sh = smarthome
+        self._boxes = []
+
+    def run(self):
+        self.alive = True
+
+    def stop(self):
+        self.alive = False
+        for box in self._boxes:
+            box.close()
+
+    def notify_all(self, title, message, image=None):
+        for box in self._boxes:
+            box.notify(title, message, image)
+
+    def parse_item(self, item):
+        if 'xbmc_host' in item.conf:
+            self._boxes.append(xbmc(self._sh, item))
 
 
-class MediaCenter(lib.my_asynchat.AsynChat):
+class xbmc(lib.my_asynchat.AsynChat):
 
     _notification_time = 10000
+    _listen_keys = ['volume', 'mute', 'title', 'media', 'state']
+    _send_keys = {'volume': 'Application.SetVolume', 'mute': 'Application.SetMute'}
 
-    def __init__(self, smarthome, host, items, port=9090):
+    def __init__(self, smarthome, item):
+        if 'xbmc_port' in item.conf:
+            port = int(item.conf['xbmc_port'])
+        else:
+            port = 9090
+        host = item.conf['xbmc_host']
         lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
         self.terminator = '}'
         self._sh = smarthome
         smarthome.monitor_connection(self)
-        self._items = items
         self._id = 1
         self._rid = None
         self._cmd_lock = threading.Lock()
         self._reply_lock = threading.Condition()
         self._reply = None
-        if 'volume' in items:
-            items['volume'].add_trigger_method(self._generic('Application.SetVolume', 'volume'))
-        if 'mute' in items:
-            items['mute'].add_trigger_method(self._generic('Application.SetMute', 'mute'))
+        self._items = {'state': item}
+        for child in self._sh.find_children(item, 'xbmc_listen'):
+            listen_to = child.conf['xbmc_listen']
+            if listen_to in self._listen_keys:
+                self._items[listen_to] = child
+        for child in self._sh.find_children(item, 'xbmc_send'):
+            send_to = child.conf['xbmc_send']
+            if send_to in self._send_keys:
+                child.add_trigger_method(self._send_value)
+        item.notify = self.notify
 
-    def _update_volume(self, item, caller=None, source=None):
+    def notify(self, title, message, image=None):
+        if image is None:
+            self._send('GUI.ShowNotification', {'title': title, 'message': message, 'displaytime': self._notification_time})
+        else:
+            self._send('GUI.ShowNotification', {'title': title, 'message': message, 'image': image, 'displaytime': self._notification_time})
+
+    def _send_value(self, item, caller=None, source=None):
         if caller != 'XBMC':
-            self._send('Application.SetVolume', {'volume': item()}, wait=False)
-
-    def _generic(self, method, key):
-        def update(item, caller=None, source=None):
-            if caller != 'XBMC':
-                self._send(method, {key: item()}, wait=False)
-        return update
+            self._send(self._send_keys[item.conf['xbmc_send']], {item.conf['xbmc_send']: item()}, wait=False)
 
     def run(self):
         self.alive = True
@@ -85,12 +119,6 @@ class MediaCenter(lib.my_asynchat.AsynChat):
         self._cmd_lock.release()
         return reply
 
-    def notify(self, title, message, image=None):
-        if image is None:
-            self._send('GUI.ShowNotification', {'title': title, 'message': message, 'displaytime': self._notification_time})
-        else:
-            self._send('GUI.ShowNotification', {'title': title, 'message': message, 'image': image, 'displaytime': self._notification_time})
-
     def _set_item(self, key, value):
         if key in self._items:
             self._items[key](value, 'XBMC')
@@ -111,9 +139,9 @@ class MediaCenter(lib.my_asynchat.AsynChat):
                 return
             if 'method' in event:
                 if event['method'] == 'Player.OnPause':
-                    self._items['mode']('Pause', 'XBMC')
+                    self._items['state']('Pause', 'XBMC')
                 elif event['method'] == 'Player.OnStop':
-                    self._items['mode']('Menu', 'XBMC')
+                    self._items['state']('Menu', 'XBMC')
                     self._items['media']('', 'XBMC')
                     self._items['title']('', 'XBMC')
                 if event['method'] in ['Player.OnPlay']:
@@ -130,7 +158,7 @@ class MediaCenter(lib.my_asynchat.AsynChat):
             result = self._send('Player.GetActivePlayers')['result'][0]
             playerid = result['playerid']
             typ = result['type']
-            self._items['mode']('Playing', 'XBMC')
+            self._items['state']('Playing', 'XBMC')
             if typ == 'video':
                 result = self._send('Player.GetItem', {"properties": ["title"], "playerid": playerid}, "VideoGetItem")['result']
                 title = result['item']['title']
@@ -148,32 +176,3 @@ class MediaCenter(lib.my_asynchat.AsynChat):
                 logger.warning("Unknown type: {0}".format(typ))
                 return
             self._items['title'](title, 'XBMC')
-
-
-class XBMC():
-
-    def __init__(self, smarthome):
-        self._sh = smarthome
-        self._boxes = []
-
-    def run(self):
-        self.alive = True
-
-    def stop(self):
-        self.alive = False
-        for box in self._boxes:
-            box.close()
-
-    def notify(self, title, message, image=None):
-        for box in self._boxes:
-            box.notify(title, message, image)
-
-    def parse_item(self, item):
-        if 'xbmc_host' in item.conf:
-            items = {'mode': item}
-            for attr in ['xbmc_title', 'xbmc_media', 'xbmc_volume', 'xbmc_mute']:
-                child = self._sh.find_children(item, attr)
-                if child != []:
-                    tmp, sep, name = attr.rpartition('_')
-                    items[name] = child[0]
-            self._boxes.append(MediaCenter(self._sh, item.conf['xbmc_host'], items))
