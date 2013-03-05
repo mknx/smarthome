@@ -69,7 +69,7 @@ class CLIHandler(asynchat.async_chat):
             self.rr(cmd.lstrip('rr').strip())
         elif cmd == 'help' or cmd == 'h':
             self.usage()
-        elif cmd == 'quit' or cmd == 'q' or cmd == 'x':
+        elif cmd in ('quit', 'q', 'exit', 'x'):
             self.push('bye\n')
             self.close()
             return
