@@ -70,15 +70,15 @@ class Scheduler(threading.Thread):
                         logger.warning("Needing more worker threads than the specified maximum of {0}!".format(self._worker_max))
             while self._triggerq.qsize() > 0:
                 try:
-                    dt, prio, name, obj, by, source, dest, value = self._triggerq.get()
+                    dt, prio, name, obj, by, source, destination, value = self._triggerq.get()
                 except Exception, e:
                     logger.warning("Trigger queue exception: {0}".format(e))
                     break
 
                 if dt < now:  # run it
-                    self._runq.put((prio, name, obj, by, source, dest, value))
+                    self._runq.put((prio, name, obj, by, source, destination, value))
                 else:  # put last entry back and break while loop
-                    self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
+                    self._triggerq.put((dt, prio, name, obj, by, source, destination, value))
                     break
             self._lock.acquire()
             for name in self._scheduler:
@@ -100,7 +100,7 @@ class Scheduler(threading.Thread):
     def stop(self):
         self.alive = False
 
-    def trigger(self, name, obj=None, by='Logic', source=None, value=None, dest=None, prio=3, dt=None):
+    def trigger(self, name, obj=None, by='Logic', source=None, value=None, destination=None, prio=3, dt=None):
         if obj is None:
             if name in self._scheduler:
                 obj = self._scheduler[name]['obj']
@@ -109,7 +109,7 @@ class Scheduler(threading.Thread):
                 return
         if dt is None:
             logger.debug("Triggering {0} - by: {1} source: {2} value: {3}".format(name, by, source, str(value)[:20]))
-            self._runq.put((prio, name, obj, by, source, dest, value))
+            self._runq.put((prio, name, obj, by, source, destination, value))
         else:
             if not isinstance(dt, datetime.datetime):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
@@ -118,7 +118,7 @@ class Scheduler(threading.Thread):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
                 return
             logger.debug("Triggering {0} - by: {1} source: {2} value: {3} at: {4}".format(name, by, source, value, dt))
-            self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
+            self._triggerq.put((dt, prio, name, obj, by, source, destination, value))
 
     def remove(self, name):
         self._lock.acquire()
@@ -238,17 +238,17 @@ class Scheduler(threading.Thread):
     def _worker(self):
         while self.alive:
             try:
-                prio, name, obj, by, source, dest, value = self._runq.get(timeout=0.5)
+                prio, name, obj, by, source, destination, value = self._runq.get(timeout=0.5)
                 self._runq.task_done()
             except Queue.Empty:
                 continue
-            self._task(name, obj, by, source, dest, value)
+            self._task(name, obj, by, source, destination, value)
 
-    def _task(self, name, obj, by, source, dest, value):
+    def _task(self, name, obj, by, source, destination, value):
         threading.current_thread().name = name
         logger = logging.getLogger(name)
         if obj.__class__.__name__ == 'Logic':
-            trigger = {'by': by, 'source': source, 'dest': dest, 'value': value}  # noqa
+            trigger = {'by': by, 'source': source, 'destination': destination, 'value': value}  # noqa
             logic = obj  # noqa
             sh = self._sh  # noqa
             try:
