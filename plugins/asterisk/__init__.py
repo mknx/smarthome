@@ -162,9 +162,13 @@ class Asterisk(lib.my_asynchat.AsynChat):
                 value = event['Value']
             else:
                 value = None
+            if 'Destination' in data:
+                destination = event['Destination']
+            else:
+                destination = None
             if event['UserEvent'] in self._trigger_logics:
                 for logic in self._trigger_logics[event['UserEvent']]:
-                    logic.trigger('Asterisk', source, value)
+                    logic.trigger('Asterisk', source, value, destination)
         elif event['Event'] == 'DBGetResponse':
             self._reply = event['Val']
             self._reply_lock.acquire()
