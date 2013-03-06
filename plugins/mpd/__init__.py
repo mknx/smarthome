@@ -39,7 +39,10 @@ class MPD():
         self.alive = True
         while self.alive:
             for d in self._mpds:
-                d.update_status()
+                try:
+                    d.update_status()
+                except Exception as e:
+                    logger.warning("exception: {0}".format(e))
             time.sleep(self._cycle)
 
     def stop(self):
@@ -192,7 +195,11 @@ class mpd(lib.my_asynchat.AsynChat):
             status.update(self._send('currentsong'))
         for attr in self._items:
             if attr in status:
-                self._items[attr](unicode(status[attr]), 'MPD')
+                try:
+                    self._items[attr](unicode(status[attr]), 'MPD')
+                except Exception as e:
+                    logger.warning(u"Error processing attr '{0}' value '{1}'".format(attr, unicode(status[attr])))
+                    logger.warning("Exception: {0}".format(e))
 
     def handle_connect(self):
         self.parse_data = self.handshake
