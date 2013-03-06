@@ -108,7 +108,7 @@ class Scheduler(threading.Thread):
                 logger.warning("Logic name not found: {0}".format(name))
                 return
         if dt is None:
-            logger.debug("Triggering {0} - by: {1} source: {2} value: {3}".format(name, by, source, str(value)[:20]))
+            logger.debug(u"Triggering {0} - by: {1} source: {2} destination: {3} value: {4}".format(name, by, source, destination, unicode(value)[:40]))
             self._runq.put((prio, name, obj, by, source, destination, value))
         else:
             if not isinstance(dt, datetime.datetime):
@@ -117,7 +117,7 @@ class Scheduler(threading.Thread):
             if dt.tzinfo is None:
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
                 return
-            logger.debug("Triggering {0} - by: {1} source: {2} value: {3} at: {4}".format(name, by, source, value, dt))
+            logger.debug(u"Triggering {0} - by: {1} source: {2} destination: {3} value: {4} at: {5}".format(name, by, source, destination, unicode(value)[:40], dt))
             self._triggerq.put((dt, prio, name, obj, by, source, destination, value))
 
     def remove(self, name):
