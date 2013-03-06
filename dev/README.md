@@ -36,3 +36,7 @@ Test the code style with pep8. I'm ignoring "E501 line too long".
 ```
 git clone -b gh-pages git@github.com:mknx/smarthome.git sh-pages
 ```
+
+# Undo
+`git reset --hard XXXIDXXX`
+`git push origin master --force`
