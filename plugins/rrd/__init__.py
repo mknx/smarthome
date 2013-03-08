@@ -106,7 +106,7 @@ class RRD():
             del data[-2]
         if data[-1] is None:
             data[-1] = item()
-        return {'cmd': 'rrd', 'frame': frame, 'start': start, 'step': step, 'rrd': [[item.id(), data]]}
+        return {'cmd': 'rrd', 'frame': frame, 'start': start, 'step': step, 'item': item.id(), 'series': data}
 
     def parse_logic(self, logic):
         pass

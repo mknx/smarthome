@@ -167,7 +167,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.logs = logs
         self._lock = threading.Lock()
         self.logics = logics
-        self.proto = 1
+        self.proto = 2
 
     def send_data(self, data):
         data = data.copy()  # don't filter the orignal data dict
@@ -235,7 +235,7 @@ class WebSocketHandler(asynchat.async_chat):
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
         elif command == 'rrd':
             self.rrd = True
-            path = data['id']
+            path = data['item']
             frame = str(data['frame'])
             if path in self.items:
                 if hasattr(self.items[path], 'export'):
