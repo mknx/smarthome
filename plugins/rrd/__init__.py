@@ -62,15 +62,13 @@ class RRD():
             except Exception, e:
                 logger.warning("error updating rrd for %s: %s" % (itempath, e))
                 return
-        data = []
         time = self._sh.now()
         time = int(time.strftime("%s")) + time.utcoffset().seconds
         for itempath in self._rrds:
             item = self._rrds[itempath]['item']
             if 'visu' in item.conf:
-                data.append([item.id(), item()])
-        for listener in self._sh.return_listeners():
-            listener({'cmd': 'rrd', 'time': time, 'rrd': data})
+                for listener in self._sh.return_listeners():
+                    listener({'cmd': 'rrd', 'frame': 'now', 'start': time, 'step': self.step, 'item': item.id(), 'series': [item()]})
 
     def parse_item(self, item):
         if 'rrd' not in item.conf:
