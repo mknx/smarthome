@@ -67,8 +67,8 @@ class RRD():
         for itempath in self._rrds:
             item = self._rrds[itempath]['item']
             if 'visu' in item.conf:
-                for listener in self._sh.return_listeners():
-                    listener({'cmd': 'rrd', 'frame': 'now', 'start': time, 'step': self.step, 'item': item.id(), 'series': [item()]})
+                for listener in self._sh.return_event_listeners('rrd'):
+                    listener('rrd', {'frame': 'update', 'start': time, 'step': self.step, 'item': item.id(), 'series': [item()]})
 
     def parse_item(self, item):
         if 'rrd' not in item.conf:

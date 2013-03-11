@@ -19,7 +19,7 @@
 //########################################################################
 
 var shVersion = '0.9-Dev';
-var shProto = 1;
+var shProto = 2;
 var shWS = false; // WebSocket
 var shLock = false;
 var shRRD = {};
@@ -134,15 +134,14 @@ function shInit(url) {
 };
 
 function shLogUpdate(data) {
-    var path, obj, max, val;
+    var obj, max, val;
+    obj = $('[data-log="' + data.name + '"]');
+    if (obj.length == 0) {
+        console.log("unknown log name: "+ data.name);
+        return;
+    }
     for (var i = 0; i < data.log.length; i++) {
-        path = data.log[i][0];
-        obj = $('[data-log="' + path + '"]');
-        if (obj.length == 0) {
-            console.log("unknown id: "+ path);
-            return;
-        }
-        val = data.log[i][1];
+        val = data.log[i];
         if ('init' in data) {  // init
             $(obj).html('')
         };
@@ -162,57 +161,44 @@ function shLogUpdate(data) {
 
 function shRRDUpdate(data) {
     var id, time, step, frame, rrds, item, value;
-    if ('frame' in data) {
-        id = data.rrd[0][0];
-        time = data.start * 1000;
-        step = data.step * 1000;
-        var d = [];
-        frame = data.frame;
+    time = data.start * 1000;
+    step = data.step * 1000;
+    if (data.frame == 'update') {
+        // single value
+        if (data.item in shRRD) {
+            for (frame in shRRD[data.item]) {
+                if (shRRD[data.item][frame]['step'] == data.step) {
+                    shRRD[data.item][frame]['series'].shift()  // remove 'oldest' element
+                };
+                shRRD[data.item][frame]['series'].push([time, data.series[0]]);
+            };
+        };
+    } else {
+        var series = [];
         //{color: 'blue', label: data.label, yaxis: 2, data: []};
-        for (i = 0; i < data.rrd[0][1].length; i++) {
-            d.push([time, data.rrd[0][1][i]]);
+        for (i = 0; i < data.series.length; i++) {
+            series.push([time, data.series[i]]);
             time += step
         };
-        if (id in shRRD) {
-            shRRD[id][frame]= d;
-        } else {
-            shRRD[id] = {};
-            shRRD[id][frame] = d;
-        };
-        $.mobile.activePage.find($("[data-rrd]")).each(function() {
-            rrds = $(this).attr('data-rrd').split('|');
-            for (i = 0; i < rrds.length; i++) {
-                rrd = rrds[i].split('=');
-                if (rrd[0] == id) {
-                    // incoming item found in current graph
-                    frame = $(this).attr('data-frame')
-                    if (id in shRRD) {
-                        if (frame in shRRD[id]) {
-                            shRRDDraw(this);
-                        };
-                    };
-                    break;
-                };
-            };
-        });
-    } else {
-        var time = data.time * 1000;
-        for (item in data.rrd) {
-            id = data.rrd[item][0];
-            value = data.rrd[item][1];
-            if (id in shRRD) {
-                for (frame in shRRD[id]) {
-                    if (frame.search(/^([0-9]+h)|([1-7]d)/) != -1) {
-                        shRRD[id][frame].shift()  // remove 'oldest' element
-                    };
-                    shRRD[id][frame].push([time, value]);
-                };
-            };
-        };
-        $.mobile.activePage.find($("[data-rrd]")).each(function() {
-            shRRDDraw(this);
-        });
+        if (!(data.item in shRRD)) {
+            shRRD[data.item] = {};
+        }
+        shRRD[data.item][data.frame] = {'series': series, 'step': data.step};
     };
+    $.mobile.activePage.find($("[data-rrd]")).each(function() {
+        rrds = $(this).attr('data-rrd').split('|');
+        for (i = 0; i < rrds.length; i++) {
+            rrd = rrds[i].split('=');
+            if (rrd[0] == data.item) {
+                // incoming item found in current graph
+                frame = $(this).attr('data-frame')
+                if (frame in shRRD[data.item]) {
+                    shRRDDraw(this);
+                };
+                break;
+            };
+        };
+    });
 };
 
 function shRRDDraw(div) {
@@ -233,7 +219,7 @@ function shRRDDraw(div) {
                 } else {
                     serie = {}
                 };
-                serie['data'] = shRRD[tid][frame]
+                serie['data'] = shRRD[tid][frame]['series'];
                 series.push(serie);
             };
         };
@@ -320,9 +306,9 @@ function shRequestData() {
             var rrd = rrds[i].split('=');
             var id = rrd[0];
             if (!(id in shRRD)) {
-                shSend({'cmd': 'rrd', 'id': rrd[0], 'frame': frame});
+                shSend({'cmd': 'rrd', 'item': rrd[0], 'frame': frame});
             } else if (!(frame in shRRD[id])) {
-                shSend({'cmd': 'rrd', 'id': rrd[0], 'frame': frame});
+                shSend({'cmd': 'rrd', 'item': rrd[0], 'frame': frame});
             };
         };
     });

@@ -83,7 +83,8 @@ class SmartHome():
     socket_map = {}
     connections = {}
     __logs = {}
-    __listeners = []
+    __event_listeners = {}
+    __all_listeners = []
     _plugins = []
     __items = []
     _sub_items = []
@@ -246,11 +247,21 @@ class SmartHome():
         for item in self._sub_items:
             yield item
 
-    def add_listener(self, method):
-        self.__listeners.append(method)
+    def add_event_listener(self, events, method):
+        for event in events:
+            if event in self.__event_listeners:
+                self.__event_listeners[event].append(method)
+            else:
+                self.__event_listeners[event] = [method]
+        self.__all_listeners.append(method)
 
-    def return_listeners(self):
-        return self.__listeners
+    def return_event_listeners(self, event='all'):
+        if event == 'all':
+            return self.__all_listeners
+        elif event in self.__event_listeners:
+            return self.__event_listeners[event]
+        else:
+            return []
 
     def add_log(self, name, log):
         self.__logs[name] = log

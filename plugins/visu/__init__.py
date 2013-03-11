@@ -39,7 +39,7 @@ class WebSocket(asyncore.dispatcher):
     def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, smartvisu_dir=False):
         asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
         self._sh = smarthome
-        smarthome.add_listener(self.send_data)
+        smarthome.add_event_listener(['log', 'rrd'], self._send_event)
         self.clients = []
         self.visu_items = {}
         self.visu_logics = {}
@@ -142,9 +142,9 @@ class WebSocket(asyncore.dispatcher):
         for client in self.clients:
             client.update(item.id(), data, source)
 
-    def send_data(self, data):
+    def _send_event(self, event, data):
         for client in self.clients:
-            client.send_data(data)
+            client.send_event(event, data)
 
     def dialog(self, header, content):
         for client in self.clients:
@@ -161,6 +161,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.ibuffer = ""
         self.header = {}
         self.monitor = {'item': [], 'rrd': [], 'log': []}
+        self.monitor_id = {'item': 'item', 'rrd': 'item', 'log': 'name'}
         self.items = items
         self.rrd = False
         self.log = False
@@ -169,19 +170,13 @@ class WebSocketHandler(asynchat.async_chat):
         self.logics = logics
         self.proto = 2
 
-    def send_data(self, data):
+    def send_event(self, event, data):
         data = data.copy()  # don't filter the orignal data dict
-        try:
-            if data['cmd'] in self.monitor:  # data[0] == type
-                if data['cmd'] == 'rrd':
-                    filter = 'item'
-                else:
-                    filter = data['cmd']
-                data[filter] = [i for i in data[filter] if i[0] in self.monitor[data['cmd']]]  # filter monitored
-                if data[filter] != []:
-                    self.json_send(data)
-        except:
-            logger.warning("XXX")  # XXX
+        if event not in self.monitor:
+            return
+        if data[self.monitor_id[event]] in self.monitor[event]:
+            data['cmd'] = event
+            self.json_send(data)
 
     def json_send(self, data):
         logger.debug("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
@@ -258,7 +253,7 @@ class WebSocketHandler(asynchat.async_chat):
             name = data['log']
             num = int(data['max'])
             if name in self.logs:
-                self.json_send({'cmd': 'log', 'log': [[name, self.logs[name].export(num)]], 'init': 'y'})
+                self.json_send({'cmd': 'log', 'name': name, 'log': [self.logs[name].export(num)], 'init': 'y'})
             else:
                 logger.info("Client %s requested invalid log: %s" % (self.addr, name))
             if name not in self.monitor['log']:
@@ -267,6 +262,8 @@ class WebSocketHandler(asynchat.async_chat):
             proto = data['ver']
             if proto != self.proto:
                 logger.warning("Protocol missmatch. Update smarthome(.min).js. Client: {0}".format(self.addr))
+                self.close()
+                return
             self.json_send({'cmd': 'proto', 'ver': self.proto})
 
     def parse_header(self, data):
