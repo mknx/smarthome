@@ -55,10 +55,13 @@ class Logics():
                     plugin.parse_logic(logic)
             # item hook
             if hasattr(logic, 'watch_item'):
-                for watch_item in logic.watch_item:
-                    item = self._sh.return_item(watch_item)
-                    if item is not None:
-                        item.add_logic_trigger(logic)
+                if isinstance(logic.watch_item, str):
+                    logic.watch_item = [logic.watch_item]
+                items = []
+                for entry in logic.watch_item:
+                    items += self._sh.match_items(entry)
+                for item in items:
+                    item.add_logic_trigger(logic)
 
     def __iter__(self):
         for logic in self._logics:
@@ -82,9 +85,6 @@ class Logic():
         for attribute in attributes:
             vars(self)[attribute] = attributes[attribute]
         self.generate_bytecode()
-        if hasattr(self, 'watch_item'):
-            if isinstance(self.watch_item, str):
-                self.watch_item = [self.watch_item, ]
         self.prio = int(self.prio)
         if self.crontab is not None:
             if isinstance(self.crontab, list):

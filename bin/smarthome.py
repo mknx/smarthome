@@ -33,6 +33,7 @@ import datetime
 import locale
 import traceback
 import gc
+import re
 
 from configobj import ConfigObj
 from dateutil.tz import gettz
@@ -281,6 +282,11 @@ class SmartHome():
     def return_items(self):
         for item in self.__items:
             yield self.__item_dict[item]
+
+    def match_items(self, regex):
+        regex = regex.replace('.', '\.').replace('*', '.*') + '$'
+        regex = re.compile(regex)
+        return [self.__item_dict[item] for item in self.__items if regex.match(item)]
 
     def find_items(self, conf):
         for item in self.__items:

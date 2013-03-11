@@ -116,16 +116,6 @@ class Item():
             return
         if self._cache:
             self._value = self._db_read()
-        if self._eval and 'eval_trigger' in self.conf:
-            items = map(lambda x: 'sh.' + x + '()', self.conf['eval_trigger'])
-            if self._eval == 'and':
-                self._eval = ' and '.join(items)
-            elif self._eval == 'or':
-                self._eval = ' or '.join(items)
-            elif self._eval == 'sum':
-                self._eval = ' + '.join(items)
-            elif self._eval == 'avg':
-                self._eval = '({0})/{1}'.format(' + '.join(items), len(items))
         if self._threshold:
             low, sep, high = self._threshold.rpartition(':')
             if not low:
@@ -147,10 +137,21 @@ class Item():
 
     def init_prerun(self):
         if 'eval_trigger' in self.conf:
-            for item in self.conf['eval_trigger']:
-                item = self._sh.return_item(item)
-                if item is not None:
-                    item._items_to_trigger.append(self)
+            triggers = []
+            for trigger in self.conf['eval_trigger']:
+                triggers += self._sh.match_items(trigger)
+            for item in triggers:
+                item._items_to_trigger.append(self)
+            if self._eval:
+                items = map(lambda x: 'sh.' + x.id() + '()', triggers)
+                if self._eval == 'and':
+                    self._eval = ' and '.join(items)
+                elif self._eval == 'or':
+                    self._eval = ' or '.join(items)
+                elif self._eval == 'sum':
+                    self._eval = ' + '.join(items)
+                elif self._eval == 'avg':
+                    self._eval = '({0})/{1}'.format(' + '.join(items), len(items))
 
     def init_run(self):
         if 'eval_trigger' in self.conf:
