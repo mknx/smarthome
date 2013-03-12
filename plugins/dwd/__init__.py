@@ -192,7 +192,10 @@ class DWD():
         for frame in ['12', '36', '60']:
             filename = "{0}/u_vindex{1}.xml".format(directory, frame)
             fb = self._retr_file(filename)
-            year, month, day = re.findall(r"\d\d\d\d\-\d\d\-\d\d", fb)[0].split('-')
+            try:
+                year, month, day = re.findall(r"\d\d\d\d\-\d\d\-\d\d", fb)[0].split('-')
+            except:
+                continue
             date = datetime.datetime(int(year), int(month), int(day), 12, 0, 0, 0, tzinfo=self.tz)
             uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)[0]
             forecast[date] = int(uv)
