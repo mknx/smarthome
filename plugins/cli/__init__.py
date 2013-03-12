@@ -59,6 +59,8 @@ class CLIHandler(asynchat.async_chat):
             self.la()
         elif cmd == 'lo':
             self.lo()
+        elif cmd == 'cl':
+            self.cl()
         elif cmd.startswith('update ') or cmd.startswith('up '):
             self.update(cmd.lstrip('update').strip())
         elif cmd.startswith('tr'):
@@ -74,6 +76,9 @@ class CLIHandler(asynchat.async_chat):
             self.close()
             return
         self.push("> ")
+
+    def cl(self):
+        self.sh.log.clean(self.sh.now())
 
     def ls(self, path):
         if not path:
@@ -155,6 +160,7 @@ class CLIHandler(asynchat.async_chat):
                 self.push("{0}\n".format(logic))
 
     def usage(self):
+        self.push('cl: clean (memory) log\n')
         self.push('ls: list the first level items\n')
         self.push('ls item: list item and every child item (with values)\n')
         self.push('la: list all items (with values)\n')
