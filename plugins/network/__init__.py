@@ -322,6 +322,18 @@ class Network():
                         logger.error("Generic network acl doesn't permit triggering from %s." % (source))
                         return False
                 logic.trigger('network', source, data)
+            for entry in self.special_listeners[dest]['items']:
+                lacl = self.special_listeners[dest]['items'][entry]['acl']
+                item = self.special_listeners[dest]['items'][entry]['item']
+                if lacl:
+                    if source not in lacl:
+                        logger.error("Item {0} acl doesn't permit triggering from {1}.".format(item.id(), source))
+                        return False
+                elif gacl:
+                    if source not in gacl:
+                        logger.error("Generic network acl doesn't permit triggering from {0}.".format(source))
+                        return False
+                item(data, 'network', source)
         else:
             logger.error("Destination %s, not in listeners!" % dest)
             return False
