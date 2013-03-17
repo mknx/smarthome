@@ -160,8 +160,8 @@ def de9(payload):
     return (m | s) * 0.01 * pow(2, e)
 
 
-def en10(time):
-    return [0, time.hour, time.minute, time.second]
+def en10(dt):
+    return [0, (dt.isoweekday() << 5) | dt.hour, dt.minute, dt.second]
 
 
 def de10(payload):

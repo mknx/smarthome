@@ -78,7 +78,7 @@ class KNX(lib.my_asynchat.AsynChat):
     def _send_time(self):
         now = self._sh.now()
         if self.time_ga:
-            self.groupwrite(self.time_ga, now.time(), '10')
+            self.groupwrite(self.time_ga, now, '10')
         if self.date_ga:
             self.groupwrite(self.date_ga, now.date(), '11')
 
