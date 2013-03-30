@@ -235,6 +235,19 @@ class WebSocketHandler(asynchat.async_chat):
             if name in self.logics:
                 logger.info("Client %s triggerd logic %s with '%s'" % (self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
+        elif command == 'series':
+            path = data['item']
+            series = data['series'] + '-ser'
+            start = data['start']
+            if 'end' in data:
+                end = data['end']
+            else:
+                end = 'now'
+            if path in self.items:
+                if hasattr(self.items[path], 'export'):
+                    self.json_send(self.items[path].export(series, start, end))
+                else:
+                    logger.info("Client %s requested invalid series: %s." % (self.addr, path))
         elif command == 'rrd':
             self.rrd = True
             path = data['item']
@@ -320,6 +333,10 @@ class WebSocketHandler(asynchat.async_chat):
             length = struct.unpack_from('!Q', data, 2)[0]
         read = length + offset - 8
         data = data + self.ac_in_buffer[:read]
+        print
+        print read
+        print "XXXXXXXXXX {0}".format(len(data))
+        print
         self.ac_in_buffer = self.ac_in_buffer[read:]
         payload = array.array('B')
         payload.fromstring(data[offset:])
