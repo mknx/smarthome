@@ -332,12 +332,10 @@ class WebSocketHandler(asynchat.async_chat):
             offset += 8
             length = struct.unpack_from('!Q', data, 2)[0]
         read = length + offset - 8
-        data = data + self.ac_in_buffer[:read]
-        print
-        print read
-        print "XXXXXXXXXX {0}".format(len(data))
-        print
-        self.ac_in_buffer = self.ac_in_buffer[read:]
+        if len(data) < read:  # data too short, read more
+            self.ibuffer = data
+            self.set_terminator(read)
+            return
         payload = array.array('B')
         payload.fromstring(data[offset:])
         if masked:
