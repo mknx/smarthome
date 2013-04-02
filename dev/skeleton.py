@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2013 <AUTHOR>                                         <EMAIL>
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -25,4 +25,3 @@ logger = logging.getLogger('')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-
