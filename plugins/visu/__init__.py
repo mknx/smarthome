@@ -105,7 +105,7 @@ class WebSocket(asyncore.dispatcher):
             sock, addr = pair
             addr = "{0}:{1}".format(addr[0], addr[1])
             logger.debug('Websocket: incoming connection from %s' % addr)
-            client = WebSocketHandler(sock, self._sh.socket_map, addr, self.visu_items, self.visu_logics, self._sh.return_logs())
+            client = WebSocketHandler(self._sh, sock, self._sh.socket_map, addr, self.visu_items, self.visu_logics, self._sh.return_logs())
             self.clients.append(client)
 
     def run(self):
@@ -114,6 +114,7 @@ class WebSocket(asyncore.dispatcher):
             self._generate_pages(self.generator_dir)
         if self.smartvisu_dir:
             self._smartvisu_pages(self.smartvisu_dir)
+        self._sh.scheduler.add('series', self._update_series, cycle=10, prio=5)
 
     def stop(self):
         self.alive = False
@@ -146,6 +147,10 @@ class WebSocket(asyncore.dispatcher):
         for client in self.clients:
             client.send_event(event, data)
 
+    def _update_series(self):
+        for client in self.clients:
+            client.update_series()
+
     def dialog(self, header, content):
         for client in self.clients:
             client.json_send({'cmd': 'dialog', 'header': header, 'content': content})
@@ -153,15 +158,17 @@ class WebSocket(asyncore.dispatcher):
 
 class WebSocketHandler(asynchat.async_chat):
 
-    def __init__(self, sock, socket_map, addr, items, logics, logs):
+    def __init__(self, smarthome, sock, socket_map, addr, items, logics, logs):
         asynchat.async_chat.__init__(self, sock, map=socket_map)
         self.set_terminator("\r\n\r\n")
+        self._sh = smarthome
         self.parse_data = self.parse_header
         self.addr = addr
         self.ibuffer = ""
         self.header = {}
         self.monitor = {'item': [], 'rrd': [], 'log': []}
         self.monitor_id = {'item': 'item', 'rrd': 'item', 'log': 'name'}
+        self._update_series = {}
         self.items = items
         self.rrd = False
         self.log = False
@@ -198,6 +205,21 @@ class WebSocketHandler(asynchat.async_chat):
         if path in self.monitor['item']:
             if self.addr != source:
                 self.json_send(data)
+
+    def update_series(self):
+        now = self._sh.now()
+        for sid in self._update_series:
+            series = self._update_series[sid]
+            print sid
+            if series['update'] < now:
+                print series
+                reply = self.items[series['params']['item']].db_series(**series['params'])
+                if 'update' in reply:
+                    self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
+                    del(reply['update'])
+                    del(reply['params'])
+                print reply
+                self.json_send(reply)
 
     def difference(self, a, b):
         return list(set(b).difference(set(a)))
@@ -237,15 +259,21 @@ class WebSocketHandler(asynchat.async_chat):
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
         elif command == 'series':
             path = data['item']
-            series = data['series'] + '-ser'
+            series = data['series']
             start = data['start']
             if 'end' in data:
                 end = data['end']
             else:
                 end = 'now'
             if path in self.items:
-                if hasattr(self.items[path], 'export'):
-                    self.json_send(self.items[path].export(series, start, end))
+                if hasattr(self.items[path], 'db_series'):
+                    reply = self.items[path].db_series(series, start, end)
+                    if 'update' in reply:
+                        self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
+                        print self._update_series
+                        del(reply['update'])
+                        del(reply['params'])
+                    self.json_send(reply)
                 else:
                     logger.info("Client %s requested invalid series: %s." % (self.addr, path))
         elif command == 'rrd':
