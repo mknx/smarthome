@@ -208,16 +208,16 @@ class SQL():
     def _series(self, func, start, end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
         if sid is None:
             sid = item + '|' + func + '|' + start + '|' + end
-        start = self.get_timestamp(start)
-        end = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
+        istart = self.get_timestamp(start)
+        iend = self.get_timestamp(end)
+        prev = self.query("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart)).fetchone()
         if prev is None:
-            first = start
+            first = istart
         else:
             first = prev[0]
-        where = " from history WHERE item='{0}' AND time >= {1} AND time <= {2}".format(item, first, end)
+        where = " from history WHERE item='{0}' AND time >= {1} AND time <= {2}".format(item, first, iend)
         if step is None:
-            step = (end - start) / count
+            step = (iend - istart) / count
         reply = {'cmd': 'series', 'series': None, 'sid': sid}
         where += " GROUP by CAST((time / {0}) AS INTEGER)".format(step)
         if func == 'avg':
@@ -239,17 +239,19 @@ class SQL():
         if tuples is None:
             return reply
         if func == 'avg-ser':
-            tuples = self._avg_ser(tuples, end)  # compute avg for concatenation groups
+            tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
         elif func == 'diff-ser':
             tuples = self._diff_ser(tuples)  # compute diff for concatenation groups
         elif func == 'rate-ser':
             tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
-        tuples = [(start, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
+        tuples = [(istart, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
         tuples = sorted(tuples)
-        tuples.append((end, tuples[-1][1]))
+        tuples.append((iend, tuples[-1][1]))  # add end entry with last valid entry
+        if update:  # remove first entry
+            tuples = tuples[1:]
         reply['series'] = tuples
-        reply['params'] = {'update': True, 'item': item, 'func': func, 'start': end, 'end': end + step, 'step': step, 'sid': sid}
-        reply['update'] = self.datetime(end + step)
+        reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
+        reply['update'] = self.datetime(iend + step)
         return reply
 
     def _export(self, func, start, end='now', count=100, ratio=1, step=None, uid=None, item=None):
