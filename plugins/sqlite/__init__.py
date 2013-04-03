@@ -112,6 +112,7 @@ class SQL():
     def parse_item(self, item):
         if 'history' in item.conf:
             item.db_series = functools.partial(self._series, item=item.id())
+            item.db_single = functools.partial(self._single, item=item.id())
             return self.update_item
         else:
             return None
@@ -238,11 +239,11 @@ class SQL():
         tuples = self.query(query).fetchall()
         if tuples is None:
             return reply
-        if func == 'avg-ser':
+        if func == 'avg':
             tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
-        elif func == 'diff-ser':
+        elif func == 'diff':
             tuples = self._diff_ser(tuples)  # compute diff for concatenation groups
-        elif func == 'rate-ser':
+        elif func == 'rate':
             tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
         tuples = [(istart, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
         tuples = sorted(tuples)
@@ -254,10 +255,7 @@ class SQL():
         reply['update'] = self.datetime(iend + step)
         return reply
 
-    def _export(self, func, start, end='now', count=100, ratio=1, step=None, uid=None, item=None):
-        if uid is None:
-            uid = item + '|' + func + '|' + start + '|' + end
-        reply = {'cmd': 'series', 'item': item, 'series': func, 'start': start, 'end': end, 'data': None, 'uid': uid}
+    def _single(self, func, start, end='now', item=None):
         start = self.get_timestamp(start)
         end = self.get_timestamp(end)
         prev = self.query("SELECT time from history WHERE item='{0}' AND time =< {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
@@ -266,61 +264,24 @@ class SQL():
         else:
             first = prev[0]
         where = " from history WHERE item='{0}' AND time >= {1} AND time < {2}".format(item, first, end)
-        if func.endswith('-ser'):  # series
-            if step is None:
-                step = (end - start) / count
-            where += " GROUP by CAST((time / {0}) AS INTEGER)".format(step)
-            if func == 'avg-ser':
-                query = "SELECT group_concat(time), group_concat(vavg)" + where + " ORDER BY time DESC"
-            elif func in ('diff-ser', 'rate-ser'):
-                query = "SELECT group_concat(time), group_concat(val)" + where + " ORDER BY time ASC"
-            elif func == 'rate-ser':
-                query = "SELECT group_concat(time), group_concat(val)" + where + " ORDER BY time ASC"
-            elif func == 'min-ser':
-                query = "SELECT MIN(time), MIN(vmin)" + where
-            elif func == 'max-ser':
-                query = "SELECT MIN(time), MAX(vmax)" + where
-            elif func == 'sum-ser':
-                query = "SELECT MIN(time), SUM(vsum)" + where
-            else:
-                logger.warning("Unknown export function: {0}".format(func))
-                return reply
-            tuples = self.query(query).fetchall()
-            if tuples is None:
-                return reply
-            if len(tuples) < 1:
-                return reply
-            if func == 'avg-ser':
-                tuples = self._avg_ser(tuples, end)  # compute avg for concatenation groups
-            elif func == 'diff-ser':
-                tuples = self._diff_ser(tuples)  # compute diff for concatenation groups
-            elif func == 'rate-ser':
-                tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
+        if func == 'avg':
+            query = "SELECT time, vavg" + where
+        elif func == 'min':
+            query = "SELECT MIN(vmin)" + where
+        elif func == 'max':
+            query = "SELECT MAX(vmax)" + where
+        elif func == 'sum':
+            query = "SELECT SUM(vsum)" + where
+        else:
+            logger.warning("Unknown export function: {0}".format(func))
+            return
+        tuples = self.query(query).fetchall()
+        if tuples is None:
+            return
+        if func == 'avg':
             tuples = [(start, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
-            tuples = sorted(tuples)
-#           tuples.append((end, tuples[-1][1]))
-            reply['data'] = tuples
-            reply['update'] = {'dt': self.datetime(end + step), 'item': item, 'func': func, 'start': end, 'end': end + step, 'step': step, 'uid': uid}
-            return reply
-        else:  # single value
-            if func == 'avg':
-                query = "SELECT time, vavg" + where
-            elif func == 'min':
-                query = "SELECT MIN(vmin)" + where
-            elif func == 'max':
-                query = "SELECT MAX(vmax)" + where
-            elif func == 'sum':
-                query = "SELECT SUM(vsum)" + where
-            else:
-                logger.warning("Unknown export function: {0}".format(func))
-                return
-            tuples = self.query(query).fetchall()
-            if tuples is None:
-                return
-            if func == 'avg':
-                tuples = [(start, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
-                return self._avg(tuples, end)
-            else:
+            return self._avg(tuples, end)
+        else:
                 return tuples[0][0]
 
     def _pack(self):
