@@ -105,7 +105,7 @@ class WebSocket(asyncore.dispatcher):
             sock, addr = pair
             addr = "{0}:{1}".format(addr[0], addr[1])
             logger.debug('Websocket: incoming connection from %s' % addr)
-            client = WebSocketHandler(self._sh, sock, self._sh.socket_map, addr, self.visu_items, self.visu_logics, self._sh.return_logs())
+            client = WebSocketHandler(self._sh, sock, addr, self.visu_items, self.visu_logics)
             self.clients.append(client)
 
     def run(self):
@@ -158,8 +158,8 @@ class WebSocket(asyncore.dispatcher):
 
 class WebSocketHandler(asynchat.async_chat):
 
-    def __init__(self, smarthome, sock, socket_map, addr, items, logics, logs):
-        asynchat.async_chat.__init__(self, sock, map=socket_map)
+    def __init__(self, smarthome, sock, addr, items, logics):
+        asynchat.async_chat.__init__(self, sock, map=smarthome.socket_map)
         self.set_terminator("\r\n\r\n")
         self._sh = smarthome
         self.parse_data = self.parse_header
@@ -172,7 +172,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.items = items
         self.rrd = False
         self.log = False
-        self.logs = logs
+        self.logs = smarthome.return_logs()
         self._lock = threading.Lock()
         self.logics = logics
         self.proto = 2
