@@ -82,6 +82,8 @@ class RRD():
             rrd_max = True
         # adding average and export method to the item
         item.average = types.MethodType(self._average, item, item.__class__)
+        item.min = types.MethodType(self._min, item, item.__class__)
+        item.max = types.MethodType(self._max, item, item.__class__)
         item.export = types.MethodType(self._export, item, item.__class__)
         self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
 
@@ -121,6 +123,29 @@ class RRD():
             return None
         else:
             return sum(values) / len(values)
+
+    def _min(self, item, timeframe):
+        values = self.read(item, timeframe)
+        if values is None:
+            return None
+        values = filter(None, values)
+        if len(values) == 0:
+            return None
+        else:
+            values.sort()
+            return values[0]
+
+    def _max(self, item, timeframe):
+        values = self.read(item, timeframe)
+        if values is None:
+            return None
+        values = filter(None, values)
+        if len(values) == 0:
+            return None
+        else:
+            values.sort()
+            return values[-1]
+
 
     def read(self, item, timeframe='1d', cf='AVERAGE'):
         if not hasattr(item, 'rrd'):
