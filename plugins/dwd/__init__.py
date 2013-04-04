@@ -141,6 +141,9 @@ class DWD():
         fb = self._retr_file(last)
         fb = fb.decode('iso-8859-1')
         fb = fb.splitlines()
+        if len(fb) < 8:
+            logger.info("problem fetching {0}".format(last))
+            return {}
         header = fb[4]
         legend = fb[8].split()
         date = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
