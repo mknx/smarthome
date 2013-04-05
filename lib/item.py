@@ -360,7 +360,10 @@ class Item():
         self._sh.trigger('fade', self._fadejob, value={'dest': dest, 'step': step, 'delta': delta})
 
     def _fadejob(self, dest, step, delta):
-        self.__fade = True
+        if self.__fade:
+            return
+        else:
+            self.__fade = True
         if self._value < dest:
             while (self._value + step) < dest and self.__fade:
                 self(self._value + step, 'fade')
