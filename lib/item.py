@@ -377,4 +377,5 @@ class Item():
                 self._lock.wait(delta)
                 self._lock.release()
         if self.__fade:
+            self.__fade = False
             self(dest)
