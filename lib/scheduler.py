@@ -89,8 +89,10 @@ class Scheduler(threading.Thread):
                         task['next'] = None
                     else:
                         continue
+                elif not task['active']:
+                    continue
                 else:
-                    if None == task['cron'] == task['cycle']:
+                    if task['cron'] is None and task['cycle'] is None:
                         continue
                     else:
                         self._next_time(name)
@@ -106,6 +108,10 @@ class Scheduler(threading.Thread):
                 obj = self._scheduler[name]['obj']
             else:
                 logger.warning("Logic name not found: {0}".format(name))
+                return
+        if name in self._scheduler:
+            if not self._scheduler[name]['active']:
+                logger.debug("Logic '{0}' deactivated. Ignoring trigger from {1} {2}".format(name, by, source))
                 return
         if dt is None:
             logger.debug(u"Triggering {0} - by: {1} source: {2} destination: {3} value: {4}".format(name, by, source, destination, unicode(value)[:40]))
@@ -163,7 +169,7 @@ class Scheduler(threading.Thread):
             cycle = {cycle: None}
             if offset is None:
                 offset = random.randint(6, 12)  # spread cycle jobs
-        self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': None}
+        self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': None, 'active': True}
         self._next_time(name, offset)
         self._lock.release()
 
@@ -174,11 +180,19 @@ class Scheduler(threading.Thread):
                     if key == 'cron':
                         if isinstance(kwargs[key], str):
                             kwargs[key] = kwargs[key].split('|')
+                    elif key == 'active':
+                        if kwargs['active'] and not self._scheduler[name]['active']:
+                            logger.info("Activating logic: {0}".format(name))
+                        elif not kwargs['active'] and self._scheduler[name]['active']:
+                            logger.info("Deactivating logic: {0}".format(name))
                     self._scheduler[name][key] = kwargs[key]
                 else:
                     logger.warning("Attribute {0} for {1} not specified. Could not change it.".format(key, name))
-            if 'cycle' in kwargs or 'cron' in kwargs:
-                self._next_time(name)
+            if self._scheduler[name]['active'] is True:
+                if 'cycle' in kwargs or 'cron' in kwargs:
+                    self._next_time(name)
+            else:
+                self._scheduler[name]['next'] = None
         else:
             logger.warning("Could not change {0}. No logic/method with this name found.".format(name))
 
