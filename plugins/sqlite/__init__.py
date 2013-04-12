@@ -230,7 +230,8 @@ class SQL():
             tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
         tuples = [(istart, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
         tuples = sorted(tuples)
-        tuples.append((iend, tuples[-1][1]))  # add end entry with last valid entry
+        lval = tuples[-1][1]
+        tuples.append((iend, lval))  # add end entry with last valid entry
         if update:  # remove first entry
             tuples = tuples[1:]
         reply['series'] = tuples
