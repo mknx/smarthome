@@ -34,42 +34,24 @@ class SQL():
     # (period days, granularity hours)
     periods = [(1900, 672), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
     # SQL queries
-    _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL);"
+    _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power INTEGER);"
     _create_index = "CREATE INDEX IF NOT EXISTS idx ON history (time, item)"
-    _pack_old = """
-        SELECT
-        group_concat(rowid),
-        MIN(start),
-        MAX(end),
-        item,
-        SUM(period),
-        SUM(cnt),
-        SUM(period * val) / SUM(period),
-        SUM(vdiff),
-        SUM(vsum),
-        MIN(vmin),
-        MAX(vmax)
-        FROM history
-        WHERE start <= :period AND end IS NOT NULL
-        GROUP by CAST((start / :granularity) AS INTEGER), item
-        HAVING COUNT(*) > 1
-        ORDER BY end ASC """
     _pack_query = """
         SELECT
         group_concat(rowid),
-        MIN(time),
+        group_concat(time),
+        group_concat(val),
+        group_concat(vavg),
         item,
         SUM(cnt),
-        val,
         SUM(vsum),
         MIN(vmin),
         MAX(vmax),
-        group_concat(vavg)
+        SUM(power)
         FROM history
         WHERE time <= :period
         GROUP by CAST((time / :granularity) AS INTEGER), item
-        HAVING COUNT(*) > 1
-        ORDER BY time ASC """
+        ORDER BY time DESC """
 
     def __init__(self, smarthome):
         self._sh = smarthome
@@ -91,6 +73,7 @@ class SQL():
         year = 365 * day
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
+        # self.query("alter table history add column power INTEGER;")
         # smarthome.scheduler.add('sqlite', self._pack, cron='2 3 * *', prio=5)
 
     def update_item(self, item, caller=None, source=None):
@@ -98,7 +81,7 @@ class SQL():
             return
         now = self.timestamp(self._sh.now())
         self._fdb_lock.acquire()
-        self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val)", {'now': now, 'item': item.id(), 'val': item()})
+        self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val, NULL)", {'now': now, 'item': item.id(), 'val': item()})
         self._fdb.commit()
         self._fdb_lock.release()
         #self.dump()
@@ -289,21 +272,42 @@ class SQL():
         insert = []
         delete = []
         self._fdb_lock.acquire()
-        for row in self._fdb.execute("""SELECT rowid, * FROM history""").fetchall():
-            print "before: {0}".format(row)
+#       for row in self._fdb.execute("""SELECT rowid, * FROM history""").fetchall():
+#           print "before: {0}".format(row)
         for entry in self.periods:
+            prev = now
             period, granularity = entry
             period = now - period * 24 * 3600 * 1000
             granularity = int(granularity * 3600 * 1000)
             for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}).fetchall():
-                delete.append(row[0])
-                insert.append(row[1:])
-        self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?,?)", insert)
-        self._fdb.execute("DELETE FROM history WHERE rowid in ({0})".format(','.join(delete)))
-        self._fdb.execute("VACUUM")
+                gid, gtime, gval, gvavg, item, cnt, vsum, vmin, vmax, power = row
+                gtime = map(int, gtime.split(','))
+                time = min(gtime)
+                if len(gtime) != 1:  # pack !!!
+                    delete.append(gid)
+                    gval = map(float, gval.split(','))
+                    gvavg = map(float, gvavg.split(','))
+                    print gid, gtime, gval, gvavg, item, cnt, vsum, vmin, vmax, power
+                    avg = self._avg(zip(gtime, gvavg), prev)
+                    val = gval[0]
+                    print time, item, val, avg
+                else:
+                    continue
+                prev = time
+                break
+                print delete, insert
+#               insert.append(row[2:])
+#               print row
+#               tuples = [(row[1], row[2])]
+#               print tuples
+#               print self._avg_ser(tuples, period)  # compute avg for concatenation groups
+#       self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
+#       self._fdb.execute("DELETE FROM history WHERE rowid in ({0})".format(','.join(delete)))
+#       for row in self._fdb.execute("""SELECT rowid, * FROM history""").fetchall():
+#           print "after: {0}".format(row)
+        self._fdb.rollback()
+        #self._fdb.execute("VACUUM")
         # self._fdb.commit()
-        for row in self._fdb.execute("""SELECT rowid, * FROM history""").fetchall():
-            print "after: {0}".format(row)
         self._fdb_lock.release()
 
     def dump(self):
