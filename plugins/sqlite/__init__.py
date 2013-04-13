@@ -220,7 +220,10 @@ class SQL():
             logger.warning("Unknown export function: {0}".format(func))
             return reply
         tuples = self.query(query).fetchall()
-        if tuples is None:
+        print 'XXX'
+        print tuples
+        print 'XXX'
+        if tuples == []:
             return reply
         if func == 'avg':
             tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
