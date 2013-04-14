@@ -34,7 +34,7 @@ class SQL():
     # (period days, granularity hours)
     periods = [(1900, 672), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
     # SQL queries
-    _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power INTEGER);"
+    _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power REAL);"
     _create_index = "CREATE INDEX IF NOT EXISTS idx ON history (time, item)"
     _pack_query = """
         SELECT
@@ -42,12 +42,12 @@ class SQL():
         group_concat(time),
         group_concat(val),
         group_concat(vavg),
+        group_concat(power),
         item,
         SUM(cnt),
         SUM(vsum),
         MIN(vmin),
-        MAX(vmax),
-        SUM(power)
+        MAX(vmax)
         FROM history
         WHERE time <= :period
         GROUP by CAST((time / :granularity) AS INTEGER), item
@@ -80,8 +80,10 @@ class SQL():
         if not self.connected:
             return
         now = self.timestamp(self._sh.now())
+        val = item()
+        power = int(bool(val))
         self._fdb_lock.acquire()
-        self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val, NULL)", {'now': now, 'item': item.id(), 'val': item()})
+        self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'power': power})
         self._fdb.commit()
         self._fdb_lock.release()
         #self.dump()
@@ -136,7 +138,7 @@ class SQL():
         if not self.connected:
             return
         self._fdb_lock.acquire()
-        logger.info(*query)
+        #logger.info(*query)
         reply = self._fdb.execute(*query)
         self._fdb_lock.release()
         return reply
@@ -220,9 +222,6 @@ class SQL():
             logger.warning("Unknown export function: {0}".format(func))
             return reply
         tuples = self.query(query).fetchall()
-        print 'XXX'
-        print tuples
-        print 'XXX'
         if tuples == []:
             return reply
         if func == 'avg':
@@ -284,14 +283,14 @@ class SQL():
             period = now - period * 24 * 3600 * 1000
             granularity = int(granularity * 3600 * 1000)
             for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}).fetchall():
-                gid, gtime, gval, gvavg, item, cnt, vsum, vmin, vmax, power = row
+                gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
                 gtime = map(int, gtime.split(','))
                 time = min(gtime)
                 if len(gtime) != 1:  # pack !!!
                     delete.append(gid)
                     gval = map(float, gval.split(','))
                     gvavg = map(float, gvavg.split(','))
-                    print gid, gtime, gval, gvavg, item, cnt, vsum, vmin, vmax, power
+                    print gid, gtime, gval, gvavg, item, cnt, vsum, vmin, vmax, gpower
                     avg = self._avg(zip(gtime, gvavg), prev)
                     val = gval[0]
                     print time, item, val, avg

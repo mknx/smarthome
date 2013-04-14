@@ -210,15 +210,12 @@ class WebSocketHandler(asynchat.async_chat):
         now = self._sh.now()
         for sid in self._update_series:
             series = self._update_series[sid]
-            print sid
             if series['update'] < now:
-                print series
                 reply = self.items[series['params']['item']].db_series(**series['params'])
                 if 'update' in reply:
                     self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
                     del(reply['update'])
                     del(reply['params'])
-                print reply
                 self.json_send(reply)
 
     def difference(self, a, b):
