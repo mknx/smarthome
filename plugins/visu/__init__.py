@@ -267,7 +267,6 @@ class WebSocketHandler(asynchat.async_chat):
                     reply = self.items[path].db_series(series, start, end)
                     if 'update' in reply:
                         self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
-                        print self._update_series
                         del(reply['update'])
                         del(reply['params'])
                     self.json_send(reply)

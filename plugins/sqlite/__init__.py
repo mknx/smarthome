@@ -74,7 +74,7 @@ class SQL():
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         # self.query("alter table history add column power INTEGER;")
-        # smarthome.scheduler.add('sqlite', self._pack, cron='2 3 * *', prio=5)
+        smarthome.scheduler.add('sqlite', self._pack, cron='2 3 * *', prio=5)
 
     def update_item(self, item, caller=None, source=None):
         if not self.connected:
@@ -275,8 +275,6 @@ class SQL():
         insert = []
         delete = []
         self._fdb_lock.acquire()
-#       for row in self._fdb.execute("""SELECT rowid, * FROM history""").fetchall():
-#           print "before: {0}".format(row)
         for entry in self.periods:
             prev = now
             period, granularity = entry
@@ -285,32 +283,26 @@ class SQL():
             for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}).fetchall():
                 gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
                 gtime = map(int, gtime.split(','))
-                time = min(gtime)
-                if len(gtime) != 1:  # pack !!!
-                    delete.append(gid)
-                    gval = map(float, gval.split(','))
-                    gvavg = map(float, gvavg.split(','))
-                    print gid, gtime, gval, gvavg, item, cnt, vsum, vmin, vmax, gpower
-                    avg = self._avg(zip(gtime, gvavg), prev)
-                    val = gval[0]
-                    print time, item, val, avg
-                else:
+                if len(gtime) == 1:  # ignore
                     continue
-                prev = time
-                break
-                print delete, insert
-#               insert.append(row[2:])
-#               print row
-#               tuples = [(row[1], row[2])]
-#               print tuples
-#               print self._avg_ser(tuples, period)  # compute avg for concatenation groups
-#       self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
-#       self._fdb.execute("DELETE FROM history WHERE rowid in ({0})".format(','.join(delete)))
-#       for row in self._fdb.execute("""SELECT rowid, * FROM history""").fetchall():
-#           print "after: {0}".format(row)
-        self._fdb.rollback()
-        #self._fdb.execute("VACUUM")
-        # self._fdb.commit()
+                # pack !!!
+                delete.append(gid)
+                gval = map(float, gval.split(','))
+                gvavg = map(float, gvavg.split(','))
+                gpower = map(float, gpower.split(','))
+                avg = self._avg(zip(gtime, gvavg), prev)
+                power = self._avg(zip(gtime, gpower), prev)
+                prev = gtime[0]
+                # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
+                insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
+        try:
+            self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
+            self._fdb.execute("DELETE FROM history WHERE rowid in ({0})".format(','.join(delete)))
+            self._fdb.execute("VACUUM")
+        except Exception:
+            logger.warning("problem packing sqlite database")
+            self._fdb.rollback()
+        self._fdb.commit()
         self._fdb_lock.release()
 
     def dump(self):
