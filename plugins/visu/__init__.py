@@ -23,6 +23,7 @@ import logging
 import asynchat
 import asyncore
 import socket
+import ssl
 import struct
 import hashlib
 import base64
@@ -36,13 +37,20 @@ logger = logging.getLogger('')
 
 class WebSocket(asyncore.dispatcher):
 
-    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, smartvisu_dir=False):
+    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False):
         asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
         self._sh = smarthome
         smarthome.add_event_listener(['log', 'rrd'], self._send_event)
         self.clients = []
         self.visu_items = {}
         self.visu_logics = {}
+        if tls == 'no':
+            self.tls = False
+        else:
+            self.tls = True
+        self.tls_crt = '/usr/local/smarthome/etc/home.crt'
+        self.tls_key = '/usr/local/smarthome/etc/home.key'
+        self.tls_ca = '/usr/local/smarthome/etc/ca.crt'
         self.generator_dir = visu_dir
         if generator_dir:  # transition feature
             self.generator_dir = generator_dir
@@ -105,8 +113,19 @@ class WebSocket(asyncore.dispatcher):
             sock, addr = pair
             addr = "{0}:{1}".format(addr[0], addr[1])
             logger.debug('Websocket: incoming connection from %s' % addr)
+        if self.tls:
+#           print sock.recv(1)
+            try:
+                ssock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_REQUIRED, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_SSLv3)
+                print ssock.getpeercert()
+                print 'XXXX'
+            except Exception, e:
+                logger.error(e)
+                return
+            client = WebSocketHandler(self._sh, ssock, addr, self.visu_items, self.visu_logics)
+        else:
             client = WebSocketHandler(self._sh, sock, addr, self.visu_items, self.visu_logics)
-            self.clients.append(client)
+        self.clients.append(client)
 
     def run(self):
         self.alive = True
@@ -399,6 +418,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.json_parse(data.lstrip('\x00'))
 
     def hixie76_handshake(self, key3):
+        print self.header
         key1 = self.header['Sec-WebSocket-Key1']
         key2 = self.header['Sec-WebSocket-Key2']
         spaces1 = key1.count(" ")
@@ -411,7 +431,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.push('Upgrade: WebSocket\r\n')
         self.push('Connection: Upgrade\r\n')
         self.push("Sec-WebSocket-Origin: %s\r\n" % self.header['Origin'])
-        self.push("Sec-WebSocket-Location: ws://%s/\r\n\r\n" % self.header['Host'])
+        self.push("Sec-WebSocket-Location: wss://%s/\r\n\r\n" % self.header['Host'])
         self.push(key)
         self.parse_data = self.hixie76_parse
         self.json_send = self.hixie76_send
