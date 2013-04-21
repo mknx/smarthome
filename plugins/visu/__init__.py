@@ -116,9 +116,9 @@ class WebSocket(asyncore.dispatcher):
         if self.tls:
 #           print sock.recv(1)
             try:
-                ssock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_REQUIRED, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_SSLv3)
-                print ssock.getpeercert()
-                print 'XXXX'
+                # cert_reqs=ssl.CERT_REQUIRED
+                ssock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_OPTIONAL, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_TLSv1)
+                logger.debug('Client cert: {0}'.format(ssock.getpeercert()))
             except Exception, e:
                 logger.error(e)
                 return
@@ -418,7 +418,6 @@ class WebSocketHandler(asynchat.async_chat):
         self.json_parse(data.lstrip('\x00'))
 
     def hixie76_handshake(self, key3):
-        print self.header
         key1 = self.header['Sec-WebSocket-Key1']
         key2 = self.header['Sec-WebSocket-Key2']
         spaces1 = key1.count(" ")
@@ -431,7 +430,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.push('Upgrade: WebSocket\r\n')
         self.push('Connection: Upgrade\r\n')
         self.push("Sec-WebSocket-Origin: %s\r\n" % self.header['Origin'])
-        self.push("Sec-WebSocket-Location: wss://%s/\r\n\r\n" % self.header['Host'])
+        self.push("Sec-WebSocket-Location: ws://%s/\r\n\r\n" % self.header['Host'])
         self.push(key)
         self.parse_data = self.hixie76_parse
         self.json_send = self.hixie76_send
