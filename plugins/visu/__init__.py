@@ -119,6 +119,8 @@ class WebSocket(asyncore.dispatcher):
                 # cert_reqs=ssl.CERT_REQUIRED
                 ssock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_OPTIONAL, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_TLSv1)
                 logger.debug('Client cert: {0}'.format(ssock.getpeercert()))
+                logger.debug('Cipher: {0}'.format(ssock.cipher()))
+                print ssl.OPENSSL_VERSION
             except Exception, e:
                 logger.error(e)
                 return
