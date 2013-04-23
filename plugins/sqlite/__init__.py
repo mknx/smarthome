@@ -151,7 +151,8 @@ class SQL():
             sum += (prev - time) * val
             prev = time
             span = end - time
-        return sum / span
+        if span != 0:
+            return sum / span
 
     def _cast_tuples(self, time, val):
         return (int(time), float(val))
@@ -178,17 +179,17 @@ class SQL():
 
     def _rate_ser(self, tuples, ratio):
         result = []
-        prev = None
-        last = None
+        prev_val = None
+        prev_time = None
         ratio *= 1000
         for times, vals in tuples:
-            if prev is not None:
+            if prev_val is not None:
                 time = int(times.split(',')[0])
                 val = float(vals.split(',')[0])
-                rate = ratio * (prev - val) / (last - time)
+                rate = ratio * (prev_val - val) / (prev_time - time)
                 result.append((time, rate))
-            last = int(times.split(',')[0])
-            prev = float(vals.split(',')[0])
+            prev_time = int(times.split(',')[0])
+            prev_val = float(vals.split(',')[0])
         return result
 
     def _series(self, func, start, end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
@@ -203,7 +204,10 @@ class SQL():
             first = prev[0]
         where = " from history WHERE item='{0}' AND time >= {1} AND time <= {2}".format(item, first, iend)
         if step is None:
-            step = (iend - istart) / count
+            if count != 0:
+                step = (iend - istart) / count
+            else:
+                step = (iend - istart)
         reply = {'cmd': 'series', 'series': None, 'sid': sid}
         where += " GROUP by CAST((time / {0}) AS INTEGER)".format(step)
         if func == 'avg':
