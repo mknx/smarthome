@@ -40,7 +40,7 @@ class LuxBase():
         self._sock = False
         self._lock = threading.Lock()
         self.is_connected = False
-        self._connection_attemtps = 0
+        self._connection_attempts = 0
         self._connection_errorlog = 60
         self._params = []
         self._attrs = []
@@ -110,7 +110,7 @@ class LuxBase():
         except Exception, e:
             self._lock.release()
             self.close()
-                raise luxex("error receifing payload: {0}".format(e))
+            raise luxex("error receifing payload: {0}".format(e))
 
     def set_param(self, param, value):
         param = int(param)
