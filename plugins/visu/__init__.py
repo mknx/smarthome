@@ -176,6 +176,9 @@ class WebSocket(asyncore.dispatcher):
         for client in self.clients:
             client.json_send({'cmd': 'dialog', 'header': header, 'content': content})
 
+    def url(self, url):
+        for client in self.clients:
+            client.json_send({'cmd': 'url', 'url': url})
 
 class WebSocketHandler(asynchat.async_chat):
 
