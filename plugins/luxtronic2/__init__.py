@@ -236,12 +236,12 @@ class Luxtronic2(LuxBase):
 
     def run(self):
         self.alive = True
-        self._sh.scheduler.add('Luxtronic2', self._cycle, cycle=self._cycle)
+        self._sh.scheduler.add('Luxtronic2', self._refresh, cycle=self._cycle)
 
     def stop(self):
         self.alive = False
 
-    def _cycle(self):
+    def _refresh(self):
         if not self.is_connected:
             return
         start = time.time()
@@ -297,12 +297,6 @@ class Luxtronic2(LuxBase):
         if identifier == 20: return float(value)/10
         if identifier == 151: return float(value)/10
         if identifier == 152: return float(value)/10
-        if identifier == 56: return datetime.timedelta(seconds=int(value))
-        if identifier == 60: return datetime.timedelta(seconds=int(value))
-        if identifier == 63: return datetime.timedelta(seconds=int(value))
-        if identifier == 64: return datetime.timedelta(seconds=int(value))
-        if identifier == 65: return datetime.timedelta(seconds=int(value))
-        if identifier == 120: return datetime.timedelta(seconds=int(value))
         return value
 
     def parse_item(self, item):
