@@ -19,11 +19,13 @@
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
+import sys
 import logging
 import socket
 import threading
 import struct
 import time
+import datetime
 
 logger = logging.getLogger('')
 
@@ -54,6 +56,15 @@ class LuxBase():
 
     def get_calculated(self, identifier):
         return self._calc[identifier] if identifier < len(self._calc) else None
+
+    def get_attribute_count(self):
+        return len(self._attrs)
+
+    def get_parameter_count(self):
+        return len(self._params)
+
+    def get_calculated_count(self):
+        return len(self._calc)
 
     def connect(self):
         self._lock.acquire()
@@ -115,10 +126,7 @@ class LuxBase():
     def set_param(self, param, value):
         param = int(param)
         old = self._params[param] if param < len(self._params) else 0
-        payload = struct.pack('!iii',
-                              socket.htonl(3002),        # command
-                              socket.htonl(int(param)),  # parameter
-                              socket.htonl(int(value)))  # value
+        payload = struct.pack('!iii', 3002, int(param), int(value))
         self._lock.acquire()
         answer = self._request(payload, 8)
         self._lock.release()
@@ -126,7 +134,6 @@ class LuxBase():
             self.close()
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
-        answer = map(socket.ntohl, answer)
         fields = ['cmd', 'param']
         answer = dict(zip(fields, answer))
         if answer['cmd'] == 3002 and answer['param'] == param:
@@ -137,9 +144,7 @@ class LuxBase():
             return False
 
     def refresh_parameters(self):
-        request = struct.pack('!ii',
-                              socket.htonl(3003),    # command
-                              socket.htonl(0))       # delimiter
+        request = struct.pack('!ii', 3003, 0)
         self._lock.acquire()
         answer = self._request(request, 8)
         if len(answer) != 8:
@@ -147,13 +152,14 @@ class LuxBase():
             self.close()
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
-        answer = map(socket.ntohl, answer)
         fields = ['cmd', 'len']
         answer = dict(zip(fields, answer))
         if answer['cmd'] == 3003:
-            payload = self._request_more(4*answer['len'])
+            params = []
+            for i in range(0, answer['len']):
+                param = self._request_more(4)
+                params.append(struct.unpack('!i', param)[0])
             self._lock.release()
-            params = struct.unpack('!'+'i'*answer['len'], payload)
             if len(params) > 0:
                 self._params = params
                 return True
@@ -164,9 +170,7 @@ class LuxBase():
             return False
 
     def refresh_attributes(self):
-        request = struct.pack('!ii',
-                              socket.htonl(3005),    # command
-                              socket.htonl(0))       # delimiter
+        request = struct.pack('!ii', 3005, 0)
         self._lock.acquire()
         answer = self._request(request, 8)
         if len(answer) != 8:
@@ -174,13 +178,14 @@ class LuxBase():
             self.close()
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
-        answer = map(socket.ntohl, answer)
         fields = ['cmd', 'len']
         answer = dict(zip(fields, answer))
         if answer['cmd'] == 3005:
-            payload = self._request_more(answer['len'])
+            attrs = []
+            for i in range(0, answer['len']):
+                attr = self._request_more(1)
+                attrs.append(struct.unpack('!b', attr)[0])
             self._lock.release()
-            attrs = struct.unpack('!'+'b'*answer['len'], payload)
             if len(attrs) > 0:
                 self._attrs = attrs
                 return True
@@ -191,9 +196,7 @@ class LuxBase():
             return False
 
     def refresh_calculated(self):
-        request = struct.pack('!ii',
-                              socket.htonl(3004),    # command
-                              socket.htonl(0))       # delimiter
+        request = struct.pack('!ii', 3004, 0)
         self._lock.acquire()
         answer = self._request(request, 12)
         if len(answer) !=12:
@@ -201,15 +204,16 @@ class LuxBase():
             self.close()
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!iii', answer)
-        answer = map(socket.ntohl, answer)
         fields = ['cmd', 'state', 'len']
         answer = dict(zip(fields, answer))
         if answer['cmd'] == 3004:
-            payload = self._request_more(4*answer['len'])
+            calcs = []
+            for i in range(0, answer['len']):
+                calc = self._request_more(4)
+                calcs.append(struct.unpack('!i', calc)[0])
             self._lock.release()
-            calc = struct.unpack('!'+'i'*answer['len'], payload)
-            if len(calc) > 0:
-                self._calc = calc
+            if len(calcs) > 0:
+                self._calc = calcs
                 return answer['state']
             return 0
         else:
@@ -241,25 +245,28 @@ class Luxtronic2(LuxBase):
         if not self.is_connected:
             return
         start = time.time()
-        self.refresh_parameters()
-        for p in self._parameter:
-            val = self.get_parameter(p)
-            if val:
-                self._parameter[p](val, 'Luxtronic2')
-        self.refresh_attributes()
-        for a in self._attribute:
-            val = self.get_attribute(a)
-            if val:
-                self._attribute[a](val, 'Luxtronic2')
-        self.refresh_calculated()
-        for c in self._calculated:
-            val = self.get_caclulated(c)
-            if val:
-                self._calculated[c](val, 'Luxtronic2')
-        for d in self._decoded:
-            val = self.get_calculated(d)
-            if val:
-                self._decoded[d](self._decode(d, val), 'Luxtronic2')
+        if len(self._parameter) > 0:
+            self.refresh_parameters()
+            for p in self._parameter:
+                val = self.get_parameter(p)
+                if val:
+                    self._parameter[p](val, 'Luxtronic2')
+        if len(self._attribute) > 0:
+            self.refresh_attributes()
+            for a in self._attribute:
+                val = self.get_attribute(a)
+                if val:
+                    self._attribute[a](val, 'Luxtronic2')
+        if len(self._calculated) > 0 or len(self._decoded) > 0:
+            self.refresh_calculated()
+            for c in self._calculated:
+                val = self.get_caclulated(c)
+                if val:
+                    self._calculated[c](val, 'Luxtronic2')
+            for d in self._decoded:
+                val = self.get_calculated(d)
+                if val:
+                    self._decoded[d](self._decode(d, val), 'Luxtronic2')
         cycletime = time.time() - start
         logger.debug("cycle takes {0} seconds".format(cycletime))
 
@@ -320,3 +327,35 @@ class Luxtronic2(LuxBase):
     def update_item(self, item, caller=None, source=None):
         if caller != 'Luxtronic2':
            self.set_param(item.conf['lux2_p'], item()) 
+
+def main():
+    try:
+        lux = LuxBase('192.168.178.25')
+        lux.connect()
+        if not lux.is_connected:
+            return 1
+        start = time.time()
+        lux.refresh_parameters()
+        lux.refresh_attributes()
+        lux.refresh_calculated()
+        cycletime = time.time() - start
+        print "{0} Parameters:".format(lux.get_parameter_count())
+        for i in range(0, lux.get_parameter_count()):
+            print "  {0} = {1}".format(i + 1, lux.get_parameter(i))
+        print "{0} Attributes:".format(lux.get_attribute_count())
+        for i in range(0, lux.get_attribute_count()):
+            print "  {0} = {1}".format(i + 1, lux.get_attribute(i))
+        print "{0} Calculated:".format(lux.get_calculated_count())
+        for i in range(0, lux.get_calculated_count()):
+            print "  {0} = {1}".format(i + 1, lux.get_calculated(i))
+        print "cycle takes {0} seconds".format(cycletime)
+
+    except Exception, e:
+        print "[EXCEPTION] error main: {0}".format(e)
+        return 1
+    finally:
+        if lux:
+            lux.close()
+
+if __name__ == "__main__":
+    sys.exit(main())
