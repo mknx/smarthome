@@ -275,6 +275,9 @@ function shWsInit() {
                     shDialog('Protcol missmatch', 'Update smarthome(.min).js');
                 };
                 break;
+            case 'url':
+                shUrl(data.url);
+                break;
         };
     };
     shWS.onerror = function(error){
@@ -585,3 +588,6 @@ function shDialog(header, content){
     //$('#shDialog').trigger('create');
     $.mobile.changePage('#shDialog', {transition: 'pop', role: 'dialog'} );
 };
+
+function shUrl(url){
+    document.location.href=url;
