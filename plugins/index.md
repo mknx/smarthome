@@ -15,6 +15,7 @@ changed: 2012-04-12T21:32:39+0200
 * [DWD](dwd/): fetch weather warnings and forecasts from Deutscher Wetterrdienst (DWD).
 * [iCal](ical/): read and parse iCal files.
 * [KNX](knx/): interact with the KNX home automation bus.
+* [Luxtronic2](luxtronic2/): get state information and control Luxtronic 2.0 heating controllers.
 * [Mail](mail/): sending (SMTP) and receiving (IMAP) mail.
 * [Network](network/): to receive HTTP/TCP/UDP messages and send UDP messages.
 * [Prowl](prowl/): a plugin for the notification service/app.
