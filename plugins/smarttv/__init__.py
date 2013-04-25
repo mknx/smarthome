@@ -89,11 +89,11 @@ class SmartTV():
             return None
 
     def update_item(self, item, caller=None, source=None):
-        key = item.conf['smarttv']
-
-        if key.startswith('KEY_'):
+        keys = item.conf['smarttv']
+        if keys.startswith('KEY_'):
             if item():
-                self.push(key)
+                for key in keys.split(','):
+                    self.push(key.strip())
         elif str(item()).startswith('KEY_'):
             self.push(str(item()))
 
