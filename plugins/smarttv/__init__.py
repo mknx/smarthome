@@ -89,13 +89,19 @@ class SmartTV():
             return None
 
     def update_item(self, item, caller=None, source=None):
-        keys = item.conf['smarttv']
-        if keys.startswith('KEY_'):
-            if item():
-                for key in keys.split(','):
-                    self.push(key.strip())
-        elif str(item()).startswith('KEY_'):
-            self.push(str(item()))
+        val = item()
+        if isinstance(val, str):
+            if val.startswith('KEY_'):
+                self.push(val)
+            return
+        
+        if val:
+            keys = item.conf['smarttv']
+            if isinstance(keys, str):
+                keys = [keys]
+            for key in keys:
+                if isinstance(keys, str) and keys.startswith('KEY_'):
+                    self.push(key)
 
     def parse_logic(self, logic):
         pass
