@@ -32,7 +32,7 @@ logger = logging.getLogger('')
 class SQL():
 
     # (period days, granularity hours)
-    periods = [(1900, 672), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
+    periods = [(1900, 168), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
     # SQL queries
     _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power REAL);"
     _create_index = "CREATE INDEX IF NOT EXISTS idx ON history (time, item)"
