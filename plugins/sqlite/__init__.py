@@ -279,34 +279,34 @@ class SQL():
         insert = []
         delete = []
         self._fdb_lock.acquire()
-        for entry in self.periods:
-            prev = now
-            period, granularity = entry
-            period = now - period * 24 * 3600 * 1000
-            granularity = int(granularity * 3600 * 1000)
-            for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}).fetchall():
-                gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
-                gtime = map(int, gtime.split(','))
-                if len(gtime) == 1:  # ignore
-                    continue
-                # pack !!!
-                delete.append(gid)
-                gval = map(float, gval.split(','))
-                gvavg = map(float, gvavg.split(','))
-                gpower = map(float, gpower.split(','))
-                avg = self._avg(zip(gtime, gvavg), prev)
-                power = self._avg(zip(gtime, gpower), prev)
-                prev = gtime[0]
-                # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
-                insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
         try:
+            for entry in self.periods:
+                prev = now
+                period, granularity = entry
+                period = now - period * 24 * 3600 * 1000
+                granularity = int(granularity * 3600 * 1000)
+                for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}).fetchall():
+                    gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
+                    gtime = map(int, gtime.split(','))
+                    if len(gtime) == 1:  # ignore
+                        continue
+                    # pack !!!
+                    delete.append(gid)
+                    gval = map(float, gval.split(','))
+                    gvavg = map(float, gvavg.split(','))
+                    gpower = map(float, gpower.split(','))
+                    avg = self._avg(zip(gtime, gvavg), prev)
+                    power = self._avg(zip(gtime, gpower), prev)
+                    prev = gtime[0]
+                    # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
+                    insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
             self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
             self._fdb.execute("DELETE FROM history WHERE rowid in ({0})".format(','.join(delete)))
             self._fdb.execute("VACUUM")
-        except Exception:
-            logger.warning("problem packing sqlite database")
+            self._fdb.commit()
+        except Exception, e:
+            logger.warning("problem packing sqlite database: {0}".format(e))
             self._fdb.rollback()
-        self._fdb.commit()
         self._fdb_lock.release()
 
     def dump(self):
