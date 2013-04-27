@@ -290,5 +290,4 @@ class KNX(lib.my_asynchat.AsynChat):
     def update_item(self, item, caller=None, source=None):
         if caller != 'KNX':
             for ga in item.conf['knx_send']:
-                print 'wtf'
                 self.groupwrite(ga, item(), item.conf['knx_dpt'])
