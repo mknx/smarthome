@@ -225,7 +225,11 @@ class SQL():
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return reply
-        tuples = self.query(query).fetchall()
+        try:
+            tuples = self.query(query).fetchall()
+        except Exception, e:
+            logger.warning("Problem {0} with query: {1}".format(e, query))
+            return reply
         if tuples == []:
             return reply
         if func == 'avg':
