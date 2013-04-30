@@ -94,13 +94,12 @@ class SmartTV():
             if val.startswith('KEY_'):
                 self.push(val)
             return
-        
         if val:
             keys = item.conf['smarttv']
             if isinstance(keys, str):
                 keys = [keys]
             for key in keys:
-                if isinstance(keys, str) and keys.startswith('KEY_'):
+                if isinstance(key, str) and key.startswith('KEY_'):
                     self.push(key)
 
     def parse_logic(self, logic):
