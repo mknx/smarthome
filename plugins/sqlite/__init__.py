@@ -80,7 +80,7 @@ class SQL():
         if not self.connected:
             return
         now = self.timestamp(self._sh.now())
-        val = item()
+        val = float(item())
         power = int(bool(val))
         self._fdb_lock.acquire()
         self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'power': power})
