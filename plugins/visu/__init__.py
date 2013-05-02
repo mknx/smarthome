@@ -180,6 +180,7 @@ class WebSocket(asyncore.dispatcher):
         for client in self.clients:
             client.json_send({'cmd': 'url', 'url': url})
 
+
 class WebSocketHandler(asynchat.async_chat):
 
     def __init__(self, smarthome, sock, addr, items, logics):
@@ -288,7 +289,10 @@ class WebSocketHandler(asynchat.async_chat):
                 end = 'now'
             if path in self.items:
                 if hasattr(self.items[path], 'db_series'):
-                    reply = self.items[path].db_series(series, start, end)
+                    try:
+                        reply = self.items[path].db_series(series, start, end)
+                    except Exception, e:
+                        logger.warning("Problem fetching series for {0}: {1}".format(path, e))
                     if 'update' in reply:
                         self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
                         del(reply['update'])
