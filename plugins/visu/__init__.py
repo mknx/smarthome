@@ -236,7 +236,10 @@ class WebSocketHandler(asynchat.async_chat):
         for sid in self._update_series:
             series = self._update_series[sid]
             if series['update'] < now:
-                reply = self.items[series['params']['item']].db_series(**series['params'])
+                try:
+                    reply = self.items[series['params']['item']].db_series(**series['params'])
+                except Exception, e:
+                    logger.warning("Problem updating series for {0}: {1}".format(series['params'], e))
                 if 'update' in reply:
                     self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
                     del(reply['update'])
