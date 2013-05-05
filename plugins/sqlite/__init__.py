@@ -144,7 +144,7 @@ class SQL():
         return reply
 
     def _avg(self, tuples, end):
-        sum = 0
+        sum = 0.0
         span = 1
         prev = end
         for time, val in sorted(tuples, reverse=True):
