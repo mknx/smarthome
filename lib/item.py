@@ -207,7 +207,7 @@ class Item():
             if caller != "fade":
                 self.__fade = False
                 self._lock.notify_all()
-                logger.info(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
+                logger.debug(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
             self._value = value
             delta = self._sh.now() - self._last_change
             self._prev_change = delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
