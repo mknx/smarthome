@@ -153,6 +153,8 @@ class SQL():
             span = end - time
         if span != 0:
             return sum / span
+        else:
+            return val
 
     def _cast_tuples(self, time, val):
         return (int(time), float(val))
