@@ -1,18 +1,44 @@
 Roadmap
 =======
    * Denon Plugin
-   * MPD Plugin
+   * Hue Plugin
 
-# 0.9 - Developement
+
+# 0.9
+
+## Contributions from:
+   * Alexander Rieger
+   * Niko Will
+
+## New Plugins
+   * Fritzbox Plugin
+   * Luxtronic2 Plugin
+   * MPD Plugin
+   * Samsung Smart TV Plugin
+   * Solarlog Plugin
+   * SQLite Plugin
+x   * XBMC Plugin
+
 ## Features
    * Scene support
    * Item: setting values by crontab and cycle
    * Logic: calling with values by crontab and cycle
-   * Samsung Smart TV Plugin
-   * XBMC Plugin
-   * 1-Wire Plugin rewritten to support many different sensors
+   * De-/Activate logics with "sh.scheduler.change('alarmclock', active=False)"
+   * 1-Wire Plugin: rewritten to support many different sensors
+   * Asterisk: adding destination support for Userevents
+x   * CLI plugin: new command 'cl' to clean the memory log of sh.py
+   * DWD Plugin: adding support for Pollen forecast
+x   * KNX Plugin:
+x      * change encoding of dpt10 to use a datetime object and send the isoweekday
+x      * DPT 17 support
+x   * Visu Plugin:
+x      * change url
+x      * basic Websocket TLS and client certificate support
+x      * jQuery Mobile 1.3.*
+x      * Visu API change for rrd handling
 
 # 0.8
+
 ## Contributions from:
    * Niko Will
    * Alexander Rieger
