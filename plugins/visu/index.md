@@ -57,14 +57,19 @@ You could specify the `visu` attribute to every logic in your logic.conf. This w
    * start SmartHome.py
    * goto http://yourserver/example.html
 
+
 Functions
 =========
 
-dialog(header, content)
------------------------
+## dialog(header, content)
+
 This function opens a jQuery mobile dialog.
 <pre>sh.visu.dialog('Easy', 'going')</pre> would create the following dialog on every client.
 ![dialog](/smarthome/img/dialog.png)
+
+## url(url)
+
+Change the current visu page to the specified url. e.g. `sh.visu.url('http://smarthome.local/door.html')`
 
 
 User Interface
