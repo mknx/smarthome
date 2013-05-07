@@ -31,6 +31,7 @@ Just telnet to the port: <code>telnet 127.0.0.1 2323</code> and enter <code>help
 
 It would return:
 <pre>ls: list the first level items
+cl: clear smarthome in memory log
 ls item: list item and every child item (with values)
 la: list all items (with values)
 lo: list all logics and next execution time
@@ -40,6 +41,8 @@ tr logic: trigger logic
 rl logic: reload logic
 rr logic: reload and run logic
 quit: quit the session
-q: alias for quit</pre>
+q: alias for quit
+exit: alias for quit
+x: alias for quit</pre>
 
 You could list <code>ls</code> items and areas or update items <code>up office.light = On</code>.
