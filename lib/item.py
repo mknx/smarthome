@@ -42,7 +42,7 @@ class Item():
         self._changed_by = 'Init'
         # special attributes
         self._sh = smarthome
-        if hasattr(smarthome, '_log_item_change'):
+        if hasattr(smarthome, '_item_change_log'):
             self._change_logger = logger.info
         else:
             self._change_logger = logger.debug
