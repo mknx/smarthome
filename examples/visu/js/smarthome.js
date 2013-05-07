@@ -590,5 +590,5 @@ function shDialog(header, content){
 };
 
 function shUrl(url){
-    document.location.href=url;
+    window.location.href=url;
 };
