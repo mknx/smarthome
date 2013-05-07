@@ -42,6 +42,10 @@ class Item():
         self._changed_by = 'Init'
         # special attributes
         self._sh = smarthome
+        if hasattr(smarthome, '_log_item_change'):
+            self._change_logger = logger.info
+        else:
+            self._change_logger = logger.debug
         self._lock = threading.Condition()
         self._cache = False
         self._crontab = None
@@ -207,7 +211,7 @@ class Item():
             if caller != "fade":
                 self.__fade = False
                 self._lock.notify_all()
-                logger.debug(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
+                self._change_logger(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
             self._value = value
             delta = self._sh.now() - self._last_change
             self._prev_change = delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
