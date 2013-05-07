@@ -53,6 +53,7 @@ You could specify a port to connect to. By default port 9090 is used.
 
 ### xbmc_listen
 You could assign the following values to `xbmc_listen`:
+
    * `volume` a numeric value (0 -100)
    * `mute` a bool flag
    * `title` a string with the name of the movie, song or picture
@@ -61,6 +62,7 @@ You could assign the following values to `xbmc_listen`:
 
 ### xbmc_send
 The following `xbmc_send` attributes could be defined to send changes to the system:
+
    * `volume` a numeric value (0 -100)
    * `mute` a bool flag
 
@@ -75,6 +77,6 @@ The picture attribute is optional.
 
 <pre>
 sh.xbmc.notify_all('Phone', 'Sister in law calling', 'http://smarthome.local/img/phone.png') 
-# or
+# or for a dedicated xbmc
 sh.living.xbmc.notify('Door', 'Ding Dong')
-<pre>
+</pre>
