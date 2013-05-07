@@ -199,6 +199,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.log = False
         self.logs = smarthome.return_logs()
         self._lock = threading.Lock()
+        self._series_lock = threading.Lock()
         self.logics = logics
         self.proto = 2
 
@@ -233,6 +234,7 @@ class WebSocketHandler(asynchat.async_chat):
 
     def update_series(self):
         now = self._sh.now()
+        self._series_lock.acquire()
         for sid in self._update_series:
             series = self._update_series[sid]
             if series['update'] < now:
@@ -246,6 +248,7 @@ class WebSocketHandler(asynchat.async_chat):
                     del(reply['update'])
                     del(reply['params'])
                 self.json_send(reply)
+        self._series_lock.release()
 
     def difference(self, a, b):
         return list(set(b).difference(set(a)))
@@ -298,7 +301,9 @@ class WebSocketHandler(asynchat.async_chat):
                     except Exception, e:
                         logger.warning("Problem fetching series for {0}: {1}".format(path, e))
                     if 'update' in reply:
+                        self._series_lock.acquire()
                         self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
+                        self._series_lock.release()
                         del(reply['update'])
                         del(reply['params'])
                     self.json_send(reply)
