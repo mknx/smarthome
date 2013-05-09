@@ -308,8 +308,8 @@ class SQL():
                     insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
             self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
             self._fdb.execute("DELETE FROM history WHERE rowid in ({0})".format(','.join(delete)))
-            self._fdb.execute("VACUUM")
             self._fdb.commit()
+            self._fdb.execute("VACUUM")
         except Exception, e:
             logger.warning("problem packing sqlite database: {0}".format(e))
             self._fdb.rollback()
