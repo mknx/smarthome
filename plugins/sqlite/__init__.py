@@ -162,7 +162,11 @@ class SQL():
     def _avg_ser(self, tuples, end):
         prev = end
         result = []
-        for times, vals in tuples:
+        for tpl in tuples:
+            if len(tpl) == 2:
+                times, vals = tpl
+            else:
+                continue
             tpls = map(self._cast_tuples, times.split(','), vals.split(','))
             avg = self._avg(tpls, prev)
             first = sorted(tpls)[0][0]
