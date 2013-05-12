@@ -112,7 +112,7 @@ class WebSocket(asyncore.dispatcher):
         else:
             sock, addr = pair
             addr = "{0}:{1}".format(addr[0], addr[1])
-            logger.debug('Websocket: incoming connection from %s' % addr)
+            logger.info('WebSocket: incoming connection from %s' % addr)
         if self.tls:
 #           print sock.recv(1)
             try:
@@ -377,7 +377,7 @@ class WebSocketHandler(asynchat.async_chat):
         #fin = (byte1 >> 7) & 0x01
         opcode = byte1 & 0x0f
         if opcode == 8:
-            logger.debug("Websocket: closing connection to {0}.".format(self.addr))
+            logger.debug("WebSocket: closing connection to {0}.".format(self.addr))
             self.close()
             return
         masked = (byte2 >> 7) & 0x01
