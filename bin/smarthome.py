@@ -189,7 +189,8 @@ class SmartHome():
             os.environ['TZ'] = self.tz
             self._tzinfo = self._utctz
 
-        logger.info("Start SmartHome.py v%s" % VERSION)
+        logger.info("Start SmartHome.py {0}".format(VERSION))
+        logger.debug("Python {0}".format(sys.version.split()[0]))
         # Tools
         self.tools = lib.tools.Tools()
         # init sun

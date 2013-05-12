@@ -56,7 +56,7 @@ class SQL():
     def __init__(self, smarthome):
         self._sh = smarthome
         sqlite3.register_adapter(datetime.datetime, self.timestamp)
-        logger.debug("SQLite version {0}".format(sqlite3.sqlite_version))
+        logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
         self.connected = True
         self._fdb = sqlite3.connect(smarthome.base_dir + '/var/db/smarthome.db', check_same_thread=False)
         self._fdb_lock = threading.Lock()
