@@ -222,7 +222,8 @@ class KNX(lib.my_asynchat.AsynChat):
             else:
                 if not item in self.gal[ga]['items']:
                     self.gal[ga]['items'].append(item)
-            self._init_ga[ga] = False
+            read_cache = False
+            self._init_ga[ga] = read_cache
 
         if 'knx_cache' in item.conf:
             ga = item.conf['knx_cache']
@@ -232,7 +233,8 @@ class KNX(lib.my_asynchat.AsynChat):
             else:
                 if not item in self.gal[ga]['items']:
                     self.gal[ga]['items'].append(item)
-            self._init_ga[ga] = True
+            read_cache = True
+            self._init_ga[ga] = read_cache
 
         if 'knx_reply' in item.conf:
             knx_reply = item.conf['knx_reply']
