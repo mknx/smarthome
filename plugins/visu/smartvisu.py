@@ -31,7 +31,7 @@ def parse_tpl(template, replace):
         with open(template, 'r') as f:
             tpl = f.read()
     except IOError, e:
-        logger.error("Could not read template file: {0}".format(template))
+        logger.error("Could not read template file '{0}': {1}".format(template, e))
         return ''
     for s, r in replace:
         tpl = tpl.replace(s, r)
@@ -50,10 +50,11 @@ def room(smarthome, room, tpldir):
         else:
             img = ''
         if isinstance(item.conf['sv_widget'], list):
-            widget = ', '.join(item.conf['sv_widget'])
+            for widget in item.conf['sv_widget']:
+                widgets += parse_tpl(tpldir + '/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.name', str(item)), ("'item", "'" + item.id())])
         else:
             widget = item.conf['sv_widget']
-        widgets += parse_tpl(tpldir + '/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.name', str(item)), ("'item", "'" + item.id())])
+            widgets += parse_tpl(tpldir + '/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.name', str(item)), ("'item", "'" + item.id())])
     return parse_tpl(tpldir + '/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets), ('{{ visu_img }}', rimg)])
 
 
