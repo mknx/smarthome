@@ -315,6 +315,7 @@ class SmartHome():
 
     def stop(self, signum=None, frame=None):
         self.alive = False
+        logger.info("Number of Threads: {0}".format(threading.activeCount()))
         try:
             asyncore.close_all(self.socket_map)
         except:
