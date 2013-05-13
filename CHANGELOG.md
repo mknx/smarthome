@@ -36,6 +36,7 @@ x      * change url
 x      * basic Websocket TLS and client certificate support
 x      * jQuery Mobile 1.3.*
 x      * Visu API change for rrd handling
+      * smartVISU multiple widgets
 
 # 0.8
 
