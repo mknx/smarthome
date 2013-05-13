@@ -177,7 +177,11 @@ class SQL():
     def _diff_ser(self, tuples):
         result = []
         prev = None
-        for times, vals in tuples:
+        for tpl in tuples:
+            if len(tpl) == 2:
+                times, vals = tpl
+            else:
+                continue
             if prev is not None:
                 result.append((int(times.split(',')[0]), prev - float(vals.split(',')[0])))  # fetch only the first entry, ingore the rest
             prev = float(vals.split(',')[0])
@@ -188,7 +192,11 @@ class SQL():
         prev_val = None
         prev_time = None
         ratio *= 1000
-        for times, vals in tuples:
+        for tpl in tuples:
+            if len(tpl) == 2:
+                times, vals = tpl
+            else:
+                continue
             if prev_val is not None:
                 time = int(times.split(',')[0])
                 val = float(vals.split(',')[0])
