@@ -56,8 +56,9 @@ And in your items.conf:
 
 If you call the '2222' sip client or making a call from it, <code>office.fon</code> will be set to True. If you finish the call it will be set to False.
 
-logic.conf
-----------
+
+## logic.conf
+
 You could specify the `ast_userevent` keyword to every logic in your logic.conf.
 <pre>
 ['logic1']
@@ -68,6 +69,7 @@ You could specify the `ast_userevent` keyword to every logic in your logic.conf.
 </pre>
 
 In your asterisk extensions.conf `exten => _X.,n,UserEvent(Call,Source: ${CALLERID(num)},Value: ${CALLERID(name)})` would trigger 'logic1' every time you send this UserEvent.
+You you specify a destination for the logic will be triggered with e.g. `exten => _X.,n,UserEvent(Call,Source: ${CALLERID(num)},Destination: Office,Value: ${CALLERID(name)})`
 
 
 Functions
