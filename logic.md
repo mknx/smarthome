@@ -32,12 +32,20 @@ for item in sh:
 # Available Objects
 Besides the 'sh' object are other important objects.
 
-## sh.trigger()
+
+## sh.scheduler.trigger() / sh.trigger()
+
 This global function could trigger any specified logic by its name. `sh.trigger(name [, by] [, source] [, value] [, dt])`
 The mandatory `name` defines which logic to trigger. With `by` you could specify a name for the calling logic. By default its set to 'Logic'.
 The `source` you could name the reason for triggering and with `value` a variable.
 The `dt` option is for a timezone aware datetime object which specifies the triggering time.
 But watch out, if something else triggers that logic before the given datetime, it will not be triggered at the specified time! E.g. if you have set the `cycle` attribute to 60 seconds and you cant trigger after the next scheduled execution.
+
+
+### sh.scheduler.change()
+
+This method allows to change some runtime options for logics. `sh.scheduler.change('alarmclock', active=False)` disables the logic 'alarmclock'. Besides the `active` flag you could change: `cron` and `cycle`.
+
 
 ## logic
 This object provides access to the current logic object. You could change logic attributes (crontab, cycle, ...) during runtime. They will be lost after restarting SmartHome.py.
