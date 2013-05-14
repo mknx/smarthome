@@ -30,7 +30,7 @@ There are no dwd specific item options.
 
 # Functions
 
-I'm sorry but this plugin return a _lot_ of information. See the Wiki for an item configuration and two logics using this plugin.
+I'm sorry but this plugin return a _lot_ of information. See the Wiki for a item configuration and two logics using this plugin.
 (DWD Logic)[https://github.com/mknx/smarthome/wiki/DWD)
 
 ## current(Location)
@@ -39,6 +39,9 @@ This function returns a dictonary with the values for the availabe information.
 
 ## forecast(Area, Location)
 See the `gds/specials/forecasts/tables/germany/` for the available areas (e.g. Deutschland, Mitte, Nordost ...) and locations.
+
+## pollen(Area)
+See `gds/specials/warnings/FG/s_b31fg.xml` for available areas.
 
 ## uvi(Location)
 See `gds/specials/warnings/FG/sb31fg.xml` for available locations.
