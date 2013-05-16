@@ -13,6 +13,7 @@ changed: 2012-04-12T21:32:39+0200
 * [CLI](cli/): simple telnet interface.
 * [DMX](dmx/): interact with the DMX bus.
 * [DWD](dwd/): fetch weather warnings and forecasts from Deutscher Wetterrdienst (DWD).
+* [FritzBox](fritzbox/): control anything a FritzBox offers with the web interface.
 * [iCal](ical/): read and parse iCal files.
 * [KNX](knx/): interact with the KNX home automation bus.
 * [Luxtronic2](luxtronic2/): get state information and control Luxtronic 2.0 heating controllers.
