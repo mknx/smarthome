@@ -23,6 +23,8 @@ import logging
 import imaplib
 import smtplib
 import email
+from email.mime.text import MIMEText
+from email.header import Header
 
 logger = logging.getLogger('')
 
@@ -136,11 +138,14 @@ class SMTP():
         except Exception, e:
             logger.warning("Could not connect to {0}: {1}".format(self._host, e))
             return
-        date = email.utils.formatdate()
-        msgid = email.utils.make_msgid('SmartHome.py')
-        mail = "From: {0}\r\nTo: {1}\r\nDate: {2}\r\nSubject: {3}\r\nMessage-ID:{4}\r\n\r\n{5}".format(self._from, to, date, sub, msgid, msg)
+        msg = MIMEText(msg.encode('utf-8'), 'plain', 'utf-8')
+        msg['Subject'] = Header(sub, 'utf-8')
+        msg['From'] = self._from
+        msg['Date'] = email.utils.formatdate()
+        msg['To'] = to
+        msg['Message-ID'] = email.utils.make_msgid('SmartHome.py')
         to = [x.strip() for x in to.split(',')]
-        smtp.sendmail(self._from, to, mail)
+        smtp.sendmail(self._from, to, msg.as_string())
         smtp.quit()
 
     def _connect(self):
