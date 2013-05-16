@@ -21,6 +21,7 @@ changed: 2012-04-12T21:32:39+0200
 * [Prowl](prowl/): a plugin for the notification service/app.
 * [RRD](rrd/): build round robin databases.
 * [Russound](russound/): control a Russound audio device with RIO over TCP.
+* [SmartTV](smarttv/): send commands to a SmartTV device.
 * [Snom](snom/): to handle snom VOIP phones.
 * [SolarLog](solarlog/): to retrieve information from SolarLog devices.
 * [Visu](visu/): WebSocket interface for an [jQuery mobile](http://jquerymobile.com/) user interface.
