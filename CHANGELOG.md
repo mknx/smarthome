@@ -41,6 +41,9 @@ x      * jQuery Mobile 1.3.*
 x      * Visu API change for rrd handling
       * smartVISU multiple widgets
 
+## Bug Fixes
+   * KNX Plugin: fix broken knx_cache, with support from Robert@knx-user-forum
+
 # 0.8
 
 ## Contributions from:

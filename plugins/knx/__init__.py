@@ -38,7 +38,8 @@ class KNX(lib.my_asynchat.AsynChat):
         self._sh = smarthome
         self.gal = {}
         self.gar = {}
-        self._init_ga = {}
+        self._init_ga = []
+        self._cache_ga = []
         self.time_ga = time_ga
         self.date_ga = date_ga
         if send_time:
@@ -69,10 +70,12 @@ class KNX(lib.my_asynchat.AsynChat):
         pkt[5] = flag | pkt[5]
         self._send(pkt)
 
-    def groupread(self, ga, cache=False):
+    def cacheread(self, ga):
+        pkt = [0, 116] + self.encode(ga, 'ga') + [0, 0]
+        self._send(pkt)
+
+    def groupread(self, ga):
         pkt = [0, 39] + self.encode(ga, 'ga') + [0, KNXREAD]
-        if cache:
-            pkt[1] = 116
         self._send(pkt)
 
     def _send_time(self):
@@ -91,23 +94,32 @@ class KNX(lib.my_asynchat.AsynChat):
 
     def handle_connect(self):
         self.discard_buffers()
+        enable_cache = [0, 112]
+        self._send(enable_cache)
+        self.parse_data = self.parse_length
+        if self._cache_ga != []:
+            if self.is_connected:
+                logger.debug('knx: read cache')
+                for ga in self._cache_ga:
+                    self.cacheread(ga)
+                self._cache_ga = []
+        logger.debug('knx: enable group monitor')
         init = [0, 38, 0, 0, 0]
         self._send(init)
         self.terminator = 2
-        self.parse_data = self.parse_length
-        if self._init_ga != {}:
+        if self._init_ga != []:
             if self.is_connected:
-                logger.debug('knx: read init/cache ga')
+                logger.debug('knx: init read')
                 for ga in self._init_ga:
-                    self.groupread(ga, self._init_ga[ga])
-                self._init_ga = {}
+                    self.groupread(ga)
+                self._init_ga = []
 
-    #def collect_incoming_data(self, data):
-        #ba = bytearray(data)
-        #print('#  bin   h  d')
-        #for i in ba:
-        #    print("{0:08b} {0:02x} {0:02d}".format(i))
-    #   self.buffer += data
+#   def collect_incoming_data(self, data):
+#       ba = bytearray(data)
+#       print('#  bin   h  d')
+#       for i in ba:
+#           print("{0:08b} {0:02x} {0:02d}".format(i))
+#       self.buffer += data
 
     def found_terminator(self):
         data = self.buffer
@@ -134,7 +146,7 @@ class KNX(lib.my_asynchat.AsynChat):
         # x byte data
         typ = struct.unpack(">H", telegram[:2])[0]
         if (typ != 39 and typ != 116) or len(telegram) < 8:
-            #logger.debug("Ignore telegram.")
+#           logger.debug("Ignore telegram.")
             return
         if (ord(telegram[6]) & 0x03 or (ord(telegram[7]) & 0xC0) == 0xC0):
             logger.debug("Unknown APDU")
@@ -222,8 +234,7 @@ class KNX(lib.my_asynchat.AsynChat):
             else:
                 if not item in self.gal[ga]['items']:
                     self.gal[ga]['items'].append(item)
-            read_cache = False
-            self._init_ga[ga] = read_cache
+            self._init_ga.append(ga)
 
         if 'knx_cache' in item.conf:
             ga = item.conf['knx_cache']
@@ -233,8 +244,7 @@ class KNX(lib.my_asynchat.AsynChat):
             else:
                 if not item in self.gal[ga]['items']:
                     self.gal[ga]['items'].append(item)
-            read_cache = True
-            self._init_ga[ga] = read_cache
+            self._cache_ga.append(ga)
 
         if 'knx_reply' in item.conf:
             knx_reply = item.conf['knx_reply']
