@@ -70,7 +70,7 @@ class KNX(lib.my_asynchat.AsynChat):
         pkt[5] = flag | pkt[5]
         self._send(pkt)
 
-    def cacheread(self, ga):
+    def _cacheread(self, ga):
         pkt = [0, 116] + self.encode(ga, 'ga') + [0, 0]
         self._send(pkt)
 
@@ -101,7 +101,7 @@ class KNX(lib.my_asynchat.AsynChat):
             if self.is_connected:
                 logger.debug('knx: read cache')
                 for ga in self._cache_ga:
-                    self.cacheread(ga)
+                    self._cacheread(ga)
                 self._cache_ga = []
         logger.debug('knx: enable group monitor')
         init = [0, 38, 0, 0, 0]
