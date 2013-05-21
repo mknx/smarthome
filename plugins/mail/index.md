@@ -86,4 +86,4 @@ See the [phonebook logic](https://github.com/mknx/smarthome/wiki/Phonebook) for 
 
 # Functions
 The SMTP object provides one function (sending) and you access without specifing a method name.
-e.g. `sh.mail(to, subject, message)`
+`sh.mail(to, subject, message)` e.g. `sh.mail('admin@smart.home', 'Rain: Help me', u'You could send UTF-8 encoded subjects and messages')`
