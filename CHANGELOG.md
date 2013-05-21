@@ -12,10 +12,10 @@ Roadmap
    * Niko Will
 
 ## New Plugins
-?   * Fritzbox Plugin
+x   * Fritzbox Plugin
 x   * Luxtronic2 Plugin
    * MPD Plugin
-?   * Samsung Smart TV Plugin
+x   * Samsung Smart TV Plugin
 x   * Solarlog Plugin
    * SQLite Plugin
 x   * XBMC Plugin
@@ -25,8 +25,8 @@ x   * XBMC Plugin
    * Item: setting values by crontab and cycle
    * Logic: calling with values by crontab and cycle
    * De-/Activate logics with "sh.scheduler.change('alarmclock', active=False)"
-   * Basic sh methods: sh.return_item ....
-   * Mail Plugin: enable sending UTF-8 mails
+x   * Basic sh methods: sh.return_item ...
+x   * Mail Plugin: enable sending UTF-8 mails
 x   * 1-Wire Plugin: rewritten to support many different sensors.
 x   * Asterisk: adding destination support for Userevents
 x   * CLI plugin: new command 'cl' to clean the memory log of sh.py
