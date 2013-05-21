@@ -29,23 +29,12 @@ for item in sh:
         print child_item
 </pre>
 
-# Available Objects
-Besides the 'sh' object are other important objects.
+# Available Objects/Methods
+
+Besides the 'sh' objects are other important predefined objects.
 
 
-## sh.scheduler.trigger() / sh.trigger()
-
-This global function could trigger any specified logic by its name. `sh.trigger(name [, by] [, source] [, value] [, dt])`
-The mandatory `name` defines which logic to trigger. With `by` you could specify a name for the calling logic. By default its set to 'Logic'.
-The `source` you could name the reason for triggering and with `value` a variable.
-The `dt` option is for a timezone aware datetime object which specifies the triggering time.
-But watch out, if something else triggers that logic before the given datetime, it will not be triggered at the specified time! E.g. if you have set the `cycle` attribute to 60 seconds and you cant trigger after the next scheduled execution.
-
-
-### sh.scheduler.change()
-
-This method allows to change some runtime options for logics. `sh.scheduler.change('alarmclock', active=False)` disables the logic 'alarmclock'. Besides the `active` flag you could change: `cron` and `cycle`.
-
+## sh item methods
 
 ## logic
 This object provides access to the current logic object. You could change logic attributes (crontab, cycle, ...) during runtime. They will be lost after restarting SmartHome.py.
@@ -100,6 +89,43 @@ sunrise_tw = sh.sun.rise(-6) # Would return the start of the twilight.
 Besides the the three functions (pos, set, rise) it provide two more.
 `sh.moon.light(offset)` provides a value from 0 - 100 of the iluminated surface at the current time + offset.
 `sh.moon.phase(offset)` returns the lunar phase as an integer [0-7]. 0 = new moon, 4 = full moon, 7 = waning crescent moon
+
+## sh item methods
+
+### sh.return_item(path)
+Returns an item object for the specified path. e.g. `sh.return_item('first_floor.bath')`
+
+### sh.return_items()
+Returns all item objects. 
+`for item in sh.return_items():
+    logger.info(item.id())`
+
+### sh.match_items(regexpath)
+Returns all items matching a regular expression path.
+`for item in sh.match_items('*.lights'):
+    # selects all items ending with 'lights'
+    logger.info(item.id())`
+
+### sh.find_items(configattribute)
+Returns all items with the specified config attribute 
+`for item in sh.find_items('my_special_attribute'):
+    logger.info(item.id())`
+
+### find_children(parentitem, configattribute):
+Returns all children items with the specified config attribute.
+
+
+## sh.scheduler
+### sh.scheduler.trigger() / sh.trigger()
+
+This global function could trigger any specified logic by its name. `sh.trigger(name [, by] [, source] [, value] [, dt])`
+The mandatory `name` defines which logic to trigger. With `by` you could specify a name for the calling logic. By default its set to 'Logic'.
+The `source` you could name the reason for triggering and with `value` a variable.
+The `dt` option is for a timezone aware datetime object which specifies the triggering time.
+But watch out, if something else triggers that logic before the given datetime, it will not be triggered at the specified time! E.g. if you have set the `cycle` attribute to 60 seconds and you cant trigger after the next scheduled execution.
+
+### sh.scheduler.change()
+This method allows to change some runtime options of logics. `sh.scheduler.change('alarmclock', active=False)` disables the logic 'alarmclock'. Besides the `active` flag you could change: `cron` and `cycle`.
 
 ## sh.tools
 The `sh.tools` object provide some useful functions:
