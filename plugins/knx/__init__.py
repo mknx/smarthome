@@ -300,6 +300,5 @@ class KNX(lib.my_asynchat.AsynChat):
                     self.gar[ga] = {'dpt': dpt, 'item': None, 'logic': logic}
 
     def update_item(self, item, caller=None, source=None):
-        if caller != 'KNX':
-            for ga in item.conf['knx_send']:
-                self.groupwrite(ga, item(), item.conf['knx_dpt'])
+        for ga in item.conf['knx_send']:  # send status update
+            self.groupwrite(ga, item(), item.conf['knx_dpt'])
