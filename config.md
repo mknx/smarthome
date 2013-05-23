@@ -179,6 +179,7 @@ You could nest items to build a tree representing your enviroment.
    * list: a list/array of values. Usefull for some KNX dpts.
    * dict: a python dictionary for generic purposes.
    * foo: this type is for special purposes. No validation is done.
+   * scene: a special keyword to support scenes
  * `value`: this is the initial value of that item.
  * `name`: you could specify a name which would be the str representation of the item.
  * `cache`: if set to On, the value of the item will be cached in a local file (in /usr/local/smarthome/var/cache/).
@@ -187,6 +188,25 @@ You could nest items to build a tree representing your enviroment.
  * `offset` (only for num-types): the offset will be evaluated every time you try to update the value of the item. It could be a simple '+2' or a more complex '*3.0/2+3'.
  * `eval` and `eval_trigger`: see the next section for the description of these attributes.
  * `crontab` and `cycle`: see the logic.conf for possible options to set the value of an item at the specified times / cycles.
+
+#### Scenes
+If you want to use scenes you have to put a config file into the scenes directory for every 'scene item'. The scene config file consists of space separated lines with the <code>ItemValue ItemPath|LogicName Value</code>.
+
+<pre># items/example.conf
+[example]
+    type = scene
+[otheritem]
+    type = num
+</pre>
+
+<pre># scenes/example.conf
+0 otheritem 2
+1 otheritem 20
+1 LogicName run
+2 otheritem 55
+3 LogicName stop
+</pre>
+
 
 #### eval
 The eval attribute is usefull for small evaluations and corrections. The input value is accesible with `value`.
