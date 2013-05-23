@@ -60,6 +60,10 @@ Every change of these two items would trigger (run) the logic.
 The logic will be repeated every specified seconds.
 <pre>cycle = 60</pre>
 
+<pre>cycle = 15 = 42</pre>
+Calls the logic with <code>trigger['value'] # == '42'</code>
+
+
 ### crontab
 A crontab like attribute, with the following options:
 
@@ -74,11 +78,19 @@ Run the logic during the start of SmartHome.py.
  *  wday: single value from 0 to 6 (0 = Monday), or comma separated list, or * (every day)
 
 <pre>crontab = sunrise</pre>
-Runs the logic at every sunrise. Or specify `sunset` to run at sunset. Furthermore you could provide an horizon offset in degrees e.g. <code>crontab = sunset-6</code>.
-For this option you have to specify your latitude/longitued in smarthome.conf.
+Runs the logic at every sunrise. Or specify `sunset` to run at sunset. 
+Furthermore you could provide:
+   * an horizon offset in degrees e.g. <code>crontab = sunset-6</code> For this option you have to specify your latitude/longitued in smarthome.conf.
+   * an offset in minutes specified by a 'm' e.g. <code>crontab = sunset-10m</code>
+   * a boundry for the execution <code>crontab = 17:00<sunset  # sunset, but not bevor 17:00 (locale time)
+   crontab = sunset<20:00  # sunset, but not after 20:00 (locale time)
+   crontab = 17:00<sunset<20:00  # sunset, beetween 17:00 and 20:00</code>
+
+<pre>crontab = 15 * * * = 50</pre>
+Calls the logic with <code>trigger['value'] # == 50</code>
 
 You could combine several options with '\|':
-<pre>crontab = init | sunrise-2 | 0 5 * *</pre>
+<pre>crontab = init = 'start' | sunrise-2 | 0 5 * *</pre>
 
 ### prio
 This attribute provides access the internal scheduling table. By default every logic has the the prio of '3'. You could assign [0-10] as a value.
@@ -174,6 +186,7 @@ You could nest items to build a tree representing your enviroment.
  * `threshold`: specify values to trigger depending logics only if the value transit the threshold. low:high to set a value for the lower and upper threshold, e.g. 21.4:25.0 which triggers the logic if the value exceeds 25.0 or fall below 21.4. Or simply a single value.
  * `offset` (only for num-types): the offset will be evaluated every time you try to update the value of the item. It could be a simple '+2' or a more complex '*3.0/2+3'.
  * `eval` and `eval_trigger`: see the next section for the description of these attributes.
+ * `crontab` and `cycle`: see the logic.conf for possible options to set the value of an item at the specified times / cycles.
 
 #### eval
 The eval attribute is usefull for small evaluations and corrections. The input value is accesible with `value`.
