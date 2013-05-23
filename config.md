@@ -80,13 +80,14 @@ Run the logic during the start of SmartHome.py.
 <pre>crontab = sunrise</pre>
 Runs the logic at every sunrise. Or specify `sunset` to run at sunset. 
 Furthermore you could provide:
+
    * an horizon offset in degrees e.g. <code>crontab = sunset-6</code> For this option you have to specify your latitude/longitued in smarthome.conf.
    * an offset in minutes specified by a 'm' e.g. <code>crontab = sunset-10m</code>
-   * a boundry for the execution <code>crontab = 17:00<sunset  # sunset, but not bevor 17:00 (locale time)
+   * a boundry for the execution <pre>crontab = 17:00<sunset  # sunset, but not bevor 17:00 (locale time)
    crontab = sunset<20:00  # sunset, but not after 20:00 (locale time)
-   crontab = 17:00<sunset<20:00  # sunset, beetween 17:00 and 20:00</code>
+   crontab = 17:00<sunset<20:00  # sunset, beetween 17:00 and 20:00</pre>
 
-<pre>crontab = 15 * * * = 50</pre>
+<code>crontab = 15 * * * = 50</code>
 Calls the logic with <code>trigger['value'] # == 50</code>
 
 You could combine several options with '\|':
