@@ -47,8 +47,22 @@ try:
                 continue
             if typ == 'DS1820':
                 sensor = 'T' + config.get(section, 'resolution')
+                typ = 'num'
+                knx_send = config.get(section, 'eib_ga_temp')
             elif typ == 'DS2438Hum' or typ == 'DS2438Datanab':
                 sensor = 'H'
+                typ = 'num'
+            elif typ == 'DS1990':
+                sensor = 'B'
+                typ = 'bool'
+                knx_send = config.get(section, 'eib_ga_present')
+            elif typ == 'DS2401':
+                sensor = 'B'
+                typ = 'bool'
+                knx_send = config.get(section, 'eib_ga_present')
+            elif typ == 'DS9490':
+                sensor = 'BM'
+                typ = 'bool'
             else:
                 continue
 
@@ -58,8 +72,10 @@ try:
     type = {1}
     ow_addr = {2}
     ow_sensor = {3}
-        '''.format(name, typ, section, sensor))
+    #knx_send = {4}
+    #knx_reply = {4}
+        '''.format(name, typ, section, sensor,knx_send))
 
 except:
-    print "usage: convert.py <input_file> <output_file>"
+    print "usage: owsensors2item.py <input_file> <output_file>"
     sys.exit()
