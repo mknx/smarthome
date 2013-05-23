@@ -22,9 +22,9 @@ x   * XBMC Plugin
 
 ## Features
    * Scene support
-   * Item: setting values by crontab and cycle
-   * Logic: calling with values by crontab and cycle
-   * De-/Activate logics with "sh.scheduler.change('alarmclock', active=False)"
+x   * Item: setting values by crontab and cycle
+x   * Logic: calling with values by crontab and cycle
+x   * De-/Activate logics with "sh.scheduler.change('alarmclock', active=False)"
 x   * Basic sh methods: sh.return_item ...
 x   * Mail Plugin: enable sending UTF-8 mails
 x   * 1-Wire Plugin: rewritten to support many different sensors.
