@@ -67,25 +67,26 @@ Calls the logic with <code>trigger['value'] # == '42'</code>
 ### crontab
 A crontab like attribute, with the following options:
 
-<pre>crontab = init</pre>
+<code>crontab = init</code>
 Run the logic during the start of SmartHome.py.
 
-<pre>crontab = minute hour day wday</pre>
+<code>crontab = minute hour day wday</code>
+
  *  minute: single value from 0 to 59, or comma separated list, or * (every minute)
  *  hour: single value from 0 to 23, or comma separated list, or * (every hour)
  *  day: single value from 0 to 28!, or comma separated list, or * (every day)
     Please note: you cannot use days greater than 28. Sorry
  *  wday: single value from 0 to 6 (0 = Monday), or comma separated list, or * (every day)
 
-<pre>crontab = sunrise</pre>
+<code>crontab = sunrise</code>
 Runs the logic at every sunrise. Or specify `sunset` to run at sunset. 
 Furthermore you could provide:
 
    * an horizon offset in degrees e.g. <code>crontab = sunset-6</code> For this option you have to specify your latitude/longitued in smarthome.conf.
    * an offset in minutes specified by a 'm' e.g. <code>crontab = sunset-10m</code>
    * a boundry for the execution <pre>crontab = 17:00<sunset  # sunset, but not bevor 17:00 (locale time)
-   crontab = sunset<20:00  # sunset, but not after 20:00 (locale time)
-   crontab = 17:00<sunset<20:00  # sunset, beetween 17:00 and 20:00</pre>
+   crontab = sunset&lt;20:00  # sunset, but not after 20:00 (locale time)
+   crontab = 17:00&lt;sunset&lt;20:00  # sunset, beetween 17:00 and 20:00</pre>
 
 <code>crontab = 15 * * * = 50</code>
 Calls the logic with <code>trigger['value'] # == 50</code>
