@@ -137,7 +137,7 @@ The attribute keywords are:
 
    * sv_page: to generate a page for this item. You have to specify `sv_page = room` to activate it. Every widget beneath this item will be included in the page.
    * sv_img: with this attribute you could assign an icon or picture for a page or widget.
-   * sv_widget: This has to be a double quoted encapsulated string with the smartVISU widget. See the example below:
+   * sv_widget: This has to be a double quoted encapsulated string with the smartVISU widget. You could define multiple widgets by separating them by a comma. See the example below:
 
 <pre>
 [second]
