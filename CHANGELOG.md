@@ -15,7 +15,7 @@ In Developement
    * Niko Will
 
 ## New Plugins
-x   * Fritzbox Plugin
+xr   * Fritzbox Plugin
 x   * Luxtronic2 Plugin
    * MPD Plugin
 x   * Samsung Smart TV Plugin
