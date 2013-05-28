@@ -1,7 +1,10 @@
-Roadmap
-=======
+In Developement
+===============
    * Denon Plugin
    * Hue Plugin
+   * eBus Plugin
+   * Squeezebox Plugin
+   * DLMS Plugin
 
 
 # 0.9
@@ -21,7 +24,7 @@ x   * Solarlog Plugin
 x   * XBMC Plugin
 
 ## Features
-   * Scene support
+x   * Scene support
 x   * Item: setting values by crontab and cycle
 x   * Logic: calling with values by crontab and cycle
 x   * De-/Activate logics with "sh.scheduler.change('alarmclock', active=False)"
@@ -39,7 +42,7 @@ x      * change url
 x      * basic Websocket TLS and client certificate support
 x      * jQuery Mobile 1.3.*
 x      * Visu API change for rrd handling
-      * smartVISU multiple widgets
+x      * smartVISU support multiple widgets with one item
 
 ## Bug Fixes
    * KNX Plugin: fix broken knx_cache, with support from Robert@knx-user-forum
