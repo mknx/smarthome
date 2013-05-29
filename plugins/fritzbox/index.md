@@ -9,7 +9,7 @@ changed: 2013-05-15T20:58:06+0200
 
 # Requirements
 This plugin has no requirements or dependencies.
-At the moment only firmware versions before 5.50 are supported.
+At the moment only fritzbox firmware versions before 5.50 are supported.
 
 # Configuration
 
@@ -23,18 +23,20 @@ At the moment only firmware versions before 5.50 are supported.
 </pre>
 
 ### Attributes
-  * `host`: specifies the hostname or ip address of your FritzBox.
-  * `password`: the password for the web interface.
+  * `host`: specifies the hostname or ip address of the FritzBox.
+  * `password`: the password of the FritzBox web interface.
 
 ## items.conf
 
 ### fritzbox
-With this attribute you can define supported functions of the plugin which are executed when the item is set to some value which can be interpreted as `true`.
-  * `call <<from>> <<to>>`: with this, every time the item is set to `true` the FritzBox will initiate a call from the number defined with `from` to a number defined with `to`.
+This attribute defines supported functions of the plugin. The function is executed, when the item is set to a bool `true` value.
+Functions supported in the plugin:
+ * `call <<from>> <<to>>`: The FritzBox will initiate a call from the number (outgoing line) defined with `from` to a number defined with `to`.
 
 ### fritzbox:<<telcfg>>
-This is a special kind of attribute. Each attribute which starts with `fritzbox:` is taken to create a dictionary, which is sent to the FritzBox whenever the corresponding sh.py item can be interpreted as `true`. Here you can use every command which is available for the telcfg interface (just replace the `telcfg:` with `fritzbox:`). A list of known commands is described here: http://www.wehavemorefun.de/fritzbox/Telcfg
-Please have a look at the following example which may explain this attribute a bit better:
+This attributes represents direct access to the FritzBox webinterface. Each attribute which starts with `fritzbox:` is taken to create a dictionary, which is sent to the FritzBox. Here you can use every command which is available for the telcfg interface (just replace the `telcfg:` with `fritzbox:`). A list of known commands is described here: http://www.wehavemorefun.de/fritzbox/Telcfg
+
+Example item:
 
 <pre>
 [fb]
