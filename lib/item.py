@@ -182,7 +182,7 @@ class Item():
         # dummy for garbage collection
         logger.warning("Deleting Item: {0}".format(self._path))
 
-    def __call__(self, value=None, caller='Logic', source=None):
+    def __call__(self, value=None, caller='Logic', source=None, dest=None):
         if value is None or self._type is None:
             return self._value
         try:
@@ -194,16 +194,16 @@ class Item():
                 pass
             return
         if self._eval:
-            args = {'value': value, 'caller': caller, 'source': source}
-            self._sh.trigger(name=self._path + '-eval', obj=self._run_eval, value=args, by=caller, source=source)
+            args = {'value': value, 'caller': caller, 'source': source, 'dest': dest}
+            self._sh.trigger(name=self._path + '-eval', obj=self._run_eval, value=args, by=caller, source=source, dest=dest)
         else:
-            self._update(value, caller, source)
+            self._update(value, caller, source, dest)
 
-    def _update(self, value=None, caller='Logic', source=None):
+    def _update(self, value=None, caller='Logic', source=None, dest=None):
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3}  {4}".format(self._path, value, self._type, caller, source))
+            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
             return
         self._lock.acquire()
         if value != self._value or self._enforce_updates:  # value change
@@ -220,7 +220,7 @@ class Item():
             self._lock.release()
             for update_plugin in self._methods_to_trigger:
                 try:
-                    update_plugin(self, caller, source)
+                    update_plugin(self, caller, source, dest)
                 except Exception, e:
                     logger.error("Problem running {0}: {1}".format(update_plugin, e))
             if self._threshold and self._logics_to_trigger:
@@ -234,7 +234,7 @@ class Item():
                 self._trigger_logics()
             for item in self._items_to_trigger:
                 args = {'value': value, 'source': self._path}
-                self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source)
+                self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source, dest=dest)
             if self._cache and not self.__fade:
                 self._db_update(value)
         else:

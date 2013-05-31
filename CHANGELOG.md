@@ -24,6 +24,7 @@ x   * Solarlog Plugin
 x   * XBMC Plugin
 
 ## Features
+   * trigger destination => dest
 x   * Scene support
 x   * Item: setting values by crontab and cycle
 x   * Logic: calling with values by crontab and cycle
