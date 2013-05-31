@@ -100,7 +100,7 @@ class Russound(lib.my_asynchat.AsynChat):
         if val > maxval: return maxval
         return val        
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'Russound':
             path = item.conf['rus_path']
             p = self.params[path]

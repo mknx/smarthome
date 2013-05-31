@@ -111,7 +111,7 @@ class RRD():
     def parse_logic(self, logic):
         pass
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         pass
 
     def _average(self, item, timeframe):

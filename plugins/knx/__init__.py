@@ -181,7 +181,7 @@ class KNX(lib.my_asynchat.AsynChat):
                 #    out += " {0:x}".format(i)
                 #print "out:{0}".format(out)
                 for item in self.gal[dst]['items']:
-                    item(val, 'KNX', src)
+                    item(val, 'KNX', src, dst)
                 for logic in self.gal[dst]['logics']:
                     logic.trigger('KNX', src, val, dst)
             else:
@@ -299,6 +299,7 @@ class KNX(lib.my_asynchat.AsynChat):
                 else:
                     self.gar[ga] = {'dpt': dpt, 'item': None, 'logic': logic}
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         for ga in item.conf['knx_send']:  # send status update
-            self.groupwrite(ga, item(), item.conf['knx_dpt'])
+            if ga != dest:
+                self.groupwrite(ga, item(), item.conf['knx_dpt'])

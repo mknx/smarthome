@@ -442,5 +442,5 @@ class OneWire(OwBase):
             item._ow_path = table[addr][key]
             return self.update_item
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         self.write(item._ow_path['path'], self._flip[item()])

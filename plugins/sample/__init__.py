@@ -49,7 +49,7 @@ class Plugin():
             # self.function(logic['name'])
             pass
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'plugin':
             logger.info("update item: {0}".format(item.id()))
 

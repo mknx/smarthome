@@ -192,7 +192,7 @@ class mpd(lib.my_asynchat.AsynChat):
         else:
             status.update({'time': 0, 'total': 0, 'percent': 0})
         if status['state'] != 'stop':
-            status.update(self._send('currentsong'))
+            status.update(self._send('currentsong'))  # append current song information to status
         for attr in self._items:
             if attr in status:
                 try:

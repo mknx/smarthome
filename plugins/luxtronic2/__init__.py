@@ -318,7 +318,7 @@ class Luxtronic2(LuxBase):
             self._parameter[p] = item
             return self.update_item
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'Luxtronic2':
            self.set_param(item.conf['lux2_p'], item()) 
 

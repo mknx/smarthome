@@ -49,7 +49,7 @@ class iCal():
     def parse_logic(self, logic):
         pass
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         pass
 
     def __call__(self, ics, delta=1, offset=0):

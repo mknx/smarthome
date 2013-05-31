@@ -76,7 +76,7 @@ class SQL():
         # self.query("alter table history add column power INTEGER;")
         smarthome.scheduler.add('sqlite', self._pack, cron='2 3 * *', prio=5)
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         if not self.connected:
             return
         now = self.timestamp(self._sh.now())

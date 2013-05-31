@@ -159,7 +159,7 @@ class WebSocket(asyncore.dispatcher):
         if hasattr(logic, 'visu'):
             self.visu_logics[logic.name] = logic
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         data = {'cmd': 'item', 'items': [[item.id(), item()]]}
         for client in self.clients:
             client.update(item.id(), data, source)

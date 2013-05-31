@@ -117,7 +117,7 @@ class IMAP():
         if 'mail' in logic.conf:
             self._mail = logic
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         pass
 
 
@@ -168,5 +168,5 @@ class SMTP():
     def parse_logic(self, logic):
         pass
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         pass
