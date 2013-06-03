@@ -31,9 +31,10 @@ This directory contains one or more item configuration files. The filename does 
 ## logics
 This directory contains your logic files. Simple or sophisitcated python scripts. You could address your smarthome item by `sh.item.path`.
 If you want to read an item call `sh.item.path()` or to set an item `sh.item.path(Value)`.
+
 <pre>
 # logics/sunset.py
 if sh.global.sun():  # if sh.global.sun() == True:
     sh.gloabl.sun(False)  # set it to False
-<pre>
+</pre>
 
