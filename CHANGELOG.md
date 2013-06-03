@@ -24,7 +24,7 @@ x   * Solarlog Plugin
 x   * XBMC Plugin
 
 ## Features
-   * trigger destination => dest
+x   * trigger destination => dest
 x   * Scene support
 x   * Item: setting values by crontab and cycle
 x   * Logic: calling with values by crontab and cycle
@@ -38,6 +38,7 @@ x   * DWD Plugin: adding support for Pollen forecast
 x   * KNX Plugin:
 x      * change encoding of dpt10 to use a datetime object and send the isoweekday
 x      * DPT 17 support
+x      * adding support to log all packets (busmonitor)
 x   * Visu Plugin:
 x      * change url
 x      * basic Websocket TLS and client certificate support

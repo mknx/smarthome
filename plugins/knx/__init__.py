@@ -33,7 +33,7 @@ logger = logging.getLogger('')
 
 class KNX(lib.my_asynchat.AsynChat):
 
-    def __init__(self, smarthome, time_ga=None, date_ga=None, send_time=False, host='127.0.0.1', port=6720):
+    def __init__(self, smarthome, time_ga=None, date_ga=None, send_time=False, busmonitor=False, host='127.0.0.1', port=6720):
         lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
         self._sh = smarthome
         self.gal = {}
@@ -42,6 +42,10 @@ class KNX(lib.my_asynchat.AsynChat):
         self._cache_ga = []
         self.time_ga = time_ga
         self.date_ga = date_ga
+        if smarthome.string2bool(busmonitor):
+            self._busmonitor = logger.info
+        else:
+            self._busmonitor = logger.debug
         if send_time:
             self._sh.scheduler.add('knx.time', self._send_time, prio=5, cycle=int(send_time))
         smarthome.monitor_connection(self)
@@ -169,12 +173,12 @@ class KNX(lib.my_asynchat.AsynChat):
             payload = telegram[8:]
         if flg == 'write' or flg == 'response':
             if dst not in self.gal:  # update item/logic
-                logger.debug("{0} set {1} to {2}".format(src, dst, self.decode(payload, 'hex')))
+                self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, self.decode(payload, 'hex')))
                 return
             dpt = self.gal[dst]['dpt']
             val = self.decode(payload, dpt)
             if val is not None:
-                logger.debug("{0} set {1} to {2}".format(src, dst, val))
+                self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, val))
                 #print "in:  {0}".format(self.decode(payload, 'hex'))
                 #out = ''
                 #for i in self.encode(val, dpt):
