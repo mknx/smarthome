@@ -30,11 +30,14 @@ rm -f $JS.tmp.js
 
 git add bin/smarthome.py $JS.js $JS.min.js
 git commit -m "set version to $TAG"
+
 echo
 
 if [ "$1" = '-r' ]; then
     git tag -a -m "set version to $TAG" "$TAG"
     git push origin tag "$TAG"
+    git checkout stable
+    git reset --hard $TAG
     git archive master --prefix='/usr/local/smarthome/' | gzip > release/`git describe master`.tgz
     git archive master --prefix='/usr/local/smarthome/' --format=zip > release/`git describe master`.zip
     echo "Want to remove a tag?"
