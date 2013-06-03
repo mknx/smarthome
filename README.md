@@ -1,7 +1,7 @@
 
 See http://mknx.github.com/smarthome/ for more information and documentation.
 
-# Directory Overview
+# Directory and File Overview
 ## etc
 ### etc/smarthome.conf
 This is a global configuration file where you could specify the location and timezone of your smart home.
