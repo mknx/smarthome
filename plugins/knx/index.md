@@ -30,10 +30,13 @@ plugin.conf
    send_time = 600 # update date/time every 600 seconds, default none
    time_ga = 1/1/1 # default none
    date_ga = 1/1/2 # default none
+#   busmonitor = False
 </pre>
 
 This plugins is looking by default for the eibd on 127.0.0.1 port 6720. You could change this in your plugin.conf.
 If you specify a `send_time` intervall and a `time_ga` and/or `date_ga` the plugin sends the time/date every cycle seconds on the bus.
+
+If you set `busmonitor` to True, every KNX packet will be logged.
 
 items.conf
 --------------
