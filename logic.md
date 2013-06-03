@@ -52,7 +52,7 @@ It is equal to `sh.trigger()` except that you cannot specify name, because it wi
 ## trigger
 `trigger` is a runtime enviroment for the logic which provides some information why the logic is triggerd.
 
-It is a dictonary which could be accessed with: `trigger['by']`, `trigger['source']` and `trigger['value']`.
+It is a dictonary which could be accessed with: `trigger['by']`, `trigger['source']`, `trigger['dest']` and `trigger['value']`.
 
 ## logger and sh.log
 You could use this object to generate log messages. It provides five different log levels: debug, info, warning, error, critical.
