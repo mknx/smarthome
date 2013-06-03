@@ -43,7 +43,7 @@ Create your own branch to start developing. e.g. 'mybranch'
 git branch mybranch master
 # switch to mybranch
 git checkout mybranch
-<pre>
+</pre>
 
 If you want to push your branch to github: `git push origin mybranch`
 
