@@ -43,7 +43,7 @@ FIND_DPT = NS_URL + 'DatapointType'
 FIND_DPST = NS_URL + 'DatapointSubtype'
 
 def processBuildingPart(root, part, depth, f, dpts):
-	print "processing " + part.tag + " " + part.attrib['Name'] + " (" + part.attrib['Type'] + ")"
+	print(u"processing {0} {1} ({2})".format(part.tag, part.attrib['Name'], part.attrib['Type']))
 
 	if part.attrib['Type'] != "DistributionBoard":
 		write_item(part.attrib['Name'], depth, f)
@@ -57,10 +57,10 @@ def processBuildingPart(root, part, depth, f, dpts):
 	f.write('\n')
 
 def processDevice(root, ref, depth, f, dpts):
-	print "process device " + ref
+	print(u"process device {0}".format(ref))
 	device = root.findall('.//' + FIND_DEVICE + "[@Id='" + ref + "']")[0]
 	if 'Description' in device.attrib.keys():
-		print device.attrib['Description']
+		print(u"".format(device.attrib['Description']))
 
 	for comobj in device.findall('.//' + FIND_COMREF):
 		if 'DatapointType' not in comobj.attrib.keys():
@@ -76,10 +76,10 @@ def processDevice(root, ref, depth, f, dpts):
 			for send in connector.findall('.//' + FIND_SEND):
 				if 'GroupAddressRefId' in send.keys():
 					ga_ref = send.attrib['GroupAddressRefId']
-					print "process ga " + ga_ref
+					print(u"process ga {0}".format(ga_ref))
 					ga = root.findall('.//' + FIND_GA + "[@Id='" + ga_ref + "']")[0]
 					ga_str = ga2str(int(ga.attrib['Address']))
-					print "Send GA: " + ga_str + " (" + ga.attrib['Name'] + ")"
+					print(u"Send GA: {0} ({1})".format(ga_str, ga.attrib['Name']))
 
 					if len(ga_str) > 0:
 						write_item(ga.attrib['Name'], depth, f)
@@ -90,10 +90,10 @@ def processDevice(root, ref, depth, f, dpts):
 			for receive in connector.findall('.//' + FIND_RECEIVE):
 				if 'GroupAddressRefId' in receive.keys():
 					ga_ref = receive.attrib['GroupAddressRefId']
-					print "process ga " + ga_ref
+					print(u"process ga {0}".format(ga_ref))
 					ga = root.findall('.//' + FIND_GA + "[@Id='" + ga_ref + "']")[0]
 					ga_str = ga2str(int(ga.attrib['Address']))
-					print "Receive GA: " + ga_str + " (" + ga.attrib['Name'] + ")"
+					print(u"Receive GA: {0} ({1})".format(ga_str, ga.attrib['Name']))
 
 					if len(ga_str) > 0:
 						write_item(ga.attrib['Name'], depth, f)
