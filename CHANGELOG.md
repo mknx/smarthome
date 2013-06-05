@@ -17,7 +17,7 @@ In Developement
 ## New Plugins
 xr   * Fritzbox Plugin
 x   * Luxtronic2 Plugin
-   * MPD Plugin
+x   * MPD Plugin
 x   * Samsung Smart TV Plugin
 x   * Solarlog Plugin
    * SQLite Plugin
