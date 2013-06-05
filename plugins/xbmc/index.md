@@ -7,7 +7,7 @@ layout: default
 
 Requirements
 ============
-You only need one or more XMBC (12 a.k.a. Frodo or above) with
+You only need one or more XBMC (12 a.k.a. Frodo or above) with
 System-Settings-Service "Allow programs on other systems to control XBMC" enabled 
 
 Configuration
