@@ -96,8 +96,8 @@ class SQL():
 
     def parse_item(self, item):
         if 'sqlite' in item.conf or 'history' in item.conf:  # XXX legacy history option remove sometime
-            item.db_series = functools.partial(self._series, item=item.id())
-            item.db_single = functools.partial(self._single, item=item.id())
+            item.series = functools.partial(self._series, item=item.id())
+            item.db = functools.partial(self._single, item=item.id())
             return self.update_item
         else:
             return None

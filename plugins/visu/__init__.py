@@ -239,7 +239,7 @@ class WebSocketHandler(asynchat.async_chat):
             series = self._update_series[sid]
             if series['update'] < now:
                 try:
-                    reply = self.items[series['params']['item']].db_series(**series['params'])
+                    reply = self.items[series['params']['item']].series(**series['params'])
                 except Exception, e:
                     logger.warning("Problem updating series for {0}: {1}".format(series['params'], e))
                     continue
@@ -295,9 +295,9 @@ class WebSocketHandler(asynchat.async_chat):
             else:
                 end = 'now'
             if path in self.items:
-                if hasattr(self.items[path], 'db_series'):
+                if hasattr(self.items[path], 'series'):
                     try:
-                        reply = self.items[path].db_series(series, start, end)
+                        reply = self.items[path].series(series, start, end)
                     except Exception, e:
                         logger.warning("Problem fetching series for {0}: {1}".format(path, e))
                     if 'update' in reply:
