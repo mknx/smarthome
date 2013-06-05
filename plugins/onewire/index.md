@@ -2,8 +2,6 @@
 title: 1-Wire Plugin
 layout: default
 summary: Plugin to monitor sensor information on a 1-Wire bus
-created: 2011-04-08T20:59:34+0200
-changed: 2011-04-08T20:59:34+0200
 ---
 
 Requirements
@@ -14,6 +12,8 @@ Hint: to run the owserver as non root. You have to add a udev rule for the usb b
 <pre># /etc/udev/rules.d/80-smarthome.rules
 SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTR{idVendor}=="04fa", ATTR{idProduct}=="2490",GROUP="smarthome",MODE="0660"
 </pre>
+
+Hint2: You can also use a running owserver on another host.
 
 Configuration
 =============
@@ -35,47 +35,96 @@ Advanced options in plugin.conf. Please be careful.
 * 'cycle' = timeperiod between two sensor request. Default 300 seconds.
 * 'io_wait' = timeperiod between two requests of 1-wire I/O chip. Default 5 seconds.
 * 'button_wait' = timeperiod between two requests of ibutton-busmaster. Default 0.5 seconds.
+ 
+
 
 items.conf
 --------------
 
-### ow_id
-If you specify an 'ow_id' attribute to an item the 1-Wire plugin will monitor this sensor.
+### name
+This is a name for the defined sensor information. 
+ 
+### type
+This is the type of the sensor data. Currently 'num' and 'bool' are supported.
+
+### ow_addr
+'ow_addr' defines the 1wire adress of the sensor (formerly 'ow_id'). If 'ow_addr' is specified, the 1wire plugin monitors this sensor.
 
 ### ow_sensor
-'ow_sensor' defines which sensor information do you want to read from the sensor. The most common is 'temperature' and 'humidity'.
+'ow_sensor' defines the particular data of the sensor. Currently are supported:
 
-#### ibutton and ibutton_master
-The 'ibutton' and the 'ibutton_master' are special keywords for 'ow_sensor'.
-If you specify an 'ibutton_master' the 1-Wire plugin will monitor this bus with a high frequency (2/s) for changes.
-They 'ibutton' sensor returns 'True' if the ibutton is present or 'False' if not.
+* 'T' - temperature - could be T, T9, T10, T11, T12 (depends on accuracy, but more accuracy needs more time!)
+* 'H' - humidity
+* 'L' - light intensity (lux)
+* 'V' - voltage
+* 'Ix' - input - could be IA or IB (depends on the choosen input)
+* 'Ox' - output - could be OA or OB (depends on the choosen output)
+* 'VDD' - voltage of sensor powering (most DS2438 based sensors)
 
-<pre>['office']
-    [['temperature']]
+for ibuttons:
+
+* 'BM' - ibutton master
+* 'B' - ibutton
+
+If an ibutton master ('BM') is specified, the 1-wire plugin will monitor this bus with a higher frequency for changes.
+The ibutton sensor ('B') returns 'true', if the ibutton is present or 'false', if not.
+If I/O sensors (2406) are specified they will be monitored within a shorter timeframe.
+
+Currently the following 1wire devices are tested by users:
+
+* DS9490 busmaster
+* DS18B20 (temperature)
+* Elabnet BMS v1.3  (MS-THS-13)
+* Elabnet BMS v2.11 (MS-THS-21) (incl. additional lightsensor modul) 
+* Elabnet AMS v2.11 (MS-THS-21) (additional '+ DS2406 dual I/O + DS2438 0-10V' are untested)
+* DATANAB DS2438 (rugged temp/hum)
+* D2PC (dual I/O DS2406)
+
+<pre>
+[test-1wire]
+    [[bm-ibutton]]
+        name = ibutton busmaster to identify ibutton buses
+        type = bool
+        ow_addr = 81.75172D000000
+        ow_sensor = BM
+    [[ib-guest]]
+        name = ibutton guest
+        type = bool
+        ow_addr = 01.787D58130000
+        ow_sensor = B
+    [[temp_outside]]
+        name = temperature outside
         type = num
-        ow_id = 28.BBBBB20000
-        ow_sensor = temperature
-
-    [['humidity']]
+        ow_addr = 28.8DEAAA030000
+        # could be T, T9, T10, T11, T12
+        ow_sensor = T
+    [[lux_outside]]
+        name = lux / lightintensity outside
         type = num
-        ow_id = 26.CCCCCC00000
-        ow_sensor = humidity
-
-['home']
-    [['key_hanger']]
+        ow_addr = 26.8DD76B010000
+        ow_sensor = L
+    [[humidity_outside]]
+        name = humidity outside
+        type = num
+        ow_addr = 26.8DD76B010000
+        ow_sensor = H
+    [[input_water_leak]]
+        name = input water leak detection
         type = bool
-        ow_id = 81.FFFFFFF0000
-        ow_sensor = ibutton_master # busmaster for the key hanger
-
-['residents']
-    [['John']]
+        ow_addr = 3A.C6CC07000000
+        # could be IA, IB
+        ow_sensor = IA
+    [[output_led1]]
+        name = output led1 keys
         type = bool
-        ow_id = 01.AAAAAA30000
-        ow_sensor = ibutton
-    [['Jane']]
-        type = bool
-        ow_id = 01.BBBBA30000
-        ow_sensor = ibutton
+        ow_addr = 3A.C6CC07000000
+        # could be OA, OB
+        ow_sensor = OB
+    [[voltage_sensor]]
+        name = voltage of the sensor input (0-10V)
+        type = num
+        ow_addr = 26.A9D76B010000
+        ow_sensor = V
 </pre>
 
 Functions
