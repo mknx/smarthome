@@ -18,6 +18,7 @@ changed: 2012-04-12T21:32:39+0200
 * [KNX](knx/): interact with the KNX home automation bus.
 * [Luxtronic2](luxtronic2/): get state information and control Luxtronic 2.0 heating controllers.
 * [Mail](mail/): sending (SMTP) and receiving (IMAP) mail.
+* [MPD](mpd/): to control Music Player Daemons.
 * [Network](network/): to receive HTTP/TCP/UDP messages and send UDP messages.
 * [Prowl](prowl/): a plugin for the notification service/app.
 * [RRD](rrd/): build round robin databases.
@@ -25,5 +26,7 @@ changed: 2012-04-12T21:32:39+0200
 * [SmartTV](smarttv/): send commands to a SmartTV device.
 * [Snom](snom/): to handle snom VOIP phones.
 * [SolarLog](solarlog/): to retrieve information from SolarLog devices.
+* [SQLite](sqlite/): to store the item history in a SQLite database.
 * [Visu](visu/): WebSocket interface for an [jQuery mobile](http://jquerymobile.com/) user interface.
+* [XBMC](xbmc/): to control and monitor your XBMC.
 
