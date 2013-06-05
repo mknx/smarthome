@@ -93,16 +93,16 @@ class mpd(lib.my_asynchat.AsynChat):
             else:
                 child.add_trigger_method(self._send_command)
         for child in self._sh.find_children(item, 'mpd_url'):
-            child.add_trigger_method(self._play_url)
+            child.add_trigger_method(self._play_file)
         # adding item methods
         item.command = self.command
-        item.play_url = self.play_url
-        item.add_url = self.add_url
+        item.play_file = self.play_file
+        item.add_file = self.add_file
 
     def command(self, command, wait=True):
         return self._send(command, wait)
 
-    def play_url(self, url):
+    def play_file(self, url):
         play = self._parse_url(url)
         if play == []:
             return
@@ -111,17 +111,17 @@ class mpd(lib.my_asynchat.AsynChat):
             self._send("add {0}".format(url), False)
         self._send('play', False)
 
-    def add_url(self, url):
+    def add_file(self, url):
         play = self._parse_url(url)
         if play != []:
             self._send("add {0}".format(play[0]), False)
 
-    def _play_url(self, item, caller=None, source=None):
+    def _play_file(self, item, caller=None, source=None):
         if caller != 'MPD':
-            if item.conf['mpd_url'] == 'value':
-                self.play_url(item())
+            if item.conf['mpd_file'] == 'value':
+                self.play_file(item())
             else:
-                self.play_url(item.conf['mpd_url'])
+                self.play_file(item.conf['mpd_file'])
 
     def _parse_url(self, url):
         name, sep, ext = url.rpartition('.')
