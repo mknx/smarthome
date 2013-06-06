@@ -113,8 +113,8 @@ def write_dpt(dpt, depth, f):
 	else:
 		write_param("type=num", depth, f)
 		write_param("visu=slider", depth, f)
-        write_param("knx_dpt=5001", depth, f)
-        return
+		write_param("knx_dpt=5001", depth, f)
+		return
 
 	write_param("knx_dpt=" + str(dpt), depth, f)
 
