@@ -11,6 +11,42 @@ SmartHome.py is a modular framework to automate your (smart) home.
 
 See the [install](install) and [config](config) section to start your SmartHome.
 
+
+## 2013-06-06: Beta Release 0.9
+with code contributions and help from: Alexander Rieger, Matthias Lemke, Niko Will!
+
+### New Plugins
+   * [Fritzbox Plugin](plugins/fritzbox): control anything a FritzBox offers with the web interface.
+   * [Luxtronic2 Plugin](plugins/luxtronic2): get state information and control Luxtronic 2.0 heating controllers.
+   * [MPD Plugin](plugins/mpd): to control Music Player Daemons.
+   * [Samsung Smart TV Plugin](plugins/smarttv): send commands to a SmartTV device.
+   * [Solarlog Plugin](plugins/solarlog): to retrieve information from SolarLog devices.
+   * [SQLite Plugin](plugins/sqlite): to store the item history in a SQLite database.
+   * [XBMC Plugin](plugins/sqlite): to control and monitor your XBMC.
+
+### Features
+   * [Item](config): setting values with the crontab and cycle attribute
+   * [Logic](logic): Logic: calling with values by crontab and cycle
+   * [Logic](logic): trigger supports destinations in `trigger['dest']`
+   * [Logic](logic): de-/activate logics. e.g. `sh.scheduler.change('alarmclock', active=False)`
+   * [Logic](logic): new basic methods: sh.return_item, sh.return_items, sh.match_items, sh.find_items, find_children
+   * [Scene support](config): to set multiple item values at the same time
+   * [1-Wire Plugin](plugins/onewire): rewritten to support many different sensors.
+   * [Asterisk](plugins/asterisk): adding destination support for Userevents
+   * [CLI plugin](plugins/cli): new command 'cl' to clean the memory log of sh.py
+   * [DWD Plugin](plugins/dwd): adding support for Pollen forecast
+   * [KNX Plugin](plugins/knx):
+      * change encoding of dpt10 to use a datetime object and send the isoweekday
+      * DPT 17 support
+      * adding support to log all packets (busmonitor)
+   * [Mail Plugin](plugins/mail): enable sending UTF-8 mails
+   * [Visu Plugin](plugins/visu):
+      * change url
+      * smartVISU support multiple widgets with one item
+
+### Bug Fixes
+   * KNX Plugin: fix broken knx_cache, with support from Robert@knx-user-forum
+
 ## 2013-02-11: Big Picture SmartHome.py with KNX, 1-Wire and smartVISU
 
 [Martin](http://knx-user-forum.de/members/sipple.html) has created an [overview](/smarthome/img/big_picture.pdf) how SmartHome.py interacts with KNX, 1-Wire and the smartVISU.
