@@ -38,6 +38,9 @@ if [ "$1" = '-r' ]; then
     git push origin tag "$TAG"
     git checkout stable
     git reset --hard $TAG
+    git add bin/ lib/ plugins/
+    git commit -m "set stable to $TAG"
+    git checkout master
     git archive master --prefix='/usr/local/smarthome/' | gzip > release/`git describe master`.tgz
     git archive master --prefix='/usr/local/smarthome/' --format=zip > release/`git describe master`.zip
     echo "Want to remove a tag?"
