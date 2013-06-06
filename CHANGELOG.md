@@ -15,36 +15,36 @@ In Developement
    * Niko Will
 
 ## New Plugins
-xr   * Fritzbox Plugin
-x   * Luxtronic2 Plugin
-x   * MPD Plugin
-x   * Samsung Smart TV Plugin
-x   * Solarlog Plugin
+r   * Fritzbox Plugin
+   * Luxtronic2 Plugin
+   * MPD Plugin
+   * Samsung Smart TV Plugin
+   * Solarlog Plugin
    * SQLite Plugin
-x   * XBMC Plugin
+   * XBMC Plugin
 
 ## Features
-x   * trigger destination => dest
-x   * Scene support
-x   * Item: setting values by crontab and cycle
-x   * Logic: calling with values by crontab and cycle
-x   * De-/Activate logics with "sh.scheduler.change('alarmclock', active=False)"
-x   * Basic sh methods: sh.return_item ...
-x   * Mail Plugin: enable sending UTF-8 mails
-x   * 1-Wire Plugin: rewritten to support many different sensors.
-x   * Asterisk: adding destination support for Userevents
-x   * CLI plugin: new command 'cl' to clean the memory log of sh.py
-x   * DWD Plugin: adding support for Pollen forecast
-x   * KNX Plugin:
-x      * change encoding of dpt10 to use a datetime object and send the isoweekday
-x      * DPT 17 support
-x      * adding support to log all packets (busmonitor)
-x   * Visu Plugin:
-x      * change url
-x      * basic Websocket TLS and client certificate support
-x      * jQuery Mobile 1.3.*
-x      * Visu API change for rrd handling
-x      * smartVISU support multiple widgets with one item
+   * trigger destination => dest
+   * Scene support
+   * Item: setting values by crontab and cycle
+   * Logic: calling with values by crontab and cycle
+   * De-/Activate logics with "sh.scheduler.change('alarmclock', active=False)"
+   * Basic sh methods: sh.return_item ...
+   * Mail Plugin: enable sending UTF-8 mails
+   * 1-Wire Plugin: rewritten to support many different sensors.
+   * Asterisk: adding destination support for Userevents
+   * CLI plugin: new command 'cl' to clean the memory log of sh.py
+   * DWD Plugin: adding support for Pollen forecast
+   * KNX Plugin:
+      * change encoding of dpt10 to use a datetime object and send the isoweekday
+      * DPT 17 support
+      * adding support to log all packets (busmonitor)
+   * Visu Plugin:
+      * change url
+      * basic Websocket TLS and client certificate support
+      * jQuery Mobile 1.3.*
+      * Visu API change for rrd handling
+      * smartVISU support multiple widgets with one item
 
 ## Bug Fixes
    * KNX Plugin: fix broken knx_cache, with support from Robert@knx-user-forum
