@@ -51,7 +51,7 @@ import lib.orb
 import lib.log
 import lib.scene
 
-VERSION = '0.9-Dev'
+VERSION = '0.9-Beta'
 try:
     os.chdir(BASE)
     VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty=+'], stderr=subprocess.STDOUT).strip('\n')
