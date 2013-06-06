@@ -22,7 +22,7 @@ with code contributions and help from: Alexander Rieger, Matthias Lemke and Niko
    * [Samsung Smart TV Plugin](plugins/smarttv): send commands to a SmartTV device.
    * [Solarlog Plugin](plugins/solarlog): to retrieve information from SolarLog devices.
    * [SQLite Plugin](plugins/sqlite): to store the item history in a SQLite database.
-   * [XBMC Plugin](plugins/sqlite): to control and monitor your XBMC.
+   * [XBMC Plugin](plugins/xbmc): to control and monitor your XBMC.
 
 ### Features
    * [Item](config): setting values with the crontab and cycle attribute
