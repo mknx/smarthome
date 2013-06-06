@@ -13,7 +13,7 @@ See the [install](install) and [config](config) section to start your SmartHome.
 
 
 ## 2013-06-06: Beta Release 0.9
-with code contributions and help from: Alexander Rieger, Matthias Lemke, Niko Will!
+with code contributions and help from: Alexander Rieger, Matthias Lemke and Niko Will!
 
 ### New Plugins
    * [Fritzbox Plugin](plugins/fritzbox): control anything a FritzBox offers with the web interface.
