@@ -55,14 +55,24 @@ class SQL():
 
     def __init__(self, smarthome):
         self._sh = smarthome
+        self._version = 1
         sqlite3.register_adapter(datetime.datetime, self.timestamp)
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
         self.connected = True
         self._fdb = sqlite3.connect(smarthome.base_dir + '/var/db/smarthome.db', check_same_thread=False)
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
-        self._fdb.execute(self._create_db)
-        self._fdb.execute(self._create_index)
+        common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
+        if common is None:
+            self._fdb.execute("CREATE TABLE common (version INTEGER);")
+            self._fdb.execute("INSERT INTO common VALUES (:version);", {'version': self._version})
+            self._fdb.execute(self._create_db)
+            self._fdb.execute(self._create_index)
+        else:
+            version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
+        if version < self._version:
+            logger.debug("update database")
+            self._fdb.execute("UPDATE common SET version=:version;", {'version': self._version})
         self._fdb.commit()
         self._fdb_lock.release()
         minute = 60 * 1000
