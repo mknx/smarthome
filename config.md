@@ -278,6 +278,9 @@ Returns the parent item. `sh.item.return_parent()`
 #### return_children()
 Returns the children of an item. `for child in sh.item.return_children(): ...`
 
+#### age()
+Returns the age of the current item value.
+
 #### last_change()
 Returns an datetime object with the latest update time.
 
