@@ -132,7 +132,11 @@ class KNX(lib.my_asynchat.AsynChat):
 
     def parse_length(self, length):
         self.parse_data = self.parse_telegram
-        self.terminator = struct.unpack(">H", length)[0]
+        try:
+            self.terminator = struct.unpack(">H", length)[0]
+        except:
+            logger.error("knx: problem unpacking length: {0}".format(length))
+            self.close()
 
     def encode(self, data, dpt):
         return dpts.encode[str(dpt)](data)
