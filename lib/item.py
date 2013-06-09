@@ -145,7 +145,8 @@ class Item():
             for trigger in self.conf['eval_trigger']:
                 triggers += self._sh.match_items(trigger)
             for item in triggers:
-                item._items_to_trigger.append(self)
+                if item != self:  # prevent loop
+                    item._items_to_trigger.append(self)
             if self._eval:
                 items = map(lambda x: 'sh.' + x.id() + '()', triggers)
                 if self._eval == 'and':
