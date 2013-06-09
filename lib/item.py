@@ -173,6 +173,10 @@ class Item():
     def changed_by(self):
         return self._changed_by
 
+    def age(self):
+        delta = self._sh.now() - self._last_change
+        return delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
+
     def _run_eval(self, value=None, caller='Eval', source=None):
         if self._eval:
             sh = self._sh  # noqa
