@@ -248,6 +248,11 @@ class Scheduler(threading.Thread):
         self._workers.append(t)
         if len(self._workers) > self._worker_num:
             logger.info("Adding worker thread. Total: {0}".format(len(self._workers)))
+            tn = []
+            for t in threading.enumerate():
+                tn.append(t.name)
+            tn = ', '.join(tn)
+            logger.info("Current Threads: {0}".format(tn))
 
     def _worker(self):
         while self.alive:
@@ -267,6 +272,9 @@ class Scheduler(threading.Thread):
             sh = self._sh  # noqa
             try:
                 exec(obj.bytecode)
+            except SystemExit:
+                # ignore exit() call from logic.
+                pass
             except Exception, e:
                 tb = sys.exc_info()[2]
                 tb = traceback.extract_tb(tb)[-1]
