@@ -157,7 +157,7 @@ class mpd(lib.my_asynchat.AsynChat):
         if caller != 'MPD':
             self._send("{0}".format(item.conf['mpd_send']), False)
 
-    def _send_value(self, item, caller=None, source=None):
+    def _send_value(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             self._send("{0}".format(item()), False)
 
