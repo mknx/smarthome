@@ -116,7 +116,7 @@ class mpd(lib.my_asynchat.AsynChat):
         if play != []:
             self._send("add {0}".format(play[0]), False)
 
-    def _play_file(self, item, caller=None, source=None):
+    def _play_file(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             if item.conf['mpd_file'] == 'value':
                 self.play_file(item())
@@ -144,16 +144,16 @@ class mpd(lib.my_asynchat.AsynChat):
             play.append(url)
         return play
 
-    def _send_volume(self, item, caller=None, source=None):
+    def _send_volume(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             self._send('setvol {0}'.format(item()), False)
 
-    def _send_bool(self, item, caller=None, source=None):
+    def _send_bool(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             key = item.conf['mpd_send']
             self._send("{0} {1}".format(key, int(item())), False)
 
-    def _send_command(self, item, caller=None, source=None):
+    def _send_command(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             self._send("{0}".format(item.conf['mpd_send']), False)
 
