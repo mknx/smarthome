@@ -16,9 +16,6 @@ plugin.conf
     class_path = plugins.sqlite
 </pre>
 
-`step` sets the cycle time how often entries will be updated.
-`rrd_dir` specify the rrd storage location.
-
 items.conf
 --------------
 
