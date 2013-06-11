@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -69,7 +69,7 @@ class KNX(lib.my_asynchat.AsynChat):
         elif flag == 'response':
             flag = KNXRESP
         else:
-            logger.warning("Groupwrite telgram for {} with unknown flag: {}. Please choose beetween write and response.".format(ga, flag))
+            logger.warning("Groupwrite telegram for {0} with unknown flag: {1}. Please choose beetween write and response.".format(ga, flag))
             return
         pkt[5] = flag | pkt[5]
         self._send(pkt)
