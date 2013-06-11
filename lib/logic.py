@@ -93,11 +93,11 @@ class Logic():
     def id(self):
         return self.name
 
-    def __call__(self, caller='Logic', source=None, value=None, destination=None, dt=None):
-        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=caller, source=source, destination=destination, value=value, dt=dt)
+    def __call__(self, caller='Logic', source=None, value=None, dest=None, dt=None):
+        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=caller, source=source, dest=dest, value=value, dt=dt)
 
-    def trigger(self, by='Logic', source=None, value=None, destination=None, dt=None):
-        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=by, source=source, destination=destination, value=value, dt=dt)
+    def trigger(self, by='Logic', source=None, value=None, dest=None, dt=None):
+        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=by, source=source, dest=dest, value=value, dt=dt)
 
     def generate_bytecode(self):
         if hasattr(self, 'filename'):
