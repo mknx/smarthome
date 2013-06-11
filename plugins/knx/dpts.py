@@ -268,6 +268,16 @@ def de17(payload):
     return struct.unpack('>B', payload)[0] & 0x3f
 
 
+def en20(value):
+    return [0, int(value) & 0xff]
+
+
+def de20(payload):
+    if len(payload) != 1:
+        return None
+    return struct.unpack('>B', payload)[0]
+
+
 def en24(value):
     if isinstance(value, unicode):
         value = value.encode('iso-8859-1')
@@ -326,6 +336,7 @@ decode = {
     '14': de14,
     '16000': de16,
     '16001': de16,
+    '20': de20,
     '24': de24,
     'pa': depa,
     'ga': dega,
@@ -350,6 +361,7 @@ encode = {
     '14': en14,
     '16000': en16000,
     '16001': en16001,
+    '20': en20,
     '24': en24,
     'ga': enga
 }
