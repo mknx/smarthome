@@ -44,11 +44,11 @@ class Logics():
         for name in self._config:
             logger.debug("Logic: %s" % name)
             logic = Logic(self._sh, name, self._config[name])
-            self._logics[name] = logic
             if hasattr(logic, 'bytecode'):
+                self._logics[name] = logic
                 self._sh.scheduler.add(name, logic, logic.prio, logic.crontab, logic.cycle)
             else:
-                return
+                continue
             # plugin hook
             for plugin in self._sh._plugins:
                 if hasattr(plugin, 'parse_logic'):
