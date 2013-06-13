@@ -11,8 +11,13 @@ It you want to publish your plugin, get an [github account](https://github.com/u
    * __list changes__ since the release with the tag VERSIONTAG: `git log --pretty=format:"%s" <VERSIONTAG>..HEAD`
    * __undo commit__ with the id XXXIDXXX: `git reset --hard XXXIDXXX && git push origin develop --force`
 
-### Branches
+### Global settings
+   * only push the current branch (not all): `git config --global push.default current`
+   * adapt your user settings:
+      * `git config --global user.name "Your Name"`
+      * `git config --global user.email you@example.com`
 
+### Branches
 The repositry consist of three main branches:
 
   * __master__: it contains the stable/release code
@@ -20,12 +25,6 @@ The repositry consist of three main branches:
   * __gh-pages__: this branch contains the SmartHome.py website hostet at: [http://mknx.github.io/smarthome/](http://mknx.github.io/smarthome/)
 
 The branch setup is based on [this model](http://nvie.com/posts/a-successful-git-branching-model/).
-
-### Global settings
-   * only push the current branch (not all): `git config --global push.default current`
-   * adapt your user settings:
-      * `git config --global user.name "Your Name"`
-      * `git config --global user.email you@example.com`
 
 ### Getting the Source
   * you could fork the repository on github or
