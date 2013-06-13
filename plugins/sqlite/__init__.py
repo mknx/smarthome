@@ -68,6 +68,7 @@ class SQL():
             self._fdb.execute("INSERT INTO common VALUES (:version);", {'version': self._version})
             self._fdb.execute(self._create_db)
             self._fdb.execute(self._create_index)
+            version = self._version
         else:
             version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
         if version < self._version:
