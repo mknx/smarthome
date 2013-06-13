@@ -3,8 +3,6 @@ title: Overview
 layout: default
 summary:
 uid: index
-created: 2011-08-08T21:27:24+0200
-changed: 2012-06-21T18:27:24+0200
 ---
 
 SmartHome.py is a modular framework to automate your (smart) home.
@@ -12,7 +10,7 @@ SmartHome.py is a modular framework to automate your (smart) home.
 See the [install](install) and [config](config) section to start your SmartHome.
 
 
-## 2013-06-06: Beta Release 0.9
+## 2013-06-13: New Release [0.9](https://github.com/mknx/smarthome/tags)
 with code contributions and help from: Alexander Rieger, Matthias Lemke and Niko Will!
 
 ### New Plugins
