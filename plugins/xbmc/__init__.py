@@ -88,7 +88,7 @@ class xbmc(lib.my_asynchat.AsynChat):
         else:
             self._send('GUI.ShowNotification', {'title': title, 'message': message, 'image': image, 'displaytime': self._notification_time})
 
-    def _send_value(self, item, caller=None, source=None):
+    def _send_value(self, item, caller=None, source=None, dest=None):
         if caller != 'XBMC':
             self._send(self._send_keys[item.conf['xbmc_send']], {item.conf['xbmc_send']: item()}, wait=False)
 

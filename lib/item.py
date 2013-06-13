@@ -177,7 +177,7 @@ class Item():
         delta = self._sh.now() - self._last_change
         return delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
 
-    def _run_eval(self, value=None, caller='Eval', source=None):
+    def _run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
             sh = self._sh  # noqa
             value = eval(self._eval)
