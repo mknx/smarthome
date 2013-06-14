@@ -41,12 +41,15 @@ class SolarLog():
     def run(self):
         self.alive = True
         self._read_base_vars()
-
+        
         self._count_inverter = int(vars(self)['AnzahlWR'])
         for x in range(0, self._count_inverter):
             self._count_strings.append(int(vars(self)['WRInfo'][x][5]))
 
-        self._sh.scheduler.add('sl.rrd', self._refresh_rrd, cycle=300)
+        cycle = 300
+        if vars(self).has_key('Intervall'):
+            cycle = int(vars(self)['Intervall'])
+        self._sh.scheduler.add('solarlog', self._refresh_rrd, cycle=cycle)
 
     def stop(self):
         self.alive = False
@@ -64,13 +67,14 @@ class SolarLog():
         now = self._sh.now()
         time_start = int(vars(self)['time_start'][now.month-1])
         time_end = int(vars(self)['time_end'][now.month-1])
+        is_online = bool(vars(self)['isOnline'])
         
-        if now.hour is 0:
-            for name in self._items.keys():
-                if 'out' in name:
-                    self._items[name](0)
+        # we start refreshing one hour earlier as set by the device
+        if now.hour < (time_start - 1):
+            return
 
-        if now.hour < time_start or now.hour >= time_end:
+        # in the evening we stop refreshing when the device is offline
+        if now.hour >= time_end and not is_online:
             return
         
         self.refresh()
@@ -85,8 +89,25 @@ class SolarLog():
         self._read_javascript('base_vars.js')
 
     def refresh(self):
+        self._read_javascript('base_vars.js')
         self._read_javascript('min_cur.js')
 
+        # set state and error messages
+        for x in range(0, self._count_inverter):
+            if self._items.has_key('curStatusCode_{0}'.format(x)):
+                item = self._items['curStatusCode_{0}'.format(x)]
+                if isinstance(item(), str):
+                    item(vars(self)['StatusCodes'][x][int(vars(self)['curStatusCode'][x])])
+                else:
+                    item(vars(self)['curStatusCode'][x])
+            if self._items.has_key('curFehlerCode_{0}'.format(x)):
+                item = self._items['curFehlerCode_{0}'.format(x)]
+                if isinstance(item(), str):
+                    item(vars(self)['FehlerCodes'][x][int(vars(self)['curFehlerCode'][x])])
+                else:
+                    item(vars(self)['curFehlerCode'][x])
+
+        # set all other values
         for name in vars(self).keys():
             if self._items.has_key(name):
                 self._items[name](vars(self)[name])
@@ -121,10 +142,7 @@ class SolarLog():
 
                 if matches:
                     name, value = matches.groups()
-                    if vars(self).has_key(name):
-                        logger.warning('key {0} already exists'.format(name))
-                    else:
-                        vars(self)[name] = value
+                    vars(self)[name] = value
                     continue
 
                 matches = re_array_1st_level.match(line)
