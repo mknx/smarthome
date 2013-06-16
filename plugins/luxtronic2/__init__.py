@@ -260,7 +260,7 @@ class Luxtronic2(LuxBase):
         if len(self._calculated) > 0 or len(self._decoded) > 0:
             self.refresh_calculated()
             for c in self._calculated:
-                val = self.get_caclulated(c)
+                val = self.get_calculated(c)
                 if val:
                     self._calculated[c](val, 'Luxtronic2')
             for d in self._decoded:
