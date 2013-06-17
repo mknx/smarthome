@@ -286,7 +286,7 @@ class KNX(lib.my_asynchat.AsynChat):
             if isinstance(knx_listen, str):
                 knx_listen = [knx_listen, ]
             for ga in knx_listen:
-                logger.debug("knx: {} listen on {}".format(logic, ga))
+                logger.debug("knx: {0} listen on {1}".format(logic, ga))
                 if not ga in self.gal:
                     self.gal[ga] = {'dpt': dpt, 'items': [], 'logics': [logic]}
                 else:

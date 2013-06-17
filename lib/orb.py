@@ -76,8 +76,8 @@ class Orb():
         if offset:
             date += dateutil.relativedelta.relativedelta(minutes=offset)
         self._obs.date = date
-        angle = self._orb.compute(self._obs)
-        return (angle.az, angle.alt)
+        self._orb.compute(self._obs)
+        return (self._orb.az, self._orb.alt)
 
     def _light(self, offset=None):  # offset in minutes
         date = datetime.datetime.utcnow()
