@@ -71,4 +71,9 @@ be set for the error item.
 
 ## logic.conf
 
-The state of a port can be changed by setting the belonging item to true or false.
+The state of a port can be changed by setting the belonging item to True or False. For the example above mentioned:
+
+<pre>
+sh.someroom.control0(True)
+sh.someroom.control1(False)
+</pre>
