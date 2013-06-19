@@ -90,7 +90,7 @@ class IMAP():
             else:
                 logic = False
             if logic:
-                logic.trigger('IMAP', fo, mail)
+                logic.trigger('IMAP', fo, mail, dest=to)
                 rsp, data = imap.uid('copy', uid, 'Trash')
                 if rsp == 'OK':
                     typ, data = imap.uid('store', uid, '+FLAGS', '(\Deleted)')
