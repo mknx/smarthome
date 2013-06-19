@@ -37,19 +37,16 @@ class SolarLog():
         self._count_strings = []
         self._items = {}
         self._last_datetime = None
+        self._is_online = True
 
     def run(self):
         self.alive = True
-        self._read_base_vars()
-        
-        self._count_inverter = int(vars(self)['AnzahlWR'])
-        for x in range(0, self._count_inverter):
-            self._count_strings.append(int(vars(self)['WRInfo'][x][5]))
+        self._refresh(True)
 
         cycle = 300
         if vars(self).has_key('Intervall'):
             cycle = int(vars(self)['Intervall'])
-        self._sh.scheduler.add('solarlog', self._refresh_rrd, cycle=cycle)
+        self._sh.scheduler.add('solarlog', self._refresh, cycle=cycle)
 
     def stop(self):
         self.alive = False
@@ -63,54 +60,83 @@ class SolarLog():
     def parse_logic(self, logic):
         pass
 
-    def _refresh_rrd(self):
+    def _refresh(self, init=False):
         now = self._sh.now()
-        time_start = int(vars(self)['time_start'][now.month-1])
-        time_end = int(vars(self)['time_end'][now.month-1])
-        is_online = bool(vars(self)['isOnline'])
         
-        # we start refreshing one hour earlier as set by the device
-        if now.hour < (time_start - 1):
-            return
+        if not init:
+            time_start = int(vars(self)['time_start'][now.month-1])
+            time_end = int(vars(self)['time_end'][now.month-1])
 
-        # in the evening we stop refreshing when the device is offline
-        if now.hour >= time_end and not is_online:
-            return
-        
-        self.refresh()
-        groups = self._read_min_day()
+            # reset all out values at midnight
+            if now.hour is 0:
+                for name in self._items.keys():
+                    if 'out_' in name:
+                        self._items[name](0)
 
-        if groups:
-            for name in groups.keys():
-                if self._items.has_key(name):
-                    self._items[name](groups[name])
+            # we start refreshing one hour earlier as set by the device
+            if now.hour < (time_start - 1):
+                return
 
-    def _read_base_vars(self):
-        self._read_javascript('base_vars.js')
+            # in the evening we stop refreshing when the device is offline
+            if now.hour >= time_end and not self._is_online:
+                return
 
-    def refresh(self):
-        self._read_javascript('base_vars.js')
-        self._read_javascript('min_cur.js')
+        self._read_base_vars()
+
+        if init:
+            self._count_inverter = int(vars(self)['AnzahlWR'])
+            for x in range(0, self._count_inverter):
+                self._count_strings.append(int(vars(self)['WRInfo'][x][5]))
+
+        self._read_min_cur()
 
         # set state and error messages
         for x in range(0, self._count_inverter):
             if self._items.has_key('curStatusCode_{0}'.format(x)):
                 item = self._items['curStatusCode_{0}'.format(x)]
+                status = int(vars(self)['curStatusCode'][x])
                 if isinstance(item(), str):
-                    item(vars(self)['StatusCodes'][x][int(vars(self)['curStatusCode'][x])])
+                    if status is 255:
+                        item('Offline')
+                    elif status >= len(vars(self)['StatusCodes'][x]):
+                        item('unbekannt')
+                    else:
+                        item(vars(self)['StatusCodes'][x][status])
                 else:
-                    item(vars(self)['curStatusCode'][x])
+                    item(status)
             if self._items.has_key('curFehlerCode_{0}'.format(x)):
                 item = self._items['curFehlerCode_{0}'.format(x)]
+                error = int(vars(self)['curFehlerCode'][x])
                 if isinstance(item(), str):
-                    item(vars(self)['FehlerCodes'][x][int(vars(self)['curFehlerCode'][x])])
+                    if error >= len(vars(self)['FehlerCodes'][x]):
+                        item('unbekannt')
+                    else:
+                        item(vars(self)['FehlerCodes'][x][error])
                 else:
-                    item(vars(self)['curFehlerCode'][x])
+                    item(error)
 
-        # set all other values
+        self._is_online = vars(self)['isOnline'] == 'true'
+
+        groups = self._read_min_day()
+        if groups:
+            for name in groups.keys():
+                if self._items.has_key(name):
+                    if not self._is_online and ('pdc_' in name or 'udc_' in name or 'pac_' in name):
+                        self._items[name](0)
+                    elif now.hour is 0 and 'out_' in name:
+                        self._items[name](0)
+                    else:
+                        self._items[name](groups[name])
+        
         for name in vars(self).keys():
             if self._items.has_key(name):
                 self._items[name](vars(self)[name])
+
+    def _read_base_vars(self):
+        self._read_javascript('base_vars.js')
+
+    def _read_min_cur(self):
+        self._read_javascript('min_cur.js')
 
     def _read_javascript(self, filename):
         re_var = re.compile(r'^var\s+(?P<varname>\w+)\s*=\s*"?(?P<varvalue>[^"]+)"?;?')
