@@ -1,9 +1,3 @@
----
-title: NetIO230B
-layout: default
-summary: control power status of netio230b power distribution
----
-
 # Requirements
 ## Supported Hardware
 
@@ -22,10 +16,12 @@ summary: control power status of netio230b power distribution
 #   netio_id = 1
 </pre>
 
-address  : ip address of the netio230b power distribution
-user     : username needed for login
-password : password needed for login
-netio_id : optional, set id if you want to control more than one device
+Description of the attributes:
+
+* __address__: ip address of the netio230b power distribution 
+* __user__: username needed for login
+* __password__: password needed for login
+* __netio_id__: optional, set id if you want to control more than one device
 
 ## items.conf
 
@@ -33,13 +29,9 @@ There are two types of items in this plugin. Items to control the state of the p
 distribution (control item) and items to detect an error (error item). The error item
 is used to detect wether it is not possible to communicate with the device.
 
-### netio_id
+* __netio_id__: Contains the device id specified in plugin.conf. This attribute is optional for the control item.
 
-Contains the device id specified in plugin.conf. This attribute is optional for the control item.
-
-### netio_port
-
-Specify one of the 4 ports of the power distribution, starting with 0. This attribute must not
+* __netio_port__: Specify one of the 4 ports of the power distribution, starting with 0. This attribute must not
 be set for the error item.
 
 ### Example
@@ -68,19 +60,15 @@ be set for the error item.
 
     [[error2]]
         type = bool
-        netio_id = 1
+        netio_id = 2
 </pre>
 
-control0 - item to control port 0 of netio230b device with id 1
-control1 - item to control port 3 of netio230b device with id 1 (default for netio_id is 1)
-control2 - item to control port 2 of netio230b device with id 2
-error1   - item to get error state of netio230b device with id 1
-error1   - item to get error state of netio230b device with id 2
+* __control0__: item to control port 0 of netio230b device with id 1
+* __control1__: item to control port 3 of netio230b device with id 1 (default for netio_id is 1)
+* __control2__: item to control port 2 of netio230b device with id 2
+* __error1__: item to get error state of netio230b device with id 1
+* __error2__: item to get error state of netio230b device with id 2
 
 ## logic.conf
 
 The state of a port can be changed by setting the belonging item to true or false.
-
-# Methodes
-
-none
