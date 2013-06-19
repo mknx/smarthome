@@ -17,12 +17,12 @@ The configuration of SmartHome.py is split up in four areas:
  * Item Configuration: items/*.conf
 
 
-## etc/smarthome.conf
+## etc/smarthome.conf [optional]
 
-There are the following attributes for SmartHome.py:
+Following attributes are supportet in smarthome.conf:
 
- * `lat`, `lon`, `elev`: specifies the geographic coordinates of your home (latitude, longitude, elevation). The lat and lon are neccesary if you want to reference the sunrise/sunset or the sun position.
- * `tz`: describes the timezone
+ * `lat`, `lon`, `elev`: geographic coordinates of your home (latitude, longitude, elevation). lat and lon are neccesary for sunrise/sunset calculation, dealing with the position of the sun.
+ * `tz`: used timezone
 
 ### Sample Configuration
 
@@ -36,36 +36,37 @@ tz = 'Europe/Berlin'
 </pre>
 
 
-## etc/logic.conf
+## etc/logic.conf [mandatory]
 
-This file is mandatory. For first experiments, it is possible to use a blank file (touch logic.conf).
+It is possible to use a blank file (touch logic.conf) for the first steps.
 
 Logic items within SmartHome.py are simple python scripts, which are placed in <code>/usr/local/smarthome/logics/</code>. See the [logic introduction](/smarthome/logic) for howto write logics.
 
-A very simple logic.conf would look like this:
+An example of a very simple logic.conf:
 <pre># /usr/local/smarthome/etc/logic.conf
 [MyLogic]
     filename = logic.py
     crontab = init</pre>
+
 SmartHome.py would look in <code>/usr/local/smarthome/logics/</code> for the file <code>logic.py</code>. The logic would be started - once - when the system starts.
 
-There are several special attributes to controll the behavior of the logics:
+Following attributes are supportet controll the behavior of the logics:
 
 ### watch_item
-Specify items as a single item path or as a comma-separated list to monitor for changes.
+The comma-separated list of items will be monitored for changes. 
 <pre>watch_item = house.door, terrace.door</pre>
-Every change of these two items would trigger (run) the logic.
+Every change of these two items triggers (run) the logic.
 
 ### cycle
-The logic will be repeated every specified seconds.
+Defines the time interval for repeating the logic (in seconds).
 <pre>cycle = 60</pre>
-
+Special use:
 <pre>cycle = 15 = 42</pre>
 Calls the logic with <code>trigger['value'] # == '42'</code>
 
 
 ### crontab
-A crontab like attribute, with the following options:
+like unix crontab with following options:
 
 <code>crontab = init</code>
 Run the logic during the start of SmartHome.py.
@@ -74,15 +75,15 @@ Run the logic during the start of SmartHome.py.
 
  *  minute: single value from 0 to 59, or comma separated list, or * (every minute)
  *  hour: single value from 0 to 23, or comma separated list, or * (every hour)
- *  day: single value from 0 to 28!, or comma separated list, or * (every day)
-    Please note: you cannot use days greater than 28. Sorry
- *  wday: single value from 0 to 6 (0 = Monday), or comma separated list, or * (every day)
+ *  day: single value from 0 to 28, or comma separated list, or * (every day)
+    Please note: dont use days greater than 28 in the moment.
+ *  wday: weekday, single value from 0 to 6 (0 = Monday), or comma separated list, or * (every day)
 
 <code>crontab = sunrise</code>
-Runs the logic at every sunrise. Or specify `sunset` to run at sunset. 
-Furthermore you could provide:
+Runs the logic at every sunrise. Use `sunset` to run at sunset. 
+For sunset / sonrise You could provide:
 
-   * an horizon offset in degrees e.g. <code>crontab = sunset-6</code> For this option you have to specify your latitude/longitued in smarthome.conf.
+   * an horizon offset in degrees e.g. <code>crontab = sunset-6</code> You have to specify your latitude/longitued in smarthome.conf.
    * an offset in minutes specified by a 'm' e.g. <code>crontab = sunset-10m</code>
    * a boundry for the execution <pre>crontab = 17:00<sunset  # sunset, but not bevor 17:00 (locale time)
    crontab = sunset&lt;20:00  # sunset, but not after 20:00 (locale time)
@@ -91,15 +92,15 @@ Furthermore you could provide:
 <code>crontab = 15 * * * = 50</code>
 Calls the logic with <code>trigger['value'] # == 50</code>
 
-You could combine several options with '\|':
+Combine several options with '\|':
 <pre>crontab = init = 'start' | sunrise-2 | 0 5 * *</pre>
 
 ### prio
-This attribute provides access the internal scheduling table. By default every logic has the the prio of '3'. You could assign [0-10] as a value.
+Priority of the logic used by the internal scheduling table. By default every logic has the the priority of '3'. You could assign [0-10] as a value.
 You could change it to '1' to prefer or to '4' to penalise the logic in comparison to other logics. 
 
 ### Other attributes
-Every other attribute could be accessed from the the logic with <code>self.attribute_name</code>.
+Other attributes could be accessed from the the logic with <code>self.attribute_name</code>.
 
 ### Sample logic.conf
 <pre># /usr/local/smarthome/etc/logic.conf
@@ -124,15 +125,15 @@ Every other attribute could be accessed from the the logic with <code>self.attri
 </pre>
 
 
-## etc/plugin.conf
-This file is mandatory. For first experiments, it is possible to use a blank file (touch plugin.conf).
+## etc/plugin.conf (mandatory)
+It is possible to use a blank file (touch plugin.conf) for the first steps.
 
 Plugins extend the core functionality of SmartHome.py. You could access these plugins from every logic script.
 For example there is a plugin for the prowl notification service to send small push messages to your iPhone/iPad.
 Plugins are placed in <code>/usr/local/smarthome/plugins/</code>.
 
 ### Configuration
-Plugins are configured in the plugin.conf file. A simple one looks like this:
+Plugins are configured in the plugin.conf file. A simple plugin.conf:
 
 <pre># /usr/local/smarthome/etc/plugin.conf
 [notify] # object instance name e.g. sh.notify
@@ -148,18 +149,18 @@ The example above would generate the following statement `sh.notify = plugins.pr
 From now on there is the object `sh.notify` and you could access the function of this object with `sh.notify.function()`.
 
 
-## items/*.conf
+## items/*.conf (optional)
 
 Items could be specified in one or several conf files placed in the `items` directory of SmartHome.py
 Valid characters for the item name are: a-z, A-Z and '_'!
 
-A simple item configuration looks like this:
+A simple item configuration:
 <pre># /usr/local/smarthome/items/living.conf
 [living_room_temp]
     type = num
 </pre>
 
-You could nest items to build a tree representing your enviroment.
+Use nested items to build a tree representing your enviroment.
 <pre># /usr/local/smarthome/items/living.conf
 [living_room]
     [[temperature]]
@@ -174,25 +175,25 @@ You could nest items to build a tree representing your enviroment.
 
 ### Item Attributes
 
- * `type`: if you want to use an item for storing values and/or triggering actions you have to specify this attribute. If you do not specify this attribute the item is only usefull for structuring your item tree. You could choose between:
-   * bool: you could init this type with on, 1, True or off, 0, False. It will be set to True or False internally. So you could use `if sh.item(): ...`.
-   * num: it could be any number (integer or float).
-   * str: well a regular string or unicode string.
-   * list: a list/array of values. Usefull for some KNX dpts.
-   * dict: a python dictionary for generic purposes.
-   * foo: this type is for special purposes. No validation is done.
-   * scene: a special keyword to support scenes
- * `value`: this is the initial value of that item.
- * `name`: you could specify a name which would be the str representation of the item.
+ * `type`: for storing values and/or triggering actions you have to specify this attribute. (If you do not specify this attribute the item is only usefull for structuring your item tree). Supported types:
+   * bool: boolean type (on, 1, True or off, 0, False). True or False are internally used. Use e.g.  `if sh.item(): ...`.
+   * num: any number (integer or float).
+   * str: regular string or unicode string.
+   * list: list/array of values. Usefull e.g. for some KNX dpts.
+   * dict: python dictionary for generic purposes.
+   * foo: pecial purposes. No validation is done.
+   * scene: special keyword to support scenes
+ * `value`: initial value of that item.
+ * `name`: name which would be the str representation of the item (optional).
  * `cache`: if set to On, the value of the item will be cached in a local file (in /usr/local/smarthome/var/cache/).
  * `enforce_updates`: If set to On, every call of the item will trigger depending logics and item evaluations.
  * `threshold`: specify values to trigger depending logics only if the value transit the threshold. low:high to set a value for the lower and upper threshold, e.g. 21.4:25.0 which triggers the logic if the value exceeds 25.0 or fall below 21.4. Or simply a single value.
  * `offset` (only for num-types): the offset will be evaluated every time you try to update the value of the item. It could be a simple '+2' or a more complex '*3.0/2+3'.
- * `eval` and `eval_trigger`: see the next section for the description of these attributes.
- * `crontab` and `cycle`: see the logic.conf for possible options to set the value of an item at the specified times / cycles.
+ * `eval` and `eval_trigger`: see next section for a description of these attributes.
+ * `crontab` and `cycle`: see logic.conf for possible options to set the value of an item at the specified times / cycles.
 
 #### Scenes
-If you want to use scenes you have to put a config file into the scenes directory for every 'scene item'. The scene config file consists of space separated lines with the <code>ItemValue ItemPath|LogicName Value</code>.
+For using scenes a config file into the scenes directory for every 'scene item' is neccessary. The scene config file consists of space separated lines with the <code>ItemValue ItemPath|LogicName Value</code>.
 
 <pre># items/example.conf
 [example]
@@ -211,7 +212,7 @@ If you want to use scenes you have to put a config file into the scenes director
 
 
 #### eval
-The eval attribute is usefull for small evaluations and corrections. The input value is accesible with `value`.
+This attribute is usefull for small evaluations and corrections. The input value is accesible with `value`.
 <pre>
 # items/level.conf
 [level]
@@ -219,7 +220,7 @@ The eval attribute is usefull for small evaluations and corrections. The input v
     eval = value * 2 - 1  # if you call sh.level(3) sh.level will be evaluated and set to 5
 </pre>
 
-You could trigger the evaluation of an item with `eval_trigger`:
+Trigger the evaluation of an item with `eval_trigger`:
 <pre>
 # items/room.conf
 [room]
@@ -233,7 +234,7 @@ You could trigger the evaluation of an item with `eval_trigger`:
         eval_trigger = room.temp, room.hum  # every change of temp or hum would trigger the evaluation of dew.
 </pre>
 
-There are several eval keywords to use with the eval_trigger:
+Eval keywords to use with the eval_trigger:
 
    * sum: compute the sum of all specified eval_trigger items.
    * avg: compute the average of all specified eval_trigger items.
@@ -267,7 +268,7 @@ There are several eval keywords to use with the eval_trigger:
 
 
 ### Item Functions
-There are several item functions which every item provides.
+Every item provides provides item functions.
 
 #### id()
 Returns the item id (path).
@@ -285,12 +286,12 @@ Returns the age of the current item value.
 Returns an datetime object with the latest update time.
 
 #### changed_by()
-Return the caller of the latest update.
+Returns the caller of the latest update.
 
 #### prev_change()
-return the age in seconds of the change before the latest update.
+Returns the age in seconds of the change before the latest update.
 
 #### fade()
-This function fades the item to a specified value with the defined stepping (int or float) and timedelta (int or float in seconds).
+Fades the item to a specified value with the defined stepping (int or float) and timedelta (int or float in seconds).
 e.g. <code>sh.living.light.fade(100, 1, 2.5)</code> will in- or decrement the living room light to 100 by a stepping of '1' and a timedelta of '2.5' seconds.
 
