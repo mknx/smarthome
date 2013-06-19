@@ -67,6 +67,11 @@ In your plugin directory should be a __README.md__ (from the skeleton directory)
    * changes to bin/smarthome.py and lib/\* must be checked with me.
    * changes to plugins from other developers must be checked with the developer.
 
+### Push changes
+   * `git add changedfile.py`: select one or more files for commit
+   * `git commit` describe the commit with a useful comment
+   * `git pull && git push`: sync with the origin repository
+
 ### Merge
 If you think your code is ready for prime time send me a __pull request via github__ or an [email](mailto:marcus@popp.mx) with the code.
 
