@@ -23,11 +23,12 @@ Description of the attributes:
 
 Because there is only one function you could access it directly by the object. 
 
+<pre>
 sh.notify('Intrusion', 'Living room window broken!')
+</pre>
 
 This function takes several arguments:
 
-    def __call__(self, event='', description='', priority=None, url=None, apikey=None, application='SmartHome'):
 * __event__: Event (up to 1000 chars)
 * __description__: Text describing the event in detail (up to 1000 chars)
 * __priority__: Ranging from -2 (Very low) to 2 (Emergency) - not used by now! 
@@ -35,7 +36,7 @@ This function takes several arguments:
 * __apikey__: API-KEY used for this request - not necessary if global 'apikey' is set
 * __application__: Name of the application (default: 'SmartHome')
  
-# some examples
+# Examples
 <pre>
 sh.nma('Intrusion', 'Living room window broken', 2, 'http://yourvisu.com/')
 sh.nma('Tumbler', 'finished', apikey='<your-api-key>')
