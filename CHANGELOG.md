@@ -6,6 +6,17 @@ In Developement
    * Squeezebox Plugin
    * DLMS Plugin
 
+# 1.0
+## Contributions from:
+   * Mark Hönisch
+   * Niko Will
+   * Robert Budde
+
+## New Plugins
+   * SMA
+   * NMA
+   * NetIO230B
+
 
 # 0.9
 
