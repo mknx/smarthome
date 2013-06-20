@@ -1,9 +1,3 @@
----
-title: SMA
-layout: default
-summary: Reads data from SMA solar energy inverters
----
-
 # Requirements
 
 python-bluez
