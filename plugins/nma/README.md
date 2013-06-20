@@ -24,7 +24,7 @@ Description of the attributes:
 Because there is only one function you could access it directly by the object. 
 
 <pre>
-sh.notify('Intrusion', 'Living room window broken!')
+sh.nma('Intrusion', 'Living room window broken!')
 </pre>
 
 This function takes several arguments:
