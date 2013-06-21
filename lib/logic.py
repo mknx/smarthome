@@ -57,11 +57,15 @@ class Logics():
             if hasattr(logic, 'watch_item'):
                 if isinstance(logic.watch_item, str):
                     logic.watch_item = [logic.watch_item]
-                items = []
                 for entry in logic.watch_item:
-                    items += self._sh.match_items(entry)
-                for item in items:
-                    item.add_logic_trigger(logic)
+                    if ':' in entry:
+                        itemexpr, sep, attribute = entry.partition(':')
+                        for item in self._sh.match_items(itemexpr.strip()):
+                            if attribute.strip() in item.conf:
+                                item.add_logic_trigger(logic)
+                    else:
+                        for item in self._sh.match_items(entry):
+                            item.add_logic_trigger(logic)
 
     def __iter__(self):
         for logic in self._logics:

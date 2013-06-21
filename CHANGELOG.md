@@ -17,6 +17,9 @@ In Developement
    * NMA
    * NetIO230B
 
+## Features
+   * watch_item: supports item attribute matches by ':attribute' e.b. '*:my' every item with the attribute my.
+
 
 # 0.9
 
