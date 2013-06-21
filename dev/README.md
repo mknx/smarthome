@@ -11,6 +11,8 @@ It you want to publish your plugin, get an [github account](https://github.com/u
    * __list changes__ since the release with the tag VERSIONTAG: `git log --pretty=format:"%s" <VERSIONTAG>..HEAD`
    * __undo commit__ with the id XXXIDXXX: `git reset --hard XXXIDXXX && git push origin develop --force`
 
+   Follow the [commit Atom Feed](https://github.com/mknx/smarthome/commits/develop.atom)
+
 ### Global settings
    * only push the current branch (not all): `git config --global push.default current`
    * adapt your user settings:
