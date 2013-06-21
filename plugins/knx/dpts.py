@@ -83,13 +83,13 @@ def de5(payload):
 
 
 def en5001(value):
-    return [0, int(int(value) * 255 / 100) & 0xff]
+    return [0, int(value * 255.0 / 100) & 0xff]
 
 
 def de5001(payload):
     if len(payload) != 1:
         return None
-    return struct.unpack('>B', payload)[0] * 100 / 255
+    return struct.unpack('>B', payload)[0] * 100.0 / 255
 
 
 def en6(value):
