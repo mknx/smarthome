@@ -58,13 +58,17 @@ class Logics():
                 if isinstance(logic.watch_item, str):
                     logic.watch_item = [logic.watch_item]
                 for entry in logic.watch_item:
-                    if ':' in entry:
-                        itemexpr, sep, attribute = entry.partition(':')
-                        for item in self._sh.match_items(itemexpr.strip()):
-                            if attribute.strip() in item.conf:
-                                item.add_logic_trigger(logic)
+                    itemexpr, sep, attribute = entry.partition(':')
+                    itemexpr = itemexpr.strip()
+                    if attribute != '':
+                        attribute = attribute.strip()
                     else:
-                        for item in self._sh.match_items(entry):
+                        attribute = False
+                    for item in self._sh.match_items(itemexpr):
+                        if attribute:
+                            if attribute in item.conf:
+                                item.add_logic_trigger(logic)
+                        else:
                             item.add_logic_trigger(logic)
 
     def __iter__(self):
