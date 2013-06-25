@@ -8,20 +8,20 @@ changed: 2011-04-07T21:30:13+0200
 
 # Introduction
 
-Logic items within SmartHome.py are simple python scripts, which should be placed in <code>/usr/local/smarthome/logics/</code>.
+Logic items within SmartHome.py are simple python scripts. SmartHome.py expects the logic scripts in <code>/usr/local/smarthome/logics/</code>.
 
 # Basic Structure
 
-The most important object to use is 'sh' for the smarthome object. It contains every detail about your smarthome. You could access your items, plugins and basic functions of SmartHome.py.
-To get the value of an item just call the name of it: <code>sh.area.item()</code>. And to set a new value: <code>sh.area.item(new_value)</code>.
+The most important object is 'sh'. This ist the smarthome object. It contains every detail about the smarthome. With this object it is possible to access all items, plugins and basic functions of SmartHome.py.
+To get the value of an item call the name of it: <code>sh.area.item()</code>. And to set a new value: <code>sh.area.item(new_value)</code>.
 <pre>#!/usr/bin/env python
 # put on the light in the living room, if it is not on
 if not sh.living_room.light():
     sh.living_room.light('on')
 </pre>
-It is very important that you always access the items with parantheses ()! Otherwise errors could accure.
+It is very important to access the items always with parantheses ()! Otherwise an errors could accure.
 
-You could iterate over `sh` and the item objects.
+It is possible to iterate over `sh` and the item objects.
 <pre>
 for item in sh:
     print item
@@ -31,62 +31,62 @@ for item in sh:
 
 # Available Objects/Methods
 
-Besides the 'sh' objects are other important predefined objects.
+Beside the 'sh' object other important predefined objects are available.
 
 
 ## sh item methods
 
 ## logic
-This object provides access to the current logic object. You could change logic attributes (crontab, cycle, ...) during runtime. They will be lost after restarting SmartHome.py.
-If you want to create a endless loop please use `while logic.alive:`. This way SmartHome.py could stop the loop at shutdown.
-See the next section (trigger) for a description of the special function `logic.trigger()`.
-There are some predifined attributs of the logic object:
+This object provides access to the current logic object. It is possoble to change logic attributes (crontab, cycle, ...) during runtime. They will be lost after restarting SmartHome.py.
+`while logic.alive:` creates an endless loop. This way SmartHome.py could stop the loop at shutdown.
+Next section (trigger) describes the special function `logic.trigger()`.
+Predefined attributs of the logic object:
 
-* logic.name: with the name of the logic as specified in the logic.conf
-* logic.last_time(): this function provides the last run of this logic (before the actual one)
-* logic.prio: read and set the current prio of this logic.
+* logic.name: with the name of the logic as specified in logic.conf
+* logic.last_time(): this function provides the last run of this logic (before the recent one)
+* logic.prio: read and set of the current priority of this logic.
 
 ### logic.trigger()
-It is equal to `sh.trigger()` except that you cannot specify name, because it will trigger the current logic. The main reason to use this function is to run the logic (again) at a specified time.
+Equal to `sh.trigger()`, but it triggers only the current logic. This function is useful to run the logic (again) at a specified time.
 
 ## trigger
-`trigger` is a runtime enviroment for the logic which provides some information why the logic is triggerd.
+`trigger` is a runtime enviroment for the logic, which provides some information about the event that triggered the logic.
 
-It is a dictonary which could be accessed with: `trigger['by']`, `trigger['source']`, `trigger['dest']` and `trigger['value']`.
+It is a dictonary which can be used by: `trigger['by']`, `trigger['source']`, `trigger['dest']` and `trigger['value']`.
 
 ## logger and sh.log
-You could use this object to generate log messages. It provides five different log levels: debug, info, warning, error, critical.
-<code>logger.level(str) e.g. logger.info('42')</code>. The log messages are stored in the log file and the latest 50 entries in 'sh.log'.
-This way you could access the messages by plugins (visu) and logics. Attention: the datetime in every log entry is the timezone aware localtime.
+This object is useful to generate log messages. It provides five different log levels: debug, info, warning, error, critical.
+<code>logger.level(str) e.g. logger.info('42')</code>. The log messages are stored in the log file and the latest 50 entries are also in 'sh.log' available.
+So its possible to access the messages by plugins (visu) and logics. Attention: the datetime in every log entry is the timezone aware localtime.
 <pre># a simple loop over the log messages
 for entry in sh.log:
     print(entry) # remark: if SmartHome.py is run in daemon mode output by 'print' is not visible.
 </pre>
 
 ## sh.now and sh.utcnow
-These two functions return a timezone-aware datetime object. This way you could compute with different timezones.
-You could use <code>sh.tzinfo()</code> and <code>sh.utcinfo()</code> to address a local and the utc timezone.
+These two functions return a timezone-aware datetime object. Its possible to compute with different timezones.
+<code>sh.tzinfo()</code> and <code>sh.utcinfo()</code> address a local and the utc timezone.
 
 ## sh.sun
-This module provides access to some parameters of the sun. In order to use this module you have to specify the latitude (e.g. lat = 51.1633) and longitude (e.g. lon = 10.4476) in the smarthome.conf!
-<pre># sh.sun.pos([offset]) You could specify an minute offset.
+This module provides access to parameters of the sun. In order to use this module, it is required to specify the latitude (e.g. lat = 51.1633) and longitude (e.g. lon = 10.4476) in the smarthome.conf file!
+<pre># sh.sun.pos([offset]) specifies an minute offset.
 azimut, altitude = sh.sun.pos() # return the current sun position
 azimut, altitude = sh.sun.pos(30) # return the sun position 30 minutes
                                   # in the future.
 
-# sh.sun.set([offset]) You could specify an degree offset.
+# sh.sun.set([offset]) specifies an degree offset.
 sunset = sh.sun.set() # Returns a utc! based datetime object with the next
                       # sunset.
 sunset_tw = sh.sun.set(-6) # Would return the end of the twilight.
 
-# sh.sun.rise([offset]) You could specify an degree offset.
+# sh.sun.rise([offset]) specifies an degree offset.
 sunrise = sh.sun.rise() # Returns a utc! based datetime object with the next
                         # sunrise.
 sunrise_tw = sh.sun.rise(-6) # Would return the start of the twilight.
 </pre>
 
 ## sh.moon
-Besides the the three functions (pos, set, rise) it provide two more.
+Besides the the three functions (pos, set, rise) it provides two more.
 `sh.moon.light(offset)` provides a value from 0 - 100 of the iluminated surface at the current time + offset.
 `sh.moon.phase(offset)` returns the lunar phase as an integer [0-7]. 0 = new moon, 4 = full moon, 7 = waning crescent moon
 
@@ -118,20 +118,22 @@ Returns all children items with the specified config attribute.
 ## sh.scheduler
 ### sh.scheduler.trigger() / sh.trigger()
 
-This global function could trigger any specified logic by its name. `sh.trigger(name [, by] [, source] [, value] [, dt])`
-The mandatory `name` defines which logic to trigger. With `by` you could specify a name for the calling logic. By default its set to 'Logic'.
-The `source` you could name the reason for triggering and with `value` a variable.
-The `dt` option is for a timezone aware datetime object which specifies the triggering time.
-But watch out, if something else triggers that logic before the given datetime, it will not be triggered at the specified time! E.g. if you have set the `cycle` attribute to 60 seconds and you cant trigger after the next scheduled execution.
+This global function triggers any specified logic by its name. `sh.trigger(name [, by] [, source] [, value] [, dt])`
+`name` (mandatory) defines the logic to trigger. 
+`by`  a name of the calling logic. By default its set to 'Logic'.
+`source` the reason for triggering 
+`value` a variable.
+`dt` timezone aware datetime object, which specifies the triggering time
+But watch out, if something else triggers that logic before the given datetime, it will not be triggered at the specified time! E.g. setting the `cycle` attribute to 60 seconds it does not trigger after the next scheduled execution.
 
 ### sh.scheduler.change()
-This method allows to change some runtime options of logics. `sh.scheduler.change('alarmclock', active=False)` disables the logic 'alarmclock'. Besides the `active` flag you could change: `cron` and `cycle`.
+This method changes some runtime options of the logics. `sh.scheduler.change('alarmclock', active=False)` disables the logic 'alarmclock'. Besides the `active` flag, it is possible to change: `cron` and `cycle`.
 
 ## sh.tools
 The `sh.tools` object provide some useful functions:
 
 ### sh.tools.ping()
-Pings a computer and return True if the computer respondes and False if not.
+Pings a computer and returns True if the computer responds, otherwise False.
 `sh.office.laptop(sh.tools.ping('hostname'))`
 
 ### sh.tools.dewpoint()
@@ -141,7 +143,7 @@ Calculate the dewpoint for the provided temperature and humidity.
 ### sh.tools.fetch_url()
 Return a website as a String or 'False' if it fails.
 `sh.tools.fetch_url('https://www.regular.com')`
-You could specify an 'username' and 'password' to authenticate against a website.
+Its possible to use 'username' and 'password' to authenticate against a website.
 `sh.tools.fetch_url('https://www.special.com', 'username', 'password')`
 Or change the default 'timeout' of two seconds.
 `sh.tools.fetch_url('https://www.regular.com', timeout=4)`
@@ -157,4 +159,3 @@ In the logic enviroment are several python modules already loaded:
  * random
  * Queue
  * subprocess
-
