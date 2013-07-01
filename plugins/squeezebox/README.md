@@ -13,13 +13,13 @@ Should work with other Squeezebox players as well - please let me know!
 
 ## plugin.conf
 
-&ltpre&gt
+&lt;pre&gt;
 [squeezebox]
     class_name = Squeezebox
     class_path = plugins.squeezebox
-#    host = &ltserver&gt
-#    port = &ltport&gt
-&lt/pre&gt
+#    host = &lt;server&gt;
+#    port = &lt;port&gt;
+&lt;/pre&gt;
 
 Description of the attributes:
 
@@ -30,201 +30,201 @@ Description of the attributes:
 
 You can use all commands available by the telnet-interface.
 
-For a explanation of all available commands see http://&ltserver&gt:9000/html/docs/cli-api.html
+For a explanation of all available commands see http://&lt;server&gt;:9000/html/docs/cli-api.html
 
 Up to four identifier strings are used:
-* __squeezebox_playerid__: used in the parent item to allow using &ltplayerid&gt placeholder in the children
+* __squeezebox_playerid__: used in the parent item to allow using &lt;playerid&gt; placeholder in the children
 * __squeezebox_send__: used to set the item
 * __squeezebox_recv__: used to get notifications when running
 * __squeezebox_init__: used to query the item at start-up
  
 Fields:
-* __&ltplayerid&gt__: gets replaced by the player-id set in the parent item
+* __&lt;playerid&gt;__: gets replaced by the player-id set in the parent item
 * __{}__: the value of the item is written to this placeholder (don't use if a fixed/no value is required)
 
 You should verify all your commands manually by using the telnet-interface on port 9090.
-&ltpre&gt
-telnet &ltserver&gt:&ltport&gt
+&lt;pre&gt;
+telnet &lt;server&gt;:&lt;port&gt;
 listen 1
-&ltplayerid&gt name ?
+&lt;playerid&gt; name ?
 ...
-&lt/pre&gt
+&lt;/pre&gt;
 
-&ltpre&gt
+&lt;pre&gt;
 [Squeezebox]
   squeezebox_playerid = your-players-ID-in-here
 
   [[Name]]
     type = str
     visu = yes
-    squeezebox_send = &ltplayerid&gt name {}   
-    squeezebox_recv = &ltplayerid&gt name    
+    squeezebox_send = &lt;playerid&gt; name {}   
+    squeezebox_recv = &lt;playerid&gt; name    
   [[IP]]
     type = str
     visu = yes
-    squeezebox_recv = player ip &ltplayerid&gt   
+    squeezebox_recv = player ip &lt;playerid&gt;   
   [[Signal_Strength]]
     type = num
     visu = yes
-    squeezebox_recv = &ltplayerid&gt signalstrength    
+    squeezebox_recv = &lt;playerid&gt; signalstrength    
 
   [[Power]]
     type = bool
     visu = yes
-    squeezebox_send = &ltplayerid&gt power {}
-    squeezebox_recv = &ltplayerid&gt prefset server power
-    squeezebox_init = &ltplayerid&gt power    
+    squeezebox_send = &lt;playerid&gt; power {}
+    squeezebox_recv = &lt;playerid&gt; prefset server power
+    squeezebox_init = &lt;playerid&gt; power    
     
   [[Mute]]
     type = bool
     visu = yes
-    squeezebox_send = &ltplayerid&gt mixer muting {}
-    squeezebox_recv = &ltplayerid&gt prefset server mute
-    squeezebox_init = &ltplayerid&gt mixer muting
+    squeezebox_send = &lt;playerid&gt; mixer muting {}
+    squeezebox_recv = &lt;playerid&gt; prefset server mute
+    squeezebox_init = &lt;playerid&gt; mixer muting
   [[Volume]]
     type = num
     visu = yes
-    squeezebox_send = &ltplayerid&gt mixer volume {}
-    squeezebox_recv = &ltplayerid&gt prefset server volume
-    squeezebox_init = &ltplayerid&gt mixer volume    
+    squeezebox_send = &lt;playerid&gt; mixer volume {}
+    squeezebox_recv = &lt;playerid&gt; prefset server volume
+    squeezebox_init = &lt;playerid&gt; mixer volume    
   [[Volume_Up]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt button volup
+    squeezebox_send = &lt;playerid&gt; button volup
   [[Volume_Down]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt button voldown
+    squeezebox_send = &lt;playerid&gt; button voldown
     
   [[Play]]
     type = bool
     visu = yes
-    squeezebox_send = &ltplayerid&gt play
-    squeezebox_recv = &ltplayerid&gt play
-    squeezebox_init = &ltplayerid&gt mode
+    squeezebox_send = &lt;playerid&gt; play
+    squeezebox_recv = &lt;playerid&gt; play
+    squeezebox_init = &lt;playerid&gt; mode
   [[Stop]]
     type = bool
     visu = yes
-    squeezebox_send = &ltplayerid&gt stop
-    squeezebox_recv = &ltplayerid&gt stop
-    squeezebox_init = &ltplayerid&gt mode
+    squeezebox_send = &lt;playerid&gt; stop
+    squeezebox_recv = &lt;playerid&gt; stop
+    squeezebox_init = &lt;playerid&gt; mode
   [[Pause]]
     type = bool
     visu = yes
-    squeezebox_send = &ltplayerid&gt pause {}
-    squeezebox_recv = &ltplayerid&gt pause
-    squeezebox_init = &ltplayerid&gt mode
+    squeezebox_send = &lt;playerid&gt; pause {}
+    squeezebox_recv = &lt;playerid&gt; pause
+    squeezebox_init = &lt;playerid&gt; mode
     
   [[Current_Title]]
     type = str
     visu = yes
-    squeezebox_recv = &ltplayerid&gt playlist newsong
-    squeezebox_init = &ltplayerid&gt current_title
+    squeezebox_recv = &lt;playerid&gt; playlist newsong
+    squeezebox_init = &lt;playerid&gt; current_title
 
   [[Genre]]
     type = str
     visu = yes
-    squeezebox_recv = &ltplayerid&gt genre
+    squeezebox_recv = &lt;playerid&gt; genre
   [[Artist]]
     type = str
     visu = yes
-    squeezebox_recv = &ltplayerid&gt artist
+    squeezebox_recv = &lt;playerid&gt; artist
   [[Album]]
     type = str
     visu = yes
-    squeezebox_recv = &ltplayerid&gt album
+    squeezebox_recv = &lt;playerid&gt; album
   [[Title]]
     type = str
     visu = yes
-    squeezebox_recv = &ltplayerid&gt title
+    squeezebox_recv = &lt;playerid&gt; title
   [[Duration]]
     type = num
     visu = yes
-    squeezebox_recv = &ltplayerid&gt duration
+    squeezebox_recv = &lt;playerid&gt; duration
 
   [[Time]]
     type = num
     visu = yes
-    squeezebox_send = &ltplayerid&gt time {}
-    squeezebox_recv = &ltplayerid&gt time
+    squeezebox_send = &lt;playerid&gt; time {}
+    squeezebox_recv = &lt;playerid&gt; time
 
   [[Playlist_Index]]
     type = num
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist index {}
-    squeezebox_recv = &ltplayerid&gt playlist index
+    squeezebox_send = &lt;playerid&gt; playlist index {}
+    squeezebox_recv = &lt;playerid&gt; playlist index
   [[Playlist_Forward]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist index +1
+    squeezebox_send = &lt;playerid&gt; playlist index +1
   [[Playlist_Backward]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist index -1
+    squeezebox_send = &lt;playerid&gt; playlist index -1
     
   [[Playlist_Name]]
     type = str
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist name {}
-    squeezebox_recv = &ltplayerid&gt playlist name
+    squeezebox_send = &lt;playerid&gt; playlist name {}
+    squeezebox_recv = &lt;playerid&gt; playlist name
   [[Playlist_Save]]
     type = str
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist save {}   
+    squeezebox_send = &lt;playerid&gt; playlist save {}   
   [[Playlist_Load]]
     type = str
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist load {}
+    squeezebox_send = &lt;playerid&gt; playlist load {}
   [[Playlist_Load_Internetradio]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist load file:///home/robert/playlists/Internetradio.m3u
+    squeezebox_send = &lt;playerid&gt; playlist load file:///home/robert/playlists/Internetradio.m3u
     
   [[Repeat]]
     type = num
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist repeat {}
-    squeezebox_recv = &ltplayerid&gt playlist repeat    
+    squeezebox_send = &lt;playerid&gt; playlist repeat {}
+    squeezebox_recv = &lt;playerid&gt; playlist repeat    
   [[Repeat_Song]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist repeat 1
+    squeezebox_send = &lt;playerid&gt; playlist repeat 1
   [[Repeat_Playlist]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist repeat 2
+    squeezebox_send = &lt;playerid&gt; playlist repeat 2
   [[Repeat_None]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist repeat 0
+    squeezebox_send = &lt;playerid&gt; playlist repeat 0
     
   [[Shuffle]]
     type = num
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist shuffle {}
-    squeezebox_recv = &ltplayerid&gt playlist shuffle    
+    squeezebox_send = &lt;playerid&gt; playlist shuffle {}
+    squeezebox_recv = &lt;playerid&gt; playlist shuffle    
   [[Shuffle_By_Song]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist shuffle 1
+    squeezebox_send = &lt;playerid&gt; playlist shuffle 1
   [[Shuffle_By_Album]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist shuffle 2
+    squeezebox_send = &lt;playerid&gt; playlist shuffle 2
   [[Shuffle_None]]
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &ltplayerid&gt playlist shuffle 0 
-&lt/pre&gt
+    squeezebox_send = &lt;playerid&gt; playlist shuffle 0 
+&lt;/pre&gt;
