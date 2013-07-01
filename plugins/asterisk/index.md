@@ -9,15 +9,17 @@ changed: 2011-08-08T20:58:06+0200
 
 Requirements
 ============
-You need a running asterisk daemon with a configured Asterisk Manager Interface (AMI). In the manager.config you have to enable at least: <code>read = system,call,user,cdr</code> and `write = system,call,orginate`.
-In misc/asterisk you could find some configuration files from my asterisk setup to guide you.
+A running asterisk daemon with a configured Asterisk Manager Interface (AMI) is necessary. 
+In manager.config its required to enable at least: 
+<code>read = system,call,user,cdr</code> and `write = system,call,orginate`.
+In misc/asterisk some configuration files from the authors asterisk are available to learn from.
 
 Configuration
 =============
 
 ## plugin.conf
 
-You have to provide the username and password of the AMI and you could specify a differnt IP and port address.
+The plugin needs the username and password of the AMI and a IP and port address if asterisk does not run on localhost. 
 
 <pre>
 [ast]
@@ -33,8 +35,8 @@ You have to provide the username and password of the AMI and you could specify a
 
 ### ast_dev
 
-You could specify the `ast_dev` attribute to an bool item in your items.conf. The argument could be a number or string and corrospond to your asterisk device configuration.
-E.g. <code>2222</code> for the following device in your asterisk sip.conf:
+Its possible to specify the `ast_dev` attribute to an bool item in items.conf. The argument could be a number or string and corrospond to thhe asterisk device configuration.
+E.g. <code>2222</code> for the following device in asterisk sip.conf:
 <pre>[2222]
 secret=very
 context=internal
@@ -43,7 +45,7 @@ context=internal
 ### ast_box
 The mailbox number of this phone. It will be set to the number of new messages in this mailbox.
 
-And in your items.conf:
+In items.conf:
 <pre>
 [office]
     [[fon]]
@@ -54,12 +56,12 @@ And in your items.conf:
             ast_box = 22
 </pre>
 
-If you call the '2222' sip client or making a call from it, <code>office.fon</code> will be set to True. If you finish the call it will be set to False.
+Calling the '2222' from sip client or making a call from it, <code>office.fon</code> will be set to True. After finishing the call, it will be set to False.
 
 
 ## logic.conf
 
-You could specify the `ast_userevent` keyword to every logic in your logic.conf.
+It is possible to specify the `ast_userevent` keyword to every logic in logic.conf.
 <pre>
 ['logic1']
     ast_userevent = Call
@@ -68,8 +70,8 @@ You could specify the `ast_userevent` keyword to every logic in your logic.conf.
     ast_userevent = Action
 </pre>
 
-In your asterisk extensions.conf `exten => _X.,n,UserEvent(Call,Source: ${CALLERID(num)},Value: ${CALLERID(name)})` would trigger 'logic1' every time you send this UserEvent.
-You you specify a destination for the logic will be triggered with e.g. `exten => _X.,n,UserEvent(Call,Source: ${CALLERID(num)},Destination: Office,Value: ${CALLERID(name)})`
+In the asterisk extensions.conf `exten => _X.,n,UserEvent(Call,Source: ${CALLERID(num)},Value: ${CALLERID(name)})` would trigger 'logic1' every time, this UserEvent is sent.
+A specified destination for the logic will be triggered e.g. `exten => _X.,n,UserEvent(Call,Source: ${CALLERID(num)},Destination: Office,Value: ${CALLERID(name)})`
 
 
 Functions
@@ -77,7 +79,7 @@ Functions
 
 call(source, dest, context, callerid=None)
 ------------------------------------------
-`sh.ast.call('SIP/200', '240', 'door')` would initate a call from the SIP extention '200' to the extention '240' with the 'door' context. If you want you could provied a callerid for the call.
+`sh.ast.call('SIP/200', '240', 'door')` would initate a call from the SIP extention '200' to the extention '240' with the 'door' context. Optional a callerid for the call is usable.
 
 db_write(key, value)
 --------------------
@@ -96,6 +98,6 @@ mailbox_count(mailbox, context='default')
 
 # Log
 
-This plugin provides one logfile `sh.ast.log`. In the Visu you could show it with:
+This plugin provides a logfile `sh.ast.log`. It can be shown in the Visu by:
 `<ul data-log="Asterisk-Incoming" data-max="5" data-filter="true" data-role="listview" data-inset="true"></ul>`.
 
