@@ -13,13 +13,13 @@ Should work with other Squeezebox players as well - please let me know!
 
 ## plugin.conf
 
-&lt;pre&gt;
+<pre>
 [squeezebox]
     class_name = Squeezebox
     class_path = plugins.squeezebox
 #    host = &lt;server&gt;
 #    port = &lt;port&gt;
-&lt;/pre&gt;
+</pre>
 
 Description of the attributes:
 
@@ -43,14 +43,14 @@ Fields:
 * __{}__: the value of the item is written to this placeholder (don't use if a fixed/no value is required)
 
 You should verify all your commands manually by using the telnet-interface on port 9090.
-&lt;pre&gt;
+<pre>
 telnet &lt;server&gt;:&lt;port&gt;
 listen 1
 &lt;playerid&gt; name ?
 ...
-&lt;/pre&gt;
+</pre>
 
-&lt;pre&gt;
+<pre>
 [Squeezebox]
   squeezebox_playerid = your-players-ID-in-here
 
@@ -227,4 +227,4 @@ listen 1
     enforce_updates = true
     visu = yes
     squeezebox_send = &lt;playerid&gt; playlist shuffle 0 
-&lt;/pre&gt;
+</pre>
