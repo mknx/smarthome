@@ -17,19 +17,19 @@ plugin.conf
    class_path = plugins.cli
 #   ip = 127.0.0.1
 #   port = 2323
-#   update = False
+#   update = false
 </pre>
 
-This plugin listen by default on 127.0.0.1 port 2323 for a telnet connection.
-You could change the IP to a local address or to <code>0.0.0.0</code> to get access it over the network.
-By default you could only list the values of your items. If you want to change them you have to allow updates by <code>update = True</code>.
+This plugin listens for a telnet connection. 
+<code>ip = </code> used network interface, e.g. 127.0.0.1 (localhost, default) or listen on all network interfaces: 0.0.0.0
+<code>port =</code> used network port, default 2323
+<code>update =</code> restrict the access of the items to read only (false, default) or allows read/write access (true)
 
 Usage
 =====
 
-Just telnet to the port: <code>telnet 127.0.0.1 2323</code> and enter <code>help</code> for a list of commands.
-
-It would return:
+Telnet to the configured IP adress and port. 
+<code>help</code>list an set of available commands:
 <pre>ls: list the first level items
 cl: clear smarthome in memory log
 ls item: list item and every child item (with values)
@@ -45,4 +45,5 @@ q: alias for quit
 exit: alias for quit
 x: alias for quit</pre>
 
-You could list <code>ls</code> items and areas or update items <code>up office.light = On</code>.
+Example:
+<code>up office.light = On</code> update an item.
