@@ -163,21 +163,35 @@ class Squeezebox(lib.my_asynchat.AsynChat):
                 if (data[2] == 'play'):
                     self._update_items_with_data([data[0], 'prefset server mute', 0])
                 return
+            elif re.match("[+-][0-9]+$", data[-1]):
+                # handle a relative step like '+1' or '-10'
+                logger.debug('got relative value - can\'t handle that - requesting absolute value')
+                self._send(' '.join(data_str for data_str in data[:-1]) + ' ?')
+                return
+                
             elif (data[1] == 'prefset'):
                 if (data[2] == 'server'):
                     if (data[3] == 'volume'):
                         # make sure value is always positive - also if muted!
                         data[4] = abs(int(data[4]))
             elif (data[1] == 'playlist'):
-                if (data[2] == 'newsong'):
+                if (data[2] == 'jump') and (len(data) == 4):
+                    self._update_items_with_data([data[0], 'playlist index', data[3]]) 
+                elif (data[2] == 'newsong'):
+                    if (len(data) >= 4):
+                        self._update_items_with_data([data[0], 'title', data[3]])
+                    else:
+                        self._send(data[0] + ' title ?')                    
+                    if (len(data) >= 5):
+                        self._update_items_with_data([data[0], 'playlist index', data[4]])                   
                     # trigger reading of other song fields
-                    for field in ['genre', 'artist', 'album', 'title', 'duration']:
+                    for field in ['genre', 'artist', 'album', 'duration']:
                         self._send(data[0] + ' ' + field + ' ?')
             elif (data[1] in ['genre', 'artist', 'album', 'title']) and (len(data) == 2):
-                # these fields are returned empty so no update takes plase - append '' to trigger update
+                # these fields are returned empty so update fails - append '' to allow update
                 data.append('')           
             elif (data[1] in ['duration']) and (len(data) == 2):
-                # these fields are returned empty so no update takes plase - append '0' to trigger update
+                # these fields are returned empty so update fails - append '0' to allow update
                 data.append('0')           
                 
         self._update_items_with_data(data)
@@ -186,8 +200,9 @@ class Squeezebox(lib.my_asynchat.AsynChat):
         cmd = ' '.join(data_str for data_str in data[:-1])
         if (cmd in self._val):
             for item in self._val[cmd]['items']:
-                if isinstance(item(), str) or isinstance(item(), unicode):
-                    data[-1] = data[-1].decode('utf-8')            
+                if isinstance(item(), (str, unicode)):
+                    data[-1] = data[-1].decode('utf-8')
+                                    
                 item(data[-1], 'LMS', "{}:{}".format(self.addr[0],self.addr[1]))
                  
     def found_terminator(self):
