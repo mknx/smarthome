@@ -17,9 +17,11 @@ System
 
 * OS: Any Linux or Unix System should be fine. SmartHome.py is tested on Ubuntu 12.04 (amd64) and on an appliance with an outdated debian. So the specific installation commands may differ from this guide.
 * NTP: A running NTP daemon is recommended:
-```
+<pre>
+<code>
 # apt-get install openntpd</code>
-```
+</code>
+</pre>
 
 Python
 ------
