@@ -15,38 +15,41 @@ Requirements
 System
 ------
 
-* OS: Any Linux or Unix System should be fine. We are running SmartHome.py on Ubuntu 12.04 (amd64) and on an appliance with an outdated debian. So your installation commands may differ from this guide.
-* NTP: You should really run a NTP daemon. <code>apt-get install openntpd</code>
+* OS: Any Linux or Unix System should be fine. SmartHome.py is tested on Ubuntu 12.04 (amd64) and on an appliance with an outdated debian. So the specific installation commands may differ from this guide.
+* NTP: A running NTP daemon is recommended:
+<code>apt-get install openntpd</code>
 
 Python
 ------
-Python 2.6 and 2.7 is tested. 3.x could have problems.
+Python 2.6 and 2.7 is recommended. 3.x could have problems.
 
 The base system needs two modules:
 <code>apt-get install python-configobj python-dateutil</code>
 
-If you want to use sunset/sunrise triggers, you have to install pyephem as well.
+Calculating of sunset/sunrise in triggers,requires installation of **pyephem** as well.
 <pre># apt-get install python-pip python-dev
 # pip install pyephem</pre>
 
 ### User
-You may want to create an separate user to run SmartHome.py. <code>adduser smarthome</code>
+A dedicated user for smarthome.py can be created: 
+
+<code>adduser smarthome</code>
 
 # Installation
 
 ## Stable Release
 
 ### Download
-At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/tags) you could download the latest stable version.
+At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/tags) the latest stable version is availabe.
 
-### Install Latest Release
+### Installation of the latest release
 <pre>$ cd /usr/local
 $ sudo tar --owner=smarthome xvzf path-to-tgz/smarthome-X.X.tgz
 </pre>
-Now everything is extracted to <code>/usr/local/smarthome/</code>.
+Everything is extracted to <code>/usr/local/smarthome/</code>. It is possible to use another path.
 
 ### Developement
-If you want to follow the current developement:
+For using the recent developer version of smarthome.py:
 
 as root:
 <pre># mkdir -p /usr/local/smarthome/
@@ -65,22 +68,22 @@ $ cd /usr/local/smarthome
 $ git pull
 </pre>
 
-You have to copy the `smarthome.js` files if the have changed:
+If `smarthome.js` has been chaged, it should be copied:
 <pre>
 $ cp /usr/local/smarthome/exampleis/visu/js/smarthome.* /var/www/smarthome/js/*
 </pre>
 
 
 # Structure
-Within <code>/usr/local/smarthome/</code> is the following structure:
+Structure of the smarthome.py directory, e.g. <code>/usr/local/smarthome/</code>:
 
  * bin/: contains <code>smarthome.py</code>
- * dev/ developer files
+ * dev/ development files
  * etc/: should contain the basic configuration files (smarthome.conf, plugin.conf, logic.conf)
- * examples/: contain some example files for the configaration and the visu plugin
+ * examples/: contains some example files for the configaration and the visu plugin
  * items/: should contain one or more item configuration files.
  * lib/: contains the core libraries of SmartHome.py
- * logics/: should contain your logic scripts
+ * logics/: should contain the logic scripts
  * plugins/: contains the available plugins
  * tools/: contains little programms helping to maintain SmartHome.py
  * var/log/: contains the logfiles
@@ -95,7 +98,7 @@ Every [plugin](/smarthome/plugins/) has it's own installation section.
 
 Running SmartHome.py
 ====================
-You could run SmartHome.py (`/usr/local/smarthome/bin/smarthome.py`) with different arguments.
+Arguments for running SmartHome.py (`/usr/local/smarthome/bin/smarthome.py`):
 
 * `--start` or 'None'
 * `--stop`
