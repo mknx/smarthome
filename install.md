@@ -16,23 +16,17 @@ System
 ------
 
 * OS: Any Linux or Unix System should be fine. SmartHome.py is tested on Ubuntu 12.04 (amd64) and on an appliance with an outdated debian. So the specific installation commands may differ from this guide.
-* NTP: A running NTP daemon is recommended:
-<pre>
-<code>
-# apt-get install openntpd</code>
-</code>
-</pre>
+* NTP: A running NTP daemon is recommended: `# apt-get install openntpd`
 
 Python
 ------
 Python 2.6 and 2.7 is recommended. 3.x could have problems.
 
-The base system needs two modules:
-```
-# apt-get install python-configobj python-dateutil</code>
+The base system needs two modules: `# apt-get install python-configobj python-dateutil`
 ```
 
 Calculating of sunset/sunrise in triggers,requires installation of **pyephem** as well.
+
 ```
 # apt-get install python-pip python-dev
 # pip install pyephem</pre>
@@ -40,6 +34,7 @@ Calculating of sunset/sunrise in triggers,requires installation of **pyephem** a
 
 ### User
 A dedicated user for smarthome.py can be created: 
+
 ```
 # adduser smarthome</code>
 ```
@@ -51,34 +46,40 @@ A dedicated user for smarthome.py can be created:
 At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/tags) the latest stable version is availabe.
 
 ### Installation of the latest release
+
 ```
 $ cd /usr/local
 $ sudo tar --owner=smarthome xvzf path-to-tgz/smarthome-X.X.tgz
 ```
+
 Everything is extracted to <code>/usr/local/smarthome/</code>. It is possible to use another path.
 
 ### Developement
 For using the recent developer version of smarthome.py:
 
 as root:
+
 ```
 # mkdir -p /usr/local/smarthome/
 # chown USER /usr/local/smarthome/
 ```
 
 as USER:
+
 ```
 $ cd /usr/local
 $ git clone git://github.com/mknx/smarthome.git
 ```
 
 To get the latest updates:
+
 ```
 $ cd /usr/local/smarthome
 $ git pull
 ```
 
 If `smarthome.js` has been chaged, it should be copied:
+
 ```
 $ cp /usr/local/smarthome/exampleis/visu/js/smarthome.* /var/www/smarthome/js/*
 ```
