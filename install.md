@@ -17,24 +17,30 @@ System
 
 * OS: Any Linux or Unix System should be fine. SmartHome.py is tested on Ubuntu 12.04 (amd64) and on an appliance with an outdated debian. So the specific installation commands may differ from this guide.
 * NTP: A running NTP daemon is recommended:
-<code>apt-get install openntpd</code>
+```
+apt-get install openntpd</code>
+```
 
 Python
 ------
 Python 2.6 and 2.7 is recommended. 3.x could have problems.
 
 The base system needs two modules:
-<code>apt-get install python-configobj python-dateutil</code>
+```
+apt-get install python-configobj python-dateutil</code>
+```
 
 Calculating of sunset/sunrise in triggers,requires installation of **pyephem** as well.
-<pre># apt-get install python-pip python-dev
+```
+# apt-get install python-pip python-dev
 # pip install pyephem</pre>
+```
 
 ### User
 A dedicated user for smarthome.py can be created: 
-
-<code>adduser smarthome</code>
-
+```
+adduser smarthome</code>
+```
 # Installation
 
 ## Stable Release
@@ -43,35 +49,37 @@ A dedicated user for smarthome.py can be created:
 At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/tags) the latest stable version is availabe.
 
 ### Installation of the latest release
-<pre>$ cd /usr/local
+```
+$ cd /usr/local
 $ sudo tar --owner=smarthome xvzf path-to-tgz/smarthome-X.X.tgz
-</pre>
+```
 Everything is extracted to <code>/usr/local/smarthome/</code>. It is possible to use another path.
 
 ### Developement
 For using the recent developer version of smarthome.py:
 
 as root:
-<pre># mkdir -p /usr/local/smarthome/
+```
+# mkdir -p /usr/local/smarthome/
 # chown USER /usr/local/smarthome/
-</pre>
+```
 
 as USER:
-<pre>
+```
 $ cd /usr/local
 $ git clone git://github.com/mknx/smarthome.git
-</pre>
+```
 
 To get the latest updates:
-<pre>
+```
 $ cd /usr/local/smarthome
 $ git pull
-</pre>
+```
 
 If `smarthome.js` has been chaged, it should be copied:
-<pre>
+```
 $ cp /usr/local/smarthome/exampleis/visu/js/smarthome.* /var/www/smarthome/js/*
-</pre>
+```
 
 
 # Structure
