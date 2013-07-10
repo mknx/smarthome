@@ -18,7 +18,7 @@ System
 * OS: Any Linux or Unix System should be fine. SmartHome.py is tested on Ubuntu 12.04 (amd64) and on an appliance with an outdated debian. So the specific installation commands may differ from this guide.
 * NTP: A running NTP daemon is recommended:
 ```
-apt-get install openntpd</code>
+# apt-get install openntpd</code>
 ```
 
 Python
@@ -27,7 +27,7 @@ Python 2.6 and 2.7 is recommended. 3.x could have problems.
 
 The base system needs two modules:
 ```
-apt-get install python-configobj python-dateutil</code>
+# apt-get install python-configobj python-dateutil</code>
 ```
 
 Calculating of sunset/sunrise in triggers,requires installation of **pyephem** as well.
@@ -39,7 +39,7 @@ Calculating of sunset/sunrise in triggers,requires installation of **pyephem** a
 ### User
 A dedicated user for smarthome.py can be created: 
 ```
-adduser smarthome</code>
+# adduser smarthome</code>
 ```
 # Installation
 
