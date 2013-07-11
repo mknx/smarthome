@@ -23,21 +23,24 @@ Python
 Python 2.6 and 2.7 is recommended. 3.x could have problems.
 
 The base system needs two modules: `# apt-get install python-configobj python-dateutil`
-```
 
 Calculating of sunset/sunrise in triggers,requires installation of **pyephem** as well.
 
-```
+<pre>
+<code>
 # apt-get install python-pip python-dev
 # pip install pyephem</pre>
-```
+</code>
+</pre>
 
 ### User
 A dedicated user for smarthome.py can be created: 
-
-```
+<pre>
+<code>
 # adduser smarthome</code>
-```
+</code>
+</pre>
+
 # Installation
 
 ## Stable Release
@@ -47,10 +50,12 @@ At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/ta
 
 ### Installation of the latest release
 
-```
+<pre>
+<code>
 $ cd /usr/local
 $ sudo tar --owner=smarthome xvzf path-to-tgz/smarthome-X.X.tgz
-```
+</code>
+</pre>
 
 Everything is extracted to <code>/usr/local/smarthome/</code>. It is possible to use another path.
 
@@ -59,31 +64,38 @@ For using the recent developer version of smarthome.py:
 
 as root:
 
-```
+<pre>
+<code>
 # mkdir -p /usr/local/smarthome/
 # chown USER /usr/local/smarthome/
-```
+</code>
+</pre>
 
 as USER:
 
-```
+<pre>
+<code>
 $ cd /usr/local
 $ git clone git://github.com/mknx/smarthome.git
-```
+</code>
+</pre>
 
 To get the latest updates:
 
-```
+<pre>
+<code>
 $ cd /usr/local/smarthome
 $ git pull
-```
+</code>
+</pre>
 
 If `smarthome.js` has been chaged, it should be copied:
 
-```
+<pre>
+<code>
 $ cp /usr/local/smarthome/exampleis/visu/js/smarthome.* /var/www/smarthome/js/*
-```
-
+</code>
+</pre>
 
 # Structure
 Structure of the smarthome.py directory, e.g. <code>/usr/local/smarthome/</code>:
