@@ -29,7 +29,7 @@ Calculating of sunset/sunrise in triggers,requires installation of **pyephem** a
 <pre>
 <code>
 # apt-get install python-pip python-dev
-# pip install pyephem</pre>
+# pip install pyephem
 </code>
 </pre>
 
@@ -37,7 +37,7 @@ Calculating of sunset/sunrise in triggers,requires installation of **pyephem** a
 A dedicated user for smarthome.py can be created: 
 <pre>
 <code>
-# adduser smarthome</code>
+# adduser smarthome
 </code>
 </pre>
 
