@@ -85,9 +85,9 @@ For sunset / sonrise You could provide:
 
    * an horizon offset in degrees e.g. <code>crontab = sunset-6</code> You have to specify your latitude/longitued in smarthome.conf.
    * an offset in minutes specified by a 'm' e.g. <code>crontab = sunset-10m</code>
-   * a boundry for the execution <pre>crontab = 17:00<sunset  # sunset, but not bevor 17:00 (locale time)
-crontab = sunset<20:00  # sunset, but not after 20:00 (locale time)
-crontab = 17:00<sunset<20:00  # sunset, beetween 17:00 and 20:00</pre>
+   * a boundry for the execution <pre>crontab = 17:00&lt;sunset  # sunset, but not bevor 17:00 (locale time)
+crontab = sunset&lt;20:00  # sunset, but not after 20:00 (locale time)
+crontab = 17:00&lt;sunset&lt;20:00  # sunset, beetween 17:00 and 20:00</pre>
 
 <code>crontab = 15 * * * = 50</code>
 Calls the logic with <code>trigger['value'] # == 50</code>
