@@ -38,6 +38,7 @@ class Orb():
 
     def __init__(self, orb, lon, lat, elev=False):
         if ephem is None:
+            logger.warning("Could not find/use pyephem!")
             return
         self._obs = ephem.Observer()
         self._obs.long = str(lon)
