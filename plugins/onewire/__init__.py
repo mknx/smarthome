@@ -410,9 +410,6 @@ class OneWire(OwBase):
         self._discovered = True
 
     def parse_item(self, item):
-        if 'ow_id' in item.conf:  # XXX migration warning, could be removed with 1.0 release
-            logger.warning("'{0}' attribute 'ow_id' outdated. See http://mknx.github.com/smarthome/plugins/owng/ for valid keywords and values.".format(item.id()))
-            return
         if 'ow_addr' not in item.conf:
             return
         if 'ow_sensor' not in item.conf:
