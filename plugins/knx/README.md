@@ -67,7 +67,10 @@ Right know the following datapoint types are supported:
 If you are missing one, open a bug report or drop me a message in the knx user forum.
 
 ### knx_send
-You could specify one or more group addresses to send updates to.
+You could specify one or more group addresses to send updates to. Item update will only be sent if the item is not changed via KNX.
+
+### knx_status
+Similar to knx_send but will send updates even for changes vie KNX if the knx_status GA differs from the destination GA.
 
 ### knx_listen
 You could specify one or more group addresses to monitor for changes.

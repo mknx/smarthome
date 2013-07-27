@@ -265,9 +265,11 @@ class KNX(lib.my_asynchat.AsynChat):
                 else:
                     logger.warning("knx: {0} knx_reply ({1}) already defined for {2}".format(item, ga, self.gar[ga]['item']))
 
-        if 'knx_send' in item.conf:
+        if 'knx_send' in item.conf or 'knx_status' in item.conf:
             if isinstance(item.conf['knx_send'], str):
                 item.conf['knx_send'] = [item.conf['knx_send'], ]
+            if isinstance(item.conf['knx_status'], str):
+                item.conf['knx_status'] = [item.conf['knx_status'], ]
             return self.update_item
         else:
             return None
@@ -308,6 +310,11 @@ class KNX(lib.my_asynchat.AsynChat):
                     self.gar[ga] = {'dpt': dpt, 'item': None, 'logic': logic}
 
     def update_item(self, item, caller=None, source=None, dest=None):
-        for ga in item.conf['knx_send']:  # send status update
-            if ga != dest:
-                self.groupwrite(ga, item(), item.conf['knx_dpt'])
+        if 'knx_send' in item.conf:
+            if caller != 'KNX':
+                for ga in item.conf['knx_send']:
+                    self.groupwrite(ga, item(), item.conf['knx_dpt'])
+        if 'knx_status' in item.conf:
+            for ga in item.conf['knx_status']:  # send status update
+                if ga != dest:
+                    self.groupwrite(ga, item(), item.conf['knx_dpt'])
