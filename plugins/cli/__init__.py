@@ -155,7 +155,7 @@ class CLIHandler(asynchat.async_chat):
         for logic in self.sh.return_logics():
             nt = self.sh.scheduler.return_next(logic)
             if nt is not None:
-                self.push("{0} (scheduled for {1})\n".format(logic, nt.strftime('%Y-%m-%d %H:%M:%S')))
+                self.push("{0} (scheduled for {1})\n".format(logic, nt.strftime('%Y-%m-%d %H:%M:%S%z')))
             else:
                 self.push("{0}\n".format(logic))
 
