@@ -6,20 +6,34 @@
 #  This software is based on Stuart Pittaway's "NANODE SMA PV MONITOR"
 #  https://github.com/stuartpittaway/nanodesmapvmonitor
 #
+#  This software is based on SBF's "SMAspot"
+#  https://code.google.com/p/sma-spot/
+#
 #  SMA-Plugin for SmartHome.py.   http://mknx.github.com/smarthome/
 #
-#  This plugin is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+#	License: Attribution-NonCommercial-ShareAlike 3.0 Unported (CC BY-NC-SA 3.0)
+#	http://creativecommons.org/licenses/by-nc-sa/3.0/
 #
-#  This plugin is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this plugin. If not, see <http://www.gnu.org/licenses/>.
+#	You are free:
+#		to Share — to copy, distribute and transmit the work
+#		to Remix — to adapt the work
+#	Under the following conditions:
+#	Attribution:
+#		You must attribute the work in the manner specified by the author or licensor
+#		(but not in any way that suggests that they endorse you or your use of the work).
+#	Noncommercial:
+#		You may not use this work for commercial purposes.
+#	Share Alike:
+#		If you alter, transform, or build upon this work, you may distribute the resulting work
+#		only under the same or similar license to this one.
+# 
+#DISCLAIMER:
+#	A user of this plugin acknowledges that he or she is receiving this
+#	software on an "as is" basis and the user is not relying on the accuracy
+#	or functionality of the software for any purpose. The user further
+#	acknowledges that any use of this software will be at his own risk
+#	and the copyright owner accepts no responsibility whatsoever arising from
+#	the use or application of the software.
 #########################################################################
 
 import bluetooth
@@ -69,25 +83,22 @@ FCSTAB = [
     0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78,
     ]
 
-# Start-Address, End-Address, ?, (Länge der einzelnen Datenfelder?)
-TOTAL_YIELD = (0x2601, 0x2601, 0xA009, [0x80, 0x00, 0x02, 0x00, 0x54])
-DAY_YIELD = (0x2622, 0x2622, 0xA009, [0x80, 0x00, 0x02, 0x00, 0x54])
-AC_POWER = (0x263F, 0x263F, 0xA109, [0x80, 0x00, 0x02, 0x00, 0x51], 0x0E)
-# works as well!!?? AC_POWER    = (0x263F, 0x263F, 0xA109, [0x80,0x00,0x02,0x00,0x51])
-DC_POWER = (0x2500, 0x25FF, 0xE009, [0x83, 0x00, 0x02, 0x80, 0x53])
-DC_VOLTAMPS = (0x4500, 0x45FF, 0xE009, [0x83, 0x00, 0x02, 0x80, 0x53])
-AC_DATA = (0x2000, 0x50FF, 0xA109, [0x80, 0x00, 0x02, 0x00, 0x51], 0x0E)
+# Start-Address, End-Address, ?
+YIELDS = (0x00260100, 0x002622FF, [0x00, 0x02, 0x00, 0x54]) 
+DC_POWER = (0x00251E00, 0x00251EFF, [0x00, 0x02, 0x80, 0x53])
+DC_UI = (0x00451F00, 0x004521FF, [0x00, 0x02, 0x80, 0x53])
+AC_P_TOTAL = (0x00263F00, 0x00263FFF, [0x00, 0x02, 0x00, 0x51])
+AC_P_PHASE = (0x00464000, 0x004642FF, [0x00, 0x02, 0x00, 0x51])
+AC_UI = (0x00464800, 0x004652FF, [0x00, 0x02, 0x00, 0x51])
+GRID_FREQ = (0x00465700, 0x004657FF, [0x00, 0x02, 0x00, 0x51])
+AC_MAX = (0x00411E00, 0x004120FF, [0x00, 0x02, 0x00, 0x51])
+AC_MAX2 = (0x00832A00, 0x00832AFF, [0x00, 0x02, 0x00, 0x51])
 
-# works but unknown response
-AC_DATA2 = (0x2000, 0x50FF, 0xA009, [0x80, 0x00, 0x02, 0x80, 0x51])
-#2013-06-15 21:31:40,713 sma.update   DEBUG    sma: value_code=0x2148 / value=35 -- __init__.py:_inv_get_value:537
-#2013-06-15 21:31:40,714 sma.update   DEBUG    sma: value_code=0x4132 / value=303 -- __init__.py:_inv_get_value:537
-#2013-06-15 21:31:40,714 sma.update   DEBUG    sma: value_code=0x4133 / value=303 -- __init__.py:_inv_get_value:537
-#2013-06-15 21:31:40,715 sma.update   DEBUG    sma: value_code=0x4149 / value=302 -- __init__.py:_inv_get_value:537
-#2013-06-15 21:31:40,715 sma.update   DEBUG    sma: value_code=0x414a / value=336 -- __init__.py:_inv_get_value:537
-#2013-06-15 21:31:40,716 sma.update   DEBUG    sma: value_code=0x414b / value=302 -- __init__.py:_inv_get_value:537
-#2013-06-15 21:31:40,716 sma.update   DEBUG    sma: value_code=0x4164 / value=51 -- __init__.py:_inv_get_value:537
-#2013-06-15 21:31:40,717 sma.update   DEBUG    sma: value_code=0x4165 / value=557 -- __init__.py:_inv_get_value:537
+TYPE_LABEL = (0x00821E00, 0x008220FF, [0x00, 0x02, 0x00, 0x58])
+SW_VERSION = (0x00823400, 0x008234FF, [0x00, 0x02, 0x00, 0x58])
+DEV_STATUS = (0x00214800, 0x002148FF, [0x00, 0x02, 0x80, 0x51])
+GRID_RELAY = (0x00416400, 0x004164FF, [0x00, 0x02, 0x80, 0x51])
+OPER_HOURS = (0x00462E00, 0x00462FFF, [0x00, 0x02, 0x00, 0x54])
 
 logger = logging.getLogger('SMA')
 
@@ -115,27 +126,21 @@ class SMA():
     def _update_values(self):
         #logger.warning("sma: signal strength = %d%%" % self._inv_get_bt_signal_strength())
 
-        data = self._inv_get_value(TOTAL_YIELD)
+        data = self._inv_get_value(YIELDS)
         if (data != []):
             self._inv_last_read_timestamp_utc = data[0][1]
             logger.debug("sma: total yield = %dWh" % data[0][2])
+            logger.debug("sma: day yield = %dWh" % data[1][2])
             if 'TOTAL_YIELD' in self._val:
                 for item in self._val['TOTAL_YIELD']['items']:
                     item(data[0][2], 'SMA', self._inv_bt_addr)
-        else:
-            logger.warning("sma: could not read total yield!")
-
-        data = self._inv_get_value(DAY_YIELD)
-        if (data != []):
-            self._inv_last_read_timestamp_utc = data[0][1]
-            logger.debug("sma: day yield = %dWh" % data[0][2])
             if 'DAY_YIELD' in self._val:
                 for item in self._val['DAY_YIELD']['items']:
-                    item(data[0][2], 'SMA', self._inv_bt_addr)
+                    item(data[1][2], 'SMA', self._inv_bt_addr)
         else:
-            logger.warning("sma: could not read day yield!")
+            logger.warning("sma: could not read yield!")
 
-        data = self._inv_get_value(AC_POWER)
+        data = self._inv_get_value(AC_P_TOTAL)
         if (data != []):
             self._inv_last_read_timestamp_utc = data[0][1]
             logger.debug("sma: current AC power = %dW" % data[0][2])
@@ -158,7 +163,7 @@ class SMA():
         else:
             logger.warning("sma: could not read current DC power!")
 
-        data = self._inv_get_value(DC_VOLTAMPS)
+        data = self._inv_get_value(DC_UI)
         if (data != []):
             self._inv_last_read_timestamp_utc = data[0][1]
             string1_voltage = float(data[0][2]) / 100
@@ -199,6 +204,15 @@ class SMA():
             logger.info("sma: via bluetooth connected to %s (%s)" % (self._inv_bt_name, self._inv_bt_addr))
             self._inv_connect()
             self._inv_login()
+            if 'OWN_ADDRESS' in self._val:
+                for item in self._val['OWN_ADDRESS']['items']:
+                    item(self._own_bt_addr, 'SMA', self._inv_bt_addr)
+            if 'INV_ADDRESS' in self._val:
+                for item in self._val['INV_ADDRESS']['items']:
+                    item(self._inv_bt_addr, 'SMA', self._inv_bt_addr)
+            if 'INV_SERIAL' in self._val:
+                for item in self._val['INV_SERIAL']['items']:
+                    item(self._inv_serial, 'SMA', self._inv_bt_addr)
         except:
             pass
 
@@ -219,13 +233,6 @@ class SMA():
             else:
                 if not item in self._val[sma_value]['items']:
                     self._val[sma_value]['items'].append(item)
-
-            if (sma_value == 'OWN_ADDRESS'):
-                item(self._own_bt_addr, 'SMA', self._inv_bt_addr)
-            if (sma_value == 'INV_ADDRESS'):
-                item(self._inv_bt_addr, 'SMA', self._inv_bt_addr)
-            if (sma_value == 'INV_SERIAL'):
-                item(self._inv_serial, 'SMA', self._inv_bt_addr)
 
         # return None to indicate "read-only"
         return None
@@ -399,11 +406,9 @@ class SMA():
             msg = [0x7E, 0, 0, 0] + self._own_bt_addr_le + self._inv_bt_addr_le + [cmdcode & 0xFF, (cmdcode >> 8) & 0xFF]
             # sma-net2 level
             ctrl = 0xA009
-            self._send_count += 1
-            if (self._send_count > 75):
-                self._send_count = 1
-            msg += SMANET2_HDR + [ctrl & 0xFF, (ctrl >> 8) & 0xFF] + BCAST_ADDR + [0x00, 0x00] + self._inv_bt_addr_le + [0x00] + [0x00] + [0, 0, 0, 0] + [self._send_count]
-            msg += [0x80, 0x00, 0x02, 0x00] + [0x00] + [0x00, 0x00, 0x00, 0x00] + [0x00, 0x00, 0x00, 0x00]
+            self._send_count = (self._send_count + 1) & 0x7FFF
+            msg += SMANET2_HDR + [ctrl & 0xFF, (ctrl >> 8) & 0xFF] + BCAST_ADDR + [0x00, 0x00] + self._inv_bt_addr_le + [0x00] + [0x00] + [0, 0, 0, 0] + [self._send_count & 0xFF, (self._send_count >> 8) & 0x7F | 0x80]
+            msg += [0x00, 0x02, 0x00] + [0x00] + [0x00, 0x00, 0x00, 0x00] + [0x00, 0x00, 0x00, 0x00]
             # send msg to inverter
             self._send_msg(msg)
             # receive msg from inverter
@@ -420,11 +425,9 @@ class SMA():
         msg = [0x7E, 0x00, 0x00, 0x00] + self._own_bt_addr_le + self._inv_bt_addr_le + [cmdcode & 0xFF, (cmdcode >> 8) & 0xFF]
         # sma-net2 level
         ctrl = 0xA008
-        self._send_count += 1
-        if (self._send_count > 75):
-            self._send_count = 1
-        msg += SMANET2_HDR + [ctrl & 0xFF, (ctrl >> 8) & 0xFF] + BCAST_ADDR + [0x00, 0x03] + self._inv_bt_addr_le + [0x00] + [0x03] + [0, 0, 0, 0] + [self._send_count]
-        msg += [0x80, 0x0E, 0x01, 0xFD, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
+        self._send_count = (self._send_count + 1) & 0x7FFF
+        msg += SMANET2_HDR + [ctrl & 0xFF, (ctrl >> 8) & 0xFF] + BCAST_ADDR + [0x00, 0x03] + self._inv_bt_addr_le + [0x00] + [0x03] + [0, 0, 0, 0] + [self._send_count & 0xFF, (self._send_count >> 8) & 0x7F | 0x80]
+        msg += [0x0E, 0x01, 0xFD, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
         # send msg
         self._send_msg(msg)
 
@@ -433,7 +436,7 @@ class SMA():
         password_pattern = [0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88]
         password_pattern[0:len(self._inv_password)] = [((0x88 + ord(char)) & 0xff) for char in self._inv_password]
 
-        retries = 10
+        retries = 5
         while (retries > 0):
             retries -= 1
             # level1
@@ -441,11 +444,9 @@ class SMA():
             msg = [0x7E, 0, 0, 0] + self._own_bt_addr_le + self._inv_bt_addr_le + [cmdcode & 0xFF, (cmdcode >> 8) & 0xFF]
             # sma-net2 level
             ctrl = 0xA00E
-            self._send_count += 1
-            if (self._send_count > 75):
-                self._send_count = 1
-            msg += SMANET2_HDR + [ctrl & 0xFF, (ctrl >> 8) & 0xFF] + BCAST_ADDR + [0x00, 0x01] + self._inv_bt_addr_le + [0x00] + [0x01] + [0, 0, 0, 0] + [self._send_count]
-            msg += [0x80, 0x0C, 0x04, 0xFD, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x84, 0x03, 0x00, 0x00]
+            self._send_count = (self._send_count + 1) & 0x7FFF
+            msg += SMANET2_HDR + [ctrl & 0xFF, (ctrl >> 8) & 0xFF] + BCAST_ADDR + [0x00, 0x01] + self._inv_bt_addr_le + [0x00] + [0x01] + [0, 0, 0, 0] + [self._send_count & 0xFF, (self._send_count >> 8) & 0x7F | 0x80]
+            msg += [0x0C, 0x04, 0xFD, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x84, 0x03, 0x00, 0x00]
             msg += [timestamp_utc & 0xff, (timestamp_utc >> 8) & 0xff, (timestamp_utc >> 16) & 0xff, (timestamp_utc >> 24) & 0xff]
             msg += [0x00, 0x00, 0x00, 0x00] + password_pattern
             # send msg to inverter
@@ -480,13 +481,9 @@ class SMA():
         cmdcode = 0x0001
         msg = [0x7E, 0, 0, 0] + self._own_bt_addr_le + self._inv_bt_addr_le + [cmdcode & 0xFF, (cmdcode >> 8) & 0xFF]
         # sma-net2 level
-        self._send_count += 1
-        if (self._send_count > 75):
-            self._send_count = 1
-        msg += SMANET2_HDR + [value_set[2] & 0xFF, (value_set[2] >> 8) & 0xFF] + BCAST_ADDR + [0x00, 0x00] + self._inv_bt_addr_le + [0x00] + [0x00] + [0, 0, 0, 0] + [self._send_count]
-        msg += value_set[3] + [0x00] + [value_set[0] & 0xFF, (value_set[0] >> 8) & 0xFF] + [0x00, 0xFF] + [value_set[1] & 0xFF, (value_set[1] >> 8) & 0xFF] + [0x00]
-        if (len(value_set) > 4):
-            msg += [value_set[4]]
+        self._send_count = (self._send_count + 1) & 0x7FFF
+        msg += SMANET2_HDR + [0x09, 0xA0] + BCAST_ADDR + [0x00, 0x00] + self._inv_bt_addr_le + [0x00] + [0x00] + [0, 0, 0, 0] + [self._send_count & 0xFF, (self._send_count >> 8) & 0x7F | 0x80]
+        msg += value_set[2] + [value_set[0] & 0xFF, (value_set[0] >> 8) & 0xFF, (value_set[0] >> 16) & 0xFF, (value_set[0] >> 24) & 0xFF] + [value_set[1] & 0xFF, (value_set[1] >> 8) & 0xFF, (value_set[1] >> 16) & 0xFF, (value_set[1] >> 24) & 0xFF]
         # send msg to inverter
         self._send_msg(msg)
 
@@ -498,24 +495,37 @@ class SMA():
                 logger.warning("sma: no response to request (timeout)!")
                 return data
             if (len(response) >= 60):
-                i = 42
-                while (i < len(response) - 3):
-                    value_code = (response[i + 1] << 8) + response[i]
-                    timestamp_utc = (response[i + 6] << 24) + (response[i + 5] << 16) + (response[i + 4] << 8) + response[i + 3]
-                    value = (response[i + 9] << 16) + (response[i + 8] << 8) + response[i + 7]
-                    logger.debug("sma: value_code=0x%04x / value=%d" % (value_code, value))
-                    data += [[value_code, timestamp_utc, value]]
-
-                    if ((response[i + 2] == 0x00) or (response[i + 2] == 0x40)):
-                        i += 28
-                    elif ((response[i + 2] == 0x08) or (response[i + 2] == 0x10)):
-                        i += 40
-                    else:
-                        logger.error("sma: rx - unknown data field width identifier=0x%02x" % response[i + 2])
-                        for entry in data:
-                            logger.debug("sma: value_code={:#02x} / timestamp={} / value={:5d}".format(entry[0], entry[1], entry[2]))                        
-                        data = []
-                        break
+                i = 41
+                try:
+                    while (i < (len(response) - 11)):
+                        value_code = ((response[i + 3] << 24) + (response[i + 2] << 16) + (response[i + 1] << 8) + response[i]) & 0x00FFFFFF
+                        timestamp_utc = (response[i + 7] << 24) + (response[i + 6] << 16) + (response[i + 5] << 8) + response[i + 4]
+                        # this only works for nums - fix it!
+                        value = (response[i + 11] << 24) + (response[i + 10] << 16) + (response[i + 9] << 8) + response[i + 8]
+                        if (value == 0x80000000):
+                            value = 0
+                        logger.debug("sma: value_code={:#08x} / value={:5d}".format(value_code, value))
+                        data += [[value_code, timestamp_utc, value]]
+    
+                        if (response[32] == 0x54):
+                            i += 16
+                        elif (response[32] in [0x51, 0x53]):
+                            i += 28
+                        elif (response[32] == 0x58):
+                            i += 40
+                        #elif ((response[i + 3] == 0x00) or (response[i + 3] == 0x40)):
+                        #    i += 28
+                        #elif ((response[i + 3] == 0x08) or (response[i + 3] == 0x10)):
+                        #    i += 40
+                        else:
+                            logger.error("sma: rx - can not decode field width from identifier={:#02x}".format(value_set[2][3]))
+                            for entry in data:
+                                logger.debug("sma: value_code={:#08x} / timestamp={} / value={:5d}".format(entry[0], entry[1], entry[2]))                        
+                            data = []
+                            break
+                except:
+                    data = []
+                    pass
 
             if (data == []):
                 logger.warning("sma: rx - unknown/malformed response!")
@@ -527,13 +537,3 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     myplugin = Plugin('SMA')
     myplugin.run()
-
-# 0x80 0x01 0x02 0x00 0x51 0x00 0x3f 0x26 0x00 0xff 0x3f 0x26 0x00 0x8b 0xd0 0x7e
-# stimmt mit letzter Zeile des request überein, aber im zweiten Byte it Bit 0 gesetzt = keine Daten?
-#   0x83 0x01 0x02 0x80 0x53
-
-# unknown msg periodically sent without request:
-# 2013-06-17 19:49:22 sma.update   WARNING  sma: rx - len=84 data=[0x7e 0xff 0x03 0x60 0x65 0x13 0x90 0xfd 0xff 0xff 0xff 0xff 0xff 0x00 0xa0 0x8a 0x00 0xba 0x4d 0xf5 0x7e 0x00 0x00 0x00 0x00 0x00 0x00      0x6b 0xfd    0x0a 0x02 0x00 0x68 0x06 0x00 0x00 0x00 0x06 0x00 0x00 0x00 0x01 0x34 0x82 0x00     0xf6 0x4b 0xbf 0x51 0x00 0x00     0x00 0x00 0x00 0x00 0x00 0x00 0xfe 0xff 0xff 0xff 0xfe 0xff 0xff 0xff 0x04 0x03 0x55 0x02 0x04 0x03 0x55 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00      0x3c 0x18      0x7e]
-# 2013-06-18 19:48:53 sma.update   WARNING  sma: rx - len=84 data=[0x7e 0xff 0x03 0x60 0x65 0x13 0x90 0xfd 0xff 0xff 0xff 0xff 0xff 0x00 0xa0 0x8a 0x00 0xba 0x4d 0xf5 0x7e 0x00 0x00 0x00 0x00 0x00 0x00      0xf0 0xfa    0x0a 0x02 0x00 0x68 0x06 0x00 0x00 0x00 0x06 0x00 0x00 0x00 0x01 0x34 0x82 0x00     0x79 0x9d 0xc0 0x51 0x00 0x00     0x00 0x00 0x00 0x00 0x00 0x00 0xfe 0xff 0xff 0xff 0xfe 0xff 0xff 0xff 0x04 0x03 0x55 0x02 0x04 0x03 0x55 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00      0x6d 0xde      0x7e]
-# 2013-06-19 19:49:45 sma.update   WARNING  sma: rx - len=84 data=[0x7e 0xff 0x03 0x60 0x65 0x13 0x90 0xfd 0xff 0xff 0xff 0xff 0xff 0x00 0xa0 0x8a 0x00 0xba 0x4d 0xf5 0x7e 0x00 0x00 0x00 0x00 0x00 0x00      0x03 0xf7    0x0a 0x02 0x00 0x68 0x06 0x00 0x00 0x00 0x06 0x00 0x00 0x00 0x01 0x34 0x82 0x00     0xfa 0xee 0xc1 0x51 0x00 0x00     0x00 0x00 0x00 0x00 0x00 0x00 0xfe 0xff 0xff 0xff 0xfe 0xff 0xff 0xff 0x04 0x03 0x55 0x02 0x04 0x03 0x55 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00      0x56 0xb6      0x7e]
-# 2013-06-20 19:49:01 sma.update   WARNING  sma: rx - len=84 data=[0x7e 0xff 0x03 0x60 0x65 0x13 0x90 0xfd 0xff 0xff 0xff 0xff 0xff 0x00 0xa0 0x8a 0x00 0xba 0x4d 0xf5 0x7e 0x00 0x00 0x00 0x00 0x00 0x00      0x17 0xe9    0x0a 0x02 0x00 0x68 0x06 0x00 0x00 0x00 0x06 0x00 0x00 0x00 0x01 0x34 0x82 0x00     0x7c 0x40 0xc3 0x51 0x00 0x00     0x00 0x00 0x00 0x00 0x00 0x00 0xfe 0xff 0xff 0xff 0xfe 0xff 0xff 0xff 0x04 0x03 0x55 0x02 0x04 0x03 0x55 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00      0x3a 0xee      0x7e]
