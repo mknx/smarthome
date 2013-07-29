@@ -265,9 +265,11 @@ class KNX(lib.my_asynchat.AsynChat):
                 else:
                     logger.warning("knx: {0} knx_reply ({1}) already defined for {2}".format(item, ga, self.gar[ga]['item']))
 
-        if 'knx_send' in item.conf or 'knx_status' in item.conf:
+        if 'knx_send' in item.conf:
             if isinstance(item.conf['knx_send'], str):
                 item.conf['knx_send'] = [item.conf['knx_send'], ]
+            return self.update_item
+        elif 'knx_status' in item.conf:
             if isinstance(item.conf['knx_status'], str):
                 item.conf['knx_status'] = [item.conf['knx_status'], ]
             return self.update_item
