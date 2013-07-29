@@ -254,6 +254,16 @@ class OneWire(OwBase):
             return
         self._sh.scheduler.add('1w-sen', self._sensor_cycle, cycle=self._cycle, prio=5, offset=0)
         #self._sh.scheduler.add('1w', self.wrapper('bus.1'), cycle=self._cycle, prio=5, offset=4)
+        if self._ibuttons != {} and self._ibutton_masters == {}:
+            logger.debug("1-Wire: iButtons but no iButton Masters... moving to IOs")
+            for addr in self._ibuttons:
+                for key in self._ibuttons[addr]:
+                    if key == 'B':
+                        if addr in self._ios:
+                            self._ios[addr][key] = {'item': self._ibuttons[addr][key]['item'], 'path': '/' + addr}
+                        else:
+                            self._ios[addr] = {key: {'item': self._ibuttons[addr][key]['item'], 'path': '/' + addr}}
+            self._ibuttons = {}
         if self._ibutton_masters == {} and self._ios == {}:
             return
         elif self._ibutton_masters != {} and self._ios != {}:
@@ -290,11 +300,15 @@ class OneWire(OwBase):
                     logger.debug("1-Wire: no path found for {0}".format(item.id()))
                     continue
                 try:
-                    value = self.read('/uncached' + path)
+                    if key == 'B':
+                        entries = [entry.split("/")[-2] for entry in self.dir('/uncached')]
+                        value = (addr in entries)
+                    else:
+                        value = self._flip[self.read('/uncached' + path)]
                 except Exception:
                     logger.warning("1-Wire: problem reading {0}".format(addr))
                     continue
-                item(self._flip[value], '1-Wire', path)
+                item(value, '1-Wire', path)
 
     def _ibutton_loop(self):
         threading.currentThread().name = '1w-b'
