@@ -92,7 +92,7 @@ class mpd(lib.my_asynchat.AsynChat):
                 child.add_trigger_method(self._send_value)
             else:
                 child.add_trigger_method(self._send_command)
-        for child in self._sh.find_children(item, 'mpd_url'):
+        for child in self._sh.find_children(item, 'mpd_file'):
             child.add_trigger_method(self._play_file)
         # adding item methods
         item.command = self.command
