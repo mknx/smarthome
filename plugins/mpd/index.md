@@ -41,7 +41,7 @@ You could see a full featured item configuration at the end of this file.
             mpd_send = volume
         [[[jungle]]]
             type = bool
-            mpd_url = http://jungletrain.net/64kbps.m3u
+            mpd_file = http://jungletrain.net/64kbps.m3u
             enforce_updates = yes
 </pre>
 
