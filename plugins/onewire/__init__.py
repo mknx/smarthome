@@ -204,6 +204,8 @@ class OwBase():
                 return keys
             else:
                 logger.info("1-Wire: unknown sensor {0} {1} page3: {2}".format(addr, typ, page3))
+                keys.update({'V': 'VAD', 'VDD': 'VDD'})
+                return keys
         elif typ == 'DS2401':  # iButton
             return {'B': 'iButton'}
         elif typ in ['DS2413', 'DS2406']:  # I/O
