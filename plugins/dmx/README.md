@@ -11,7 +11,7 @@ Requirements
 This plugin needs one of the supported DMX interfaces:
 
    * [NanoDMX](http://www.dmx4all.de/)
-   * [DMXking](http://www.dmxking.com)
+   * [DMXking](http://www.dmxking.com) it should work with other Enttec Pro compatible as well.
 
 and pyserial.
 
