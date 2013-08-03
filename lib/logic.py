@@ -101,6 +101,9 @@ class Logic():
     def id(self):
         return self.name
 
+    def __str__(self):
+        return self._name
+
     def __call__(self, caller='Logic', source=None, value=None, dest=None, dt=None):
         self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=caller, source=source, dest=dest, value=value, dt=dt)
 
