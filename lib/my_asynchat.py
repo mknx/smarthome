@@ -105,6 +105,9 @@ class AsynChat(asynchat.async_chat):
         self.is_connected = False
         try:
             self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
             self.close()
         except:
             pass

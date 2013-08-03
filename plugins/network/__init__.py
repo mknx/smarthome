@@ -55,6 +55,9 @@ class TCPHandler(asynchat.async_chat):
         self.parser(self.source, self.dest, data.strip())
         try:
             self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
             self.close()
         except:
             pass

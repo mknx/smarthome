@@ -147,6 +147,9 @@ class WebSocket(asyncore.dispatcher):
         logger.debug('Closing listen')
         try:
             self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
             self.close()
         except:
             pass
@@ -218,6 +221,9 @@ class WebSocketHandler(asynchat.async_chat):
     def handle_close(self):
         try:
             self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
             self.close()
         except:
             pass

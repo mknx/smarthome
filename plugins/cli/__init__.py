@@ -75,6 +75,9 @@ class CLIHandler(asynchat.async_chat):
             self.push('bye\n')
             try:
                 self.shutdown(socket.SHUT_RDWR)
+            except:
+                pass
+            try:
                 self.close()
             except:
                 pass
