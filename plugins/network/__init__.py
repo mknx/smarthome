@@ -187,7 +187,11 @@ class UDPSend(asyncore.dispatcher_with_send):
         pass
 
     def handle_close(self):
-        self.close()
+        try:
+            self.shutdown(socket.SHUT_RDWR)
+            self.close()
+        except:
+            pass
 
 
 class Network():
