@@ -39,7 +39,7 @@ class XBMC():
     def stop(self):
         self.alive = False
         for box in self._boxes:
-            box.close()
+            box.handle_close()
 
     def notify_all(self, title, message, image=None):
         for box in self._boxes:

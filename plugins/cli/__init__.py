@@ -73,7 +73,11 @@ class CLIHandler(asynchat.async_chat):
             self.usage()
         elif cmd in ('quit', 'q', 'exit', 'x'):
             self.push('bye\n')
-            self.close()
+            try:
+                self.shutdown(socket.SHUT_RDWR)
+                self.close()
+            except:
+                pass
             return
         self.push("> ")
 
@@ -200,6 +204,11 @@ class CLI(asyncore.dispatcher):
 
     def stop(self):
         self.alive = False
+        try:
+            self.shutdown(socket.SHUT_RDWR)
+            self.close()
+        except:
+            pass
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

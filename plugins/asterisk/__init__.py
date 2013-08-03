@@ -236,7 +236,4 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._reply_lock.acquire()
         self._reply_lock.notify()
         self._reply_lock.release()
-        try:
-            self.close()
-        except Exception:
-            pass
+        self.handle_close()
