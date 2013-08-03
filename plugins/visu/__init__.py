@@ -141,11 +141,12 @@ class WebSocket(asyncore.dispatcher):
         self.alive = False
         for client in self.clients:
             try:
-                client.close()
+                client.handle_close()
             except:
                 pass
         logger.debug('Closing listen')
         try:
+            self.shutdown(socket.SHUT_RDWR)
             self.close()
         except:
             pass
@@ -213,6 +214,13 @@ class WebSocketHandler(asynchat.async_chat):
 
     def json_send(self, data):
         logger.debug("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
+
+    def handle_close(self):
+        try:
+            self.shutdown(socket.SHUT_RDWR)
+            self.close()
+        except:
+            pass
 
     def collect_incoming_data(self, data):
         self.ibuffer += data
@@ -336,7 +344,7 @@ class WebSocketHandler(asynchat.async_chat):
             proto = data['ver']
             if proto != self.proto:
                 logger.warning("Protocol missmatch. Update smarthome(.min).js. Client: {0}".format(self.addr))
-                self.close()
+                self.handle_close()
                 return
             self.json_send({'cmd': 'proto', 'ver': self.proto})
 
@@ -357,7 +365,7 @@ class WebSocketHandler(asynchat.async_chat):
 
     def handshake_failed(self):
         logger.debug("Handshake for {0} with the following header failed! {1}".format(self.addr, repr(self.header)))
-        self.close()
+        self.handle_close()
 
     def rfc6455_handshake(self):
         self.set_terminator(8)
@@ -378,7 +386,7 @@ class WebSocketHandler(asynchat.async_chat):
         opcode = byte1 & 0x0f
         if opcode == 8:
             logger.debug("WebSocket: closing connection to {0}.".format(self.addr))
-            self.close()
+            self.handle_close()
             return
         masked = (byte2 >> 7) & 0x01
         if masked:
