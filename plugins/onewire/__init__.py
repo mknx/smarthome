@@ -158,6 +158,7 @@ class OwBase():
     def close(self):
         self.is_connected = False
         try:
+            self._sock.shutdown(socket.SHUT_RDWR)
             self._sock.close()
             self._sock = False
         except:
