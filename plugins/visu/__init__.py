@@ -61,7 +61,7 @@ class WebSocket(asyncore.dispatcher):
             self.bind((ip, int(port)))
             self.listen(5)
         except Exception:
-            logger.error("Could not bind to socket %s:%s" % (ip, port))
+            logger.error("Could not bind to socket {0}:{1}".format(ip, port))
 
     def _smartvisu_pages(self, directory):
         import smartvisu
@@ -112,7 +112,7 @@ class WebSocket(asyncore.dispatcher):
         else:
             sock, addr = pair
             addr = "{0}:{1}".format(addr[0], addr[1])
-            logger.info('WebSocket: incoming connection from %s' % addr)
+            logger.info('WebSocket: incoming connection from {0}'.format(addr))
         if self.tls:
 #           print sock.recv(1)
             try:
@@ -268,11 +268,11 @@ class WebSocketHandler(asynchat.async_chat):
         return list(set(b).difference(set(a)))
 
     def json_parse(self, data):
-        logger.debug("%s sent %s" % (self.addr, repr(data)))
+        logger.debug("{0} sent {1}".format(self.addr, repr(data)))
         try:
             data = json.loads(data)
         except Exception, e:
-            logger.debug("Problem decoding %s from %s: %s" % (repr(data), self.addr, e))
+            logger.debug("Problem decoding {0} from {1}: {2}".format(repr(data), self.addr, e))
             return
         command = data['cmd']
         if command == 'item':
@@ -281,7 +281,7 @@ class WebSocketHandler(asynchat.async_chat):
             if path in self.items:
                 self.items[path](value, 'Visu', self.addr)
             else:
-                logger.info("Client %s want to update invalid item: %s" % (self.addr, path))
+                logger.info("Client {0} want to update invalid item: {1}".format(self.addr, path))
         elif command == 'monitor':
             if data['items'] == [None]:
                 return
@@ -292,13 +292,13 @@ class WebSocketHandler(asynchat.async_chat):
                     else:
                         self.json_send({'cmd': 'item', 'items': [[path, self.items[path]()]]})
                 else:
-                    logger.info("Client %s requested invalid item: %s" % (self.addr, path))
+                    logger.info("Client {0} requested invalid item: {1}".format(self.addr, path))
             self.monitor['item'] = data['items']
         elif command == 'logic':  # logic
             name = data['name']
             value = data['val']
             if name in self.logics:
-                logger.info("Client %s triggerd logic %s with '%s'" % (self.addr, name, value))
+                logger.info("Client {0} triggerd logic {1} with '{2}'".format(self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
         elif command == 'series':
             path = data['item']
@@ -322,7 +322,7 @@ class WebSocketHandler(asynchat.async_chat):
                         del(reply['params'])
                     self.json_send(reply)
                 else:
-                    logger.info("Client %s requested invalid series: %s." % (self.addr, path))
+                    logger.info("Client {0} requested invalid series: {1}.".format(self.addr, path))
         elif command == 'rrd':
             self.rrd = True
             path = data['item']
@@ -331,9 +331,9 @@ class WebSocketHandler(asynchat.async_chat):
                 if hasattr(self.items[path], 'export'):
                     self.json_send(self.items[path].export(frame))
                 else:
-                    logger.info("Client %s requested invalid rrd: %s." % (self.addr, path))
+                    logger.info("Client {0} requested invalid rrd: {1}.".format(self.addr, path))
             else:
-                logger.info("Client %s requested invalid item: %s" % (self.addr, path))
+                logger.info("Client {0} requested invalid item: {1}".format(self.addr, path))
             if path not in self.monitor['rrd']:
                 self.monitor['rrd'].append(path)
         elif command == 'log':
@@ -343,7 +343,7 @@ class WebSocketHandler(asynchat.async_chat):
             if name in self.logs:
                 self.json_send({'cmd': 'log', 'name': name, 'log': [self.logs[name].export(num)], 'init': 'y'})
             else:
-                logger.info("Client %s requested invalid log: %s" % (self.addr, name))
+                logger.info("Client {0} requested invalid log: {1}".format(self.addr, name))
             if name not in self.monitor['log']:
                 self.monitor['log'].append(name)
         elif command == 'proto':  # protocol version
@@ -382,7 +382,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.push('HTTP/1.1 101 Switching Protocols\r\n')
         self.push('Upgrade: websocket\r\n')
         self.push('Connection: Upgrade\r\n')
-        self.push('Sec-WebSocket-Accept: %s\r\n' % key)
+        self.push('Sec-WebSocket-Accept: {0}\r\n'.format(key))
         self.push('\r\n')
 
     def rfc6455_parse(self, data):
@@ -438,13 +438,13 @@ class WebSocketHandler(asynchat.async_chat):
         elif length < (1 << 63):
             header += chr(mask | 127) + struct.pack('!Q', length)
         else:
-            logger.warning("data to big: %s" % data)
+            logger.warning("data to big: {0}".format(data))
             return
         self.push(header + data)
 
     def hixie76_send(self, data):
         data = json.dumps(data, separators=(',', ':'))
-        self.push("\x00%s\xff" % data)
+        self.push("\x00{0}\xff".format(data))
 
     def hixie76_parse(self, data):
         self.json_parse(data.lstrip('\x00'))
@@ -461,8 +461,8 @@ class WebSocketHandler(asynchat.async_chat):
         self.push('HTTP/1.1 101 Web Socket Protocol Handshake\r\n')
         self.push('Upgrade: WebSocket\r\n')
         self.push('Connection: Upgrade\r\n')
-        self.push("Sec-WebSocket-Origin: %s\r\n" % self.header['Origin'])
-        self.push("Sec-WebSocket-Location: ws://%s/\r\n\r\n" % self.header['Host'])
+        self.push("Sec-WebSocket-Origin: {0}\r\n".format(self.header['Origin']))
+        self.push("Sec-WebSocket-Location: ws://{0}/\r\n\r\n".format(self.header['Host']))
         self.push(key)
         self.parse_data = self.hixie76_parse
         self.json_send = self.hixie76_send
