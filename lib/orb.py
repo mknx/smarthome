@@ -52,24 +52,26 @@ class Orb():
             self.phase = self._phase
             self.light = self._light
 
-    def rise(self, offset=0, center=True):
+    def rise(self, doff=0, moff=0, center=True):
         # workaround if rise is 0.001 seconds in the past
-        self._obs.date = datetime.datetime.utcnow() + dateutil.relativedelta.relativedelta(seconds=2)
-        self._obs.horizon = str(offset)
-        if offset != 0:
+        self._obs.date = datetime.datetime.utcnow() - dateutil.relativedelta.relativedelta(minutes=moff) + dateutil.relativedelta.relativedelta(seconds=2)
+        self._obs.horizon = str(doff)
+        if doff != 0:
             next_rising = self._obs.next_rising(self._orb, use_center=center).datetime()
         else:
             next_rising = self._obs.next_rising(self._orb).datetime()
+        next_rising = next_rising + dateutil.relativedelta.relativedelta(minutes=moff)
         return next_rising.replace(tzinfo=tzutc())
 
-    def set(self, offset=0, center=True):
+    def set(self, doff=0, moff=0, center=True):
         # workaround if set is 0.001 seconds in the past
-        self._obs.date = datetime.datetime.utcnow() + dateutil.relativedelta.relativedelta(seconds=2)
-        self._obs.horizon = str(offset)
-        if offset != 0:
+        self._obs.date = datetime.datetime.utcnow() - dateutil.relativedelta.relativedelta(minutes=moff) + dateutil.relativedelta.relativedelta(seconds=2)
+        self._obs.horizon = str(doff)
+        if doff != 0:
             next_setting = self._obs.next_setting(self._orb, use_center=center).datetime()
         else:
             next_setting = self._obs.next_setting(self._orb).datetime()
+        next_setting = next_setting + dateutil.relativedelta.relativedelta(minutes=moff)
         return next_setting.replace(tzinfo=tzutc())
 
     def pos(self, offset=None):  # offset in minutes

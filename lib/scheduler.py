@@ -367,7 +367,7 @@ class Scheduler(threading.Thread):
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
 
         doff = 0  # degree offset
-        moff = None  # minute offset
+        moff = 0  # minute offset
         tmp, op, offs = cron.rpartition('+')
         if op:
             if offs.endswith('m'):
@@ -383,15 +383,12 @@ class Scheduler(threading.Thread):
                     doff = -float(offs)
 
         if cron.startswith('sunrise'):
-            next_time = self._sh.sun.rise(doff)
+            next_time = self._sh.sun.rise(doff, moff)
         elif cron.startswith('sunset'):
-            next_time = self._sh.sun.set(doff)
+            next_time = self._sh.sun.set(doff, moff)
         else:
             logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
-
-        if moff is not None:
-            next_time += dateutil.relativedelta.relativedelta(minutes=moff)
 
         if smin is not None:
             h, sep, m = smin.partition(':')
