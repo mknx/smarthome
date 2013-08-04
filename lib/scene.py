@@ -59,7 +59,7 @@ class Scenes():
                     continue
                 item.add_trigger_method(self._trigger)
 
-    def _trigger(self, item, caller, source):
+    def _trigger(self, item, caller, source, dest):
         if not item.id() in self._scenes:
             return
         if str(item()) in self._scenes[item.id()]:
