@@ -72,8 +72,8 @@ In your plugin directory should be a __README.md__ (from the skeleton directory)
 
 ### Push changes
    * `git checkout develop`: goto the develop branch
+   * `git status`: check the status of the files in the develop branch
    * `git add changedfile.py`: select one or more files for commit
-   * `git status`: check the files and that your are in the develop branch
    * `git commit` describe the commit with a useful comment
    * `git pull && git push`: sync with the origin repository
 
