@@ -59,6 +59,8 @@ class CLIHandler(asynchat.async_chat):
             self.la()
         elif cmd == 'lo':
             self.lo()
+        elif cmd == 'lt':
+            self.lt()
         elif cmd == 'cl':
             self.cl()
         elif cmd.startswith('update ') or cmd.startswith('up '):
@@ -166,12 +168,19 @@ class CLIHandler(asynchat.async_chat):
             else:
                 self.push("{0}\n".format(logic))
 
+    def lt(self):
+        # list all threads with names
+        self.push("Threads:\n")
+        for t in threading.enumerate():
+            self.push("{0}\n".format(t.name))
+
     def usage(self):
         self.push('cl: clean (memory) log\n')
         self.push('ls: list the first level items\n')
         self.push('ls item: list item and every child item (with values)\n')
         self.push('la: list all items (with values)\n')
         self.push('lo: list all logics and next execution time\n')
+        self.push('lt: list current thread names\n')
         self.push('update item = value: update the specified item with the specified value\n')
         self.push('up: alias for update\n')
         self.push('tr logic: trigger logic\n')
