@@ -203,13 +203,13 @@ class CLI(asyncore.dispatcher):
             self.bind((ip, int(port)))
             self.listen(5)
         except Exception:
-            logger.error("Could not bind socket on %s:%s" % (ip, port))
+            logger.error("CLI: Could not bind socket on %s:%s" % (ip, port))
 
     def handle_accept(self):
         pair = self.accept()
         if pair is not None:
             sock, (ip, port) = pair
-            logger.debug('Incoming connection from %s:%s' % (ip, port))
+            logger.debug('CLI: Incoming connection from %s:%s' % (ip, port))
             CLIHandler(self.sh, sock, ip, self.updates_allowed)
 
     def run(self):
