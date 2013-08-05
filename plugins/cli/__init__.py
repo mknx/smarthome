@@ -39,6 +39,7 @@ class CLIHandler(asynchat.async_chat):
         self._lock = threading.Lock()
         self.buffer = ''
         self.push("SmartHome.py v%s\n" % self.sh.version)
+        self.push("Enter 'help' for a list of available commands.\n")
         self.push("> ")
 
     def collect_incoming_data(self, data):
