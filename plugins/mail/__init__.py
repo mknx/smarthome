@@ -95,6 +95,8 @@ class IMAP():
                 if rsp == 'OK':
                     typ, data = imap.uid('store', uid, '+FLAGS', '(\Deleted)')
                     logger.debug("Moving mail to trash. {0} => {1}: {2}".format(fo, to, sub))
+                else:
+                    logger.warning("Could not move mail to trash. {0} => {1}: {2}: {3}".format(fo, to, sub, rsp))
             else:
                 logger.info("Ignoring mail. {0} => {1}: {2}".format(fo, to, sub))
         imap.close()
