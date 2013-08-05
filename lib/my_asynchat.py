@@ -103,6 +103,7 @@ class AsynChat(asynchat.async_chat):
             logger.info('{0}: connection to {1}:{2} closed'.format(self.__class__.__name__, self.addr[0], self.addr[1]))
         self.connected = False
         self.is_connected = False
+        self.discard_buffers()
         try:
             self.shutdown(socket.SHUT_RDWR)
         except:
