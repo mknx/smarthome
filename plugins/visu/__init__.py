@@ -44,6 +44,7 @@ class WebSocket(asyncore.dispatcher):
         self.clients = []
         self.visu_items = {}
         self.visu_logics = {}
+        self._lock = threading.Lock()
         if tls == 'no':
             self.tls = False
         else:
@@ -111,23 +112,23 @@ class WebSocket(asyncore.dispatcher):
             return
         else:
             sock, addr = pair
+            client_sock = sock
             addr = "{0}:{1}".format(addr[0], addr[1])
             logger.info('WebSocket: incoming connection from {0}'.format(addr))
         if self.tls:
-#           print sock.recv(1)
             try:
                 # cert_reqs=ssl.CERT_REQUIRED
-                ssock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_OPTIONAL, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_TLSv1)
-                logger.debug('Client cert: {0}'.format(ssock.getpeercert()))
-                logger.debug('Cipher: {0}'.format(ssock.cipher()))
-                print ssl.OPENSSL_VERSION
+                client_sock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_OPTIONAL, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_TLSv1)
+                logger.debug('Client cert: {0}'.format(client_sock.getpeercert()))
+                logger.debug('Cipher: {0}'.format(client_sock.cipher()))
+#               print ssl.OPENSSL_VERSION
             except Exception, e:
                 logger.error(e)
                 return
-            client = WebSocketHandler(self._sh, ssock, addr, self.visu_items, self.visu_logics)
-        else:
-            client = WebSocketHandler(self._sh, sock, addr, self.visu_items, self.visu_logics)
+        client = WebSocketHandler(self._sh, self, client_sock, addr, self.visu_items, self.visu_logics)
+        self._lock.acquire()
         self.clients.append(client)
+        self._lock.release()
 
     def run(self):
         self.alive = True
@@ -139,12 +140,12 @@ class WebSocket(asyncore.dispatcher):
 
     def stop(self):
         self.alive = False
+        logger.debug('Closing WebSocket')
         for client in self.clients:
             try:
                 client.handle_close()
             except:
                 pass
-        logger.debug('Closing listen')
         try:
             self.shutdown(socket.SHUT_RDWR)
         except:
@@ -165,32 +166,48 @@ class WebSocket(asyncore.dispatcher):
 
     def update_item(self, item, caller=None, source=None, dest=None):
         data = {'cmd': 'item', 'items': [[item.id(), item()]]}
+        self._lock.acquire()
         for client in self.clients:
             client.update(item.id(), data, source)
+        self._lock.release()
+
+    def remove_client(self, client):
+        self._lock.acquire()
+        self.clients.remove(client)
+        self._lock.release()
 
     def _send_event(self, event, data):
+        self._lock.acquire()
         for client in self.clients:
             client.send_event(event, data)
+        self._lock.release()
 
     def _update_series(self):
+        self._lock.acquire()
         for client in self.clients:
             client.update_series()
+        self._lock.release()
 
     def dialog(self, header, content):
+        self._lock.acquire()
         for client in self.clients:
             client.json_send({'cmd': 'dialog', 'header': header, 'content': content})
+        self._lock.release()
 
     def url(self, url):
+        self._lock.acquire()
         for client in self.clients:
             client.json_send({'cmd': 'url', 'url': url})
+        self._lock.release()
 
 
 class WebSocketHandler(asynchat.async_chat):
 
-    def __init__(self, smarthome, sock, addr, items, logics):
+    def __init__(self, smarthome, dispatcher, sock, addr, items, logics):
         asynchat.async_chat.__init__(self, sock, map=smarthome.socket_map)
         self.set_terminator("\r\n\r\n")
         self._sh = smarthome
+        self._dp = dispatcher
         self.parse_data = self.parse_header
         self.addr = addr
         self.ibuffer = ""
@@ -219,6 +236,9 @@ class WebSocketHandler(asynchat.async_chat):
         logger.debug("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
 
     def handle_close(self):
+        # remove circular references
+        self._dp.remove_client(self)
+        del(self.json_send, self.parse_data)
         try:
             self.shutdown(socket.SHUT_RDWR)
         except:
