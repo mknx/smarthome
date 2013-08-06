@@ -117,6 +117,10 @@ class HTTPHandler(asynchat.async_chat):
                 self.parser(self.source, self.dest, urllib.unquote(request))
                 break
         try:
+            self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
             self.close()
         except:
             pass
