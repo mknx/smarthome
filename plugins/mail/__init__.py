@@ -66,17 +66,21 @@ class IMAP():
         rsp, data = imap.select()
         if rsp != 'OK':
             logger.warning("IMAP: Could not select mailbox")
+            imap.close()
+            imap.logout()
             return
         rsp, data = imap.uid('search', None, "ALL")
         if rsp != 'OK':
             logger.warning("IMAP: Could not search mailbox")
+            imap.close()
+            imap.logout()
             return
         uids = data[0].split()
         for uid in uids:
             rsp, data = imap.uid('fetch', uid, '(RFC822)')
             if rsp != 'OK':
                 logger.warning("IMAP: Could not fetch mail")
-                return
+                continue
             mail = email.message_from_string(data[0][1])
             to = email.utils.parseaddr(mail['To'])[1]
             fo = email.utils.parseaddr(mail['From'])[1]
