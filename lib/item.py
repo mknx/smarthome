@@ -21,6 +21,7 @@
 
 import logging
 import threading
+import datetime
 import cPickle
 
 logger = logging.getLogger('')
@@ -59,6 +60,7 @@ class Item():
         self._logics_to_trigger = []
         self._items_to_trigger = []
         self.__fade = False
+        self._autotimer = False
         self.parse(smarthome, parent, path, config)
 
     def parse(self, smarthome, parent, path, config):
@@ -101,6 +103,10 @@ class Item():
                         self._crontab = ','.join(config[attr])
                     else:
                         self._crontab = config[attr]
+                elif attr == 'autotimer':
+                    time, sep, value = config[attr].partition('=')
+                    if value is not None:
+                        self._autotimer = time, value
                 else:
                     self.conf[attr] = config[attr]
         if self._type is not None:
@@ -244,6 +250,9 @@ class Item():
                 self._db_update(value)
         else:
             self._lock.release()
+        if self._autotimer is not False and caller is not 'Autotimer':
+            _time, _value = self._autotimer
+            self.timer(_time, _value, True)
 
     def __iter__(self):
         for item in self._sub_items:
@@ -363,6 +372,23 @@ class Item():
         except:
             pass
         raise ValueError
+
+    def timer(self, time, value, auto=False):
+        if isinstance(time, str):
+            time = time.strip()
+            if time.endswith('m'):
+                time = int(time.strip('m')) * 60
+            else:
+                time = int(time)
+        if isinstance(value, str):
+            value = value.strip()
+        if auto:
+            caller = 'Autotimer'
+            self._autotimer = time, value
+        else:
+            caller = 'Timer'
+        next = self._sh.now() + datetime.timedelta(seconds=time)
+        self._sh.scheduler.add(self.id() + '-Timer', self.__call__, value={'value': value, 'caller': caller}, next=next)
 
     def fade(self, dest, step=1, delta=1):
         dest = float(dest)

@@ -136,7 +136,7 @@ class Scheduler(threading.Thread):
         if name in self._scheduler:
             return self._scheduler[name]['next']
 
-    def add(self, name, obj, prio=3, cron=None, cycle=None, value=None, offset=None):
+    def add(self, name, obj, prio=3, cron=None, cycle=None, value=None, offset=None, next=None):
         self._lock.acquire()
         if isinstance(cron, str):
             _cron = {}
@@ -169,8 +169,9 @@ class Scheduler(threading.Thread):
             cycle = {cycle: None}
             if offset is None:
                 offset = random.randint(6, 12)  # spread cycle jobs
-        self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': None, 'active': True}
-        self._next_time(name, offset)
+        self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': next, 'active': True}
+        if next is None:
+            self._next_time(name, offset)
         self._lock.release()
 
     def change(self, name, **kwargs):
