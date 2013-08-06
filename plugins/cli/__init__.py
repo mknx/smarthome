@@ -171,7 +171,7 @@ class CLIHandler(asynchat.async_chat):
 
     def lt(self):
         # list all threads with names
-        self.push("Threads:\n")
+        self.push("{0} Threads:\n".format(threading.activeCount()))
         for t in threading.enumerate():
             self.push("{0}\n".format(t.name))
 
