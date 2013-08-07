@@ -8,6 +8,7 @@ In Developement
 
 # 1.0
 ## Contributions from:
+   * Jan N. Klug
    * Mark Hönisch
    * Niko Will
    * Robert Budde
@@ -16,9 +17,11 @@ In Developement
    * SMA
    * NMA
    * NetIO230B
+   * wettercom
 
 ## Features
    * watch_item: supports item attribute matches by ':attribute' e.b. '*:my' every item with the attribute my.
+   * item.timer and autotimer
 
 
 # 0.9
