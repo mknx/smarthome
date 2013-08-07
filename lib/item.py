@@ -373,6 +373,12 @@ class Item():
             pass
         raise ValueError
 
+    def autotimer(self, time=None, value=None):
+        if time is not None and value is not None:
+            self._autotimer = time, value
+        else:
+            self._autotimer = False
+
     def timer(self, time, value, auto=False):
         if isinstance(time, str):
             time = time.strip()
