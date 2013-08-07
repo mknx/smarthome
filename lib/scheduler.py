@@ -22,6 +22,7 @@
 import logging
 import time
 import datetime
+import calendar
 import sys
 import Queue
 import traceback
@@ -294,7 +295,6 @@ class Scheduler(threading.Thread):
                     obj(**value)
             except Exception, e:
                 logger.warning("Method {0} exception: {1}".format(name, e))
-
         threading.current_thread().name = 'idle'
 
     def _crontab(self, crontab):
@@ -302,43 +302,46 @@ class Scheduler(threading.Thread):
         for entry in crontab.split('<'):
             if entry.startswith('sun'):
                 return self._sun(crontab)
+        next_event = self._parse_month(crontab, offset=0)  # this month
+        if not next_event:
+            next_event = self._parse_month(crontab, offset=1)  # next month
+        return next_event
 
+    def _parse_month(self, crontab, offset=0):
+        now = self._sh.now()
         minute, hour, day, wday = crontab.split(' ')
         # evaluate the crontab strings
         minute_range = self._range(minute, 00, 59)
         hour_range = self._range(hour, 00, 23)
-        # FIXME fix day range for days > 28
+        mdays = calendar.monthrange(now.year, now.month + offset)[1]
         if wday == '*' and day == '*':
             day_range = self._day_range('0, 1, 2, 3, 4, 5, 6')
         elif wday != '*' and day == '*':
             day_range = self._day_range(wday)
         elif wday != '*' and day != '*':
             day_range = self._day_range(wday)
-            day_range = day_range + self._range(day, 01, 28)
+            day_range = day_range + self._range(day, 01, mdays)
         else:
-            day_range = self._range(day, 01, 28)
-
+            day_range = self._range(day, 01, mdays)
         # combine the differnt ranges
         event_range = sorted([str(day) + '-' + str(hour) + '-' + str(minute) for minute in minute_range for hour in hour_range for day in day_range])
-
-        # find the next event
-        now = self._sh.now()
-        now_str = now.strftime("%d-%H-%M")
-        next_event = self._next(lambda event: event > now_str, event_range)
-
-        if next_event:  # found an event after today
-            next_time = now
-        else:  # skip to next month
+        if offset:  # next month
             next_event = event_range[0]
             next_time = now + dateutil.relativedelta.relativedelta(months=+1)
+        else:  # this month
+            now_str = now.strftime("%d-%H-%M")
+            next_event = self._next(lambda event: event > now_str, event_range)
+            if not next_event:
+                return False
+            next_time = now
         day, hour, minute = next_event.split('-')
-        next_time = next_time.replace(day=int(day), hour=int(hour), minute=int(minute), second=0, microsecond=0)
-        return next_time
+        return next_time.replace(day=int(day), hour=int(hour), minute=int(minute), second=0, microsecond=0)
 
     def _next(self, f, seq):
         for item in seq:
             if f(item):
                 return item
+        return False
 
     def _sun(self, crontab):
         if not hasattr(self._sh, 'sun'):  # no sun object created
@@ -418,7 +421,10 @@ class Scheduler(threading.Thread):
             item_range = range(low, high + 1)
         else:
             for item in entry.split(','):
-                item_range.append(int(item))
+                item = int(item)
+                if item > high:  # entry above range
+                    item = high  # truncate value to highest possible
+                item_range.append(item)
         for entry in item_range:
             result.append('%0*d' % (2, entry))
         return result
