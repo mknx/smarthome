@@ -293,6 +293,16 @@ def de24(payload):
     return str(payload).rstrip('\0')
 
 
+def en232(value):
+    return [0, int(value[0]) & 0xff, int(value[1]) & 0xff, int(value[2]) & 0xff]
+
+
+def de232(payload):
+    if len(payload) != 3:
+        return None
+    return struct.unpack('>BBB', payload)
+
+
 def depa(string):
     if len(string) != 2:
         return None
@@ -338,6 +348,7 @@ decode = {
     '16001': de16,
     '20': de20,
     '24': de24,
+    '232': de232,
     'pa': depa,
     'ga': dega,
     'hex': dehex
@@ -363,6 +374,7 @@ encode = {
     '16001': en16001,
     '20': en20,
     '24': en24,
+    '232': en232,
     'ga': enga
 }
 # DPT: 19, 28

@@ -63,6 +63,7 @@ Right know the following datapoint types are supported:
 * 17 = 17.x: type must be num
 * 20 = 20.x: type must be num
 * 24 = 24.x: type must be str
+* 232 = 232.600: type must be foo # [r, g, b]
 
 If you are missing one, open a bug report or drop me a message in the knx user forum.
 
