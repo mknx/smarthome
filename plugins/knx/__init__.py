@@ -180,7 +180,11 @@ class KNX(lib.my_asynchat.AsynChat):
                 self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, self.decode(payload, 'hex')))
                 return
             dpt = self.gal[dst]['dpt']
-            val = self.decode(payload, dpt)
+            try:
+                val = self.decode(payload, dpt)
+            except Exception, e:
+                logger.warning("knx: Problem decoding frame from {0} to {1} with '{2}' and DPT {4}. Exception: {5}".format(src, dst, self.decode(payload, 'hex'), dpt, e))
+                return
             if val is not None:
                 self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, val))
                 #print "in:  {0}".format(self.decode(payload, 'hex'))
