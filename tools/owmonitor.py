@@ -22,7 +22,7 @@
 import time
 import sys
 import logging
-sys.path.append("/usr/local/smarthome")
+sys.path.append("/usr/smarthome")
 
 import plugins.onewire
 
