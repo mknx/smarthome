@@ -218,7 +218,10 @@ class Asterisk(lib.my_asynchat.AsynChat):
 
     def update_item(self, item, caller=None, source=None, dest=None):
         if 'ast_db' in item.conf:
-            self.db_write(item.conf['ast_db'], item())
+            value = item()
+            if isinstance(value, bool):
+                value = int(item())
+            self.db_write(item.conf['ast_db'], value)
 
     def parse_logic(self, logic):
         if 'ast_userevent' in logic.conf:
