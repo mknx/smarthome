@@ -21,6 +21,9 @@
 
 import logging
 import struct
+import threading
+import time
+
 import lib.my_asynchat
 import dpts
 
@@ -42,6 +45,7 @@ class KNX(lib.my_asynchat.AsynChat):
         self._cache_ga = []
         self.time_ga = time_ga
         self.date_ga = date_ga
+        self._lock = threading.Lock()
         if smarthome.string2bool(busmonitor):
             self._busmonitor = logger.info
         else:
@@ -59,7 +63,12 @@ class KNX(lib.my_asynchat.AsynChat):
         data = [(len(data) >> 8) & 0xff, (len(data)) & 0xff] + data
         for i in data:
             send += chr(i)
-        self.push(send)
+        try:
+            self._lock.acquire()
+            self.push(send)
+            time.sleep(0.008)
+        finally:
+            self._lock.release()
 
     def groupwrite(self, ga, payload, dpt, flag='write'):
         pkt = [0, 39] + self.encode(ga, 'ga') + [0]
