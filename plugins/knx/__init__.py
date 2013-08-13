@@ -22,7 +22,6 @@
 import logging
 import struct
 import threading
-import time
 
 import lib.my_asynchat
 import dpts
@@ -66,7 +65,6 @@ class KNX(lib.my_asynchat.AsynChat):
         try:
             self._lock.acquire()
             self.push(send)
-            time.sleep(0.008)
         finally:
             self._lock.release()
 
