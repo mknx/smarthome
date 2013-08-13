@@ -42,7 +42,7 @@ class Scheduler(threading.Thread):
 
     _workers = []
     _worker_num = 5
-    _worker_max = 50
+    _worker_max = 30
     _worker_delta = 60  # wait 60 seconds before adding another worker thread
     _scheduler = {}
     _runq = Queue.PriorityQueue()
@@ -67,7 +67,12 @@ class Scheduler(threading.Thread):
                     if len(self._workers) < self._worker_max:
                         self._add_worker()
                     else:
-                        logger.warning("Needing more worker threads than the specified maximum of {0}!".format(self._worker_max))
+                        logger.error("Needing more worker threads than the specified maximum of {0}!".format(self._worker_max))
+                        tn = {}
+                        for t in threading.enumerate():
+                            tn[t.name] = tn.get(t.name, 0) + 1
+                        logger.info('Threads: ' + ', '.join("{0}: {1}".format(k, v) for (k, v) in tn.items()))
+                        self._add_worker()
             while self._triggerq.qsize() > 0:
                 try:
                     dt, prio, name, obj, by, source, dest, value = self._triggerq.get()
