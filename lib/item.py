@@ -90,7 +90,10 @@ class Item():
                 elif attr == 'threshold':
                     self._threshold = config[attr]
                 elif attr == 'eval':
-                    self._eval = config[attr]
+                    if isinstance(config[attr], list):
+                        self._eval = ', '.join(config[attr])  # join together
+                    else:
+                        self._eval = config[attr]
                 elif attr == 'eval_trigger':
                     if isinstance(config[attr], str):
                         self.conf[attr] = [config[attr], ]
