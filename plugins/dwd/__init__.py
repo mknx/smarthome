@@ -200,8 +200,9 @@ class DWD():
             except:
                 continue
             date = datetime.datetime(int(year), int(month), int(day), 12, 0, 0, 0, tzinfo=self.tz)
-            uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)[0]
-            forecast[date] = int(uv)
+            uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)
+            if len(uv) == 1:
+                forecast[date] = int(uv[0])
         return forecast
 
     def pollen(self, region):
