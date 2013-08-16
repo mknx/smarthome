@@ -416,7 +416,7 @@ class OneWire(OwBase):
         if 'ow_addr' not in item.conf:
             return
         if 'ow_sensor' not in item.conf:
-            logger.warning(u"No ow_sensor for %s defined".format(item))
+            logger.warning(u"No ow_sensor for {0} defined".format(item.id()))
             return
         addr = item.conf['ow_addr']
         key = item.conf['ow_sensor']
