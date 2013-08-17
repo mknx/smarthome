@@ -149,8 +149,12 @@ class SQL():
         if not self.connected:
             return
         self._fdb_lock.acquire()
-        #logger.info(*query)
-        reply = self._fdb.execute(*query)
+#       logger.info(*query)
+        try:
+            reply = self._fdb.execute(*query)
+        except Exception, e:
+            logger.warning("Problem with '{0}': {1}".format(query, e))
+            reply = None
         self._fdb_lock.release()
         return reply
 
@@ -277,7 +281,7 @@ class SQL():
     def _single(self, func, start, end='now', item=None):
         start = self.get_timestamp(start)
         end = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item='{0}' AND time =< {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
+        prev = self.query("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
         if prev is None:
             first = start
         else:
