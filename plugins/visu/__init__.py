@@ -173,7 +173,8 @@ class WebSocket(asyncore.dispatcher):
 
     def remove_client(self, client):
         self._lock.acquire()
-        self.clients.remove(client)
+        if client in self.clients:
+            self.clients.remove(client)
         self._lock.release()
 
     def _send_event(self, event, data):
