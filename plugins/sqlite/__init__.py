@@ -308,7 +308,7 @@ class SQL():
                 return tuples[0][0]
 
     def _pack(self):
-        now = self.timestamp(datetime.datetime.now())
+        now = self.timestamp(self._sh.now())
         insert = []
         delete = []
         self._fdb_lock.acquire()
