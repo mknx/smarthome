@@ -21,7 +21,6 @@
 
 import re
 import datetime
-import urllib
 import logging
 
 
@@ -298,6 +297,5 @@ class SolarLog():
 
     def _read(self, filename):
         url = self._host + filename
-        f = urllib.urlopen(url)
-        return f.read()
+        return self._sh.tools.fetch_url(url)
 
