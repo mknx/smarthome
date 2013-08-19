@@ -391,7 +391,6 @@ class OneWire(OwBase):
     def _discovery(self):
         self._intruders = []  # reset intrusion detection
         if not self.is_connected:
-            print 'wtf'
             return
         try:
             listing = self.dir('/')
@@ -405,7 +404,12 @@ class OneWire(OwBase):
                 bus = path.split("/")[-2]
                 if bus not in self._buses:
                     self._buses[bus] = []
-                for sensor in self.dir(path):
+                try:
+                    sensors = self.dir(path)
+                except Exception, e:
+                    logger.info("1-Wire: problem reading bus: {0}: {1}".format(bus, e))
+                    continue
+                for sensor in sensors:
                     addr = sensor.split("/")[-2]
                     if addr not in self._buses[bus]:
                         keys = self.identify_sensor(sensor)
@@ -424,14 +428,20 @@ class OneWire(OwBase):
                         if addr in table:
                             for ch in ['A', 'B']:
                                 if 'I' + ch in table[addr] and 'O' + ch in keys:  # set to 0 and delete output PIO
-                                    self.write(sensor + keys['O' + ch], 0)
+                                    try:
+                                        self.write(sensor + keys['O' + ch], 0)
+                                    except Exception, e:
+                                        logger.info("1-Wire: problem setting {0}{1} as input: {2}".format(sensor, keys['O' + ch], e))
                                     del(keys['O' + ch])
                             for key in keys:
                                 if key in table[addr]:
                                     table[addr][key]['path'] = sensor + keys[key]
                             for ch in ['A', 'B']:  # init PIO
                                 if 'O' + ch in table[addr]:
-                                    self.write(table[addr][key]['path'], self._flip[table[addr][key]['item']()])
+                                    try:
+                                        self.write(table[addr][key]['path'], self._flip[table[addr][key]['item']()])
+                                    except Exception, e:
+                                        logger.info("1-Wire: problem setting output {0}{1}: {2}".format(sensor, keys['O' + ch], e))
         self._discovered = True
 
     def parse_item(self, item):
@@ -465,4 +475,7 @@ class OneWire(OwBase):
             return self.update_item
 
     def update_item(self, item, caller=None, source=None, dest=None):
-        self.write(item._ow_path['path'], self._flip[item()])
+        try:
+            self.write(item._ow_path['path'], self._flip[item()])
+        except Exception, e:
+            logger.info("1-Wire: problem setting output {0}: {1}".format(item._ow_path['path'], e))
