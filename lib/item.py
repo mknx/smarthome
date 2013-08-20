@@ -196,6 +196,16 @@ class Item():
         # dummy for garbage collection
         logger.warning("Deleting Item: {0}".format(self._path))
 
+    def set(self, value, caller='Logic', source=None, dest=None):
+        try:
+            value = getattr(self, '_return_' + self._type)(value)
+        except:
+            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
+            return
+        self._lock.acquire()
+        self._value = value
+        self._lock.release()
+
     def __call__(self, value=None, caller='Logic', source=None, dest=None):
         if value is None or self._type is None:
             return self._value
