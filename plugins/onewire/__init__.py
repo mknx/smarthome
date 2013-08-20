@@ -298,6 +298,8 @@ class OneWire(OwBase):
         if not self.is_connected:
             return
         for addr in self._ios:
+            if not self.alive:
+                break
             for key in self._ios[addr]:
                 if key.startswith('O'):  # ignore Output
                     continue
@@ -330,6 +332,8 @@ class OneWire(OwBase):
         if not self.is_connected:
             return
         for bus in self._ibutton_buses:
+            if not self.alive:
+                break
             path = '/uncached/' + bus + '/'
             name = self._ibutton_buses[bus]
             ignore = ['interface', 'simultaneous', 'alarm'] + self._intruders + self._ibutton_masters.keys()
@@ -362,6 +366,8 @@ class OneWire(OwBase):
             return
         start = time.time()
         for addr in self._sensors:
+            if not self.alive:
+                break
             for key in self._sensors[addr]:
                 item = self._sensors[addr][key]['item']
                 path = self._sensors[addr][key]['path']
@@ -400,6 +406,8 @@ class OneWire(OwBase):
             logger.warning("1-Wire: listing '{0}' is not a list.".format(listing))
             return
         for path in listing:
+            if not self.alive:
+                break
             if path.startswith('/bus.'):
                 bus = path.split("/")[-2]
                 if bus not in self._buses:
