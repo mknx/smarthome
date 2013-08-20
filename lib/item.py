@@ -205,6 +205,7 @@ class Item():
         self._lock.acquire()
         self._value = value
         self._lock.release()
+        self._change_logger(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
 
     def __call__(self, value=None, caller='Logic', source=None, dest=None):
         if value is None or self._type is None:
