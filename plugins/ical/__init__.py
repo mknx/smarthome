@@ -21,7 +21,6 @@
 
 import logging
 import datetime
-import urllib2
 
 import dateutil.tz
 import dateutil.rrule
@@ -54,19 +53,13 @@ class iCal():
 
     def __call__(self, ics, delta=1, offset=0):
         if ics.startswith('http'):
-            try:
-                f = urllib2.urlopen(ics, timeout=2)
-                ical = f.read()
-                f.fp._sock.recv = None
-                f.close()
-            except Exception, e:
-                logger.error('Could not open ics file {0}: {1}'.format(ics, e))
+            ical = self._sh.tools.fetch_url(ics)
+            if ical is False:
                 return {}
         else:
             try:
-                f = open(ics, 'r')
-                ical = f.read()
-                f.close()
+                with open(ics, 'r') as f:
+                    ical = f.read()
             except IOError, e:
                 logger.error('Could not open ics file {0}: {1}'.format(ics, e))
                 return {}
