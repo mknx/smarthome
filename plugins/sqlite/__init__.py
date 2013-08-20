@@ -59,9 +59,9 @@ class SQL():
         sqlite3.register_adapter(datetime.datetime, self.timestamp)
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
         self.connected = True
-        self._fdb = sqlite3.connect(smarthome.base_dir + '/var/db/smarthome.db', check_same_thread=False)
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
+        self._fdb = sqlite3.connect(smarthome.base_dir + '/var/db/smarthome.db', check_same_thread=False)
         common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
         if common is None:
             self._fdb.execute("CREATE TABLE common (version INTEGER);")
@@ -88,12 +88,13 @@ class SQL():
         smarthome.scheduler.add('sqlite', self._pack, cron='2 3 * *', prio=5)
 
     def update_item(self, item, caller=None, source=None, dest=None):
-        if not self.connected:
-            return
         now = self.timestamp(self._sh.now())
         val = float(item())
         power = int(bool(val))
         self._fdb_lock.acquire()
+        if not self.connected:
+            self._fdb_lock.release()
+            return
         self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'power': power})
         self._fdb.commit()
         self._fdb_lock.release()
@@ -104,6 +105,14 @@ class SQL():
 
     def stop(self):
         self.alive = False
+        self._fdb_lock.acquire()
+        try:
+            self._fdb.close()
+        except Exception:
+            pass
+        finally:
+            self.connected = False
+            self._fdb_lock.release()
 
     def parse_item(self, item):
         if 'sqlite' in item.conf or 'history' in item.conf:  # XXX legacy history option remove sometime
@@ -146,9 +155,10 @@ class SQL():
         return ts
 
     def query(self, *query):
-        if not self.connected:
-            return
         self._fdb_lock.acquire()
+        if not self.connected:
+            self._fdb_lock.release()
+            return
 #       logger.info(*query)
         try:
             reply = self._fdb.execute(*query)
