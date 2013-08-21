@@ -363,5 +363,5 @@ class SQL():
         self._fdb_lock.release()
 
     def dump(self):
-        for row in self.query('SELECT rowid, * FROM history ORDER BY time ASC').fetchall():
+        for row in self.query('SELECT rowid, * FROM history ORDER BY item, time ASC').fetchall():
             print row
