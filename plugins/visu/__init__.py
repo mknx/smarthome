@@ -239,7 +239,10 @@ class WebSocketHandler(asynchat.async_chat):
     def handle_close(self):
         # remove circular references
         self._dp.remove_client(self)
-        del(self.json_send, self.parse_data)
+        try:
+            del(self.json_send, self.parse_data)
+        except:
+            pass
         try:
             self.shutdown(socket.SHUT_RDWR)
         except:
