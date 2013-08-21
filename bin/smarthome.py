@@ -412,6 +412,13 @@ class SmartHome():
         #self.logics.restart()
         pass
 
+    def return_logic(self, name):
+        return self._logics[name]
+
+    def return_logics(self):
+        for logic in self._logics:
+            yield logic
+
     #################################################################
     # Connection Monitor
     #################################################################
