@@ -54,6 +54,7 @@ class Plugins():
                 self._plugins.append(plugin_thread.plugin)
             except Exception, e:
                 logger.warning("Plugin {0} exception: {1}".format(plugin, e))
+        del(_conf)  # clean up
 
     def __iter__(self):
         for plugin in self._plugins:
