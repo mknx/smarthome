@@ -200,7 +200,6 @@ class SmartHome():
         # Write PID File
         #############################################################
         try:
-            logger.info(os.getpid())
             with open(PID_FILE, 'w+') as fd:
                 fd.write("{}\n".format(os.getpid()))
         except:
