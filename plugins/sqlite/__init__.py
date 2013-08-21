@@ -53,7 +53,7 @@ class SQL():
         GROUP by CAST((time / :granularity) AS INTEGER), item
         ORDER BY time DESC """
 
-    def __init__(self, smarthome):
+    def __init__(self, smarthome, path=None):
         self._sh = smarthome
         self._version = 1
         sqlite3.register_adapter(datetime.datetime, self.timestamp)
@@ -61,7 +61,10 @@ class SQL():
         self.connected = True
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
-        self._fdb = sqlite3.connect(smarthome.base_dir + '/var/db/smarthome.db', check_same_thread=False)
+        if path is None:
+            self._fdb = sqlite3.connect(smarthome.base_dir + '/var/db/smarthome.db', check_same_thread=False)
+        else:
+            self._fdb = sqlite3.connect(path + '/smarthome.db', check_same_thread=False)
         common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
         if common is None:
             self._fdb.execute("CREATE TABLE common (version INTEGER);")
