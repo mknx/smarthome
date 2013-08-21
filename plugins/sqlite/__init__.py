@@ -124,9 +124,9 @@ class SQL():
             item.series = functools.partial(self._series, item=item.id())
             item.db = functools.partial(self._single, item=item.id())
             if item.conf['sqlite'] == 'init':
-                last = self.query("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id()))
+                last = self.query("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id())).fetchone()
                 if last is not None:
-                    last = last.fetchone()[0]
+                    last = last[0]
                     item.set(last, 'SQLite')
             return self.update_item
         else:
@@ -246,11 +246,11 @@ class SQL():
             sid = item + '|' + func + '|' + start + '|' + end
         istart = self.get_timestamp(start)
         iend = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
+        prev = self.query("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart)).fetchone()
         if prev is None:
             first = istart
         else:
-            first = prev.fetchone()[0]
+            first = prev[0]
         where = " from history WHERE item='{0}' AND time >= {1} AND time <= {2}".format(item, first, iend)
         if step is None:
             if count != 0:
@@ -301,11 +301,11 @@ class SQL():
     def _single(self, func, start, end='now', item=None):
         start = self.get_timestamp(start)
         end = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start))
+        prev = self.query("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
         if prev is None:
             first = start
         else:
-            first = prev.fetchone()[0]
+            first = prev[0]
         where = " from history WHERE item='{0}' AND time >= {1} AND time < {2}".format(item, first, end)
         if func == 'avg':
             query = "SELECT time, vavg" + where
