@@ -215,6 +215,7 @@ class SmartHome():
             for attr in config:
                 if not isinstance(config[attr], dict):  # ignore sub items
                     vars(self)['_' + attr] = config[attr]
+            del(config)  # clean up
         except Exception, e:
             logger.warning("Problem reading smarthome.conf: {0}".format(e))
 
@@ -292,6 +293,7 @@ class SmartHome():
                             self._sub_items.append(sub_item)
                         else:  # existing item
                             sub_item.parse(self, self, path, item_conf[path])
+                del(item_conf)  # clean up
         for item in self.return_items():
             item.init_prerun()
         for item in self.return_items():
