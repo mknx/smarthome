@@ -190,7 +190,7 @@ class KNX(lib.my_asynchat.AsynChat):
             try:
                 val = self.decode(payload, dpt)
             except Exception, e:
-                logger.warning("knx: Problem decoding frame from {0} to {1} with '{2}' and DPT {4}. Exception: {5}".format(src, dst, self.decode(payload, 'hex'), dpt, e))
+                logger.warning("knx: Problem decoding frame from {0} to {1} with '{2}' and DPT {3}. Exception: {4}".format(src, dst, self.decode(payload, 'hex'), dpt, e))
                 return
             if val is not None:
                 self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, val))
