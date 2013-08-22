@@ -159,7 +159,7 @@ class SmartHome():
         #############################################################
         # Signal Handling
         #############################################################
-#       signal.signal(signal.SIGHUP, self.restart_logics)
+        signal.signal(signal.SIGHUP, self.reload_logics)
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGTERM, self.stop)
 
@@ -408,9 +408,9 @@ class SmartHome():
     #################################################################
     # Logic Methods
     #################################################################
-    def restart_logics(self, signum=None, frame=None):
-        #self.logics.restart()
-        pass
+    def reload_logics(self, signum=None, frame=None):
+        for logic in self._logics:
+            self._logics[logic].generate_bytecode()
 
     def return_logic(self, name):
         return self._logics[name]
@@ -542,7 +542,7 @@ def _stop():
             os._exit(0)
 
 
-def _update_logics():
+def reload_logics():
     pid = _read_pid()
     if pid:
         os.kill(pid, signal.SIGHUP)
@@ -564,6 +564,7 @@ if __name__ == '__main__':
     arggroup.add_argument('-v', '--verbose', help='verbose logging to the logfile', action='store_true')
     arggroup.add_argument('-d', '--debug', help='stay in the foreground with verbose output', action='store_true')
     arggroup.add_argument('-i', '--interactive', help='open an interactive shell with tab completion and with verbose logging to the logfile', action='store_true')
+    arggroup.add_argument('-l', '--logics', help='reload all logics', action='store_true')
     arggroup.add_argument('-s', '--stop', help='stop SmartHome.py', action='store_true')
     arggroup.add_argument('-q', '--quiet', help='reduce logging to the logfile', action='store_true')
     arggroup.add_argument('--start', help='start SmartHome.py and detach from console (default)', default=True, action='store_true')
@@ -581,6 +582,9 @@ if __name__ == '__main__':
         _sh_thread.start()
         shell = code.InteractiveConsole(locals())
         shell.interact()
+        exit(0)
+    elif args.logics:
+        reload_logics()
         exit(0)
     elif args.stop:
         _stop()
