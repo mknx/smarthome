@@ -102,7 +102,6 @@ class SmartHome():
     _logfile = BASE + '/var/log/smarthome.log'
     _log_buffer = 50
     socket_map = {}
-    connections = {}
     __logs = {}
     __event_listeners = {}
     __all_listeners = []
@@ -330,7 +329,7 @@ class SmartHome():
         #############################################################
         while self.alive:
             if self.socket_map != {}:
-                asyncore.loop(timeout=1, count=1, map=self.socket_map)
+                asyncore.loop(timeout=1, use_poll=True, count=1, map=self.socket_map)
             else:
                 time.sleep(2)
 
