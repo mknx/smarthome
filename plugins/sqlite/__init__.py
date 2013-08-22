@@ -334,7 +334,7 @@ class SQL():
         self._fdb_lock.acquire()
         try:
             for entry in self.periods:
-                prev = now
+                prev = {}
                 period, granularity = entry
                 period = now - period * 24 * 3600 * 1000
                 granularity = int(granularity * 3600 * 1000)
@@ -342,15 +342,20 @@ class SQL():
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
                     gtime = map(int, gtime.split(','))
                     if len(gtime) == 1:  # ignore
+                        prev[item] = gtime[0]
                         continue
+                    if item not in prev:
+                        upper = now
+                    else:
+                        upper = prev[item]
                     # pack !!!
                     delete.append(gid)
                     gval = map(float, gval.split(','))
                     gvavg = map(float, gvavg.split(','))
                     gpower = map(float, gpower.split(','))
-                    avg = self._avg(zip(gtime, gvavg), prev)
-                    power = self._avg(zip(gtime, gpower), prev)
-                    prev = gtime[0]
+                    avg = self._avg(zip(gtime, gvavg), upper)
+                    power = self._avg(zip(gtime, gpower), upper)
+                    prev[item] = gtime[0]
                     # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
                     insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
             self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
