@@ -576,6 +576,14 @@ if __name__ == '__main__':
         import code
         import rlcompleter  # noqa
         import readline
+        import atexit
+        # history file
+        histfile = os.path.join(os.environ['HOME'], '.history.python')
+        try:
+            readline.read_history_file(histfile)
+        except IOError:
+            pass
+        atexit.register(readline.write_history_file, histfile)
         readline.parse_and_bind("tab: complete")
         sh = SmartHome()
         _sh_thread = threading.Thread(target=sh.start)
