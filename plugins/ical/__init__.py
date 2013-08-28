@@ -136,14 +136,15 @@ class iCal():
                         continue
                 else:
                     events[event['UID']] = event
-            else:
+                del(event)
+            elif 'event' in locals():
                 key, sep, val = line.partition(':')
                 key, sep, par = key.partition(';')
                 key = key.upper()
                 if key == 'TZID':
                     tzinfo = dateutil.tz.gettz(val)
                 elif key in ['UID', 'SUMMARY', 'SEQUENCE', 'RRULE']:
-                    event[key] = val
+                    event[key] = val  # noqa
                 elif key in ['DTSTART', 'DTEND', 'EXDATE', 'RECURRENCE-ID']:
                     try:
                         date = self._parse_date(val, tzinfo, par)
@@ -151,9 +152,9 @@ class iCal():
                         logger.warning("Problem parsing: {0}: {1}".format(ics, e))
                         continue
                     if key == 'EXDATE':
-                        event['EXDATES'].append(date)
+                        event['EXDATES'].append(date)  # noqa
                     else:
-                        event[key] = date
+                        event[key] = date  # noqa
         return events
 
     def _parse_rrule(self, event, tzinfo):
