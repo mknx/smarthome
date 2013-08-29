@@ -35,6 +35,7 @@ class SQL():
     # (period days, granularity hours)
     periods = [(1900, 168), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
     # SQL queries
+    # time, item, cnt, val, vsum, vmin, vmax, vavg, power
     _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power REAL);"
     _create_index = "CREATE INDEX IF NOT EXISTS idx ON history (time, item)"
     _pack_query = """
@@ -110,12 +111,16 @@ class SQL():
         now = self.timestamp(self._sh.now())
         val = float(item())
         power = int(bool(val))
+        if item.conf['sqlite'] == 'sum':
+            sum = val
+        else:
+            sum = 0
         self._fdb_lock.acquire()
         if not self.connected:
             self._fdb_lock.release()
             return
         try:
-            self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'power': power})
+            self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :sum, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'sum': sum, 'power': power})
             self._fdb.commit()
         except Exception, e:
             logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
