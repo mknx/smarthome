@@ -51,7 +51,7 @@ class iCal():
     def update_item(self, item, caller=None, source=None, dest=None):
         pass
 
-    def __call__(self, ics, delta=1, offset=0):
+    def __call__(self, ics, delta=1, offset=0, opt=''):
         if ics.startswith('http'):
             ical = self._sh.tools.fetch_url(ics)
             if ical is False:
@@ -66,6 +66,7 @@ class iCal():
         now = self._sh.now()
         offset = offset - 1  # start at 23:59:59 the day before
         delta += 1  # extend delta for negetiv offset
+        opts = opt.split(',');
         start = now.replace(hour=23, minute=59, second=59, microsecond=0) + datetime.timedelta(days=offset)
         end = start + datetime.timedelta(days=delta)
         events = self._parse_ical(ical, ics)
@@ -73,23 +74,30 @@ class iCal():
         for event in events:
             event = events[event]
             if 'RRULE' in event:
-                for dt in event['RRULE'].between(start, end):
+                for dt in event['RRULE'].between(start, end, True):
                     if dt not in event['EXDATES']:
                         time = dt.time()
                         date = dt.date()
+                        eret = [time, event['SUMMARY'], dt]
+                        for o in opts:
+                            eret.append(event[o])
                         if date not in ret:
-                            ret[date] = [[time, event['SUMMARY']]]
+                            ret[date] = [eret]
                         else:
-                            ret[date].append([time, event['SUMMARY']])
+                            ret[date].append(eret)
             else:
                 dt = event['DTSTART']
-                if dt > start and dt < end:
+                de = event['DTEND']
+                if (dt > start and dt < end) or (dt < start and de > start):
                     time = dt.time()
                     date = dt.date()
+                    eret = [time, event['SUMMARY'], de]
+                    for o in opts:
+                        eret.append(event[o])
                     if date not in ret:
-                        ret[date] = [[time, event['SUMMARY']]]
+                        ret[date] = [eret]
                     else:
-                        ret[date].append([time, event['SUMMARY']])
+                        ret[date].append(eret)
         return ret
 
     def _parse_date(self, val, dtzinfo, par=''):
@@ -136,14 +144,15 @@ class iCal():
                         continue
                 else:
                     events[event['UID']] = event
-            else:
+                del(event)
+            elif 'event' in locals():
                 key, sep, val = line.partition(':')
                 key, sep, par = key.partition(';')
                 key = key.upper()
                 if key == 'TZID':
                     tzinfo = dateutil.tz.gettz(val)
                 elif key in ['UID', 'SUMMARY', 'SEQUENCE', 'RRULE']:
-                    event[key] = val
+                    event[key] = val # noqa
                 elif key in ['DTSTART', 'DTEND', 'EXDATE', 'RECURRENCE-ID']:
                     try:
                         date = self._parse_date(val, tzinfo, par)
@@ -151,9 +160,12 @@ class iCal():
                         logger.warning("Problem parsing: {0}: {1}".format(ics, e))
                         continue
                     if key == 'EXDATE':
-                        event['EXDATES'].append(date)
+                        event['EXDATES'].append(date) # noqa
                     else:
-                        event[key] = date
+                        event[key] = date # noqa
+                else:
+                    event[key] = val # noqa
+                    
         return events
 
     def _parse_rrule(self, event, tzinfo):
