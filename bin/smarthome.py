@@ -320,9 +320,9 @@ class SmartHome():
         lib.scene.Scenes(self)
 
         #############################################################
-        # Adding Garbage Collection
+        # Execute Maintenance Method
         #############################################################
-        self.scheduler.add('sh.gc', self._garbage_collection, prio=8, cron="init | 4 2 * *", offset=0)
+        self.scheduler.add('sh.gc', self._maintenance, prio=8, cron="init | 4 2 * *", offset=0)
 
         #############################################################
         # Main Loop
@@ -479,6 +479,11 @@ class SmartHome():
     #################################################################
     # Helper Methods
     #################################################################
+    def _maintenance(self):
+        self._garbage_collection()
+        references = sum(self._object_refcount().values())
+        logger.debug("Object references: {}".format(references))
+
     def _excepthook(self, typ, value, tb):
         mytb = "".join(traceback.format_tb(tb))
         logger.critical("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
@@ -498,14 +503,18 @@ class SmartHome():
             return None
 
     def object_refcount(self):
+        objects = self._object_refcount()
+        objects = map(lambda x: (x[1], x[0]), objects.items())
+        objects.sort(reverse=True)
+        return objects
+
+    def _object_refcount(self):
         objects = {}
         for module in sys.modules.values():
             for sym in dir(module):
                 obj = getattr(module, sym)
                 if isinstance(obj, types.ClassType):
                     objects[obj] = sys.getrefcount(obj)
-        objects = map(lambda x: (x[1], x[0]), objects.items())
-        objects.sort(reverse=True)
         return objects
 
 
@@ -576,6 +585,14 @@ if __name__ == '__main__':
         import code
         import rlcompleter  # noqa
         import readline
+        import atexit
+        # history file
+        histfile = os.path.join(os.environ['HOME'], '.history.python')
+        try:
+            readline.read_history_file(histfile)
+        except IOError:
+            pass
+        atexit.register(readline.write_history_file, histfile)
         readline.parse_and_bind("tab: complete")
         sh = SmartHome()
         _sh_thread = threading.Thread(target=sh.start)

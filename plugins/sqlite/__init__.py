@@ -31,9 +31,11 @@ logger = logging.getLogger('')
 
 class SQL():
 
+    _version = 1
     # (period days, granularity hours)
     periods = [(1900, 168), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
     # SQL queries
+    # time, item, cnt, val, vsum, vmin, vmax, vavg, power
     _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power REAL);"
     _create_index = "CREATE INDEX IF NOT EXISTS idx ON history (time, item)"
     _pack_query = """
@@ -55,16 +57,31 @@ class SQL():
 
     def __init__(self, smarthome, path=None):
         self._sh = smarthome
-        self._version = 1
+        self.connected = False
         sqlite3.register_adapter(datetime.datetime, self.timestamp)
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
-        self.connected = True
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
         if path is None:
-            self._fdb = sqlite3.connect(smarthome.base_dir + '/var/db/smarthome.db', check_same_thread=False)
+            self.path = smarthome.base_dir + '/var/db/smarthome.db'
         else:
-            self._fdb = sqlite3.connect(path + '/smarthome.db', check_same_thread=False)
+            self.path = path + '/smarthome.db'
+        try:
+            self._fdb = sqlite3.connect(self.path, check_same_thread=False)
+        except Exception, e:
+            logger.warning("SQLite: Could not connect to the database {}: {}".format(self.path, e))
+            self._fdb_lock.release()
+            return
+        self.connected = True
+        integrity = self._fdb.execute("PRAGMA integrity_check(10);").fetchone()[0]
+        if integrity == 'ok':
+            logger.debug("SQLite: database integrity ok")
+        else:
+            logger.error("SQLite: database corrupt. Seek help.")
+            self._fdb_lock.release()
+            return
+        journal = self._fdb.execute("PRAGMA journal_mode=WAL;").fetchone()[0]
+        logger.debug("SQLite: database journal: {}".format(journal))
         common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
         if common is None:
             self._fdb.execute("CREATE TABLE common (version INTEGER);")
@@ -94,12 +111,19 @@ class SQL():
         now = self.timestamp(self._sh.now())
         val = float(item())
         power = int(bool(val))
+        if item.conf['sqlite'] == 'sum':
+            sum = val
+        else:
+            sum = 0
         self._fdb_lock.acquire()
         if not self.connected:
             self._fdb_lock.release()
             return
-        self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'power': power})
-        self._fdb.commit()
+        try:
+            self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :sum, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'sum': sum, 'power': power})
+            self._fdb.commit()
+        except Exception, e:
+            logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
         self._fdb_lock.release()
         #self.dump()
 
@@ -173,7 +197,7 @@ class SQL():
         try:
             reply = self._fdb.execute(*query)
         except Exception, e:
-            logger.warning("Problem with '{0}': {1}".format(query, e))
+            logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
             reply = None
         self._fdb_lock.release()
         return reply
@@ -359,9 +383,10 @@ class SQL():
                     # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
                     insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
             self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
-            self._fdb.execute("DELETE FROM history WHERE rowid in ({0})".format(','.join(delete)))
+            self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(','.join(delete)))
             self._fdb.commit()
-            self._fdb.execute("VACUUM")
+            self._fdb.execute("VACUUM;")
+            self._fdb.execute("PRAGMA shrink_memory;")
         except Exception, e:
             logger.warning("problem packing sqlite database: {0}".format(e))
             self._fdb.rollback()
