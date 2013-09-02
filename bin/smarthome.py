@@ -159,7 +159,7 @@ class SmartHome():
         #############################################################
         # Signal Handling
         #############################################################
-#       signal.signal(signal.SIGHUP, self.restart_logics)
+        signal.signal(signal.SIGHUP, self.reload_logics)
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGTERM, self.stop)
 
@@ -320,9 +320,9 @@ class SmartHome():
         lib.scene.Scenes(self)
 
         #############################################################
-        # Adding Garbage Collection
+        # Execute Maintenance Method
         #############################################################
-        self.scheduler.add('sh.gc', self._garbage_collection, prio=8, cron="init | 4 2 * *", offset=0)
+        self.scheduler.add('sh.gc', self._maintenance, prio=8, cron="init | 4 2 * *", offset=0)
 
         #############################################################
         # Main Loop
@@ -408,9 +408,9 @@ class SmartHome():
     #################################################################
     # Logic Methods
     #################################################################
-    def restart_logics(self, signum=None, frame=None):
-        #self.logics.restart()
-        pass
+    def reload_logics(self, signum=None, frame=None):
+        for logic in self._logics:
+            self._logics[logic].generate_bytecode()
 
     def return_logic(self, name):
         return self._logics[name]
@@ -479,6 +479,11 @@ class SmartHome():
     #################################################################
     # Helper Methods
     #################################################################
+    def _maintenance(self):
+        self._garbage_collection()
+        references = sum(self._object_refcount().values())
+        logger.debug("Object references: {}".format(references))
+
     def _excepthook(self, typ, value, tb):
         mytb = "".join(traceback.format_tb(tb))
         logger.critical("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
@@ -498,14 +503,18 @@ class SmartHome():
             return None
 
     def object_refcount(self):
+        objects = self._object_refcount()
+        objects = map(lambda x: (x[1], x[0]), objects.items())
+        objects.sort(reverse=True)
+        return objects
+
+    def _object_refcount(self):
         objects = {}
         for module in sys.modules.values():
             for sym in dir(module):
                 obj = getattr(module, sym)
                 if isinstance(obj, types.ClassType):
                     objects[obj] = sys.getrefcount(obj)
-        objects = map(lambda x: (x[1], x[0]), objects.items())
-        objects.sort(reverse=True)
         return objects
 
 
@@ -542,7 +551,7 @@ def _stop():
             os._exit(0)
 
 
-def _update_logics():
+def reload_logics():
     pid = _read_pid()
     if pid:
         os.kill(pid, signal.SIGHUP)
@@ -564,6 +573,7 @@ if __name__ == '__main__':
     arggroup.add_argument('-v', '--verbose', help='verbose logging to the logfile', action='store_true')
     arggroup.add_argument('-d', '--debug', help='stay in the foreground with verbose output', action='store_true')
     arggroup.add_argument('-i', '--interactive', help='open an interactive shell with tab completion and with verbose logging to the logfile', action='store_true')
+    arggroup.add_argument('-l', '--logics', help='reload all logics', action='store_true')
     arggroup.add_argument('-s', '--stop', help='stop SmartHome.py', action='store_true')
     arggroup.add_argument('-q', '--quiet', help='reduce logging to the logfile', action='store_true')
     arggroup.add_argument('--start', help='start SmartHome.py and detach from console (default)', default=True, action='store_true')
@@ -575,12 +585,23 @@ if __name__ == '__main__':
         import code
         import rlcompleter  # noqa
         import readline
+        import atexit
+        # history file
+        histfile = os.path.join(os.environ['HOME'], '.history.python')
+        try:
+            readline.read_history_file(histfile)
+        except IOError:
+            pass
+        atexit.register(readline.write_history_file, histfile)
         readline.parse_and_bind("tab: complete")
         sh = SmartHome()
         _sh_thread = threading.Thread(target=sh.start)
         _sh_thread.start()
         shell = code.InteractiveConsole(locals())
         shell.interact()
+        exit(0)
+    elif args.logics:
+        reload_logics()
         exit(0)
     elif args.stop:
         _stop()

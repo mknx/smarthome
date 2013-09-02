@@ -1,3 +1,4 @@
+r
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
@@ -53,6 +54,7 @@ class iCal():
 
     def __call__(self, ics, delta=1, offset=0, opt=''):
         if ics.startswith('http'):
+
             ical = self._sh.tools.fetch_url(ics)
             if ical is False:
                 return {}
@@ -152,7 +154,11 @@ class iCal():
                 if key == 'TZID':
                     tzinfo = dateutil.tz.gettz(val)
                 elif key in ['UID', 'SUMMARY', 'SEQUENCE', 'RRULE']:
+<<<<<<< HEAD
                     event[key] = val # noqa
+=======
+                    event[key] = val  # noqa
+>>>>>>> upstream/develop
                 elif key in ['DTSTART', 'DTEND', 'EXDATE', 'RECURRENCE-ID']:
                     try:
                         date = self._parse_date(val, tzinfo, par)
@@ -160,12 +166,18 @@ class iCal():
                         logger.warning("Problem parsing: {0}: {1}".format(ics, e))
                         continue
                     if key == 'EXDATE':
+<<<<<<< HEAD
                         event['EXDATES'].append(date) # noqa
                     else:
                         event[key] = date # noqa
                 else:
                     event[key] = val # noqa
                     
+=======
+                        event['EXDATES'].append(date)  # noqa
+                    else:
+                        event[key] = date  # noqa
+>>>>>>> upstream/develop
         return events
 
     def _parse_rrule(self, event, tzinfo):
