@@ -51,9 +51,8 @@ class iCal():
     def update_item(self, item, caller=None, source=None, dest=None):
         pass
 
-    def __call__(self, ics, delta=1, offset=0, opt=''):
+    def __call__(self, ics, delta=1, offset=0, opt=None):
         if ics.startswith('http'):
-
             ical = self._sh.tools.fetch_url(ics)
             if ical is False:
                 return {}
@@ -67,7 +66,10 @@ class iCal():
         now = self._sh.now()
         offset = offset - 1  # start at 23:59:59 the day before
         delta += 1  # extend delta for negetiv offset
-        opts = opt.split(',');
+        if opt:
+            opts = opt.split(',')
+        else:
+            opts = {}
         start = now.replace(hour=23, minute=59, second=59, microsecond=0) + datetime.timedelta(days=offset)
         end = start + datetime.timedelta(days=delta)
         events = self._parse_ical(ical, ics)
@@ -166,6 +168,7 @@ class iCal():
                         event[key] = date # noqa
                 else:
                     event[key] = val # noqa
+                    
         return events
 
     def _parse_rrule(self, event, tzinfo):
