@@ -183,12 +183,6 @@ class SmartHome():
             logging.getLogger('').addHandler(log_file)
         except IOError, e:
             print("Error creating logfile {}: {}".format(self._logfile, e))
-        # adding SH.py log
-        self.log = lib.log.Log(self, 'SmartHome.py', '<li><p style="font-weight:bold;">{1}</p><p>{3}</p><p class="ui-li-aside">{0:%a %H:%M:%S}<br />{2}</p></li>', maxlen=self._log_buffer)
-        log_mem = LogHandler(self.log)
-        log_mem.setLevel(logging.WARNING)
-        log_mem.setFormatter(formatter)
-        logging.getLogger('').addHandler(log_mem)
 
         #############################################################
         # Catching Exceptions
@@ -217,6 +211,20 @@ class SmartHome():
             del(config)  # clean up
         except Exception, e:
             logger.warning("Problem reading smarthome.conf: {0}".format(e))
+
+        #############################################################
+        # Setting debug level and adding memory handler
+        #############################################################
+        if hasattr(self, '_loglevel'):
+            try:
+                logging.getLogger('').setLevel(vars(logging)[self._loglevel.upper()])
+            except:
+                pass
+        self.log = lib.log.Log(self, 'SmartHome.py', '<li><p style="font-weight:bold;">{1}</p><p>{3}</p><p class="ui-li-aside">{0:%a %H:%M:%S}<br />{2}</p></li>', maxlen=self._log_buffer)
+        log_mem = LogHandler(self.log)
+        log_mem.setLevel(logging.WARNING)
+        log_mem.setFormatter(formatter)
+        logging.getLogger('').addHandler(log_mem)
 
         #############################################################
         # Setting (local) tz
