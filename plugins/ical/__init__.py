@@ -77,26 +77,28 @@ class iCal():
         for event in events:
             event = events[event]
             if 'RRULE' in event:
-                for dt in event['RRULE'].between(start, end, True):
+                for dt in event['RRULE'].between(start, end, inc=True):
                     if dt not in event['EXDATES']:
                         time = dt.time()
                         date = dt.date()
                         eret = [time, event['SUMMARY'], dt]
                         for o in opts:
-                            eret.append(event[o])
+                            if o in event:
+                                eret.append(event[o])
                         if date not in ret:
                             ret[date] = [eret]
                         else:
                             ret[date].append(eret)
             else:
-                dt = event['DTSTART']
+                ds = event['DTSTART']
                 de = event['DTEND']
-                if (dt > start and dt < end) or (dt < start and de > start):
-                    time = dt.time()
-                    date = dt.date()
-                    eret = [time, event['SUMMARY'], de]
+                if (ds > start and ds < end) or (ds < start and de > start):
+                    time = ds.time()
+                    date = ds.date()
+                    eret = [time, event['SUMMARY'], ds]
                     for o in opts:
-                        eret.append(event[o])
+                        if o in event:
+                            eret.append(event[o])
                     if date not in ret:
                         ret[date] = [eret]
                     else:
@@ -155,7 +157,7 @@ class iCal():
                 if key == 'TZID':
                     tzinfo = dateutil.tz.gettz(val)
                 elif key in ['UID', 'SUMMARY', 'SEQUENCE', 'RRULE']:
-                    event[key] = val # noqa
+                    event[key] = val  # noqa
                 elif key in ['DTSTART', 'DTEND', 'EXDATE', 'RECURRENCE-ID']:
                     try:
                         date = self._parse_date(val, tzinfo, par)
@@ -163,12 +165,11 @@ class iCal():
                         logger.warning("Problem parsing: {0}: {1}".format(ics, e))
                         continue
                     if key == 'EXDATE':
-                        event['EXDATES'].append(date) # noqa
+                        event['EXDATES'].append(date)  # noqa
                     else:
-                        event[key] = date # noqa
+                        event[key] = date  # noqa
                 else:
-                    event[key] = val # noqa
-                    
+                    event[key] = val  # noqa
         return events
 
     def _parse_rrule(self, event, tzinfo):
