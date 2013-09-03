@@ -44,6 +44,7 @@ class WebSocket(asyncore.dispatcher):
         self.clients = []
         self.visu_items = {}
         self.visu_logics = {}
+        self._lock = threading.Lock()
         if tls == 'no':
             self.tls = False
         else:
@@ -61,7 +62,7 @@ class WebSocket(asyncore.dispatcher):
             self.bind((ip, int(port)))
             self.listen(5)
         except Exception:
-            logger.error("Could not bind to socket %s:%s" % (ip, port))
+            logger.error("Could not bind to socket {0}:{1}".format(ip, port))
 
     def _smartvisu_pages(self, directory):
         import smartvisu
@@ -111,23 +112,23 @@ class WebSocket(asyncore.dispatcher):
             return
         else:
             sock, addr = pair
+            client_sock = sock
             addr = "{0}:{1}".format(addr[0], addr[1])
-            logger.info('WebSocket: incoming connection from %s' % addr)
+            logger.info('WebSocket: incoming connection from {0}'.format(addr))
         if self.tls:
-#           print sock.recv(1)
             try:
                 # cert_reqs=ssl.CERT_REQUIRED
-                ssock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_OPTIONAL, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_TLSv1)
-                logger.debug('Client cert: {0}'.format(ssock.getpeercert()))
-                logger.debug('Cipher: {0}'.format(ssock.cipher()))
-                print ssl.OPENSSL_VERSION
+                client_sock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_OPTIONAL, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_TLSv1)
+                logger.debug('Client cert: {0}'.format(client_sock.getpeercert()))
+                logger.debug('Cipher: {0}'.format(client_sock.cipher()))
+#               print ssl.OPENSSL_VERSION
             except Exception, e:
                 logger.error(e)
                 return
-            client = WebSocketHandler(self._sh, ssock, addr, self.visu_items, self.visu_logics)
-        else:
-            client = WebSocketHandler(self._sh, sock, addr, self.visu_items, self.visu_logics)
+        client = WebSocketHandler(self._sh, self, client_sock, addr, self.visu_items, self.visu_logics)
+        self._lock.acquire()
         self.clients.append(client)
+        self._lock.release()
 
     def run(self):
         self.alive = True
@@ -139,12 +140,16 @@ class WebSocket(asyncore.dispatcher):
 
     def stop(self):
         self.alive = False
+        logger.debug('Closing WebSocket')
         for client in self.clients:
             try:
-                client.close()
+                client.handle_close()
             except:
                 pass
-        logger.debug('Closing listen')
+        try:
+            self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
         try:
             self.close()
         except:
@@ -159,34 +164,51 @@ class WebSocket(asyncore.dispatcher):
         if hasattr(logic, 'visu'):
             self.visu_logics[logic.name] = logic
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         data = {'cmd': 'item', 'items': [[item.id(), item()]]}
+        self._lock.acquire()
         for client in self.clients:
             client.update(item.id(), data, source)
+        self._lock.release()
+
+    def remove_client(self, client):
+        self._lock.acquire()
+        if client in self.clients:
+            self.clients.remove(client)
+        self._lock.release()
 
     def _send_event(self, event, data):
+        self._lock.acquire()
         for client in self.clients:
             client.send_event(event, data)
+        self._lock.release()
 
     def _update_series(self):
+        self._lock.acquire()
         for client in self.clients:
             client.update_series()
+        self._lock.release()
 
     def dialog(self, header, content):
+        self._lock.acquire()
         for client in self.clients:
             client.json_send({'cmd': 'dialog', 'header': header, 'content': content})
+        self._lock.release()
 
     def url(self, url):
+        self._lock.acquire()
         for client in self.clients:
             client.json_send({'cmd': 'url', 'url': url})
+        self._lock.release()
 
 
 class WebSocketHandler(asynchat.async_chat):
 
-    def __init__(self, smarthome, sock, addr, items, logics):
+    def __init__(self, smarthome, dispatcher, sock, addr, items, logics):
         asynchat.async_chat.__init__(self, sock, map=smarthome.socket_map)
         self.set_terminator("\r\n\r\n")
         self._sh = smarthome
+        self._dp = dispatcher
         self.parse_data = self.parse_header
         self.addr = addr
         self.ibuffer = ""
@@ -214,6 +236,22 @@ class WebSocketHandler(asynchat.async_chat):
     def json_send(self, data):
         logger.debug("Visu: DUMMY send to {0}: {1}".format(self.addr, data))
 
+    def handle_close(self):
+        # remove circular references
+        self._dp.remove_client(self)
+        try:
+            del(self.json_send, self.parse_data)
+        except:
+            pass
+        try:
+            self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
+            self.close()
+        except:
+            pass
+
     def collect_incoming_data(self, data):
         self.ibuffer += data
 
@@ -239,7 +277,7 @@ class WebSocketHandler(asynchat.async_chat):
             series = self._update_series[sid]
             if series['update'] < now:
                 try:
-                    reply = self.items[series['params']['item']].db_series(**series['params'])
+                    reply = self.items[series['params']['item']].series(**series['params'])
                 except Exception, e:
                     logger.warning("Problem updating series for {0}: {1}".format(series['params'], e))
                     continue
@@ -254,11 +292,11 @@ class WebSocketHandler(asynchat.async_chat):
         return list(set(b).difference(set(a)))
 
     def json_parse(self, data):
-        logger.debug("%s sent %s" % (self.addr, repr(data)))
+        logger.debug("{0} sent {1}".format(self.addr, repr(data)))
         try:
             data = json.loads(data)
         except Exception, e:
-            logger.debug("Problem decoding %s from %s: %s" % (repr(data), self.addr, e))
+            logger.debug("Problem decoding {0} from {1}: {2}".format(repr(data), self.addr, e))
             return
         command = data['cmd']
         if command == 'item':
@@ -267,7 +305,7 @@ class WebSocketHandler(asynchat.async_chat):
             if path in self.items:
                 self.items[path](value, 'Visu', self.addr)
             else:
-                logger.info("Client %s want to update invalid item: %s" % (self.addr, path))
+                logger.info("Client {0} want to update invalid item: {1}".format(self.addr, path))
         elif command == 'monitor':
             if data['items'] == [None]:
                 return
@@ -278,13 +316,13 @@ class WebSocketHandler(asynchat.async_chat):
                     else:
                         self.json_send({'cmd': 'item', 'items': [[path, self.items[path]()]]})
                 else:
-                    logger.info("Client %s requested invalid item: %s" % (self.addr, path))
+                    logger.info("Client {0} requested invalid item: {1}".format(self.addr, path))
             self.monitor['item'] = data['items']
         elif command == 'logic':  # logic
             name = data['name']
             value = data['val']
             if name in self.logics:
-                logger.info("Client %s triggerd logic %s with '%s'" % (self.addr, name, value))
+                logger.info("Client {0} triggerd logic {1} with '{2}'".format(self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
         elif command == 'series':
             path = data['item']
@@ -295,9 +333,9 @@ class WebSocketHandler(asynchat.async_chat):
             else:
                 end = 'now'
             if path in self.items:
-                if hasattr(self.items[path], 'db_series'):
+                if hasattr(self.items[path], 'series'):
                     try:
-                        reply = self.items[path].db_series(series, start, end)
+                        reply = self.items[path].series(series, start, end)
                     except Exception, e:
                         logger.warning("Problem fetching series for {0}: {1}".format(path, e))
                     if 'update' in reply:
@@ -308,7 +346,7 @@ class WebSocketHandler(asynchat.async_chat):
                         del(reply['params'])
                     self.json_send(reply)
                 else:
-                    logger.info("Client %s requested invalid series: %s." % (self.addr, path))
+                    logger.info("Client {0} requested invalid series: {1}.".format(self.addr, path))
         elif command == 'rrd':
             self.rrd = True
             path = data['item']
@@ -317,9 +355,9 @@ class WebSocketHandler(asynchat.async_chat):
                 if hasattr(self.items[path], 'export'):
                     self.json_send(self.items[path].export(frame))
                 else:
-                    logger.info("Client %s requested invalid rrd: %s." % (self.addr, path))
+                    logger.info("Client {0} requested invalid rrd: {1}.".format(self.addr, path))
             else:
-                logger.info("Client %s requested invalid item: %s" % (self.addr, path))
+                logger.info("Client {0} requested invalid item: {1}".format(self.addr, path))
             if path not in self.monitor['rrd']:
                 self.monitor['rrd'].append(path)
         elif command == 'log':
@@ -329,14 +367,14 @@ class WebSocketHandler(asynchat.async_chat):
             if name in self.logs:
                 self.json_send({'cmd': 'log', 'name': name, 'log': [self.logs[name].export(num)], 'init': 'y'})
             else:
-                logger.info("Client %s requested invalid log: %s" % (self.addr, name))
+                logger.info("Client {0} requested invalid log: {1}".format(self.addr, name))
             if name not in self.monitor['log']:
                 self.monitor['log'].append(name)
         elif command == 'proto':  # protocol version
             proto = data['ver']
             if proto != self.proto:
                 logger.warning("Protocol missmatch. Update smarthome(.min).js. Client: {0}".format(self.addr))
-                self.close()
+                self.handle_close()
                 return
             self.json_send({'cmd': 'proto', 'ver': self.proto})
 
@@ -357,7 +395,7 @@ class WebSocketHandler(asynchat.async_chat):
 
     def handshake_failed(self):
         logger.debug("Handshake for {0} with the following header failed! {1}".format(self.addr, repr(self.header)))
-        self.close()
+        self.handle_close()
 
     def rfc6455_handshake(self):
         self.set_terminator(8)
@@ -368,7 +406,7 @@ class WebSocketHandler(asynchat.async_chat):
         self.push('HTTP/1.1 101 Switching Protocols\r\n')
         self.push('Upgrade: websocket\r\n')
         self.push('Connection: Upgrade\r\n')
-        self.push('Sec-WebSocket-Accept: %s\r\n' % key)
+        self.push('Sec-WebSocket-Accept: {0}\r\n'.format(key))
         self.push('\r\n')
 
     def rfc6455_parse(self, data):
@@ -378,7 +416,7 @@ class WebSocketHandler(asynchat.async_chat):
         opcode = byte1 & 0x0f
         if opcode == 8:
             logger.debug("WebSocket: closing connection to {0}.".format(self.addr))
-            self.close()
+            self.handle_close()
             return
         masked = (byte2 >> 7) & 0x01
         if masked:
@@ -424,13 +462,13 @@ class WebSocketHandler(asynchat.async_chat):
         elif length < (1 << 63):
             header += chr(mask | 127) + struct.pack('!Q', length)
         else:
-            logger.warning("data to big: %s" % data)
+            logger.warning("data to big: {0}".format(data))
             return
         self.push(header + data)
 
     def hixie76_send(self, data):
         data = json.dumps(data, separators=(',', ':'))
-        self.push("\x00%s\xff" % data)
+        self.push("\x00{0}\xff".format(data))
 
     def hixie76_parse(self, data):
         self.json_parse(data.lstrip('\x00'))
@@ -447,8 +485,8 @@ class WebSocketHandler(asynchat.async_chat):
         self.push('HTTP/1.1 101 Web Socket Protocol Handshake\r\n')
         self.push('Upgrade: WebSocket\r\n')
         self.push('Connection: Upgrade\r\n')
-        self.push("Sec-WebSocket-Origin: %s\r\n" % self.header['Origin'])
-        self.push("Sec-WebSocket-Location: ws://%s/\r\n\r\n" % self.header['Host'])
+        self.push("Sec-WebSocket-Origin: {0}\r\n".format(self.header['Origin']))
+        self.push("Sec-WebSocket-Location: ws://{0}/\r\n\r\n".format(self.header['Host']))
         self.push(key)
         self.parse_data = self.hixie76_parse
         self.json_send = self.hixie76_send

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
+# Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -22,6 +22,7 @@
 import logging
 import time
 import datetime
+import calendar
 import sys
 import Queue
 import traceback
@@ -42,7 +43,7 @@ class Scheduler(threading.Thread):
 
     _workers = []
     _worker_num = 5
-    _worker_max = 50
+    _worker_max = 30
     _worker_delta = 60  # wait 60 seconds before adding another worker thread
     _scheduler = {}
     _runq = Queue.PriorityQueue()
@@ -67,18 +68,23 @@ class Scheduler(threading.Thread):
                     if len(self._workers) < self._worker_max:
                         self._add_worker()
                     else:
-                        logger.warning("Needing more worker threads than the specified maximum of {0}!".format(self._worker_max))
+                        logger.error("Needing more worker threads than the specified maximum of {0}!".format(self._worker_max))
+                        tn = {}
+                        for t in threading.enumerate():
+                            tn[t.name] = tn.get(t.name, 0) + 1
+                        logger.info('Threads: ' + ', '.join("{0}: {1}".format(k, v) for (k, v) in tn.items()))
+                        self._add_worker()
             while self._triggerq.qsize() > 0:
                 try:
-                    dt, prio, name, obj, by, source, destination, value = self._triggerq.get()
+                    dt, prio, name, obj, by, source, dest, value = self._triggerq.get()
                 except Exception, e:
                     logger.warning("Trigger queue exception: {0}".format(e))
                     break
 
                 if dt < now:  # run it
-                    self._runq.put((prio, name, obj, by, source, destination, value))
+                    self._runq.put((prio, name, obj, by, source, dest, value))
                 else:  # put last entry back and break while loop
-                    self._triggerq.put((dt, prio, name, obj, by, source, destination, value))
+                    self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
                     break
             self._lock.acquire()
             for name in self._scheduler:
@@ -102,7 +108,7 @@ class Scheduler(threading.Thread):
     def stop(self):
         self.alive = False
 
-    def trigger(self, name, obj=None, by='Logic', source=None, value=None, destination=None, prio=3, dt=None):
+    def trigger(self, name, obj=None, by='Logic', source=None, value=None, dest=None, prio=3, dt=None):
         if obj is None:
             if name in self._scheduler:
                 obj = self._scheduler[name]['obj']
@@ -114,8 +120,8 @@ class Scheduler(threading.Thread):
                 logger.debug("Logic '{0}' deactivated. Ignoring trigger from {1} {2}".format(name, by, source))
                 return
         if dt is None:
-            logger.debug(u"Triggering {0} - by: {1} source: {2} destination: {3} value: {4}".format(name, by, source, destination, unicode(value)[:40]))
-            self._runq.put((prio, name, obj, by, source, destination, value))
+            logger.debug(u"Triggering {0} - by: {1} source: {2} dest: {3} value: {4}".format(name, by, source, dest, unicode(value)[:40]))
+            self._runq.put((prio, name, obj, by, source, dest, value))
         else:
             if not isinstance(dt, datetime.datetime):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
@@ -123,8 +129,8 @@ class Scheduler(threading.Thread):
             if dt.tzinfo is None:
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
                 return
-            logger.debug(u"Triggering {0} - by: {1} source: {2} destination: {3} value: {4} at: {5}".format(name, by, source, destination, unicode(value)[:40], dt))
-            self._triggerq.put((dt, prio, name, obj, by, source, destination, value))
+            logger.debug(u"Triggering {0} - by: {1} source: {2} dest: {3} value: {4} at: {5}".format(name, by, source, dest, unicode(value)[:40], dt))
+            self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
 
     def remove(self, name):
         self._lock.acquire()
@@ -136,7 +142,7 @@ class Scheduler(threading.Thread):
         if name in self._scheduler:
             return self._scheduler[name]['next']
 
-    def add(self, name, obj, prio=3, cron=None, cycle=None, value=None, offset=None):
+    def add(self, name, obj, prio=3, cron=None, cycle=None, value=None, offset=None, next=None):
         self._lock.acquire()
         if isinstance(cron, str):
             _cron = {}
@@ -169,8 +175,9 @@ class Scheduler(threading.Thread):
             cycle = {cycle: None}
             if offset is None:
                 offset = random.randint(6, 12)  # spread cycle jobs
-        self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': None, 'active': True}
-        self._next_time(name, offset)
+        self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': next, 'active': True}
+        if next is None:
+            self._next_time(name, offset)
         self._lock.release()
 
     def change(self, name, **kwargs):
@@ -234,7 +241,7 @@ class Scheduler(threading.Thread):
                     value = job['cron'][entry]
         self._scheduler[name]['next'] = next_time
         self._scheduler[name]['value'] = value
-        if name != 'sh.con':
+        if name not in ['sh.con', 'series']:
             logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):
@@ -248,25 +255,33 @@ class Scheduler(threading.Thread):
         self._workers.append(t)
         if len(self._workers) > self._worker_num:
             logger.info("Adding worker thread. Total: {0}".format(len(self._workers)))
+            tn = []
+            for t in threading.enumerate():
+                tn.append(t.name)
+            tn = ', '.join(tn)
+            logger.info("Current Threads: {0}".format(tn))
 
     def _worker(self):
         while self.alive:
             try:
-                prio, name, obj, by, source, destination, value = self._runq.get(timeout=0.5)
+                prio, name, obj, by, source, dest, value = self._runq.get(timeout=0.5)
                 self._runq.task_done()
             except Queue.Empty:
                 continue
-            self._task(name, obj, by, source, destination, value)
+            self._task(name, obj, by, source, dest, value)
 
-    def _task(self, name, obj, by, source, destination, value):
+    def _task(self, name, obj, by, source, dest, value):
         threading.current_thread().name = name
         logger = logging.getLogger(name)
         if obj.__class__.__name__ == 'Logic':
-            trigger = {'by': by, 'source': source, 'destination': destination, 'value': value}  # noqa
+            trigger = {'by': by, 'source': source, 'dest': dest, 'value': value}  # noqa
             logic = obj  # noqa
             sh = self._sh  # noqa
             try:
                 exec(obj.bytecode)
+            except SystemExit:
+                # ignore exit() call from logic.
+                pass
             except Exception, e:
                 tb = sys.exc_info()[2]
                 tb = traceback.extract_tb(tb)[-1]
@@ -285,7 +300,6 @@ class Scheduler(threading.Thread):
                     obj(**value)
             except Exception, e:
                 logger.warning("Method {0} exception: {1}".format(name, e))
-
         threading.current_thread().name = 'idle'
 
     def _crontab(self, crontab):
@@ -293,43 +307,46 @@ class Scheduler(threading.Thread):
         for entry in crontab.split('<'):
             if entry.startswith('sun'):
                 return self._sun(crontab)
+        next_event = self._parse_month(crontab, offset=0)  # this month
+        if not next_event:
+            next_event = self._parse_month(crontab, offset=1)  # next month
+        return next_event
 
+    def _parse_month(self, crontab, offset=0):
+        now = self._sh.now()
         minute, hour, day, wday = crontab.split(' ')
         # evaluate the crontab strings
         minute_range = self._range(minute, 00, 59)
         hour_range = self._range(hour, 00, 23)
-        # FIXME fix day range for days > 28
+        mdays = calendar.monthrange(now.year, now.month + offset)[1]
         if wday == '*' and day == '*':
             day_range = self._day_range('0, 1, 2, 3, 4, 5, 6')
         elif wday != '*' and day == '*':
             day_range = self._day_range(wday)
         elif wday != '*' and day != '*':
             day_range = self._day_range(wday)
-            day_range = day_range + self._range(day, 01, 28)
+            day_range = day_range + self._range(day, 01, mdays)
         else:
-            day_range = self._range(day, 01, 28)
-
+            day_range = self._range(day, 01, mdays)
         # combine the differnt ranges
         event_range = sorted([str(day) + '-' + str(hour) + '-' + str(minute) for minute in minute_range for hour in hour_range for day in day_range])
-
-        # find the next event
-        now = self._sh.now()
-        now_str = now.strftime("%d-%H-%M")
-        next_event = self._next(lambda event: event > now_str, event_range)
-
-        if next_event:  # found an event after today
-            next_time = now
-        else:  # skip to next month
+        if offset:  # next month
             next_event = event_range[0]
             next_time = now + dateutil.relativedelta.relativedelta(months=+1)
+        else:  # this month
+            now_str = now.strftime("%d-%H-%M")
+            next_event = self._next(lambda event: event > now_str, event_range)
+            if not next_event:
+                return False
+            next_time = now
         day, hour, minute = next_event.split('-')
-        next_time = next_time.replace(day=int(day), hour=int(hour), minute=int(minute), second=0, microsecond=0)
-        return next_time
+        return next_time.replace(day=int(day), hour=int(hour), minute=int(minute), second=0, microsecond=0)
 
     def _next(self, f, seq):
         for item in seq:
             if f(item):
                 return item
+        return False
 
     def _sun(self, crontab):
         if not hasattr(self._sh, 'sun'):  # no sun object created
@@ -359,7 +376,7 @@ class Scheduler(threading.Thread):
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
 
         doff = 0  # degree offset
-        moff = None  # minute offset
+        moff = 0  # minute offset
         tmp, op, offs = cron.rpartition('+')
         if op:
             if offs.endswith('m'):
@@ -375,15 +392,12 @@ class Scheduler(threading.Thread):
                     doff = -float(offs)
 
         if cron.startswith('sunrise'):
-            next_time = self._sh.sun.rise(doff)
+            next_time = self._sh.sun.rise(doff, moff)
         elif cron.startswith('sunset'):
-            next_time = self._sh.sun.set(doff)
+            next_time = self._sh.sun.set(doff, moff)
         else:
             logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
-
-        if moff is not None:
-            next_time += dateutil.relativedelta.relativedelta(minutes=moff)
 
         if smin is not None:
             h, sep, m = smin.partition(':')
@@ -412,7 +426,10 @@ class Scheduler(threading.Thread):
             item_range = range(low, high + 1)
         else:
             for item in entry.split(','):
-                item_range.append(int(item))
+                item = int(item)
+                if item > high:  # entry above range
+                    item = high  # truncate value to highest possible
+                item_range.append(item)
         for entry in item_range:
             result.append('%0*d' % (2, entry))
         return result

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.
 #
@@ -54,6 +54,7 @@ class Plugins():
                 self._plugins.append(plugin_thread.plugin)
             except Exception, e:
                 logger.warning("Plugin {0} exception: {1}".format(plugin, e))
+        del(_conf)  # clean up
 
     def __iter__(self):
         for plugin in self._plugins:

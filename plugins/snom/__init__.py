@@ -60,7 +60,7 @@ class Snom():
     def parse_logic(self, logic):
         pass
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'HTTP':
             uri = "https://{0}/dummy.htm".format(item.conf['snom_host'])
             try:

@@ -213,6 +213,15 @@ class Asterisk(lib.my_asynchat.AsynChat):
             self._devices[item.conf['ast_dev']] = item
         if 'ast_box' in item.conf:
             self._mailboxes[item.conf['ast_box']] = item
+        if 'ast_db' in item.conf:
+            return self.update_item
+
+    def update_item(self, item, caller=None, source=None, dest=None):
+        if 'ast_db' in item.conf:
+            value = item()
+            if isinstance(value, bool):
+                value = int(item())
+            self.db_write(item.conf['ast_db'], value)
 
     def parse_logic(self, logic):
         if 'ast_userevent' in logic.conf:
@@ -236,7 +245,4 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._reply_lock.acquire()
         self._reply_lock.notify()
         self._reply_lock.release()
-        try:
-            self.close()
-        except Exception:
-            pass
+        self.handle_close()

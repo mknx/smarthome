@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
+# Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -44,11 +44,11 @@ class Logics():
         for name in self._config:
             logger.debug("Logic: %s" % name)
             logic = Logic(self._sh, name, self._config[name])
-            self._logics[name] = logic
             if hasattr(logic, 'bytecode'):
+                self._logics[name] = logic
                 self._sh.scheduler.add(name, logic, logic.prio, logic.crontab, logic.cycle)
             else:
-                return
+                continue
             # plugin hook
             for plugin in self._sh._plugins:
                 if hasattr(plugin, 'parse_logic'):
@@ -57,11 +57,19 @@ class Logics():
             if hasattr(logic, 'watch_item'):
                 if isinstance(logic.watch_item, str):
                     logic.watch_item = [logic.watch_item]
-                items = []
                 for entry in logic.watch_item:
-                    items += self._sh.match_items(entry)
-                for item in items:
-                    item.add_logic_trigger(logic)
+                    itemexpr, sep, attribute = entry.partition(':')
+                    itemexpr = itemexpr.strip()
+                    if attribute != '':
+                        attribute = attribute.strip()
+                    else:
+                        attribute = False
+                    for item in self._sh.match_items(itemexpr):
+                        if attribute:
+                            if attribute in item.conf:
+                                item.add_logic_trigger(logic)
+                        else:
+                            item.add_logic_trigger(logic)
 
     def __iter__(self):
         for logic in self._logics:
@@ -93,11 +101,14 @@ class Logic():
     def id(self):
         return self.name
 
-    def __call__(self, caller='Logic', source=None, value=None, destination=None, dt=None):
-        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=caller, source=source, destination=destination, value=value, dt=dt)
+    def __str__(self):
+        return self.name
 
-    def trigger(self, by='Logic', source=None, value=None, destination=None, dt=None):
-        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=by, source=source, destination=destination, value=value, dt=dt)
+    def __call__(self, caller='Logic', source=None, value=None, dest=None, dt=None):
+        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=caller, source=source, dest=dest, value=value, dt=dt)
+
+    def trigger(self, by='Logic', source=None, value=None, dest=None, dt=None):
+        self._sh.scheduler.trigger(self.name, self, prio=self.prio, by=by, source=source, dest=dest, value=value, dt=dt)
 
     def generate_bytecode(self):
         if hasattr(self, 'filename'):

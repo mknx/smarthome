@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -22,9 +22,9 @@
 import logging
 import math
 import datetime
-import urllib2
 import subprocess
 import base64
+import httplib
 
 logger = logging.getLogger('')
 
@@ -51,17 +51,31 @@ class Tools():
     def runtime(self):
         return datetime.datetime.now() - self._start
 
-    def fetch_url(self, uri, username=None, password=None, timeout=2):
+    def fetch_url(self, url, username=None, password=None, timeout=2):
+        headers = {'Accept': 'text/plain'}
+        plain = True
+        if url.startswith('https'):
+            plain = False
+        lurl = url.split('/')
+        host = lurl[2]
+        purl = '/' + '/'.join(lurl[3:])
+        if plain:
+            conn = httplib.HTTPConnection(host, timeout=timeout)
+        else:
+            conn = httplib.HTTPSConnection(host, timeout=timeout)
+        if username and password:
+            headers['Authorization'] = 'Basic ' + base64.b64encode(username + ':' + password)
         try:
-            r = urllib2.Request(uri)
-            if username and password:
-                r.add_header('Authorization', 'Basic ' + base64.b64encode(username + ':' + password))
-            u = urllib2.urlopen(r, timeout=timeout)
-            data = u.read()
-            u.fp._sock.recv = None
-            u.close()
-            del(r, u)
-            return data
+            conn.request("GET", purl, headers=headers)
         except Exception, e:
-            logger.warning("Problem fetching {0}: {1}".format(uri, e))
+            logger.warning("Problem fetching {0}: {1}".format(url, e))
+            conn.close()
             return False
+        resp = conn.getresponse()
+        if resp.status == 200:
+            content = resp.read()
+        else:
+            logger.warning("Problem fetching {0}: {1} {2}".format(url, resp.status, resp.reason))
+            content = False
+        conn.close()
+        return content

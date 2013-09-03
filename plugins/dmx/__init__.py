@@ -30,7 +30,7 @@ class DMX():
     # _dim = 10^((n-1)/(253/3)-1) by JNK from KNX UF
     #_dim = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10, 10, 11, 11, 11, 12, 12, 12, 13, 13, 13, 14, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25, 26, 26, 27, 28, 29, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 50, 51, 52, 54, 55, 57, 58, 60, 62, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 86, 88, 90, 93, 95, 98, 101, 104, 106, 109, 112, 115, 119, 122, 125, 129, 132, 136, 140, 144, 148, 152, 156, 160, 165, 169, 174, 179, 184, 189, 194, 199, 205, 211, 216, 222, 228, 235, 241, 248, 255 ]
 
-    def __init__(self, smarthome, tty):
+    def __init__(self, smarthome, tty, interface='nanodmx'):
         self._sh = smarthome
         self._is_connected = False
         self._lock = threading.Lock()
@@ -42,11 +42,20 @@ class DMX():
             return
         else:
             self._is_connected = True
-        if not self._send("C?"):
-            logger.warning("Could not communicate with dmx adapter.")
-            self._is_connected = False
+        if interface == 'nanodmx':
+            self.send = self.send_nanodmx
+            if not self._send_nanodmx("C?"):
+                logger.warning("Could not communicate with dmx adapter.")
+                self._is_connected = False
+        elif interface == 'enttec':
+            self._enttec_data = [chr(0)] * 513
+            self.send = self.send_enttec
+            self._send_enttec(chr(03) + chr(02) + chr(0) + chr(0) + chr(0))
+            self._send_enttec(chr(10) + chr(02) + chr(0) + chr(0) + chr(0))
+        else:
+            logger.error("Unknown interface: {0}".format(interface))
 
-    def _send(self, data):
+    def _send_nanodmx(self, data):
         if not self._is_connected:
             return False
         self._lock.acquire()
@@ -62,6 +71,14 @@ class DMX():
         else:
             return False
 
+    def _send_enttec(self, data):
+        if not self._is_connected:
+            return False
+        self._lock.acquire()
+        self._port.write(chr(126) + data + chr(231))
+        self._lock.release()
+        return True
+
     def run(self):
         self.alive = True
 
@@ -69,8 +86,12 @@ class DMX():
         self._port.close()
         self.alive = False
 
-    def send(self, channel, value):
-        self._send("C{0:03d}L{1:03d}".format(int(channel), int(value)))
+    def send_nanodmx(self, channel, value):
+        self._send_nanodmx("C{0:03d}L{1:03d}".format(int(channel), int(value)))
+
+    def send_enttec(self, channel, value):
+        self._enttec_data[channel] = chr(value)
+        self._send_enttec(chr(6) + chr(1) + chr(2) + ''.join(self._enttec_data))
 
     def parse_item(self, item):
         if 'dmx_ch' in item.conf:
@@ -83,7 +104,7 @@ class DMX():
         else:
             return None
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         #logger.debug("update dmx channel {0:03d}".format(item.dmx_ch))
         for channel in item.conf['dmx_ch']:
             self.send(channel, item())

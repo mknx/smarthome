@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -21,6 +21,8 @@
 
 import logging
 import struct
+import threading
+
 import lib.my_asynchat
 import dpts
 
@@ -33,7 +35,7 @@ logger = logging.getLogger('')
 
 class KNX(lib.my_asynchat.AsynChat):
 
-    def __init__(self, smarthome, time_ga=None, date_ga=None, send_time=False, host='127.0.0.1', port=6720):
+    def __init__(self, smarthome, time_ga=None, date_ga=None, send_time=False, busmonitor=False, host='127.0.0.1', port=6720):
         lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
         self._sh = smarthome
         self.gal = {}
@@ -42,6 +44,11 @@ class KNX(lib.my_asynchat.AsynChat):
         self._cache_ga = []
         self.time_ga = time_ga
         self.date_ga = date_ga
+        self._lock = threading.Lock()
+        if smarthome.string2bool(busmonitor):
+            self._busmonitor = logger.info
+        else:
+            self._busmonitor = logger.debug
         if send_time:
             self._sh.scheduler.add('knx.time', self._send_time, prio=5, cycle=int(send_time))
         smarthome.monitor_connection(self)
@@ -55,7 +62,11 @@ class KNX(lib.my_asynchat.AsynChat):
         data = [(len(data) >> 8) & 0xff, (len(data)) & 0xff] + data
         for i in data:
             send += chr(i)
-        self.push(send)
+        try:
+            self._lock.acquire()
+            self.push(send)
+        finally:
+            self._lock.release()
 
     def groupwrite(self, ga, payload, dpt, flag='write'):
         pkt = [0, 39] + self.encode(ga, 'ga') + [0]
@@ -65,7 +76,7 @@ class KNX(lib.my_asynchat.AsynChat):
         elif flag == 'response':
             flag = KNXRESP
         else:
-            logger.warning("Groupwrite telgram for {} with unknown flag: {}. Please choose beetween write and response.".format(ga, flag))
+            logger.warning("Groupwrite telegram for {0} with unknown flag: {1}. Please choose beetween write and response.".format(ga, flag))
             return
         pkt[5] = flag | pkt[5]
         self._send(pkt)
@@ -128,7 +139,11 @@ class KNX(lib.my_asynchat.AsynChat):
 
     def parse_length(self, length):
         self.parse_data = self.parse_telegram
-        self.terminator = struct.unpack(">H", length)[0]
+        try:
+            self.terminator = struct.unpack(">H", length)[0]
+        except:
+            logger.error("knx: problem unpacking length: {0}".format(length))
+            self.handle_close()
 
     def encode(self, data, dpt):
         return dpts.encode[str(dpt)](data)
@@ -169,19 +184,23 @@ class KNX(lib.my_asynchat.AsynChat):
             payload = telegram[8:]
         if flg == 'write' or flg == 'response':
             if dst not in self.gal:  # update item/logic
-                logger.debug("{0} set {1} to {2}".format(src, dst, self.decode(payload, 'hex')))
+                self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, self.decode(payload, 'hex')))
                 return
             dpt = self.gal[dst]['dpt']
-            val = self.decode(payload, dpt)
+            try:
+                val = self.decode(payload, dpt)
+            except Exception, e:
+                logger.warning("knx: Problem decoding frame from {0} to {1} with '{2}' and DPT {3}. Exception: {4}".format(src, dst, self.decode(payload, 'hex'), dpt, e))
+                return
             if val is not None:
-                logger.debug("{0} set {1} to {2}".format(src, dst, val))
+                self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, val))
                 #print "in:  {0}".format(self.decode(payload, 'hex'))
                 #out = ''
                 #for i in self.encode(val, dpt):
                 #    out += " {0:x}".format(i)
                 #print "out:{0}".format(out)
                 for item in self.gal[dst]['items']:
-                    item(val, 'KNX', src)
+                    item(val, 'KNX', src, dst)
                 for logic in self.gal[dst]['logics']:
                     logic.trigger('KNX', src, val, dst)
             else:
@@ -261,6 +280,10 @@ class KNX(lib.my_asynchat.AsynChat):
             if isinstance(item.conf['knx_send'], str):
                 item.conf['knx_send'] = [item.conf['knx_send'], ]
             return self.update_item
+        elif 'knx_status' in item.conf:
+            if isinstance(item.conf['knx_status'], str):
+                item.conf['knx_status'] = [item.conf['knx_status'], ]
+            return self.update_item
         else:
             return None
 
@@ -278,7 +301,7 @@ class KNX(lib.my_asynchat.AsynChat):
             if isinstance(knx_listen, str):
                 knx_listen = [knx_listen, ]
             for ga in knx_listen:
-                logger.debug("knx: {} listen on {}".format(logic, ga))
+                logger.debug("knx: {0} listen on {1}".format(logic, ga))
                 if not ga in self.gal:
                     self.gal[ga] = {'dpt': dpt, 'items': [], 'logics': [logic]}
                 else:
@@ -299,6 +322,12 @@ class KNX(lib.my_asynchat.AsynChat):
                 else:
                     self.gar[ga] = {'dpt': dpt, 'item': None, 'logic': logic}
 
-    def update_item(self, item, caller=None, source=None):
-        for ga in item.conf['knx_send']:  # send status update
-            self.groupwrite(ga, item(), item.conf['knx_dpt'])
+    def update_item(self, item, caller=None, source=None, dest=None):
+        if 'knx_send' in item.conf:
+            if caller != 'KNX':
+                for ga in item.conf['knx_send']:
+                    self.groupwrite(ga, item(), item.conf['knx_dpt'])
+        if 'knx_status' in item.conf:
+            for ga in item.conf['knx_status']:  # send status update
+                if ga != dest:
+                    self.groupwrite(ga, item(), item.conf['knx_dpt'])

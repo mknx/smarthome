@@ -260,7 +260,7 @@ class Luxtronic2(LuxBase):
         if len(self._calculated) > 0 or len(self._decoded) > 0:
             self.refresh_calculated()
             for c in self._calculated:
-                val = self.get_caclulated(c)
+                val = self.get_calculated(c)
                 if val:
                     self._calculated[c](val, 'Luxtronic2')
             for d in self._decoded:
@@ -318,7 +318,7 @@ class Luxtronic2(LuxBase):
             self._parameter[p] = item
             return self.update_item
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'Luxtronic2':
            self.set_param(item.conf['lux2_p'], item()) 
 

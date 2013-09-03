@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012-2013 KNX-User-Forum e.V        http://knx-user-forum.de/
+# Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.
 #
@@ -21,6 +21,7 @@
 
 import logging
 import threading
+import datetime
 import cPickle
 
 logger = logging.getLogger('')
@@ -59,6 +60,7 @@ class Item():
         self._logics_to_trigger = []
         self._items_to_trigger = []
         self.__fade = False
+        self._autotimer = False
         self.parse(smarthome, parent, path, config)
 
     def parse(self, smarthome, parent, path, config):
@@ -88,7 +90,10 @@ class Item():
                 elif attr == 'threshold':
                     self._threshold = config[attr]
                 elif attr == 'eval':
-                    self._eval = config[attr]
+                    if isinstance(config[attr], list):
+                        self._eval = ', '.join(config[attr])  # join together
+                    else:
+                        self._eval = config[attr]
                 elif attr == 'eval_trigger':
                     if isinstance(config[attr], str):
                         self.conf[attr] = [config[attr], ]
@@ -101,6 +106,10 @@ class Item():
                         self._crontab = ','.join(config[attr])
                     else:
                         self._crontab = config[attr]
+                elif attr == 'autotimer':
+                    time, sep, value = config[attr].partition('=')
+                    if value is not None:
+                        self._autotimer = time, value
                 else:
                     self.conf[attr] = config[attr]
         if self._type is not None:
@@ -145,7 +154,8 @@ class Item():
             for trigger in self.conf['eval_trigger']:
                 triggers += self._sh.match_items(trigger)
             for item in triggers:
-                item._items_to_trigger.append(self)
+                if item != self:  # prevent loop
+                    item._items_to_trigger.append(self)
             if self._eval:
                 items = map(lambda x: 'sh.' + x.id() + '()', triggers)
                 if self._eval == 'and':
@@ -172,7 +182,11 @@ class Item():
     def changed_by(self):
         return self._changed_by
 
-    def _run_eval(self, value=None, caller='Eval', source=None):
+    def age(self):
+        delta = self._sh.now() - self._last_change
+        return delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
+
+    def _run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
             sh = self._sh  # noqa
             value = eval(self._eval)
@@ -182,7 +196,18 @@ class Item():
         # dummy for garbage collection
         logger.warning("Deleting Item: {0}".format(self._path))
 
-    def __call__(self, value=None, caller='Logic', source=None):
+    def set(self, value, caller='Logic', source=None, dest=None):
+        try:
+            value = getattr(self, '_return_' + self._type)(value)
+        except:
+            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
+            return
+        self._lock.acquire()
+        self._value = value
+        self._lock.release()
+        self._change_logger(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
+
+    def __call__(self, value=None, caller='Logic', source=None, dest=None):
         if value is None or self._type is None:
             return self._value
         try:
@@ -194,16 +219,16 @@ class Item():
                 pass
             return
         if self._eval:
-            args = {'value': value, 'caller': caller, 'source': source}
-            self._sh.trigger(name=self._path + '-eval', obj=self._run_eval, value=args, by=caller, source=source)
+            args = {'value': value, 'caller': caller, 'source': source, 'dest': dest}
+            self._sh.trigger(name=self._path + '-eval', obj=self._run_eval, value=args, by=caller, source=source, dest=dest)
         else:
-            self._update(value, caller, source)
+            self._update(value, caller, source, dest)
 
-    def _update(self, value=None, caller='Logic', source=None):
+    def _update(self, value=None, caller='Logic', source=None, dest=None):
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3}  {4}".format(self._path, value, self._type, caller, source))
+            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
             return
         self._lock.acquire()
         if value != self._value or self._enforce_updates:  # value change
@@ -220,7 +245,7 @@ class Item():
             self._lock.release()
             for update_plugin in self._methods_to_trigger:
                 try:
-                    update_plugin(self, caller, source)
+                    update_plugin(self, caller, source, dest)
                 except Exception, e:
                     logger.error("Problem running {0}: {1}".format(update_plugin, e))
             if self._threshold and self._logics_to_trigger:
@@ -234,11 +259,14 @@ class Item():
                 self._trigger_logics()
             for item in self._items_to_trigger:
                 args = {'value': value, 'source': self._path}
-                self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source)
+                self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source, dest=dest)
             if self._cache and not self.__fade:
                 self._db_update(value)
         else:
             self._lock.release()
+        if self._autotimer is not False and caller is not 'Autotimer':
+            _time, _value = self._autotimer
+            self.timer(_time, _value, True)
 
     def __iter__(self):
         for item in self._sub_items:
@@ -358,6 +386,29 @@ class Item():
         except:
             pass
         raise ValueError
+
+    def autotimer(self, time=None, value=None):
+        if time is not None and value is not None:
+            self._autotimer = time, value
+        else:
+            self._autotimer = False
+
+    def timer(self, time, value, auto=False):
+        if isinstance(time, str):
+            time = time.strip()
+            if time.endswith('m'):
+                time = int(time.strip('m')) * 60
+            else:
+                time = int(time)
+        if isinstance(value, str):
+            value = value.strip()
+        if auto:
+            caller = 'Autotimer'
+            self._autotimer = time, value
+        else:
+            caller = 'Timer'
+        next = self._sh.now() + datetime.timedelta(seconds=time)
+        self._sh.scheduler.add(self.id() + '-Timer', self.__call__, value={'value': value, 'caller': caller}, next=next)
 
     def fade(self, dest, step=1, delta=1):
         dest = float(dest)

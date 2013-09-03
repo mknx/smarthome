@@ -53,7 +53,14 @@ class TCPHandler(asynchat.async_chat):
         data = self.buffer
         self.buffer = ''
         self.parser(self.source, self.dest, data.strip())
-        self.close()
+        try:
+            self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
+            self.close()
+        except:
+            pass
 
 
 class TCPDispatcher(asyncore.dispatcher):
@@ -109,7 +116,14 @@ class HTTPHandler(asynchat.async_chat):
                 request = line.split(' ')[1].strip('/')
                 self.parser(self.source, self.dest, urllib.unquote(request))
                 break
-        self.close()
+        try:
+            self.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
+            self.close()
+        except:
+            pass
 
 
 class HTTPDispatcher(asyncore.dispatcher):
@@ -187,7 +201,10 @@ class UDPSend(asyncore.dispatcher_with_send):
         pass
 
     def handle_close(self):
-        self.close()
+        try:
+            self.close()
+        except:
+            pass
 
 
 class Network():

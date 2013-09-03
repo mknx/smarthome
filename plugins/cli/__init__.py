@@ -39,6 +39,7 @@ class CLIHandler(asynchat.async_chat):
         self._lock = threading.Lock()
         self.buffer = ''
         self.push("SmartHome.py v%s\n" % self.sh.version)
+        self.push("Enter 'help' for a list of available commands.\n")
         self.push("> ")
 
     def collect_incoming_data(self, data):
@@ -59,6 +60,8 @@ class CLIHandler(asynchat.async_chat):
             self.la()
         elif cmd == 'lo':
             self.lo()
+        elif cmd == 'lt':
+            self.lt()
         elif cmd == 'cl':
             self.cl()
         elif cmd.startswith('update ') or cmd.startswith('up '):
@@ -73,7 +76,14 @@ class CLIHandler(asynchat.async_chat):
             self.usage()
         elif cmd in ('quit', 'q', 'exit', 'x'):
             self.push('bye\n')
-            self.close()
+            try:
+                self.shutdown(socket.SHUT_RDWR)
+            except:
+                pass
+            try:
+                self.close()
+            except:
+                pass
             return
         self.push("> ")
 
@@ -155,9 +165,15 @@ class CLIHandler(asynchat.async_chat):
         for logic in self.sh.return_logics():
             nt = self.sh.scheduler.return_next(logic)
             if nt is not None:
-                self.push("{0} (scheduled for {1})\n".format(logic, nt.strftime('%Y-%m-%d %H:%M:%S')))
+                self.push("{0} (scheduled for {1})\n".format(logic, nt.strftime('%Y-%m-%d %H:%M:%S%z')))
             else:
                 self.push("{0}\n".format(logic))
+
+    def lt(self):
+        # list all threads with names
+        self.push("{0} Threads:\n".format(threading.activeCount()))
+        for t in threading.enumerate():
+            self.push("{0}\n".format(t.name))
 
     def usage(self):
         self.push('cl: clean (memory) log\n')
@@ -165,6 +181,7 @@ class CLIHandler(asynchat.async_chat):
         self.push('ls item: list item and every child item (with values)\n')
         self.push('la: list all items (with values)\n')
         self.push('lo: list all logics and next execution time\n')
+        self.push('lt: list current thread names\n')
         self.push('update item = value: update the specified item with the specified value\n')
         self.push('up: alias for update\n')
         self.push('tr logic: trigger logic\n')
@@ -186,13 +203,13 @@ class CLI(asyncore.dispatcher):
             self.bind((ip, int(port)))
             self.listen(5)
         except Exception:
-            logger.error("Could not bind socket on %s:%s" % (ip, port))
+            logger.error("CLI: Could not bind socket on %s:%s" % (ip, port))
 
     def handle_accept(self):
         pair = self.accept()
         if pair is not None:
             sock, (ip, port) = pair
-            logger.debug('Incoming connection from %s:%s' % (ip, port))
+            logger.debug('CLI: Incoming connection from %s:%s' % (ip, port))
             CLIHandler(self.sh, sock, ip, self.updates_allowed)
 
     def run(self):
@@ -200,6 +217,11 @@ class CLI(asyncore.dispatcher):
 
     def stop(self):
         self.alive = False
+        try:
+            self.shutdown(socket.SHUT_RDWR)
+            self.close()
+        except:
+            pass
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

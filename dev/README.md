@@ -1,42 +1,102 @@
 
-# GIT
+# Plugin developement
 
-For an introduction see: http://gitimmersion.com/
+## GIT
 
-## Setup
+For an git introduction to git see: [http://gitimmersion.com/](http://gitimmersion.com/)
 
-```
-# only push the current branch (not all)
-git config --global push.default current
-# adapt your user settings
-git config --global user.name "Your Name"
-git config --global user.email you@example.com
-```
+It you want to publish your plugin, get an [github account](https://github.com/users) as soon as possible.
 
-## Getting the Source
-git clone git://github.com/mknx/smarthome.git
+### Usefull commands
+   * __list changes__ since the release with the tag VERSIONTAG: `git log --pretty=format:"%s" <VERSIONTAG>..HEAD`
+   * __undo commit__ with the id XXXIDXXX: `git reset --hard XXXIDXXX && git push origin develop --force`
+   * __copy commit__ to current branch: `git cherry-pick <commit>`
 
-## Update the Code
-git pull
+   Follow the [commit Atom Feed](https://github.com/mknx/smarthome/commits/develop.atom)
 
-# Coding
+### Global settings
+   * only push the current branch (not all): `git config --global push.default current`
+   * adapt your user settings:
+      * `git config --global user.name "Your Name"`
+      * `git config --global user.email you@example.com`
+
+### Branches
+The repositry consist of three main branches:
+
+  * __master__: it contains the stable/release code
+  * __develop__: is the branch where new features and plugins are merged into
+  * __gh-pages__: this branch contains the SmartHome.py website hostet at: [http://mknx.github.io/smarthome/](http://mknx.github.io/smarthome/)
+
+The branch setup is based on [this model](http://nvie.com/posts/a-successful-git-branching-model/).
+
+### Getting the Source
+  * you could fork the repository on github or
+  * get the repository: `git clone git://github.com/mknx/smarthome.git`
+  * create your own (local) branch (from develop) `git checkout -b myplugin develop`
 
 ## Python Version
-You should use Python =< 2.6 methods only. If not make it clear in the documentation.
-## pep8
-Test the code style with pep8. I'm ignoring "E501 line too long".
-`apt-get install pep8`
-`pep8 yourcode.py`
+You should only use Python =< 2.6 methods. If not make it clear in the documentation what kind of Python version you need.
 
-# Release
-## Changes
-`git log --pretty=format:"%s" VERSIONTAG..HEAD`
+## Coding style
+Your code should conform to [pep 8](http://www.python.org/dev/peps/pep-0008/). (I'm ignoring "E501 line too long".)
 
-# Homepage
-```
-git clone -b gh-pages git@github.com:mknx/smarthome.git sh-pages
-```
+## Start Coding
+   * __copy__ the skeleton directory: `cp -r plugins/skeleton plugins/myplugin`
+   * __edit__ the main file: `vi plugins/myplugin/__init__.py`
 
-# Undo
-`git reset --hard XXXIDXXX`
-`git push origin master --force`
+### Tools
+Have a look at the following tools to test your code:
+
+#### pep8
+   * Install pep8: `apt-get install pep8` 
+   * Test your code: `pep8 -qq --statistics yourcode.py`
+
+#### autopep8
+   * `pip install autopep8`
+   * `autopep8 yourcode.py -i`
+
+#### flake8
+   * `pip install flake8`
+   * `flake8 yourcode.py`
+
+I'm using it as a vim plugin. It checks the code every time I save the file. Most usefull!
+
+### Test and Document
+Please test and document your code!
+In your plugin directory should be a __README.md__ (from the skeleton directory). Please fill it with the neccesary information. `vi plugins/myplugin/README.md`
+
+### Basic Rules
+   * __only push to the develop branch__
+   * changes to bin/smarthome.py and lib/\* must be checked with me.
+   * changes to plugins from other developers must be checked with the developer.
+
+### Push changes
+   * `git checkout develop`: goto the develop branch
+   * `git status`: check the status of the files in the develop branch
+   * `git add changedfile.py`: select one or more files for commit
+   * `git commit` describe the commit with a useful comment
+   * `git pull && git push`: sync with the origin repository
+
+### Merge
+If you think your code is ready for prime time send me a __pull request via github__ or an [email](mailto:marcus@popp.mx) with the code.
+
+Acitve commiters could merge the myplugin branch into develop with:
+
+   * __change__ the active branch to develop: `git checkout develop`
+   * __merge__ your plugin into it: `git merge --no-ff myplugin`
+   * (delete your branch: `git branch -d myplugin`)
+   * __push__ to github: `git push origin develop`
+
+#### .git/config
+If you have problems pushing, you could check the repo git config. Mine looks like this:
+<pre>
+[remote "origin"]
+    url = git@github.com:mknx/smarthome.git
+    fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+    remote = origin
+    merge = refs/heads/master
+[branch "develop"]
+    remote = origin
+    merge = refs/heads/develop
+</pre>

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2013 Marcus Popp                               marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -92,17 +92,17 @@ class mpd(lib.my_asynchat.AsynChat):
                 child.add_trigger_method(self._send_value)
             else:
                 child.add_trigger_method(self._send_command)
-        for child in self._sh.find_children(item, 'mpd_url'):
-            child.add_trigger_method(self._play_url)
+        for child in self._sh.find_children(item, 'mpd_file'):
+            child.add_trigger_method(self._play_file)
         # adding item methods
         item.command = self.command
-        item.play_url = self.play_url
-        item.add_url = self.add_url
+        item.play_file = self.play_file
+        item.add_file = self.add_file
 
     def command(self, command, wait=True):
         return self._send(command, wait)
 
-    def play_url(self, url):
+    def play_file(self, url):
         play = self._parse_url(url)
         if play == []:
             return
@@ -111,17 +111,17 @@ class mpd(lib.my_asynchat.AsynChat):
             self._send("add {0}".format(url), False)
         self._send('play', False)
 
-    def add_url(self, url):
+    def add_file(self, url):
         play = self._parse_url(url)
         if play != []:
             self._send("add {0}".format(play[0]), False)
 
-    def _play_url(self, item, caller=None, source=None):
+    def _play_file(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
-            if item.conf['mpd_url'] == 'value':
-                self.play_url(item())
+            if item.conf['mpd_file'] == 'value':
+                self.play_file(item())
             else:
-                self.play_url(item.conf['mpd_url'])
+                self.play_file(item.conf['mpd_file'])
 
     def _parse_url(self, url):
         name, sep, ext = url.rpartition('.')
@@ -144,20 +144,20 @@ class mpd(lib.my_asynchat.AsynChat):
             play.append(url)
         return play
 
-    def _send_volume(self, item, caller=None, source=None):
+    def _send_volume(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             self._send('setvol {0}'.format(item()), False)
 
-    def _send_bool(self, item, caller=None, source=None):
+    def _send_bool(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             key = item.conf['mpd_send']
             self._send("{0} {1}".format(key, int(item())), False)
 
-    def _send_command(self, item, caller=None, source=None):
+    def _send_command(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             self._send("{0}".format(item.conf['mpd_send']), False)
 
-    def _send_value(self, item, caller=None, source=None):
+    def _send_value(self, item, caller=None, source=None, dest=None):
         if caller != 'MPD':
             self._send("{0}".format(item()), False)
 
@@ -192,7 +192,7 @@ class mpd(lib.my_asynchat.AsynChat):
         else:
             status.update({'time': 0, 'total': 0, 'percent': 0})
         if status['state'] != 'stop':
-            status.update(self._send('currentsong'))
+            status.update(self._send('currentsong'))  # append current song information to status
         for attr in self._items:
             if attr in status:
                 try:

@@ -2,7 +2,7 @@
 #
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
+# Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -38,6 +38,7 @@ class Orb():
 
     def __init__(self, orb, lon, lat, elev=False):
         if ephem is None:
+            logger.warning("Could not find/use pyephem!")
             return
         self._obs = ephem.Observer()
         self._obs.long = str(lon)
@@ -51,24 +52,32 @@ class Orb():
             self.phase = self._phase
             self.light = self._light
 
-    def rise(self, offset=0, center=True):
+    def rise(self, doff=0, moff=0, center=True, dt=None):
         # workaround if rise is 0.001 seconds in the past
-        self._obs.date = datetime.datetime.utcnow() + dateutil.relativedelta.relativedelta(seconds=2)
-        self._obs.horizon = str(offset)
-        if offset != 0:
+        if dt is not None:
+            self._obs.date = dt - dt.utcoffset()
+        else:
+            self._obs.date = datetime.datetime.utcnow() - dateutil.relativedelta.relativedelta(minutes=moff) + dateutil.relativedelta.relativedelta(seconds=2)
+        self._obs.horizon = str(doff)
+        if doff != 0:
             next_rising = self._obs.next_rising(self._orb, use_center=center).datetime()
         else:
             next_rising = self._obs.next_rising(self._orb).datetime()
+        next_rising = next_rising + dateutil.relativedelta.relativedelta(minutes=moff)
         return next_rising.replace(tzinfo=tzutc())
 
-    def set(self, offset=0, center=True):
+    def set(self, doff=0, moff=0, center=True, dt=None):
         # workaround if set is 0.001 seconds in the past
-        self._obs.date = datetime.datetime.utcnow() + dateutil.relativedelta.relativedelta(seconds=2)
-        self._obs.horizon = str(offset)
-        if offset != 0:
+        if dt is not None:
+            self._obs.date = dt - dt.utcoffset()
+        else:
+            self._obs.date = datetime.datetime.utcnow() - dateutil.relativedelta.relativedelta(minutes=moff) + dateutil.relativedelta.relativedelta(seconds=2)
+        self._obs.horizon = str(doff)
+        if doff != 0:
             next_setting = self._obs.next_setting(self._orb, use_center=center).datetime()
         else:
             next_setting = self._obs.next_setting(self._orb).datetime()
+        next_setting = next_setting + dateutil.relativedelta.relativedelta(minutes=moff)
         return next_setting.replace(tzinfo=tzutc())
 
     def pos(self, offset=None):  # offset in minutes
@@ -76,8 +85,8 @@ class Orb():
         if offset:
             date += dateutil.relativedelta.relativedelta(minutes=offset)
         self._obs.date = date
-        angle = self._orb.compute(self._obs)
-        return (angle.az, angle.alt)
+        self._orb.compute(self._obs)
+        return (self._orb.az, self._orb.alt)
 
     def _light(self, offset=None):  # offset in minutes
         date = datetime.datetime.utcnow()

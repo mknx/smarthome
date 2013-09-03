@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
+# Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -102,8 +102,15 @@ class AsynChat(asynchat.async_chat):
         if self.is_connected:
             logger.info('{0}: connection to {1}:{2} closed'.format(self.__class__.__name__, self.addr[0], self.addr[1]))
         self.connected = False
+        self.accepting = False
         self.is_connected = False
+        self.del_channel(map=self._sh.socket_map)
+        self.discard_buffers()
         try:
-            self.close()
+            self.socket.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
+            self.socket.close()
         except:
             pass

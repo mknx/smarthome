@@ -83,13 +83,13 @@ def de5(payload):
 
 
 def en5001(value):
-    return [0, int(int(value) * 255 / 100) & 0xff]
+    return [0, int(value * 255.0 / 100) & 0xff]
 
 
 def de5001(payload):
     if len(payload) != 1:
         return None
-    return struct.unpack('>B', payload)[0] * 100 / 255
+    return struct.unpack('>B', payload)[0] * 100.0 / 255
 
 
 def en6(value):
@@ -268,6 +268,16 @@ def de17(payload):
     return struct.unpack('>B', payload)[0] & 0x3f
 
 
+def en20(value):
+    return [0, int(value) & 0xff]
+
+
+def de20(payload):
+    if len(payload) != 1:
+        return None
+    return struct.unpack('>B', payload)[0]
+
+
 def en24(value):
     if isinstance(value, unicode):
         value = value.encode('iso-8859-1')
@@ -281,6 +291,16 @@ def en24(value):
 
 def de24(payload):
     return str(payload).rstrip('\0')
+
+
+def en232(value):
+    return [0, int(value[0]) & 0xff, int(value[1]) & 0xff, int(value[2]) & 0xff]
+
+
+def de232(payload):
+    if len(payload) != 3:
+        return None
+    return struct.unpack('>BBB', payload)
 
 
 def depa(string):
@@ -326,7 +346,9 @@ decode = {
     '14': de14,
     '16000': de16,
     '16001': de16,
+    '20': de20,
     '24': de24,
+    '232': de232,
     'pa': depa,
     'ga': dega,
     'hex': dehex
@@ -350,7 +372,9 @@ encode = {
     '14': en14,
     '16000': en16000,
     '16001': en16001,
+    '20': en20,
     '24': en24,
+    '232': en232,
     'ga': enga
 }
 # DPT: 19, 28

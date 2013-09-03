@@ -10,6 +10,8 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+git checkout master
+
 TAG="$1"
 if [ "$1" = '-r' ]; then
     TAG="$2"
@@ -30,6 +32,7 @@ rm -f $JS.tmp.js
 
 git add bin/smarthome.py $JS.js $JS.min.js
 git commit -m "set version to $TAG"
+
 echo
 
 if [ "$1" = '-r' ]; then

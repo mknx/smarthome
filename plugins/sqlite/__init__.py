@@ -31,9 +31,11 @@ logger = logging.getLogger('')
 
 class SQL():
 
+    _version = 1
     # (period days, granularity hours)
     periods = [(1900, 168), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
     # SQL queries
+    # time, item, cnt, val, vsum, vmin, vmax, vavg, power
     _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power REAL);"
     _create_index = "CREATE INDEX IF NOT EXISTS idx ON history (time, item)"
     _pack_query = """
@@ -53,16 +55,45 @@ class SQL():
         GROUP by CAST((time / :granularity) AS INTEGER), item
         ORDER BY time DESC """
 
-    def __init__(self, smarthome):
+    def __init__(self, smarthome, path=None):
         self._sh = smarthome
+        self.connected = False
         sqlite3.register_adapter(datetime.datetime, self.timestamp)
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
-        self.connected = True
-        self._fdb = sqlite3.connect(smarthome.base_dir + '/var/db/smarthome.db', check_same_thread=False)
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
-        self._fdb.execute(self._create_db)
-        self._fdb.execute(self._create_index)
+        if path is None:
+            self.path = smarthome.base_dir + '/var/db/smarthome.db'
+        else:
+            self.path = path + '/smarthome.db'
+        try:
+            self._fdb = sqlite3.connect(self.path, check_same_thread=False)
+        except Exception, e:
+            logger.warning("SQLite: Could not connect to the database {}: {}".format(self.path, e))
+            self._fdb_lock.release()
+            return
+        self.connected = True
+        integrity = self._fdb.execute("PRAGMA integrity_check(10);").fetchone()[0]
+        if integrity == 'ok':
+            logger.debug("SQLite: database integrity ok")
+        else:
+            logger.error("SQLite: database corrupt. Seek help.")
+            self._fdb_lock.release()
+            return
+        journal = self._fdb.execute("PRAGMA journal_mode=WAL;").fetchone()[0]
+        logger.debug("SQLite: database journal: {}".format(journal))
+        common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
+        if common is None:
+            self._fdb.execute("CREATE TABLE common (version INTEGER);")
+            self._fdb.execute("INSERT INTO common VALUES (:version);", {'version': self._version})
+            self._fdb.execute(self._create_db)
+            self._fdb.execute(self._create_index)
+            version = self._version
+        else:
+            version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
+        if version < self._version:
+            logger.debug("update database")
+            self._fdb.execute("UPDATE common SET version=:version;", {'version': self._version})
         self._fdb.commit()
         self._fdb_lock.release()
         minute = 60 * 1000
@@ -76,15 +107,23 @@ class SQL():
         # self.query("alter table history add column power INTEGER;")
         smarthome.scheduler.add('sqlite', self._pack, cron='2 3 * *', prio=5)
 
-    def update_item(self, item, caller=None, source=None):
-        if not self.connected:
-            return
+    def update_item(self, item, caller=None, source=None, dest=None):
         now = self.timestamp(self._sh.now())
         val = float(item())
         power = int(bool(val))
+        if item.conf['sqlite'] == 'sum':
+            sum = val
+        else:
+            sum = 0
         self._fdb_lock.acquire()
-        self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :val, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'power': power})
-        self._fdb.commit()
+        if not self.connected:
+            self._fdb_lock.release()
+            return
+        try:
+            self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :sum, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'sum': sum, 'power': power})
+            self._fdb.commit()
+        except Exception, e:
+            logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
         self._fdb_lock.release()
         #self.dump()
 
@@ -93,11 +132,26 @@ class SQL():
 
     def stop(self):
         self.alive = False
+        self._fdb_lock.acquire()
+        try:
+            self._fdb.close()
+        except Exception:
+            pass
+        finally:
+            self.connected = False
+            self._fdb_lock.release()
 
     def parse_item(self, item):
-        if 'sqlite' in item.conf or 'history' in item.conf:  # XXX legacy history option remove sometime
-            item.db_series = functools.partial(self._series, item=item.id())
-            item.db_single = functools.partial(self._single, item=item.id())
+        if 'history' in item.conf:  # XXX legacy history option remove sometime
+            item.conf['sqlite'] = item.conf['history']
+        if 'sqlite' in item.conf:
+            item.series = functools.partial(self._series, item=item.id())
+            item.db = functools.partial(self._single, item=item.id())
+            if item.conf['sqlite'] == 'init':
+                last = self.query("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id())).fetchone()
+                if last is not None:
+                    last = last[0]
+                    item.set(last, 'SQLite')
             return self.update_item
         else:
             return None
@@ -135,11 +189,16 @@ class SQL():
         return ts
 
     def query(self, *query):
-        if not self.connected:
-            return
         self._fdb_lock.acquire()
-        #logger.info(*query)
-        reply = self._fdb.execute(*query)
+        if not self.connected:
+            self._fdb_lock.release()
+            return
+#       logger.info(*query)
+        try:
+            reply = self._fdb.execute(*query)
+        except Exception, e:
+            logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
+            reply = None
         self._fdb_lock.release()
         return reply
 
@@ -266,7 +325,7 @@ class SQL():
     def _single(self, func, start, end='now', item=None):
         start = self.get_timestamp(start)
         end = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item='{0}' AND time =< {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
+        prev = self.query("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
         if prev is None:
             first = start
         else:
@@ -293,13 +352,13 @@ class SQL():
                 return tuples[0][0]
 
     def _pack(self):
-        now = self.timestamp(datetime.datetime.now())
+        now = self.timestamp(self._sh.now())
         insert = []
         delete = []
         self._fdb_lock.acquire()
         try:
             for entry in self.periods:
-                prev = now
+                prev = {}
                 period, granularity = entry
                 period = now - period * 24 * 3600 * 1000
                 granularity = int(granularity * 3600 * 1000)
@@ -307,26 +366,32 @@ class SQL():
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
                     gtime = map(int, gtime.split(','))
                     if len(gtime) == 1:  # ignore
+                        prev[item] = gtime[0]
                         continue
+                    if item not in prev:
+                        upper = now
+                    else:
+                        upper = prev[item]
                     # pack !!!
                     delete.append(gid)
                     gval = map(float, gval.split(','))
                     gvavg = map(float, gvavg.split(','))
                     gpower = map(float, gpower.split(','))
-                    avg = self._avg(zip(gtime, gvavg), prev)
-                    power = self._avg(zip(gtime, gpower), prev)
-                    prev = gtime[0]
+                    avg = self._avg(zip(gtime, gvavg), upper)
+                    power = self._avg(zip(gtime, gpower), upper)
+                    prev[item] = gtime[0]
                     # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
                     insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
             self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
-            self._fdb.execute("DELETE FROM history WHERE rowid in ({0})".format(','.join(delete)))
+            self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(','.join(delete)))
             self._fdb.commit()
-            self._fdb.execute("VACUUM")
+            self._fdb.execute("VACUUM;")
+            self._fdb.execute("PRAGMA shrink_memory;")
         except Exception, e:
             logger.warning("problem packing sqlite database: {0}".format(e))
             self._fdb.rollback()
         self._fdb_lock.release()
 
     def dump(self):
-        for row in self.query('SELECT rowid, * FROM history ORDER BY time ASC').fetchall():
+        for row in self.query('SELECT rowid, * FROM history ORDER BY item, time ASC').fetchall():
             print row

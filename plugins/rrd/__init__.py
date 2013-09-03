@@ -23,6 +23,7 @@ import logging
 import os
 import types
 import rrdtool
+import functools
 
 logger = logging.getLogger('')
 
@@ -85,11 +86,37 @@ class RRD():
         item.min = types.MethodType(self._min, item, item.__class__)
         item.max = types.MethodType(self._max, item, item.__class__)
         item.export = types.MethodType(self._export, item, item.__class__)
+        item.series = functools.partial(self._series, item=item.id())
         self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
 
     def _simplify(self, value):
         if value[0] is not None:
             return round(value[0], 2)
+
+    def parse_logic(self, logic):
+        pass
+
+    def _fetch(self, item, start, end='now', cf='AVERAGE'):
+        if 'rrd' not in item.conf:
+            logger.warning("rrd not enabled for {0}".format(item.id()))
+            return
+        rrdb = self._rrd_dir + item.id() + '.rrd'
+        try:
+            env, name, data = rrdtool.fetch(
+                rrdb,
+                cf,
+                '--start', '-' + start, '--end', '-' + end
+            )
+            return list(i[0] for i in data)  # flatten reply
+        except Exception, e:
+            logger.warning("error reading {0} data: {1}".format(item.id(), e))
+            return None
+
+    def _series(self, func, start, end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
+        pass
+
+    def _single(self, func, start, end='now', item=None):
+        pass
 
     def _export(self, item, frame='1d'):
         rrdb = self._rrd_dir + item.id() + '.rrd'
@@ -107,12 +134,6 @@ class RRD():
         if data[-1] is None:
             data[-1] = item()
         return {'cmd': 'rrd', 'frame': frame, 'start': start, 'step': step, 'item': item.id(), 'series': data}
-
-    def parse_logic(self, logic):
-        pass
-
-    def update_item(self, item, caller=None, source=None):
-        pass
 
     def _average(self, item, timeframe):
         values = self.read(item, timeframe)
@@ -146,7 +167,6 @@ class RRD():
             values.sort()
             return values[-1]
 
-
     def read(self, item, timeframe='1d', cf='AVERAGE'):
         if not hasattr(item, 'rrd'):
             logger.warning("rrd not enabled for %s" % item)
@@ -166,7 +186,7 @@ class RRD():
     def _create(self, rrd):
         insert = []
         tmp, sep, item_id = rrd['item'].id().rpartition('.')
-        insert.append('DS:' + item_id + ':GAUGE:' + str(2 * self.step) + ':U:U')
+        insert.append('DS:' + item_id[:19] + ':GAUGE:' + str(2 * self.step) + ':U:U')
         if rrd['min']:
             insert.append('RRA:MIN:0.5:' + str(int(86400 / self.step)) + ':1825')  # 24h/5y
         if rrd['max']:

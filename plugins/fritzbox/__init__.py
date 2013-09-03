@@ -117,7 +117,7 @@ class FritzBox(FritzBoxBase):
             print fb
             return self.update_item
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'Fritzbox' and item():
             attr = item.conf['fritzbox']
             if isinstance(attr, dict):

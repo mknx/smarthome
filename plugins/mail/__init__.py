@@ -66,17 +66,21 @@ class IMAP():
         rsp, data = imap.select()
         if rsp != 'OK':
             logger.warning("IMAP: Could not select mailbox")
+            imap.close()
+            imap.logout()
             return
         rsp, data = imap.uid('search', None, "ALL")
         if rsp != 'OK':
             logger.warning("IMAP: Could not search mailbox")
+            imap.close()
+            imap.logout()
             return
         uids = data[0].split()
         for uid in uids:
             rsp, data = imap.uid('fetch', uid, '(RFC822)')
             if rsp != 'OK':
                 logger.warning("IMAP: Could not fetch mail")
-                return
+                continue
             mail = email.message_from_string(data[0][1])
             to = email.utils.parseaddr(mail['To'])[1]
             fo = email.utils.parseaddr(mail['From'])[1]
@@ -90,13 +94,15 @@ class IMAP():
             else:
                 logic = False
             if logic:
-                logic.trigger('IMAP', fo, mail)
+                logic.trigger('IMAP', fo, mail, dest=to)
                 rsp, data = imap.uid('copy', uid, 'Trash')
                 if rsp == 'OK':
                     typ, data = imap.uid('store', uid, '+FLAGS', '(\Deleted)')
                     logger.debug("Moving mail to trash. {0} => {1}: {2}".format(fo, to, sub))
+                else:
+                    logger.warning("Could not move mail to trash. {0} => {1}: {2}".format(fo, to, sub))
             else:
-                logger.info("Ingnoring mail. {0} => {1}: {2}".format(fo, to, sub))
+                logger.info("Ignoring mail. {0} => {1}: {2}".format(fo, to, sub))
         imap.close()
         imap.logout()
 
@@ -117,7 +123,7 @@ class IMAP():
         if 'mail' in logic.conf:
             self._mail = logic
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         pass
 
 
@@ -168,5 +174,5 @@ class SMTP():
     def parse_logic(self, logic):
         pass
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         pass

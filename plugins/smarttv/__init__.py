@@ -88,7 +88,7 @@ class SmartTV():
         else:
             return None
 
-    def update_item(self, item, caller=None, source=None):
+    def update_item(self, item, caller=None, source=None, dest=None):
         val = item()
         if isinstance(val, str):
             if val.startswith('KEY_'):
