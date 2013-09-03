@@ -186,7 +186,7 @@ class RRD():
     def _create(self, rrd):
         insert = []
         tmp, sep, item_id = rrd['item'].id().rpartition('.')
-        insert.append('DS:' + item_id + ':GAUGE:' + str(2 * self.step) + ':U:U')
+        insert.append('DS:' + item_id[:19] + ':GAUGE:' + str(2 * self.step) + ':U:U')
         if rrd['min']:
             insert.append('RRA:MIN:0.5:' + str(int(86400 / self.step)) + ':1825')  # 24h/5y
         if rrd['max']:
