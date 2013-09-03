@@ -57,4 +57,5 @@ Items will only be readable, i.e. sensors.
     ebus_cmd = "short hw_load"
     ebus_type = "set"
     comment = Quick - WW Speicherladung
-</pre> 
+</pre>   
+  
