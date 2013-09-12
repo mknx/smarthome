@@ -22,17 +22,16 @@
 import logging
 import socket
 import threading
-import time
 
 logger = logging.getLogger('eBus')
 
 
 class eBus():
-    _attribute = {}
+    _items = []
 
-    def __init__(self,	smarthome,	host,	port,	cycle):
+    def __init__(self, smarthome, host, port, cycle=240):
         self._sh = smarthome
-        self._cycle = float(cycle)
+        self._cycle = int(cycle)
         self._sock = False
         self.is_connected = False
         self.host = host
@@ -44,62 +43,55 @@ class eBus():
         self.refresh_cycle = self._cycle
 
     def parse_item(self, item):
-        #	Attribute und Parameter werden regelmäßig ausgelesen
+        # Attribute und Parameter werden regelmäßig ausgelesen
         if 'ebus_type' in item.conf and 'ebus_cmd' in item.conf:
-            ebus_type = item.conf['ebus_type']
-            ebus_cmd = item.conf['ebus_cmd']  # Wert hinter "ebusd_cmd = "
-            self._attribute[ebus_type, ebus_cmd] = item  # makes array
-            logger.debug("eBus: new set = item:{0} type:{1} cmd:{2}".format(item, ebus_type, ebus_cmd))
+            self._items.append(item)
             return self.update_item
 
     def run(self):
-        refresh_cycle = self._cycle / int(len(self._attribute))
-        logger.debug("eBus: item-cycle: {0}".format(refresh_cycle))
         self.alive = True
-        logger.info("eBus: Initial read values !!! ")
-        for cmds in self._attribute:
-            try:
-                time.sleep(0.1)
-                item = self._attribute[cmds]
-                self.refresh(item)
-            except Exception as e:
-                logger.warning("ebusd:	exception:	{0}".format(e))
-        logger.info("eBus: Start cyclic read values !!! ")
-        while self.alive:
-            for cmds in self._attribute:
-                try:
-                    item = self._attribute[cmds]
-                    self.refresh(item)
-                    if self.alive:
-                        time.sleep(refresh_cycle)
-                    if not self.alive:
-                        break
-                except Exception as e:
-                    logger.warning("ebusd:	exception:	{0}".format(e))
+        self._sh.scheduler.add('eBusd', self.refresh, prio=5, cycle=self._cycle, offset=2)
+
+    def refresh(self):
+        for item in self._items:
+            ebus_type = item.conf['ebus_type']
+            ebus_cmd = item.conf['ebus_cmd']
+            if ebus_cmd == "cycle":
+                request = ebus_type + " " + ebus_cmd  # build command
+            else:
+                request = "get" + " " + ebus_cmd  # build command
+            value = self.request(request)
+            if value is not None:
+                item(value, 'eBus', 'refresh')
+            if not self.alive:
+                break
 
     def request(self, request):
         if not self.is_connected:
-            logger.info("not connected")
-            time.sleep(10)
+            logger.info("eBusd not connected")
+            return
+        self._lock.acquire()
         try:
             self._sock.send(request)
             logger.debug("REQUEST: {0}".format(request))
-        except Exception,	e:
+        except Exception, e:
             self._lock.release()
             self.close()
-            logger.debug("error	sending	request:	{0}".format(e))
+            logger.warning("error sending request: {0} => {1}".format(request, e))
         try:
-            answer = self._sock.recv(256)
-            ####[:-2] entfernt Zeilenumbruch/letzte 2 Zeichen
-            logger.debug("ANSWER: {0}".format(answer[:-2]))
+            answer = self._sock.recv(256)[:-2]
+            logger.debug("ANSWER: {0}".format(answer))
         except socket.timeout:
             self._lock.release()
-            logger.error("error	receiving answer: timeout")
-        except Exception,	e:
+            logger.warning("error receiving answer: timeout")
+            return
+        except Exception, e:
             self._lock.release()
             self.close()
-            logger.error("error	receiving answer: {0}".format(e))
-        return answer[:-2]
+            logger.warning("error receiving answer: {0}".format(e))
+            return
+        self._lock.release()
+        return answer
 
     def connect(self):
         self._lock.acquire()
@@ -112,58 +104,37 @@ class eBus():
             if self._connection_attempts <= 0:
                 logger.error('eBus:	could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
                 self._connection_attempts = self._connection_errorlog
+            self._lock.release()
             return
         logger.info('Connected to {0}:{1}'.format(self.host, self.port))
-        self._lock.release()
         self.is_connected = True
         self._connection_attempts = 0
+        self._lock.release()
 
     def close(self):
         self.is_connected = False
         try:
+            self._sock.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
             self._sock.close()
             self._sock = False
-            logger.info(
-                'Connection	closed to {0}:{1}'.format(self.host, self.port))
+            logger.info('Connection closed to {0}:{1}'.format(self.host, self.port))
         except:
             pass
 
     def stop(self):
         self.close()
         self.alive = False
-        handle_close()
-
-    def refresh(self, item):
-        ebus_type = item.conf['ebus_type']
-        ebus_cmd = item.conf['ebus_cmd']
-        logger.debug(
-            "REFRESH parameter: item:{0} cmd:{1}".format(item, ebus_cmd))
-        if ebus_cmd == "cycle":
-            request = ebus_type + " " + ebus_cmd  # build command
-        else:
-            request = "get" + " " + ebus_cmd  # build	command
-        answer = self.request(request)
-        item(answer, 'eBus', 'refresh')
 
     def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'eBus':
-            if (item._type == 'bool'):
-                logger.info("Item is: {0}".format(item()))
-                # convert	to	get	'0'/'1'	instead	of	'True'/'False'
-                value = int(item())
-            else:
-                value = int(item())
-            logger.info("Called to refresh item: {0}".format(item))
-            self.set_parameter(item.conf['ebus_cmd'], item, value)
-
-    def set_parameter(self, cmd, item, value):
-        logger.debug("SET parameter: item:{0} cmd:{1} value:{2}".format(item, cmd, value))
-        request = "set " + cmd + " " + str(value)
-        self.request(request)
-        self.check_set(item, cmd)
-
-    def check_set(self, item, cmd):
-        logger.debug("CHECK parameter: item:{0} cmd:{1}".format(item, cmd))
-        request = "get " + cmd
-        answer = self.request(request)
-        item(answer, 'eBus', 'checked')
+            value = str(int(item()))
+            cmd = item.conf['ebus_cmd']
+            request = "set " + cmd + " " + value
+            self.request(request)
+            request = "get " + cmd
+            answer = self.request(request)
+            if answer != value or answer is None:
+                logger.warning("Failed to set parameter: item: {0} cmd: {1}")
