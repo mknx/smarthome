@@ -68,13 +68,8 @@ class eBus():
         while self.alive:
             for cmds in self._attribute:
                 try:
-                    if self.alive:
-                        #logger.info("ebusd:sleep for {0} seconds".format(refresh_cycle))
-                        pass
-                    if self.alive:
-                        item = self._attribute[cmds]
-                    if self.alive:
-                        self.refresh(item)
+                    item = self._attribute[cmds]
+                    self.refresh(item)
                     if self.alive:
                         time.sleep(refresh_cycle)
                     if not self.alive:
@@ -82,7 +77,7 @@ class eBus():
                 except Exception as e:
                     logger.warning("ebusd:	exception:	{0}".format(e))
 
-    def request(self,	request):
+    def request(self, request):
         if not self.is_connected:
             logger.info("not connected")
             time.sleep(10)
