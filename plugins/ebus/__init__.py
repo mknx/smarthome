@@ -77,6 +77,8 @@ class eBus():
                         self.refresh(item)
                     if self.alive:
                         time.sleep(refresh_cycle)
+                    if not self.alive:
+                        break
                 except Exception as e:
                     logger.warning("ebusd:	exception:	{0}".format(e))
 
@@ -146,11 +148,6 @@ class eBus():
         else:
             request = "get" + " " + ebus_cmd  # build	command
         answer = self.request(request)
-        if (item._type == 'bool'):
-            # convert	to	get	'0'/'1'	instead	of	'True'/'False'
-            answer = bool(answer)
-        else:
-            answer = float(answer)
         item(answer, 'eBus', 'refresh')
 
     def update_item(self, item, caller=None, source=None, dest=None):
