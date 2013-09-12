@@ -45,7 +45,7 @@ class eBus():
 
     def parse_item(self, item):
         #	Attribute und Parameter werden regelmäßig ausgelesen
-        if 'ebus_type' in item.conf:
+        if 'ebus_type' in item.conf and 'ebus_cmd' in item.conf:
             ebus_type = item.conf['ebus_type']
             ebus_cmd = item.conf['ebus_cmd']  # Wert hinter "ebusd_cmd = "
             self._attribute[ebus_type, ebus_cmd] = item  # makes array
