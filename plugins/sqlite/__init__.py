@@ -390,6 +390,7 @@ class SQL():
         except Exception, e:
             logger.warning("problem packing sqlite database: {0}".format(e))
             self._fdb.rollback()
+        del(insert, delete)
         self._fdb_lock.release()
 
     def dump(self):
