@@ -357,12 +357,13 @@ class SQL():
         delete = []
         self._fdb_lock.acquire()
         try:
+            logger.debug("SQLite: pack database")
             for entry in self.periods:
                 prev = {}
                 period, granularity = entry
                 period = now - period * 24 * 3600 * 1000
                 granularity = int(granularity * 3600 * 1000)
-                for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}).fetchall():
+                for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}):
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
                     gtime = map(int, gtime.split(','))
                     if len(gtime) == 1:  # ignore
@@ -373,7 +374,7 @@ class SQL():
                     else:
                         upper = prev[item]
                     # pack !!!
-                    delete.append(gid)
+                    delete = gid
                     gval = map(float, gval.split(','))
                     gvavg = map(float, gvavg.split(','))
                     gpower = map(float, gpower.split(','))
@@ -381,16 +382,15 @@ class SQL():
                     power = self._avg(zip(gtime, gpower), upper)
                     prev[item] = gtime[0]
                     # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
-                    insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
-            self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
-            self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(','.join(delete)))
-            self._fdb.commit()
+                    insert = (gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power)
+                    self._fdb.execute("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
+                    self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(delete))
+                    self._fdb.commit()
             self._fdb.execute("VACUUM;")
             self._fdb.execute("PRAGMA shrink_memory;")
         except Exception, e:
             logger.warning("problem packing sqlite database: {0}".format(e))
             self._fdb.rollback()
-        del(insert, delete)
         self._fdb_lock.release()
 
     def dump(self):
