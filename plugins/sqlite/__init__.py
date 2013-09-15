@@ -361,7 +361,7 @@ class SQL():
             for entry in self.periods:
                 prev = {}
                 period, granularity = entry
-                period = now - period * 24 * 3600 * 1000
+                period = int(now - period * 24 * 3600 * 1000)
                 granularity = int(granularity * 3600 * 1000)
                 for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}):
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
