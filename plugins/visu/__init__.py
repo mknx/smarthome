@@ -239,6 +239,8 @@ class WebSocketHandler(asynchat.async_chat):
     def handle_close(self):
         # remove circular references
         self._dp.remove_client(self)
+        self.ibuffer = ''
+        self.del_channel(map=self._sh.socket_map)
         try:
             del(self.json_send, self.parse_data)
         except:
