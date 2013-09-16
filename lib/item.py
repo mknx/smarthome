@@ -189,8 +189,12 @@ class Item():
     def _run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
             sh = self._sh  # noqa
-            value = eval(self._eval)
-            self._update(value, caller, source)
+            try:
+                value = eval(self._eval)
+            except Exception, e:
+                logger.warning("Problem with eval {0}: {1}".format(self._eval, e))
+            else:
+                self._update(value, caller, source)
 
     def __del__(self):
         # dummy for garbage collection
