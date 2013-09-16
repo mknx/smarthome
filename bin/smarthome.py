@@ -584,6 +584,7 @@ if __name__ == '__main__':
     arggroup.add_argument('-l', '--logics', help='reload all logics', action='store_true')
     arggroup.add_argument('-s', '--stop', help='stop SmartHome.py', action='store_true')
     arggroup.add_argument('-q', '--quiet', help='reduce logging to the logfile', action='store_true')
+    arggroup.add_argument('-V', '--version', help='show SmartHome.py version', action='store_true')
     arggroup.add_argument('--start', help='start SmartHome.py and detach from console (default)', default=True, action='store_true')
     args = argparser.parse_args()
 
@@ -610,6 +611,9 @@ if __name__ == '__main__':
         exit(0)
     elif args.logics:
         reload_logics()
+        exit(0)
+    elif args.version:
+        print("SmartHome.py {0}".format(VERSION))
         exit(0)
     elif args.stop:
         _stop()
