@@ -20,6 +20,14 @@
 #########################################################################
 
 #####################################################################
+# Check Python Version
+#####################################################################
+import sys
+if sys.hexversion < 0x02060000:
+    print("Sorry your python interpreter ({0}.{1}) is too old. Please update to 2.6 or newer.".format(sys.version_info[0], sys.version_info[1]))
+    exit()
+
+#####################################################################
 # Import Python Core Modules
 #####################################################################
 import argparse
@@ -33,7 +41,6 @@ import os
 import re
 import signal
 import subprocess
-import sys
 import threading
 import time
 import traceback
