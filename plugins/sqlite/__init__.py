@@ -125,7 +125,6 @@ class SQL():
         except Exception, e:
             logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
         self._fdb_lock.release()
-        #self.dump()
 
     def run(self):
         self.alive = True
@@ -148,7 +147,7 @@ class SQL():
             item.series = functools.partial(self._series, item=item.id())
             item.db = functools.partial(self._single, item=item.id())
             if item.conf['sqlite'] == 'init':
-                last = self.query("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id())).fetchone()
+                last = self.fetchone("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id()))
                 if last is not None:
                     last = last[0]
                     item.set(last, 'SQLite')
@@ -188,14 +187,26 @@ class SQL():
             logger.warning("DB select: unkown time frame '{0}'".format(frame))
         return ts
 
-    def query(self, *query):
+    def fetchone(self, *query):
         self._fdb_lock.acquire()
         if not self.connected:
             self._fdb_lock.release()
             return
-#       logger.info(*query)
         try:
-            reply = self._fdb.execute(*query)
+            reply = self._fdb.execute(*query).fetchone()
+        except Exception, e:
+            logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
+            reply = None
+        self._fdb_lock.release()
+        return reply
+
+    def fetchall(self, *query):
+        self._fdb_lock.acquire()
+        if not self.connected:
+            self._fdb_lock.release()
+            return
+        try:
+            reply = self._fdb.execute(*query).fetchall()
         except Exception, e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
             reply = None
@@ -270,7 +281,7 @@ class SQL():
             sid = item + '|' + func + '|' + start + '|' + end
         istart = self.get_timestamp(start)
         iend = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart)).fetchone()
+        prev = self.fetchone("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
         if prev is None:
             first = istart
         else:
@@ -299,7 +310,7 @@ class SQL():
             logger.warning("Unknown export function: {0}".format(func))
             return reply
         try:
-            tuples = self.query(query).fetchall()
+            tuples = self.fetchall(query)
         except Exception, e:
             logger.warning("Problem {0} with query: {1}".format(e, query))
             return reply
@@ -325,7 +336,7 @@ class SQL():
     def _single(self, func, start, end='now', item=None):
         start = self.get_timestamp(start)
         end = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
+        prev = self.fetchone("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start))
         if prev is None:
             first = start
         else:
@@ -342,7 +353,7 @@ class SQL():
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return
-        tuples = self.query(query).fetchall()
+        tuples = self.fetchall(query)
         if tuples is None:
             return
         if func == 'avg':
@@ -392,7 +403,3 @@ class SQL():
             logger.warning("problem packing sqlite database: {0}".format(e))
             self._fdb.rollback()
         self._fdb_lock.release()
-
-    def dump(self):
-        for row in self.query('SELECT rowid, * FROM history ORDER BY item, time ASC').fetchall():
-            print row
