@@ -193,7 +193,7 @@ class Item():
 
     def age(self):
         delta = self._sh.now() - self._last_change
-        return delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
+        return delta.total_seconds()
 
     def _run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
@@ -252,7 +252,7 @@ class Item():
                 self._change_logger("{0} = {1} via {2} {3}".format(self._path, value, caller, source))
             self._value = value
             delta = self._sh.now() - self._last_change
-            self._prev_change = delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
+            self._prev_change = delta.total_seconds()
             self._last_change = self._sh.now()
             self._changed_by = "{0}:{1}".format(caller, source)
             self._lock.release()
