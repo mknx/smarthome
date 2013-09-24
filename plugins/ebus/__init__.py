@@ -22,6 +22,7 @@
 import logging
 import socket
 import threading
+import time
 
 logger = logging.getLogger('eBus')
 
@@ -54,6 +55,7 @@ class eBus():
 
     def refresh(self):
         for item in self._items:
+            time.sleep(1)
             ebus_type = item.conf['ebus_type']
             ebus_cmd = item.conf['ebus_cmd']
             if ebus_cmd == "cycle":
@@ -61,7 +63,8 @@ class eBus():
             else:
                 request = "get" + " " + ebus_cmd  # build command
             value = self.request(request)
-            if value is not None:
+            #if reading fails (i.e. at broadcast-commands) the value will not be updated
+            if 'command not found' not in str(value) and value is not None:
                 item(value, 'eBus', 'refresh')
             if not self.alive:
                 break
@@ -133,8 +136,11 @@ class eBus():
             value = str(int(item()))
             cmd = item.conf['ebus_cmd']
             request = "set " + cmd + " " + value
-            self.request(request)
-            request = "get " + cmd
-            answer = self.request(request)
-            if answer != value or answer is None:
-                logger.warning("Failed to set parameter: item: {0} cmd: {1}")
+            set_answer = self.request(request)
+            #just check if set was no broadcast-message
+            if 'broadcast done' not in set_answer:
+                request = "get " + cmd
+                answer = self.request(request)
+                #transfer value and answer to float for better comparsion
+                if float(answer) != float(value) or answer is None:
+                    logger.warning("Failed to set parameter: value: {0} cmd: {1} answer {2}".format(value,request,answer))
