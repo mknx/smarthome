@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 Marcus Popp                               marcus@popp.mx
@@ -68,8 +68,8 @@ class SQL():
             self.path = path + '/smarthome.db'
         try:
             self._fdb = sqlite3.connect(self.path, check_same_thread=False)
-        except Exception, e:
-            logger.warning("SQLite: Could not connect to the database {}: {}".format(self.path, e))
+        except Exception as e:
+            logger.error("SQLite: Could not connect to the database {}: {}".format(self.path, e))
             self._fdb_lock.release()
             return
         self.connected = True
@@ -122,7 +122,7 @@ class SQL():
         try:
             self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :sum, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'sum': sum, 'power': power})
             self._fdb.commit()
-        except Exception, e:
+        except Exception as e:
             logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
         self._fdb_lock.release()
 
@@ -194,7 +194,7 @@ class SQL():
             return
         try:
             reply = self._fdb.execute(*query).fetchone()
-        except Exception, e:
+        except Exception as e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
             reply = None
         self._fdb_lock.release()
@@ -207,7 +207,7 @@ class SQL():
             return
         try:
             reply = self._fdb.execute(*query).fetchall()
-        except Exception, e:
+        except Exception as e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
             reply = None
         self._fdb_lock.release()
@@ -227,7 +227,7 @@ class SQL():
             return val
 
     def _cast_tuples(self, time, val):
-        return (int(time), float(val))
+        return (int(float(time)), float(val))
 
     def _avg_ser(self, tuples, end):
         prev = end
@@ -237,7 +237,7 @@ class SQL():
                 times, vals = tpl
             else:
                 continue
-            tpls = map(self._cast_tuples, times.split(','), vals.split(','))
+            tpls = list(map(self._cast_tuples, times.split(','), vals.split(',')))
             avg = self._avg(tpls, prev)
             first = sorted(tpls)[0][0]
             prev = first
@@ -311,7 +311,7 @@ class SQL():
             return reply
         try:
             tuples = self.fetchall(query)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Problem {0} with query: {1}".format(e, query))
             return reply
         if tuples == []:
@@ -330,7 +330,7 @@ class SQL():
             tuples = tuples[1:]
         reply['series'] = tuples
         reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
-        reply['update'] = self.datetime(iend + step)
+        reply['update'] = self._sh.now() + datetime.timedelta(seconds=step)
         return reply
 
     def _single(self, func, start, end='now', item=None):
@@ -376,7 +376,7 @@ class SQL():
                 granularity = int(granularity * 3600 * 1000)
                 for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}):
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
-                    gtime = map(int, gtime.split(','))
+                    gtime = list(map(int, gtime.split(',')))
                     if len(gtime) == 1:  # ignore
                         prev[item] = gtime[0]
                         continue
@@ -386,11 +386,11 @@ class SQL():
                         upper = prev[item]
                     # pack !!!
                     delete = gid
-                    gval = map(float, gval.split(','))
-                    gvavg = map(float, gvavg.split(','))
-                    gpower = map(float, gpower.split(','))
-                    avg = self._avg(zip(gtime, gvavg), upper)
-                    power = self._avg(zip(gtime, gpower), upper)
+                    gval = list(map(float, gval.split(',')))
+                    gvavg = list(map(float, gvavg.split(',')))
+                    gpower = list(map(float, gpower.split(',')))
+                    avg = self._avg(list(zip(gtime, gvavg)), upper)
+                    power = self._avg(list(zip(gtime, gpower)), upper)
                     prev[item] = gtime[0]
                     # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
                     insert = (gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power)
@@ -399,7 +399,7 @@ class SQL():
                     self._fdb.commit()
             self._fdb.execute("VACUUM;")
             self._fdb.execute("PRAGMA shrink_memory;")
-        except Exception, e:
+        except Exception as e:
             logger.warning("problem packing sqlite database: {0}".format(e))
             self._fdb.rollback()
         self._fdb_lock.release()

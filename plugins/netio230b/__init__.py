@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -80,14 +80,14 @@ class NetIO230B():
 
         if (html):
             r = re.compile('[^0^1]')
-            cur_state = filter(None, r.split(html))
+            cur_state = [_f for _f in r.split(html) if _f]
 
             # reset error state to False
             for key in self._error:
                 key(False)
 
             # assign values to items
-            for key in self._ports.keys():
+            for key in list(self._ports.keys()):
                 try:
                     if cur_state[int(key)] == '0':
                         self._ports[key](False, caller='netio230b')

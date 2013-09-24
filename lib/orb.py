@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
@@ -27,7 +27,7 @@ logger = logging.getLogger('')
 
 try:
     import ephem
-except ImportError, e:
+except ImportError as e:
     ephem = None  # noqa
 
 import dateutil.relativedelta
@@ -38,7 +38,7 @@ class Orb():
 
     def __init__(self, orb, lon, lat, elev=False):
         if ephem is None:
-            logger.warning("Could not find/use pyephem!")
+            logger.warning("Could not find/use ephem!")
             return
         self._obs = ephem.Observer()
         self._obs.long = str(lon)

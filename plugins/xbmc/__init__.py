@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -124,10 +124,10 @@ class xbmc(lib.my_asynchat.AsynChat):
             self._items[key](value, 'XBMC')
 
     def found_terminator(self):
-        self.buffer += '}'
-        if self.buffer.count('{') == self.buffer.count('}'):
-            event = json.loads(self.buffer)
-            self.buffer = ''
+        self.buffer.extend(b'}')
+        if self.buffer.count(b'{') == self.buffer.count(b'}'):
+            event = json.loads(self.buffer.decode())
+            self.buffer = bytearray()
             #logger.debug("XBMC receiving: {0}".format(event))
             if 'id' in event:
                 if event['id'] == self._rid:
@@ -168,7 +168,7 @@ class xbmc(lib.my_asynchat.AsynChat):
                 self._items['media'](typ.capitalize(), 'XBMC')
                 result = self._send('Player.GetItem', {"properties": ["title", "artist"], "playerid": playerid}, "AudioGetItem")['result']
                 artist = result['item']['artist'][0]
-                title = artist + u' - ' + result['item']['title']
+                title = artist + ' - ' + result['item']['title']
             elif typ == 'picture':
                 self._items['media'](typ.capitalize(), 'XBMC')
                 title = ''

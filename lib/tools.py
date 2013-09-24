@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
@@ -24,7 +24,7 @@ import math
 import datetime
 import subprocess
 import base64
-import httplib
+import http.client
 
 logger = logging.getLogger('')
 
@@ -60,14 +60,14 @@ class Tools():
         host = lurl[2]
         purl = '/' + '/'.join(lurl[3:])
         if plain:
-            conn = httplib.HTTPConnection(host, timeout=timeout)
+            conn = http.client.HTTPConnection(host, timeout=timeout)
         else:
-            conn = httplib.HTTPSConnection(host, timeout=timeout)
+            conn = http.client.HTTPSConnection(host, timeout=timeout)
         if username and password:
-            headers['Authorization'] = 'Basic ' + base64.b64encode(username + ':' + password)
+            headers['Authorization'] = ('Basic '.encode() + base64.b64encode((username + ':' + password).encode()))
         try:
             conn.request("GET", purl, headers=headers)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Problem fetching {0}: {1}".format(url, e))
             conn.close()
             return False

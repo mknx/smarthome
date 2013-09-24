@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 Robert Budde                        robert@projekt131.de
@@ -20,9 +20,9 @@
 #########################################################################
 
 import logging
-import struct
-import time
-import urllib2
+import urllib.request
+import urllib.error
+import urllib.parse
 import lib.my_asynchat
 import re
 
@@ -98,9 +98,9 @@ class Squeezebox(lib.my_asynchat.AsynChat):
         if caller != 'LMS':
             cmd = self._resolv_full_cmd(item, 'squeezebox_send').split()
             if self._check_mac(cmd[0]):
-                cmd[0] = urllib2.quote(cmd[0])
+                cmd[0] = urllib.parse.quote(cmd[0])
             if isinstance(item(), str):
-                value = urllib2.quote(item().encode('utf-8'))
+                value = urllib.parse.quote(item().encode('utf-8'))
             elif (item._type == 'bool'):
                 # convert to get '0'/'1' instead of 'True'/'False'
                 value = int(item())
@@ -125,7 +125,7 @@ class Squeezebox(lib.my_asynchat.AsynChat):
         self.push(cmd+'\r\n')
 
     def _parse_response(self, response):
-        data = [urllib2.unquote(data_str) for data_str in response.split()]
+        data = [urllib.parse.unquote(data_str) for data_str in response.split()]
         logger.debug("Got: {0}".format(data))
 
         if (data[0].lower() == 'listen'):
@@ -198,15 +198,15 @@ class Squeezebox(lib.my_asynchat.AsynChat):
         cmd = ' '.join(data_str for data_str in data[:-1])
         if (cmd in self._val):
             for item in self._val[cmd]['items']:
-                if isinstance(item(), (str, unicode)):
+                if isinstance(item(), str):
                     data[-1] = data[-1].decode('utf-8')
 
                 item(data[-1], 'LMS', "{}:{}".format(self.addr[0],self.addr[1]))
 
     def found_terminator(self):
         response = self.buffer
-        self.buffer = ''
-        self._parse_response(response)
+        self.buffer = bytearray()
+        self._parse_response(response.decode())
 
     def handle_connect(self):
         self.discard_buffers()

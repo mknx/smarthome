@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
@@ -22,7 +22,6 @@
 import logging
 import socket
 import threading
-import struct
 import time
 
 logger = logging.getLogger('')
@@ -55,21 +54,21 @@ class OwBase():
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._sock.settimeout(2)
             self._sock.connect((self.host, self.port))
-        except Exception, e:
+        except Exception as e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
                 logger.error('Onewire: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
                 self._connection_attempts = self._connection_errorlog
+            self._lock.release()
             return
         else:
             self.is_connected = True
             logger.info('Onewire: connected to {0}:{1}'.format(self.host, self.port))
             self._connection_attempts = 0
-        finally:
             self._lock.release()
         try:
             self.read('/system/process/pid')  # workaround read to avoid owserver timeout
-        except Exception, e:
+        except Exception as e:
             pass
 
     def read(self, path):
@@ -87,7 +86,7 @@ class OwBase():
         except Exception:
             return
         for item in items:
-            print item
+            print(item)
             if item.endswith('/'):
                 self.tree(item)
 
@@ -98,31 +97,30 @@ class OwBase():
         else:
             payload = path + '\x00'
             data = 65536
-        header = struct.pack('IIIIII',
-                             socket.htonl(0),             # version
-                             socket.htonl(len(payload)),  # payload length
-                             socket.htonl(cmd),           # message type
-                             socket.htonl(self._flag),    # format flags -- 266 for alias upport
-                             socket.htonl(data),          # size of data element for read or write
-                             socket.htonl(0)              # offset for read or write
-                             )
+        header = bytearray(24)
+        header[4:8] = len(payload).to_bytes(4, byteorder='big')
+        header[8:12] = cmd.to_bytes(4, byteorder='big')
+        header[12:16] = self._flag.to_bytes(4, byteorder='big')
+        header[16:20] = data.to_bytes(4, byteorder='big')
         if not self.is_connected:
             raise owex("No connection to owserver.")
         self._lock.acquire()
         try:
-            self._sock.sendall(header + payload)
-        except Exception, e:
+            data = header + payload.encode()
+            self._sock.sendall(data)
+        except Exception as e:
             self.close()
             self._lock.release()
             raise owex("error sending request: {0}".format(e))
-        while True:  # ignore ping packets
+        while True:
+            header = bytearray()
             try:
                 header = self._sock.recv(24)
             except socket.timeout:
                 self.close()
                 self._lock.release()
                 raise owex("error receiving header: timeout")
-            except Exception, e:
+            except Exception as e:
                 self.close()
                 self._lock.release()
                 raise owex("error receiving header: {0}".format(e))
@@ -130,32 +128,34 @@ class OwBase():
                 self.close()
                 self._lock.release()
                 raise owex("error receiving header: no data")
-            header = struct.unpack('IIIIII', header)
-            header = map(socket.ntohl, header)
-            fields = ['version', 'payload', 'ret', 'flags', 'size', 'offset']
-            header = dict(zip(fields, header))
-            if not header['payload'] == 4294967295:
+#           version = int.from_bytes(data[0:4], byteorder='big')
+            length = int.from_bytes(header[4:8], byteorder='big')
+            ret = int.from_bytes(header[8:12], byteorder='big')
+#           flags = int.from_bytes(data[12:16], byteorder='big')
+#           size = int.from_bytes(data[16:20], byteorder='big')
+#           offset = int.from_bytes(data[20:24], byteorder='big')
+            if not length == 4294967295:
                 break
-        if header['ret'] == 4294967295:  # unknown path
+        if ret == 4294967295:  # unknown path
             self._lock.release()
             raise owexpath("path '{0}' not found.".format(path))
-        if header['payload'] == 0:
+        if length == 0:
             self._lock.release()
             if cmd != 3:
                 raise owex('no payload for {0}'.format(path))
             return
         try:
-            payload = self._sock.recv(header['payload'])
+            payload = self._sock.recv(length)
         except socket.timeout:
             self.close()
             self._lock.release()
             raise owex("error receiving payload: timeout")
-        except Exception, e:
+        except Exception as e:
             self.close()
             self._lock.release()
             raise owex("error receiving payload: {0}".format(e))
         self._lock.release()
-        return payload.strip()
+        return payload.decode()
 
     def close(self):
         self.is_connected = False
@@ -336,7 +336,7 @@ class OneWire(OwBase):
                 break
             path = '/uncached/' + bus + '/'
             name = self._ibutton_buses[bus]
-            ignore = ['interface', 'simultaneous', 'alarm'] + self._intruders + self._ibutton_masters.keys()
+            ignore = ['interface', 'simultaneous', 'alarm'] + self._intruders + list(self._ibutton_masters.keys())
             try:
                 entries = self.dir(path)
             except Exception:
@@ -414,7 +414,7 @@ class OneWire(OwBase):
                     self._buses[bus] = []
                 try:
                     sensors = self.dir(path)
-                except Exception, e:
+                except Exception as e:
                     logger.info("1-Wire: problem reading bus: {0}: {1}".format(bus, e))
                     continue
                 for sensor in sensors:
@@ -424,7 +424,7 @@ class OneWire(OwBase):
                         if keys is None:
                             continue
                         self._buses[bus].append(addr)
-                        logger.info("1-Wire: {0} with sensors: {1}".format(addr, ', '.join(keys.keys())))
+                        logger.info("1-Wire: {0} with sensors: {1}".format(addr, ', '.join(list(keys.keys()))))
                         if 'IA' in keys or 'IB' in keys:
                             table = self._ios
                         elif 'BM' in keys:
@@ -438,7 +438,7 @@ class OneWire(OwBase):
                                 if 'I' + ch in table[addr] and 'O' + ch in keys:  # set to 0 and delete output PIO
                                     try:
                                         self.write(sensor + keys['O' + ch], 0)
-                                    except Exception, e:
+                                    except Exception as e:
                                         logger.info("1-Wire: problem setting {0}{1} as input: {2}".format(sensor, keys['O' + ch], e))
                                     del(keys['O' + ch])
                             for key in keys:
@@ -448,7 +448,7 @@ class OneWire(OwBase):
                                 if 'O' + ch in table[addr]:
                                     try:
                                         self.write(table[addr][key]['path'], self._flip[table[addr][key]['item']()])
-                                    except Exception, e:
+                                    except Exception as e:
                                         logger.info("1-Wire: problem setting output {0}{1}: {2}".format(sensor, keys['O' + ch], e))
         self._discovered = True
 
@@ -456,7 +456,7 @@ class OneWire(OwBase):
         if 'ow_addr' not in item.conf:
             return
         if 'ow_sensor' not in item.conf:
-            logger.warning(u"No ow_sensor for {0} defined".format(item.id()))
+            logger.warning("No ow_sensor for {0} defined".format(item.id()))
             return
         addr = item.conf['ow_addr']
         key = item.conf['ow_sensor']
@@ -485,5 +485,5 @@ class OneWire(OwBase):
     def update_item(self, item, caller=None, source=None, dest=None):
         try:
             self.write(item._ow_path['path'], self._flip[item()])
-        except Exception, e:
+        except Exception as e:
             logger.info("1-Wire: problem setting output {0}: {1}".format(item._ow_path['path'], e))

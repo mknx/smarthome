@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -24,21 +24,23 @@ import asynchat
 import asyncore
 import socket
 import threading
-import urllib
+import urllib.request
+import urllib.parse
+import urllib.error
 
 logger = logging.getLogger('')
 
 
 class TCPHandler(asynchat.async_chat):
 
-    terminator = '\n'
+    terminator = '\n'.encode()
 
     def __init__(self, socket_map, parser, dest, sock, source):
         asynchat.async_chat.__init__(self, sock=sock, map=socket_map)
         self.parser = parser
         self._lock = threading.Lock()
         self.dest = dest
-        self.buffer = ''
+        self.buffer = bytearray()
         self.source = source
 
     def initiate_send(self):
@@ -47,11 +49,11 @@ class TCPHandler(asynchat.async_chat):
         self._lock.release()
 
     def collect_incoming_data(self, data):
-        self.buffer += data
+        self.buffer.extend(data)
 
     def found_terminator(self):
         data = self.buffer
-        self.buffer = ''
+        self.buffer = bytearray()
         self.parser(self.source, self.dest, data.strip())
         try:
             self.shutdown(socket.SHUT_RDWR)
@@ -90,14 +92,14 @@ class TCPDispatcher(asyncore.dispatcher):
 
 class HTTPHandler(asynchat.async_chat):
 
-    terminator = "\r\n\r\n"
+    terminator = "\r\n\r\n".encode()
 
     def __init__(self, socket_map, parser, dest, sock, source):
         asynchat.async_chat.__init__(self, sock=sock, map=socket_map)
         self.parser = parser
         self._lock = threading.Lock()
         self.dest = dest
-        self.buffer = ''
+        self.buffer = bytearray()
         self.source = source
 
     def initiate_send(self):
@@ -106,15 +108,15 @@ class HTTPHandler(asynchat.async_chat):
         self._lock.release()
 
     def collect_incoming_data(self, data):
-        self.buffer += data
+        self.buffer.extend(data)
 
     def found_terminator(self):
         data = self.buffer
-        self.buffer = ''
-        for line in data.splitlines():
+        self.buffer = bytearray()
+        for line in data.decode().splitlines():
             if line.startswith('GET'):
                 request = line.split(' ')[1].strip('/')
-                self.parser(self.source, self.dest, urllib.unquote(request))
+                self.parser(self.source, self.dest, urllib.parse.unquote(request))
                 break
         try:
             self.shutdown(socket.SHUT_RDWR)

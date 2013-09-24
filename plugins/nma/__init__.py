@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -20,8 +20,8 @@
 #########################################################################
 
 import logging
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 
 # nma notifications
 logger = logging.getLogger('NMA')
@@ -54,7 +54,7 @@ class NMA():
             data['url'] = url[:2000]
 
         try:
-            p = urllib2.urlopen(self._apiuri, urllib.urlencode(data), 4)
+            p = urllib.request.urlopen(self._apiuri, urllib.parse.urlencode(data), 4)
             status_code = p.getcode()
             if (status_code == 200):
                 logger.debug("NMA returns: Notification submitted.")
@@ -72,5 +72,5 @@ class NMA():
             p.fp._sock.recv = None
             p.close()
             del(p)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not send NMA notification: {0}. Error: {1}".format(event, e))

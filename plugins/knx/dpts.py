@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
@@ -30,7 +30,7 @@ def en1(value):
 def de1(payload):
     if len(payload) != 1:
         return None
-    return bool(ord(payload) & 0x01)
+    return bool(payload & 0x01)
 
 
 def en2(vlist):
@@ -41,7 +41,6 @@ def en2(vlist):
 def de2(payload):
     if len(payload) != 1:
         return None
-    payload = ord(payload)
     return [int(payload) >> 1 & 0x01, int(payload) & 0x01]
 
 
@@ -53,13 +52,12 @@ def en3(vlist):
 def de3(payload):
     if len(payload) != 1:
         return None
-    payload = ord(payload)
     # up/down, stepping
     return [int(payload) >> 3 & 0x01, int(payload) & 0x07]
 
 
 def en4002(value):
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         value = value.encode('iso-8859-1')
     else:
         value = str(value)
@@ -150,8 +148,8 @@ def en9(value):
 def de9(payload):
     if len(payload) != 2:
         return None
-    i1 = ord(payload[0])
-    i2 = ord(payload[1])
+    i1 = payload[0]
+    i2 = payload[1]
     s = (i1 & 0x80) >> 7
     e = (i1 & 0x78) >> 3
     m = (i1 & 0x07) << 8 | i2
@@ -165,10 +163,9 @@ def en10(dt):
 
 
 def de10(payload):
-    ba = bytearray(payload)
-    h = ba[0] & 0x1f
-    m = ba[1] & 0x3f
-    s = ba[2] & 0x3f
+    h = payload[0] & 0x1f
+    m = payload[1] & 0x3f
+    s = payload[2] & 0x3f
     return datetime.time(h, m, s)
 
 
@@ -177,10 +174,9 @@ def en11(date):
 
 
 def de11(payload):
-    ba = bytearray(payload)
-    d = ba[0] & 0x1f
-    m = ba[1] & 0x0f
-    y = (ba[2] & 0x7f) + 2000  # sorry no 20th century...
+    d = payload[0] & 0x1f
+    m = payload[1] & 0x0f
+    y = (payload[2] & 0x7f) + 2000  # sorry no 20th century...
     return datetime.date(y, m, d)
 
 
@@ -229,7 +225,7 @@ def de14(payload):
 
 
 def en16000(value):
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         value = value.encode('ascii')
     else:
         value = str(value)
@@ -242,7 +238,7 @@ def en16000(value):
 
 
 def en16001(value):
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         value = value.encode('iso-8859-1')
     else:
         value = str(value)
@@ -279,7 +275,7 @@ def de20(payload):
 
 
 def en24(value):
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         value = value.encode('iso-8859-1')
     else:
         value = str(value)
@@ -322,12 +318,6 @@ def dega(string):
     return "{0}/{1}/{2}".format((ga >> 11) & 0x1f, (ga >> 8) & 0x07, (ga) & 0xff)
 
 
-def dehex(payload):
-    #xlist = ["{0:02x}".format(ord(char)) for char in payload]
-    xlist = ["{0:x}".format(ord(char)) for char in payload]
-    return ' '.join(xlist)
-
-
 decode = {
     '1': de1,
     '2': de2,
@@ -350,8 +340,7 @@ decode = {
     '24': de24,
     '232': de232,
     'pa': depa,
-    'ga': dega,
-    'hex': dehex
+    'ga': dega
 }
 
 encode = {

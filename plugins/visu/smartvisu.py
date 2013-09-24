@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -30,7 +30,7 @@ def parse_tpl(template, replace):
     try:
         with open(template, 'r') as f:
             tpl = f.read()
-    except IOError, e:
+    except IOError as e:
         logger.error("Could not read template file '{0}': {1}".format(template, e))
         return ''
     for s, r in replace:
@@ -74,7 +74,7 @@ def pages(smarthome, directory):
         try:
             if os.path.isdir(dp):
                 shutil.rmtree(dp)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not delete directory {0}: {1}".format(dp, e))
     # remove old dynamic files
     if not os.path.isdir(outdir):
@@ -85,7 +85,7 @@ def pages(smarthome, directory):
         try:
             if os.path.isfile(fp):
                 os.unlink(fp)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not delete file {0}: {1}".format(fp, e))
     for item in smarthome.find_items('sv_page'):
         r = room(smarthome, item, tpldir)

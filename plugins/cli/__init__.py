@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 Marcus Popp
@@ -29,7 +29,7 @@ logger = logging.getLogger('')
 
 
 class CLIHandler(asynchat.async_chat):
-    terminator = '\n'
+    terminator = '\n'.encode()
 
     def __init__(self, smarthome, sock, source, updates):
         asynchat.async_chat.__init__(self, sock=sock, map=smarthome.socket_map)
@@ -37,13 +37,16 @@ class CLIHandler(asynchat.async_chat):
         self.updates_allowed = updates
         self.sh = smarthome
         self._lock = threading.Lock()
-        self.buffer = ''
-        self.push("SmartHome.py v%s\n" % self.sh.version)
+        self.buffer = bytearray()
+        self.push("SmartHome.py v{0}\n".format(self.sh.version))
         self.push("Enter 'help' for a list of available commands.\n")
         self.push("> ")
 
+    def push(self, data):
+        asynchat.async_chat.push(self, data.encode())
+
     def collect_incoming_data(self, data):
-        self.buffer += data
+        self.buffer.extend(data)
 
     def initiate_send(self):
         self._lock.acquire()
@@ -51,8 +54,8 @@ class CLIHandler(asynchat.async_chat):
         self._lock.release()
 
     def found_terminator(self):
-        cmd = self.buffer.strip()
-        self.buffer = ''
+        cmd = self.buffer.decode().strip()
+        self.buffer = bytearray()
         if cmd.startswith('ls'):
             self.push("Items:\n======\n")
             self.ls(cmd.lstrip('ls').strip())
@@ -98,7 +101,7 @@ class CLIHandler(asynchat.async_chat):
             item = self.sh.return_item(path)
             if hasattr(item, 'id'):
                 if item._type:
-                    self.push(u"{0} = {1}\n".format(item.id(), item()))
+                    self.push("{0} = {1}\n".format(item.id(), item()))
                 else:
                     self.push("%s\n" % (item.id()))
                 for child in item:
@@ -110,7 +113,7 @@ class CLIHandler(asynchat.async_chat):
         self.push("Items:\n======\n")
         for item in self.sh.return_items():
             if item._type:
-                self.push(u"{0} = {1}\n".format(item.id(), item()))
+                self.push("{0} = {1}\n".format(item.id(), item()))
             else:
                 self.push("{0}\n".format(item.id()))
 

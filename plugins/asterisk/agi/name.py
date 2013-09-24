@@ -5,8 +5,8 @@
 
 import sys
 import re
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 
 while 1:
     line = sys.stdin.readline()
@@ -18,9 +18,9 @@ while 1:
 if agi_callerid == 'unknown':
     sys.exit()
 
-number = urllib.quote(agi_callerid)
+number = urllib.parse.quote(agi_callerid)
 exp = re.compile('<[^>]*id="name0"[^>]*>([^<]+)<', re.MULTILINE)
-lookup = urllib2.urlopen("http://www3.dastelefonbuch.de/?kw={0}&cmd=search".format(number), data="User-Agent: Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11", timeout=1)
+lookup = urllib.request.urlopen("http://www3.dastelefonbuch.de/?kw={0}&cmd=search".format(number), data="User-Agent: Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11", timeout=1)
 name = exp.search(lookup.read())
 if name != None:
     name = name.group(1).strip()

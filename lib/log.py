@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
@@ -41,7 +41,7 @@ class Log(collections.deque):
         return(list(self)[-number:])
 
     def export(self, number):
-        return map(lambda x: self.log_string.format(*x), list(self)[:number])
+        return [self.log_string.format(*x) for x in list(self)[:number]]
 
     def clean(self, dt):
         while True:

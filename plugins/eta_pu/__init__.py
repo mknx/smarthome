@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -21,8 +21,8 @@
 
 import logging
 import base64
-import httplib
-import urllib
+import http.client
+import urllib.request, urllib.parse, urllib.error
 import xml.etree.ElementTree as ET
 
 __ETA_PU__ = 'eta_pu'
@@ -49,9 +49,9 @@ class ETA_PU():
         purl = '/' + '/'.join(lurl[3:])
         # select protocol: http or https
         if url.startswith('https'):
-            conn = httplib.HTTPSConnection(host, timeout=timeout)
+            conn = http.client.HTTPSConnection(host, timeout=timeout)
         else:
-            conn = httplib.HTTPConnection(host, timeout=timeout)
+            conn = http.client.HTTPConnection(host, timeout=timeout)
         # add headers
         hdrs = { 'Accept': 'text/plain' }
         if username and password:
@@ -59,7 +59,7 @@ class ETA_PU():
 
         if 'POST' == req_type:
             hdrs['Content-Type'] = 'application/x-www-form-urlencoded'
-            conn.request(req_type, purl, urllib.urlencode({'@value': value}), hdrs)
+            conn.request(req_type, purl, urllib.parse.urlencode({'@value': value}), hdrs)
         elif 'PUT' == req_type:
             conn.request(req_type, purl, body=value, headers=hdrs)
         else: # 'GET' or 'DELETE'
@@ -67,7 +67,7 @@ class ETA_PU():
         resp = conn.getresponse()
         conn.close()
         # success status: 201/Created for PUT request, else 200/Ok
-        if resp.status in (httplib.OK, httplib.CREATED):
+        if resp.status in (http.client.OK, http.client.CREATED):
             return resp.read()
         logger.warning("request failed: {0}: ".format(url))
         logger.debug("{0} response: {1} {2}".format(req_type, resp.status, resp.reason))
@@ -123,7 +123,7 @@ class ETA_PU():
         if 'eta_pu_type' not in item.conf:
             return None
         parent_item = item.return_parent()
-        if (parent_item == None) or (False == parent_item.conf.has_key('eta_pu_uri')):
+        if (parent_item == None) or (False == ('eta_pu_uri' in parent_item.conf)):
             logger.error("skipping item: found 'eta_pu_type' but parent has no 'eta_pu_uri'")
             return
         uri = parent_item.conf['eta_pu_uri']
@@ -142,7 +142,7 @@ class ETA_PU():
         root = ET.fromstring(xml)
 
         for elem in root.iter():
-            for key in self._uri.keys():
+            for key in list(self._uri.keys()):
                 try:
                     if key == elem.attrib['uri']:
 			for i in self._uri[key]:

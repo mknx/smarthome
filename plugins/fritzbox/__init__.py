@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
@@ -21,8 +21,8 @@
  
 import sys
 import logging
-import httplib
-import urllib
+import http.client
+import urllib.request, urllib.parse, urllib.error
 import hashlib
 import re
 
@@ -39,9 +39,9 @@ class FritzBoxBase():
         self._sid = 0
 
     def _login(self):
-        params = urllib.urlencode({'getpage': '../html/login_sid.xml', 'sid': self._sid})
+        params = urllib.parse.urlencode({'getpage': '../html/login_sid.xml', 'sid': self._sid})
         headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-        con = httplib.HTTPConnection(self._host)
+        con = http.client.HTTPConnection(self._host)
         con.request("POST", "/cgi-bin/webcm", params, headers);
         resp = con.getresponse()
         con.close()
@@ -58,8 +58,8 @@ class FritzBoxBase():
             m = hashlib.md5()
             m.update(challenge_resp)
             challenge_resp = challenge + '-' + m.hexdigest().lower()
-            params = urllib.urlencode({'login:command/response': challenge_resp, 'getpage': '../html/login_sid.xml'})
-            con = httplib.HTTPConnection(self._host)
+            params = urllib.parse.urlencode({'login:command/response': challenge_resp, 'getpage': '../html/login_sid.xml'})
+            con = http.client.HTTPConnection(self._host)
             con.request("POST", "/cgi-bin/webcm", params, headers);
             resp = con.getresponse()
             con.close()
@@ -74,9 +74,9 @@ class FritzBoxBase():
         self._login()
         cmd_dict['getpage'] = '../html/login_sid.xml'
         cmd_dict['sid'] = self._sid
-        params = urllib.urlencode(cmd_dict)
+        params = urllib.parse.urlencode(cmd_dict)
         headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-        con = httplib.HTTPConnection(self._host)
+        con = http.client.HTTPConnection(self._host)
         con.request("POST", "/cgi-bin/webcm", params, headers);
         resp = con.getresponse()
         con.close()
@@ -114,7 +114,7 @@ class FritzBox(FritzBoxBase):
                 fb['telcfg{0}'.format(attr[8:])] = item.conf[attr]
         if len(fb) > 0:
             item.conf['fritzbox'] = fb
-            print fb
+            print(fb)
             return self.update_item
 
     def update_item(self, item, caller=None, source=None, dest=None):
@@ -132,7 +132,7 @@ class FritzBox(FritzBoxBase):
 
 def main():
     if len(sys.argv) != 4:
-        print "usage: {0} password from to".format(sys.argv[0])
+        print("usage: {0} password from to".format(sys.argv[0]))
         return 1
 
     handler = logging.StreamHandler(sys.stdout) 

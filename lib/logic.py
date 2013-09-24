@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
@@ -21,7 +21,8 @@
 
 import logging
 import os
-import configobj
+
+import lib.config
 
 logger = logging.getLogger('')
 
@@ -37,8 +38,8 @@ class Logics():
         self.alive = True
         logger.debug("reading logics from %s" % configfile)
         try:
-            self._config = configobj.ConfigObj(configfile, file_error=True)
-        except Exception, e:
+            self._config = lib.config.parse(configfile)
+        except Exception as e:
             logger.critical(e)
             return
         for name in self._config:
@@ -118,7 +119,7 @@ class Logic():
                 return
             try:
                 self.bytecode = compile(open(filename).read(), self.filename, 'exec')
-            except Exception, e:
-                logger.warning("Exception: %s" % e)
+            except Exception as e:
+                logger.exception("Exception: %s" % e)
         else:
             logger.warning("%s: No filename specified => ignoring." % self.name)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -190,7 +190,7 @@ class Russound(lib.my_asynchat.AsynChat):
                     value = resp.split('"')[1]
 
                     path = '{0}.{1}.{2}'.format(c, z, cmd)
-                    if path in self.params.keys():
+                    if path in list(self.params.keys()):
                         self.params[path]['item'](self._decode(cmd, value), 'Russound')
                 elif resp.startswith('System.status'):
                     return
@@ -206,7 +206,7 @@ class Russound(lib.my_asynchat.AsynChat):
 #                            if str(child).lower() == cmd.lower():
 #                                child(unicode(value, 'utf-8'), 'Russound')
                     return
-        except Exception, e:
+        except Exception as e:
             logger.error(e)
 
     def _decode(self, cmd, value):
@@ -221,12 +221,12 @@ class Russound(lib.my_asynchat.AsynChat):
         elif cmd == 'currentsource':
             return value
         elif cmd == 'name':
-            return unicode(value, 'utf-8')
+            return str(value, 'utf-8')
 
     def found_terminator(self):
         data = self.buffer
-        self.buffer = ''
-        self._parse_response(data)
+        self.buffer = bytearray()
+        self._parse_response(data.decode())
 
     def handle_connect(self):
         self.discard_buffers()

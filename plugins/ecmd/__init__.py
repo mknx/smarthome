@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 Dirk Wallmeier                      dirk@wallmeier.info
@@ -51,7 +51,7 @@ class ECMD1wireBase():
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._sock.settimeout(2)
             self._sock.connect((self.host, self.port))
-        except Exception, e:
+        except Exception as e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
                 logger.error('ecmd1wire: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
@@ -78,7 +78,7 @@ class ECMD1wireBase():
         self._lock.acquire()
         try:
             self._sock.send("1w list\n")
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             raise owex("error sending request: {0}".format(e))
         table = {}

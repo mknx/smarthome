@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -60,7 +60,7 @@ class IMAP():
     def _cycle(self):
         try:
             imap = self._connect()
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not connect to {0}: {1}".format(self._host, e))
             return
         rsp, data = imap.select()
@@ -141,7 +141,7 @@ class SMTP():
     def __call__(self, to, sub, msg):
         try:
             smtp = self._connect()
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not connect to {0}: {1}".format(self._host, e))
             return
         msg = MIMEText(msg.encode('utf-8'), 'plain', 'utf-8')

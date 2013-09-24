@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python3
 # coding=utf-8
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
@@ -45,11 +45,11 @@ class ArtNet():
 		self.close()
 		
 	def __call__(self,var1=None, var2=None):
-		if type(var1) == types.IntType and type(var2) == types.IntType:
+		if type(var1) == int and type(var2) == int:
 			 self.send_single_value(var1, var2)
-		if type(var1) == types.IntType and type(var2) == types.ListType:
+		if type(var1) == int and type(var2) == list:
 			 self.send_frame_starting_at(var1, var2)
-		if type(var1) == types.ListType and type(var2) == types.NoneType:
+		if type(var1) == list and type(var2) == type(None):
 			 self.send_frame(var1)
 			 
 	def send_single_value(self,adr,value):

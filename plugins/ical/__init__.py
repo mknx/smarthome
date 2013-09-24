@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -60,7 +60,7 @@ class iCal():
             try:
                 with open(ics, 'r') as f:
                     ical = f.read()
-            except IOError, e:
+            except IOError as e:
                 logger.error('Could not open ics file {0}: {1}'.format(ics, e))
                 return {}
         now = self._sh.now()
@@ -161,7 +161,7 @@ class iCal():
                 elif key in ['DTSTART', 'DTEND', 'EXDATE', 'RECURRENCE-ID']:
                     try:
                         date = self._parse_date(val, tzinfo, par)
-                    except Exception, e:
+                    except Exception as e:
                         logger.warning("Problem parsing: {0}: {1}".format(ics, e))
                         continue
                     if key == 'EXDATE':
@@ -204,7 +204,7 @@ class iCal():
         if 'UNTIL' in rrule:
             try:
                 rrule['UNTIL'] = self._parse_date(rrule['UNTIL'], tzinfo)
-            except Exception, e:
+            except Exception as e:
                 logger.warning("Problem parsing UNTIL: {1} --- {0} ".format(event, e))
                 return
         for par in rrule:

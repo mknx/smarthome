@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
@@ -74,7 +74,7 @@ class eBus():
         try:
             self._sock.send(request)
             logger.debug("REQUEST: {0}".format(request))
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             self.close()
             logger.warning("error sending request: {0} => {1}".format(request, e))
@@ -85,7 +85,7 @@ class eBus():
             self._lock.release()
             logger.warning("error receiving answer: timeout")
             return
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             self.close()
             logger.warning("error receiving answer: {0}".format(e))
@@ -99,7 +99,7 @@ class eBus():
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._sock.settimeout(2)
             self._sock.connect((self.host, self.port))
-        except Exception, e:
+        except Exception as e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
                 logger.error('eBus:	could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))

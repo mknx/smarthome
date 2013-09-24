@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
@@ -20,11 +20,12 @@
 #########################################################################
 
 import logging
-import struct
 import threading
+import struct
+import binascii
 
 import lib.my_asynchat
-import dpts
+from . import dpts
 
 KNXREAD = 0x00
 KNXRESP = 0x40
@@ -54,14 +55,12 @@ class KNX(lib.my_asynchat.AsynChat):
         smarthome.monitor_connection(self)
 
     def _send(self, data):
-        send = ''
         if len(data) < 2 or len(data) > 0xffff:
-            logger.debug('Illegal data size: %s' % repr(data))
+            logger.debug('Illegal data size: {}'.format(repr(data)))
             return False
         # prepend data length
-        data = [(len(data) >> 8) & 0xff, (len(data)) & 0xff] + data
-        for i in data:
-            send += chr(i)
+        send = bytearray(len(data).to_bytes(2, byteorder='big'))
+        send.extend(data)
         try:
             self._lock.acquire()
             self.push(send)
@@ -69,8 +68,10 @@ class KNX(lib.my_asynchat.AsynChat):
             self._lock.release()
 
     def groupwrite(self, ga, payload, dpt, flag='write'):
-        pkt = [0, 39] + self.encode(ga, 'ga') + [0]
-        pkt += self.encode(payload, dpt)
+        pkt = bytearray([0, 39])
+        pkt.extend(self.encode(ga, 'ga'))
+        pkt.extend([0])
+        pkt.extend(self.encode(payload, dpt))
         if flag == 'write':
             flag = KNXWRITE
         elif flag == 'response':
@@ -82,11 +83,15 @@ class KNX(lib.my_asynchat.AsynChat):
         self._send(pkt)
 
     def _cacheread(self, ga):
-        pkt = [0, 116] + self.encode(ga, 'ga') + [0, 0]
+        pkt = bytearray([0, 116])
+        pkt.extend(self.encode(ga, 'ga'))
+        pkt.extend([0, 0])
         self._send(pkt)
 
     def groupread(self, ga):
-        pkt = [0, 39] + self.encode(ga, 'ga') + [0, KNXREAD]
+        pkt = bytearray([0, 39])
+        pkt.extend(self.encode(ga, 'ga'))
+        pkt.extend([0, KNXREAD])
         self._send(pkt)
 
     def _send_time(self):
@@ -105,7 +110,7 @@ class KNX(lib.my_asynchat.AsynChat):
 
     def handle_connect(self):
         self.discard_buffers()
-        enable_cache = [0, 112]
+        enable_cache = bytearray([0, 112])
         self._send(enable_cache)
         self.parse_data = self.parse_length
         if self._cache_ga != []:
@@ -115,7 +120,7 @@ class KNX(lib.my_asynchat.AsynChat):
                     self._cacheread(ga)
                 self._cache_ga = []
         logger.debug('knx: enable group monitor')
-        init = [0, 38, 0, 0, 0]
+        init = bytearray([0, 38, 0, 0, 0])
         self._send(init)
         self.terminator = 2
         if self._init_ga != []:
@@ -126,15 +131,14 @@ class KNX(lib.my_asynchat.AsynChat):
                 self._init_ga = []
 
 #   def collect_incoming_data(self, data):
-#       ba = bytearray(data)
 #       print('#  bin   h  d')
-#       for i in ba:
+#       for i in data:
 #           print("{0:08b} {0:02x} {0:02d}".format(i))
-#       self.buffer += data
+#       self.buffer.extend(data)
 
     def found_terminator(self):
         data = self.buffer
-        self.buffer = ''
+        self.buffer = bytearray()
         self.parse_data(data)
 
     def parse_length(self, length):
@@ -151,7 +155,7 @@ class KNX(lib.my_asynchat.AsynChat):
     def decode(self, data, dpt):
         return dpts.decode[str(dpt)](data)
 
-    def parse_telegram(self, telegram):
+    def parse_telegram(self, data):
         self.parse_data = self.parse_length  # reset parser and terminator
         self.terminator = 2
         # 2 byte type
@@ -159,16 +163,16 @@ class KNX(lib.my_asynchat.AsynChat):
         # 2 byte dst
         # 2 byte command/data
         # x byte data
-        typ = struct.unpack(">H", telegram[:2])[0]
-        if (typ != 39 and typ != 116) or len(telegram) < 8:
+        typ = struct.unpack(">H", data[0:2])[0]
+        if (typ != 39 and typ != 116) or len(data) < 8:
 #           logger.debug("Ignore telegram.")
             return
-        if (ord(telegram[6]) & 0x03 or (ord(telegram[7]) & 0xC0) == 0xC0):
+        if (data[6] & 0x03 or (data[7] & 0xC0) == 0xC0):
             logger.debug("Unknown APDU")
             return
-        src = self.decode(telegram[2:4], 'pa')
-        dst = self.decode(telegram[4:6], 'ga')
-        flg = ord(telegram[7]) & 0xC0
+        src = self.decode(data[2:4], 'pa')
+        dst = self.decode(data[4:6], 'ga')
+        flg = data[7] & 0xC0
         if flg == KNXWRITE:
             flg = 'write'
         elif flg == KNXREAD:
@@ -178,19 +182,19 @@ class KNX(lib.my_asynchat.AsynChat):
         else:
             logger.warning("Unknown flag: {0:02x} src: {1} dest: {2}".format(flg, src, dst))
             return
-        if len(telegram) == 8:
-            payload = chr(ord(telegram[7]) & 0x3f)
+        if len(data) == 8:
+            payload = bytearray([data[7] & 0x3f])
         else:
-            payload = telegram[8:]
+            payload = data[8:]
         if flg == 'write' or flg == 'response':
             if dst not in self.gal:  # update item/logic
-                self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, self.decode(payload, 'hex')))
+                self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, binascii.hexlify(payload).decode()))
                 return
             dpt = self.gal[dst]['dpt']
             try:
                 val = self.decode(payload, dpt)
-            except Exception, e:
-                logger.warning("knx: Problem decoding frame from {0} to {1} with '{2}' and DPT {3}. Exception: {4}".format(src, dst, self.decode(payload, 'hex'), dpt, e))
+            except Exception as e:
+                logger.warning("knx: Problem decoding frame from {0} to {1} with '{2}' and DPT {3}. Exception: {4}".format(src, dst, binascii.hexlify(payload).decode(), dpt, e))
                 return
             if val is not None:
                 self._busmonitor("knx: {0} set {1} to {2}".format(src, dst, val))
@@ -204,7 +208,7 @@ class KNX(lib.my_asynchat.AsynChat):
                 for logic in self.gal[dst]['logics']:
                     logic.trigger('KNX', src, val, dst)
             else:
-                logger.warning("Wrong payload '{2}' for ga '{1}' with dpt '{0}'.".format(dpt, dst, self.decode(payload, 'hex')))
+                logger.warning("Wrong payload '{2}' for ga '{1}' with dpt '{0}'.".format(dpt, dst, binascii.hexlify(payload).decode()))
         elif flg == 'read':
             logger.debug("{0} read {1}".format(src, dst))
             if dst in self.gar:  # read item

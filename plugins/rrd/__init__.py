@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
@@ -19,16 +19,18 @@
 #  along with SmartHome.py.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
+import datetime
+import functools
 import logging
 import os
-import types
+
 import rrdtool
-import functools
 
 logger = logging.getLogger('')
 
 
 class RRD():
+    _cf = {'avg': 'AVERAGE', 'max': 'MAX', 'min': 'MIN'}
 
     def __init__(self, smarthome, step=300, rrd_dir=None):
         self._sh = smarthome
@@ -60,16 +62,9 @@ class RRD():
                     rrd['rrdb'],
                     value
                 )
-            except Exception, e:
+            except Exception as e:
                 logger.warning("error updating rrd for %s: %s" % (itempath, e))
                 return
-        time = self._sh.now()
-        time = int(time.strftime("%s")) + time.utcoffset().seconds
-        for itempath in self._rrds:
-            item = self._rrds[itempath]['item']
-            if 'visu' in item.conf:
-                for listener in self._sh.return_event_listeners('rrd'):
-                    listener('rrd', {'frame': 'update', 'start': time, 'step': self.step, 'item': item.id(), 'series': [item()]})
 
     def parse_item(self, item):
         if 'rrd' not in item.conf:
@@ -77,111 +72,55 @@ class RRD():
         rrdb = self._rrd_dir + item.id() + '.rrd'
         rrd_min = False
         rrd_max = False
-        if 'rrd_min' in item.conf['rrd']:
-            rrd_min = True
-        if 'rrd_max' in item.conf['rrd']:
-            rrd_max = True
-        # adding average and export method to the item
-        item.average = types.MethodType(self._average, item, item.__class__)
-        item.min = types.MethodType(self._min, item, item.__class__)
-        item.max = types.MethodType(self._max, item, item.__class__)
-        item.export = types.MethodType(self._export, item, item.__class__)
+        if 'rrd_min' in item.conf:
+            rrd_min = self._sh.string2bool(item.conf['rrd_min'])
+        if 'rrd_max' in item.conf:
+            rrd_max = self._sh.string2bool(item.conf['rrd_max'])
         item.series = functools.partial(self._series, item=item.id())
         self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min}
-
-    def _simplify(self, value):
-        if value[0] is not None:
-            return round(value[0], 2)
 
     def parse_logic(self, logic):
         pass
 
-    def _fetch(self, item, start, end='now', cf='AVERAGE'):
-        if 'rrd' not in item.conf:
-            logger.warning("rrd not enabled for {0}".format(item.id()))
-            return
-        rrdb = self._rrd_dir + item.id() + '.rrd'
-        try:
-            env, name, data = rrdtool.fetch(
-                rrdb,
-                cf,
-                '--start', '-' + start, '--end', '-' + end
-            )
-            return list(i[0] for i in data)  # flatten reply
-        except Exception, e:
-            logger.warning("error reading {0} data: {1}".format(item.id(), e))
-            return None
-
     def _series(self, func, start, end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
-        pass
+        query = ["{}{}.rrd".format(self._rrd_dir, item)]
+        if func in self._cf:
+            query.append(self._cf[func])
+        else:
+            logger.warning("RRD: unsupported consolidation function {} for {}".format(func, item))
+            return
+        if start.isdigit():
+            query.extend(['--start', "{}".format(start)])
+        else:
+            query.extend(['--start', "now-{}".format(start)])
+        if end != 'now':
+            if end.isdigit():
+                query.extend(['--end', "{}".format(end)])
+            else:
+                query.extend(['--end', "now-{}".format(end)])
+        if step is not None:
+            query.extend(['--resolution', step])
+        try:
+            meta, name, data = rrdtool.fetch(
+                query
+            )
+        except Exception as e:
+            logger.warning("error reading {0} data: {1}".format(item, e))
+            return None
+        if sid is None:
+            sid = item + '|' + func + '|' + start + '|' + end
+        reply = {'cmd': 'series', 'series': None, 'sid': sid}
+        istart, iend, istep = meta
+        mstart = istart * 1000
+        mstep = istep * 1000
+        tuples = [(mstart + i * mstep, v[0]) for i, v in enumerate(data)]
+        reply['series'] = sorted(tuples)
+        reply['params'] = {'update': True, 'item': item, 'func': func, 'start': str(iend), 'end': str(iend + istep), 'step': str(istep), 'sid': sid}
+        reply['update'] = self._sh.now() + datetime.timedelta(seconds=istep)
+        return reply
 
     def _single(self, func, start, end='now', item=None):
         pass
-
-    def _export(self, item, frame='1d'):
-        rrdb = self._rrd_dir + item.id() + '.rrd'
-        #name = item.id().rpartition('.')[-1]
-        try:
-            meta, names, data = rrdtool.fetch(rrdb, 'AVERAGE', '--start', 'now-' + frame)
-        except Exception, e:
-            logger.warning("error reading %s data: %s" % (item, e))
-            return None
-        start, end, step = meta
-        start += self._sh.now().utcoffset().seconds
-        data = map(self._simplify, data)
-        if data[-2] is None:
-            del data[-2]
-        if data[-1] is None:
-            data[-1] = item()
-        return {'cmd': 'rrd', 'frame': frame, 'start': start, 'step': step, 'item': item.id(), 'series': data}
-
-    def _average(self, item, timeframe):
-        values = self.read(item, timeframe)
-        if values is None:
-            return None
-        values = filter(None, values)
-        if len(values) == 0:
-            return None
-        else:
-            return sum(values) / len(values)
-
-    def _min(self, item, timeframe):
-        values = self.read(item, timeframe)
-        if values is None:
-            return None
-        values = filter(None, values)
-        if len(values) == 0:
-            return None
-        else:
-            values.sort()
-            return values[0]
-
-    def _max(self, item, timeframe):
-        values = self.read(item, timeframe)
-        if values is None:
-            return None
-        values = filter(None, values)
-        if len(values) == 0:
-            return None
-        else:
-            values.sort()
-            return values[-1]
-
-    def read(self, item, timeframe='1d', cf='AVERAGE'):
-        if not hasattr(item, 'rrd'):
-            logger.warning("rrd not enabled for %s" % item)
-            return
-        rrdb = self._rrd_dir + item.path + '.rrd'
-        try:
-            env, name, data = rrdtool.fetch(
-                rrdb,
-                cf,
-                '--start', 'e-' + timeframe
-            )
-            return list(i[0] for i in data)  # flatten reply
-        except Exception, e:
-            logger.warning("error reading %s data: %s" % (item, e))
-            return None
 
     def _create(self, rrd):
         insert = []
@@ -202,5 +141,5 @@ class RRD():
                 'RRA:AVERAGE:0.5:' + str(int(86400 / self.step)) + ':1826'   # 24h/5y
             )
             logger.debug("Creating rrd ({0}) for {1}.".format(rrd['rrdb'], rrd['item']))
-        except Exception, e:
+        except Exception as e:
             logger.warning("Error creating rrd ({0}) for {1}: {2}".format(rrd['rrdb'], rrd['item'], e))

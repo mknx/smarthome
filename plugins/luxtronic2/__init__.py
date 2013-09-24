@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
@@ -72,7 +72,7 @@ class LuxBase():
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._sock.settimeout(2)
             self._sock.connect((self.host, self.port))
-        except Exception, e:
+        except Exception as e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
                 logger.error('Luxtronic2: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
@@ -97,7 +97,7 @@ class LuxBase():
             raise luxex("no connection to luxtronic.")
         try:
             self._sock.send(request)
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             self.close()
             raise luxex("error sending request: {0}".format(e))
@@ -106,7 +106,7 @@ class LuxBase():
         except socket.timeout:
             self._lock.release()
             raise luxex("error receiving answer: timeout")
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             self.close()
             raise luxex("error receiving answer: {0}".format(e))
@@ -118,7 +118,7 @@ class LuxBase():
         except socket.timeout:
             self._lock.release()
             raise luxex("error receiving payload: timeout")
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             self.close()
             raise luxex("error receifing payload: {0}".format(e))
@@ -135,7 +135,7 @@ class LuxBase():
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
         fields = ['cmd', 'param']
-        answer = dict(zip(fields, answer))
+        answer = dict(list(zip(fields, answer)))
         if answer['cmd'] == 3002 and answer['param'] == param:
             logger.debug("Luxtronic2: value {0} for parameter {1} stored".format(value, param))
             return True
@@ -153,7 +153,7 @@ class LuxBase():
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
         fields = ['cmd', 'len']
-        answer = dict(zip(fields, answer))
+        answer = dict(list(zip(fields, answer)))
         if answer['cmd'] == 3003:
             params = []
             for i in range(0, answer['len']):
@@ -179,7 +179,7 @@ class LuxBase():
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
         fields = ['cmd', 'len']
-        answer = dict(zip(fields, answer))
+        answer = dict(list(zip(fields, answer)))
         if answer['cmd'] == 3005:
             attrs = []
             for i in range(0, answer['len']):
@@ -205,7 +205,7 @@ class LuxBase():
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!iii', answer)
         fields = ['cmd', 'state', 'len']
-        answer = dict(zip(fields, answer))
+        answer = dict(list(zip(fields, answer)))
         if answer['cmd'] == 3004:
             calcs = []
             for i in range(0, answer['len']):
@@ -333,19 +333,19 @@ def main():
         lux.refresh_attributes()
         lux.refresh_calculated()
         cycletime = time.time() - start
-        print "{0} Parameters:".format(lux.get_parameter_count())
+        print("{0} Parameters:".format(lux.get_parameter_count()))
         for i in range(0, lux.get_parameter_count()):
-            print "  {0} = {1}".format(i + 1, lux.get_parameter(i))
-        print "{0} Attributes:".format(lux.get_attribute_count())
+            print("  {0} = {1}".format(i + 1, lux.get_parameter(i)))
+        print("{0} Attributes:".format(lux.get_attribute_count()))
         for i in range(0, lux.get_attribute_count()):
-            print "  {0} = {1}".format(i + 1, lux.get_attribute(i))
-        print "{0} Calculated:".format(lux.get_calculated_count())
+            print("  {0} = {1}".format(i + 1, lux.get_attribute(i)))
+        print("{0} Calculated:".format(lux.get_calculated_count()))
         for i in range(0, lux.get_calculated_count()):
-            print "  {0} = {1}".format(i + 1, lux.get_calculated(i))
-        print "cycle takes {0} seconds".format(cycletime)
+            print("  {0} = {1}".format(i + 1, lux.get_calculated(i)))
+        print("cycle takes {0} seconds".format(cycletime))
 
-    except Exception, e:
-        print "[EXCEPTION] error main: {0}".format(e)
+    except Exception as e:
+        print("[EXCEPTION] error main: {0}".format(e))
         return 1
     finally:
         if lux:
