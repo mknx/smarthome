@@ -230,10 +230,6 @@ class Network():
         if http != 'no':
             self.add_listener('http', ip, http, http_acl, generic=True)
 
-    # XXX
-    #def tcp(self, host, port, data):
-    #    self._send_data('tcp', host, port, data)
-
     def udp(self, host, port, data):
         UDPSend(self.socket_map, host, port, data)
 
