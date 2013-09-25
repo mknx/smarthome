@@ -97,7 +97,7 @@ class DWD():
         except Exception as e:
             logger.info("problem fetching {0}: {1}".format(filename, e))
         self.lock.release()
-        return self._buffer.decode()
+        return self._buffer.decode('iso-8859-1')
 
     def _retr_list(self, dirname):
         self.lock.acquire()
