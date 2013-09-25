@@ -103,11 +103,11 @@ class CLIHandler(asynchat.async_chat):
                 if item._type:
                     self.push("{0} = {1}\n".format(item.id(), item()))
                 else:
-                    self.push("%s\n" % (item.id()))
+                    self.push("{}\n".format(item.id()))
                 for child in item:
                     self.ls(child.id())
             else:
-                self.push("Could not find path: %s\n" % (path))
+                self.push("Could not find path: {}\n".format(path))
 
     def la(self):
         self.push("Items:\n======\n")
@@ -206,13 +206,13 @@ class CLI(asyncore.dispatcher):
             self.bind((ip, int(port)))
             self.listen(5)
         except Exception:
-            logger.error("CLI: Could not bind socket on %s:%s" % (ip, port))
+            logger.error("CLI: Could not bind socket on {}:{}".format(ip, port))
 
     def handle_accept(self):
         pair = self.accept()
         if pair is not None:
             sock, (ip, port) = pair
-            logger.debug('CLI: Incoming connection from %s:%s' % (ip, port))
+            logger.debug('CLI: Incoming connection from {}:{}'.format(ip, port))
             CLIHandler(self.sh, sock, ip, self.updates_allowed)
 
     def run(self):

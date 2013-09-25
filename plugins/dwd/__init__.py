@@ -48,7 +48,7 @@ class DWD():
         try:
             warnings = csv.reader(open(self._warnings_csv, "r"), delimiter=';')
         except IOError as e:
-            logger.error('Could not open warning catalog %s: %s' % (self._warnings_csv, e))
+            logger.error('Could not open warning catalog {}: {}'.format(self._warnings_csv, e))
         for row in warnings:
             self._warning_cat[int(row[0])] = {'summary': row[1], 'kind': row[2]}
 
@@ -58,10 +58,10 @@ class DWD():
             try:
                 self._ftp = ftplib.FTP(self._dwd_host, self._dwd_user, self._dwd_password, timeout=3)
             except (socket.error, socket.gaierror) as e:
-                logger.error('Could not connect to %s: %s' % (self._dwd_host, e))
+                logger.error('Could not connect to {}: {}'.format(self._dwd_host, e))
                 self.ftp_quit()
             except ftplib.error_perm as e:
-                logger.error('Could not login: %s' % e)
+                logger.error('Could not login: {}'.format(e))
                 self.ftp_quit()
 
     def run(self):
@@ -147,7 +147,7 @@ class DWD():
         header = fb[4]
         legend = fb[8].split()
         date = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
-        date = "%s-%s-%s" % (date[2], date[1], date[0])
+        date = "{}-{}-{}".format(date[2], date[1], date[0])
         for line in fb:
             if line.count(location):
                 space = re.compile(r'  +')
@@ -200,7 +200,7 @@ class DWD():
             except:
                 continue
             date = datetime.datetime(int(year), int(month), int(day), 12, 0, 0, 0, tzinfo=self.tz)
-            uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)
+            uv = re.findall(r"{}<\/tns:Ort>\n *<tns:Wert>([^<]+)".format(location), fb)
             if len(uv) == 1:
                 forecast[date] = int(uv[0])
         return forecast

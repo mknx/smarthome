@@ -431,7 +431,7 @@ class Scheduler(threading.Thread):
                     item = high  # truncate value to highest possible
                 item_range.append(item)
         for entry in item_range:
-            result.append('%0*d' % (2, entry))
+            result.append('{:02d}'.format(entry))
         return result
 
     def _day_range(self, days):

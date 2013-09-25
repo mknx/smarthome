@@ -38,7 +38,7 @@ class DMX():
         try:
             self._port = serial.Serial(tty, 38400, timeout=1)
         except:
-            logger.error("Could not open %s." % tty)
+            logger.error("Could not open {}.".format(tty))
             return
         else:
             self._is_connected = True

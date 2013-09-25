@@ -245,7 +245,6 @@ class Item():
             return
         self._lock.acquire()
         if value != self._value or self._enforce_updates:  # value change
-            #logger.debug("update item: %s" % self._path)
             if caller != "fade":
                 self.__fade = False
                 self._lock.notify_all()

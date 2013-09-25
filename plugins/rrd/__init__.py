@@ -63,7 +63,7 @@ class RRD():
                     value
                 )
             except Exception as e:
-                logger.warning("error updating rrd for %s: %s" % (itempath, e))
+                logger.warning("error updating rrd for {}: {}".format(itempath, e))
                 return
 
     def parse_item(self, item):
