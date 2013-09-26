@@ -291,7 +291,7 @@ class Scheduler(threading.Thread):
                 if value is not None:
                     obj(value, caller="Scheduler")
             except Exception as e:
-                logger.warning("Item {0} exception: {1}".format(name, e))
+                logger.exception("Item {0} exception: {1}".format(name, e))
         else:  # method
             try:
                 if value is None:
