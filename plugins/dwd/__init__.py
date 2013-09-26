@@ -96,6 +96,7 @@ class DWD():
             self._ftp.retrbinary("RETR {}".format(filename), self._buffer_file)
         except Exception as e:
             logger.info("problem fetching {0}: {1}".format(filename, e))
+            self._buffer = bytearray()
         self.lock.release()
         return self._buffer.decode('iso-8859-1')
 
@@ -116,7 +117,8 @@ class DWD():
         files = self._retr_list(filepath)
         for filename in files:
             fb = self._retr_file(filename)
-#           fb = fb.decode('iso-8859-1')
+            if fb == '':
+                continue
             dates = re.findall(r"\d\d\.\d\d\.\d\d\d\d \d\d:\d\d", fb)
             now = datetime.datetime.now(self.tz)
             if len(dates) > 1:  # Entwarnungen haben nur ein Datum
@@ -139,7 +141,6 @@ class DWD():
         directory = 'gds/specials/observations/tables/germany'
         last = sorted(self._retr_list(directory)).pop()
         fb = self._retr_file(last)
-#       fb = fb.decode('iso-8859-1')
         fb = fb.splitlines()
         if len(fb) < 8:
             logger.info("problem fetching {0}".format(last))
@@ -162,7 +163,8 @@ class DWD():
         for frame in frames:
             filepath = "{0}{1}_{2}".format(path, region, frame)
             fb = self._retr_file(filepath)
-#           fb = fb.decode('iso-8859-1')
+            if fb == '':
+                continue
             minute = 0
             if frame.count('frueh'):
                 hour = 6
