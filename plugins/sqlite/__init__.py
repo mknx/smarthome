@@ -161,7 +161,7 @@ class SQL():
             pass
 
     def timestamp(self, dt):
-        return int(time.mktime(dt.timetuple())) * 1000 + dt.microsecond / 1000
+        return int(time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000)
 
     def datetime(self, ts):
         return datetime.datetime.fromtimestamp(ts / 1000, self._sh.tzinfo())
@@ -172,7 +172,7 @@ class SQL():
         except:
             pass
         dt = self._sh.now()
-        ts = int(time.mktime(dt.timetuple())) * 1000 + dt.microsecond / 1000
+        ts = int(time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000)
         if frame == 'now':
             fac = 0
             frame = 0
@@ -226,9 +226,6 @@ class SQL():
         else:
             return val
 
-    def _cast_tuples(self, time, val):
-        return (int(float(time)), float(val))
-
     def _avg_ser(self, tuples, end):
         prev = end
         result = []
@@ -237,7 +234,7 @@ class SQL():
                 times, vals = tpl
             else:
                 continue
-            tpls = list(map(self._cast_tuples, times.split(','), vals.split(',')))
+            tpls = [(int(float(t)), float(v)) for t in times.split(',') for v in vals.split(',')]
             avg = self._avg(tpls, prev)
             first = sorted(tpls)[0][0]
             prev = first
@@ -328,6 +325,7 @@ class SQL():
         tuples.append((iend, lval))  # add end entry with last valid entry
         if update:  # remove first entry
             tuples = tuples[1:]
+        step = int(step / 1000)
         reply['series'] = tuples
         reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
         reply['update'] = self._sh.now() + datetime.timedelta(seconds=step)
@@ -376,7 +374,7 @@ class SQL():
                 granularity = int(granularity * 3600 * 1000)
                 for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}):
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
-                    gtime = list(map(int, gtime.split(',')))
+                    gtime = [int(float(t)) for t in gtime.split(',')]
                     if len(gtime) == 1:  # ignore
                         prev[item] = gtime[0]
                         continue
@@ -400,6 +398,6 @@ class SQL():
             self._fdb.execute("VACUUM;")
             self._fdb.execute("PRAGMA shrink_memory;")
         except Exception as e:
-            logger.warning("problem packing sqlite database: {0}".format(e))
+            logger.exception("problem packing sqlite database: {0} period: {}".format(e, period))
             self._fdb.rollback()
         self._fdb_lock.release()
