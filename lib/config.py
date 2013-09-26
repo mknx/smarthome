@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2013 <AUTHOR>                                         <EMAIL>
+# Copyright 2013 Marcus Popp                               marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -20,6 +20,7 @@
 #########################################################################
 
 import logging
+import collections
 
 logger = logging.getLogger('')
 
@@ -28,11 +29,11 @@ def parse(filename, config=None):
     valid_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
     valid_set = set(valid_chars)
     if config is None:
-        config = {}
+        config = collections.OrderedDict()
     item = config
     with open(filename, 'r') as f:
         linenu = 0
-        parent = {}
+        parent = collections.OrderedDict()
         for raw in f.readlines():
             linenu += 1
             line = raw.partition('#')[0].strip()
@@ -60,9 +61,9 @@ def parse(filename, config=None):
                 name = line.strip("[]'")
                 if level == 1:
                     if name not in config:
-                        config[name] = {}
+                        config[name] = collections.OrderedDict()
                     item = config[name]
-                    parents = {}
+                    parents = collections.OrderedDict()
                     parents[level] = item
                 else:
                     if level - 1 not in parents:
@@ -70,7 +71,7 @@ def parse(filename, config=None):
                         return config
                     parent = parents[level - 1]
                     if name not in parent:
-                        parent[name] = {}
+                        parent[name] = collections.OrderedDict()
                     item = parent[name]
                     parents[level] = item
 
