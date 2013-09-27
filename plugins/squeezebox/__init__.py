@@ -122,7 +122,7 @@ class Squeezebox(lib.my_asynchat.AsynChat):
 
     def _send(self, cmd):
         logger.debug("Sending request: {0}".format(cmd))
-        self.push(cmd+'\r\n')
+        self.push((cmd + '\r\n').encode())
 
     def _parse_response(self, response):
         data = [urllib.parse.unquote(data_str) for data_str in response.split()]
