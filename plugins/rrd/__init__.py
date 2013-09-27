@@ -59,7 +59,7 @@ class RRD():
             if rrd['type'] == 'GAUGE':
                 value = 'N:' + str(float(rrd['item']()))
             else:  # 'COUNTER'
-                value = 'N:' + str(int(rrd['item']()))
+                value = 'N:' + str(int(rrd['step'] * rrd['item']()))
             try:
                 rrdtool.update(
                     rrd['rrdb'],
@@ -81,6 +81,7 @@ class RRD():
         rrd_min = False
         rrd_max = False
         rrd_type = 'GAUGE'
+        rrd_step = self.step
         if 'rrd_min' in item.conf:
             rrd_min = self._sh.string2bool(item.conf['rrd_min'])
         if 'rrd_max' in item.conf:
@@ -88,8 +89,10 @@ class RRD():
         if 'rrd_type' in item.conf:
             if item.conf['rrd_type'].lower() == 'counter':
                 rrd_type = 'COUNTER'
+        if 'rrd_step' in item.conf:
+            rrd_step = int(item.conf['rrd_step'])
         item.series = functools.partial(self._series, item=item.id())
-        self._rrds[item.id()] = {'item': item, 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min, 'type': rrd_type}
+        self._rrds[item.id()] = {'item': item, 'id': item.id(), 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min, 'step': rrd_step, 'type': rrd_type}
 
     def parse_logic(self, logic):
         pass
@@ -160,23 +163,25 @@ class RRD():
                 return values[-1]
 
     def _create(self, rrd):
-        insert = []
-        tmp, sep, item_id = rrd['item'].id().rpartition('.')
-        insert.append('DS:' + item_id[:19] + ':GAUGE:' + str(2 * self.step) + ':U:U')
+        args = [rrd['rrdb']]
+        item_id = rrd['id'].rpartition('.')[2][:19]
+        args.append("DS:{}:{}:{}:U:U".format(item_id, rrd['type'], str(2 * rrd['step'])))
         if rrd['min']:
-            insert.append('RRA:MIN:0.5:' + str(int(86400 / self.step)) + ':1825')  # 24h/5y
+            args.append('RRA:MIN:0.5:{}:1825'.format(int(86400 / rrd['step'])))  # 24h/5y
         if rrd['max']:
-            insert.append('RRA:MAX:0.5:' + str(int(86400 / self.step)) + ':1825')  # 24h/5y
+            args.append('RRA:MAX:0.5:{}:1825'.format(int(86400 / rrd['step'])))  # 24h/5y
+        args.extend(['--step', rrd['step']])
+        if rrd['type'] == 'GAUGE':
+            args.append('RRA:AVERAGE:0.5:1:{}'.format(int(86400 / rrd['step']) * 7 + 8))  # 7 days
+            args.append('RRA:AVERAGE:0.5:{}:1536'.format(int(1800 / rrd['step'])))  # 0.5h/32 days
+            args.append('RRA:AVERAGE:0.5:{}:1600'.format(int(21600 / rrd['step'])))  # 6h/400 days
+            args.append('RRA:AVERAGE:0.5:{}:1826'.format(int(86400 / rrd['step'])))  # 24h/5y
+            args.append('RRA:AVERAGE:0.5:{}:1300'.format(int(604800 / rrd['step'])))  # 7d/25y
+        elif rrd['type'] == 'COUNTER':
+            args.append('RRA:AVERAGE:0.5:{}:1826'.format(int(86400 / rrd['step'])))  # 24h/5y
+            args.append('RRA:AVERAGE:0.5:{}:1300'.format(int(604800 / rrd['step'])))  # 7d/25y
         try:
-            rrdtool.create(
-                rrd['rrdb'],
-                '--step', str(self.step),
-                insert,
-                'RRA:AVERAGE:0.5:1:' + str(int(86400 / self.step) * 7 + 8),  # 7 days
-                'RRA:AVERAGE:0.5:' + str(int(1800 / self.step)) + ':1536',   # 0.5h/32 days
-                'RRA:AVERAGE:0.5:' + str(int(3600 / self.step)) + ':9600',   # 1h/400 days
-                'RRA:AVERAGE:0.5:' + str(int(86400 / self.step)) + ':1826'   # 24h/5y
-            )
+            rrdtool.create(args)
             logger.debug("Creating rrd ({0}) for {1}.".format(rrd['rrdb'], rrd['item']))
         except Exception as e:
             logger.warning("Error creating rrd ({0}) for {1}: {2}".format(rrd['rrdb'], rrd['item'], e))
