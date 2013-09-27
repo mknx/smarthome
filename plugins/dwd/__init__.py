@@ -56,7 +56,7 @@ class DWD():
         # open ftp connection to dwd
         if not hasattr(self, '_ftp'):
             try:
-                self._ftp = ftplib.FTP(self._dwd_host, self._dwd_user, self._dwd_password, timeout=3)
+                self._ftp = ftplib.FTP(self._dwd_host, self._dwd_user, self._dwd_password, timeout=1)
             except (socket.error, socket.gaierror) as e:
                 logger.error('Could not connect to {}: {}'.format(self._dwd_host, e))
                 self.ftp_quit()
@@ -77,7 +77,7 @@ class DWD():
         except Exception:
             pass
         if hasattr(self, '_ftp'):
-            del self._ftp
+            del(self._ftp)
 
     def parse_item(self, item):
         return None
@@ -96,6 +96,8 @@ class DWD():
             self._ftp.retrbinary("RETR {}".format(filename), self._buffer_file)
         except Exception as e:
             logger.info("problem fetching {0}: {1}".format(filename, e))
+            del(self._buffer)
+            self.ftp_quit()
             self._buffer = bytearray()
         self.lock.release()
         return self._buffer.decode('iso-8859-1')
