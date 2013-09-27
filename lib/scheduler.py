@@ -285,7 +285,7 @@ class Scheduler(threading.Thread):
             except Exception as e:
                 tb = sys.exc_info()[2]
                 tb = traceback.extract_tb(tb)[-1]
-                logger.warning("Logic: {0}, File: {1}, Line: {2}, Method: {3}, Exception: {4}".format(name, tb[0], tb[1], tb[2], e))
+                logger.exception("Logic: {0}, File: {1}, Line: {2}, Method: {3}, Exception: {4}".format(name, tb[0], tb[1], tb[2], e))
         elif obj.__class__.__name__ == 'Item':
             try:
                 if value is not None:
