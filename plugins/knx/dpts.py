@@ -30,7 +30,7 @@ def en1(value):
 def de1(payload):
     if len(payload) != 1:
         return None
-    return bool(payload & 0x01)
+    return bool(payload[0] & 0x01)
 
 
 def en2(vlist):
