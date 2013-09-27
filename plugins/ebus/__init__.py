@@ -75,14 +75,15 @@ class eBus():
             return
         self._lock.acquire()
         try:
-            self._sock.send(request)
+            self._sock.send(request.encode())
             logger.debug("REQUEST: {0}".format(request))
         except Exception as e:
             self._lock.release()
             self.close()
             logger.warning("error sending request: {0} => {1}".format(request, e))
+            return
         try:
-            answer = self._sock.recv(256)[:-2]
+            answer = self._sock.recv(256).decode()[:-2]
             logger.debug("ANSWER: {0}".format(answer))
         except socket.timeout:
             self._lock.release()
@@ -143,4 +144,4 @@ class eBus():
                 answer = self.request(request)
                 #transfer value and answer to float for better comparsion
                 if float(answer) != float(value) or answer is None:
-                    logger.warning("Failed to set parameter: value: {0} cmd: {1} answer {2}".format(value,request,answer))
+                    logger.warning("Failed to set parameter: value: {0} cmd: {1} answer {2}".format(value, request, answer))
