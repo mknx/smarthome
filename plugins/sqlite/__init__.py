@@ -58,7 +58,7 @@ class SQL():
     def __init__(self, smarthome, path=None):
         self._sh = smarthome
         self.connected = False
-        sqlite3.register_adapter(datetime.datetime, self.timestamp)
+#       sqlite3.register_adapter(datetime.datetime, self.timestamp)
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
@@ -161,7 +161,7 @@ class SQL():
             pass
 
     def timestamp(self, dt):
-        return int(time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000)
+        return time.mktime(dt.timetuple()) * 1000 + int(dt.microsecond / 1000)
 
     def datetime(self, ts):
         return datetime.datetime.fromtimestamp(ts / 1000, self._sh.tzinfo())
@@ -372,7 +372,7 @@ class SQL():
                 period, granularity = entry
                 period = int(now - period * 24 * 3600 * 1000)
                 granularity = int(granularity * 3600 * 1000)
-                for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}):
+                for row in self._fdb.execute(self._pack_query, {'period': str(period), 'granularity': str(granularity)}):
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
                     gtime = [int(float(t)) for t in gtime.split(',')]
                     if len(gtime) == 1:  # ignore

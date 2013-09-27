@@ -97,8 +97,8 @@ class DWD():
         except Exception as e:
             logger.info("problem fetching {0}: {1}".format(filename, e))
             del(self._buffer)
-            self.ftp_quit()
             self._buffer = bytearray()
+            self.ftp_quit()
         self.lock.release()
         return self._buffer.decode('iso-8859-1')
 
