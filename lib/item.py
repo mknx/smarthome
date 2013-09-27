@@ -259,7 +259,7 @@ class Item():
                 try:
                     update_plugin(self, caller, source, dest)
                 except Exception as e:
-                    logger.error("Problem running {0}: {1}".format(update_plugin, e))
+                    logger.exception("{} problem running {} {}".format(self._path, update_plugin, e))
             if self._threshold and self._logics_to_trigger:
                 if self._th and self._value <= self._th_low:  # cross lower bound
                     self._th = False
