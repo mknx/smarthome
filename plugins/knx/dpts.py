@@ -95,7 +95,7 @@ def en6(value):
         value = -128
     elif value > 127:
         value = 127
-    return [0, struct.pack('b', value)[0]]
+    return [0, struct.pack('b', int(value))[0]]
 
 
 def de6(payload):
@@ -106,7 +106,7 @@ def de6(payload):
 
 def en7(value):
     ret = bytearray([0])
-    ret.extend(struct.pack('>H', value))
+    ret.extend(struct.pack('>H', int(value)))
     return ret
 
 
@@ -122,7 +122,7 @@ def en8(value):
     elif value > 32767:
         value = 32767
     ret = bytearray([0])
-    ret.extend(struct.pack('>h', value))
+    ret.extend(struct.pack('>h', int(value)))
     return ret
 
 
@@ -186,7 +186,7 @@ def en12(value):
     elif value > 4294967295:
         value = 4294967295
     ret = bytearray([0])
-    ret.extend(struct.pack('>I', value))
+    ret.extend(struct.pack('>I', int(value)))
     return ret
 
 
@@ -202,7 +202,7 @@ def en13(value):
     elif value > 2147483647:
         value = 2147483647
     ret = bytearray([0])
-    ret.extend(struct.pack('>i', value))
+    ret.extend(struct.pack('>i', int(value)))
     return ret
 
 
@@ -214,7 +214,7 @@ def de13(payload):
 
 def en14(value):
     ret = bytearray([0])
-    ret.extend(struct.pack('>f', value))
+    ret.extend(struct.pack('>f', int(value)))
     return ret
 
 
