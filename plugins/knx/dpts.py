@@ -33,15 +33,15 @@ def de1(payload):
     return bool(payload[0] & 0x01)
 
 
-def en2(vlist):
+def en2(payload):
     # control, value
-    return [(int(vlist[0]) << 1) & 0x02 | int(vlist[1]) & 0x01]
+    return [(payload[0] << 1) & 0x02 | payload[1] & 0x01]
 
 
 def de2(payload):
     if len(payload) != 1:
         return None
-    return [int(payload) >> 1 & 0x01, int(payload) & 0x01]
+    return [payload[0] >> 1 & 0x01, payload[0] & 0x01]
 
 
 def en3(vlist):
@@ -53,7 +53,7 @@ def de3(payload):
     if len(payload) != 1:
         return None
     # up/down, stepping
-    return [int(payload) >> 3 & 0x01, int(payload) & 0x07]
+    return [payload[0] >> 3 & 0x01, payload[0] & 0x07]
 
 
 def en4002(value):
@@ -95,7 +95,7 @@ def en6(value):
         value = -128
     elif value > 127:
         value = 127
-    return [0, ord(struct.pack('b', value)[0])]
+    return [0, struct.pack('b', value)[0]]
 
 
 def de6(payload):
@@ -225,33 +225,25 @@ def de14(payload):
 
 
 def en16000(value):
-    if isinstance(value, str):
-        value = value.encode('ascii')
-    else:
-        value = str(value)
-    value = value[:14]
-    a = [0]
-    for c in value:
-        a.append(ord(c))
-    a = a + [0] * (15 - len(a))
-    return a
+    enc = bytearray(1)
+    enc.extend(value.encode('ascii')[:14])
+    enc.extend([0] * (15 - len(enc)))
+    return enc
 
 
 def en16001(value):
-    if isinstance(value, str):
-        value = value.encode('iso-8859-1')
-    else:
-        value = str(value)
-    value = value[:14]
-    a = [0]
-    for c in value:
-        a.append(ord(c))
-    a = a + [0] * (15 - len(a))
-    return a
+    enc = bytearray(1)
+    enc.extend(value.encode('iso-8859-1')[:14])
+    enc.extend([0] * (15 - len(enc)))
+    return enc
 
 
-def de16(payload):
-    return str(payload).rstrip('\0')
+def de16000(payload):
+    return payload.rstrip(b'0').decode()
+
+
+def de16001(payload):
+    return payload.rstrip(b'0').decode('iso-8859-1')
 
 
 def en17(value):
@@ -275,18 +267,14 @@ def de20(payload):
 
 
 def en24(value):
-    if isinstance(value, str):
-        value = value.encode('iso-8859-1')
-    else:
-        value = str(value)
-    yield 0
-    for c in value:
-        yield ord(c)
-    yield 0x00
+    enc = bytearray(1)
+    enc.extend(value.encode('iso-8859-1'))
+    enc.append(0)
+    return enc
 
 
 def de24(payload):
-    return str(payload).rstrip('\0')
+    return payload.rstrip(b'0').decode('iso-8859-1')
 
 
 def en232(value):
@@ -296,7 +284,7 @@ def en232(value):
 def de232(payload):
     if len(payload) != 3:
         return None
-    return struct.unpack('>BBB', payload)
+    return list(struct.unpack('>BBB', payload))
 
 
 def depa(string):
@@ -334,8 +322,8 @@ decode = {
     '12': de12,
     '13': de13,
     '14': de14,
-    '16000': de16,
-    '16001': de16,
+    '16000': de16000,
+    '16001': de16001,
     '17': de17,
     '20': de20,
     '24': de24,
