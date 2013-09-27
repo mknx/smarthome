@@ -398,6 +398,6 @@ class SQL():
             self._fdb.execute("VACUUM;")
             self._fdb.execute("PRAGMA shrink_memory;")
         except Exception as e:
-            logger.exception("problem packing sqlite database: {0} period: {}".format(e, period))
+            logger.exception("problem packing sqlite database: {} period: {} type: {}".format(e, period, type(period)))
             self._fdb.rollback()
         self._fdb_lock.release()
