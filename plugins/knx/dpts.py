@@ -105,9 +105,9 @@ def de6(payload):
 
 
 def en7(value):
-    yield 0
-    for c in struct.pack('>H', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>H', value))
+    return ret
 
 
 def de7(payload):
@@ -121,9 +121,9 @@ def en8(value):
         value = -32768
     elif value > 32767:
         value = 32767
-    yield 0
-    for c in struct.pack('>h', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>h', value))
+    return ret
 
 
 def de8(payload):
@@ -185,9 +185,9 @@ def en12(value):
         value = 0
     elif value > 4294967295:
         value = 4294967295
-    yield 0
-    for c in struct.pack('>I', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>I', value))
+    return ret
 
 
 def de12(payload):
@@ -201,9 +201,9 @@ def en13(value):
         value = -2147483648
     elif value > 2147483647:
         value = 2147483647
-    yield 0
-    for c in struct.pack('>i', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>i', value))
+    return ret
 
 
 def de13(payload):
@@ -213,9 +213,9 @@ def de13(payload):
 
 
 def en14(value):
-    yield 0
-    for c in struct.pack('>f', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>f', value))
+    return ret
 
 
 def de14(payload):
