@@ -170,7 +170,7 @@ class RRD():
             args.append('RRA:MIN:0.5:{}:1825'.format(int(86400 / rrd['step'])))  # 24h/5y
         if rrd['max']:
             args.append('RRA:MAX:0.5:{}:1825'.format(int(86400 / rrd['step'])))  # 24h/5y
-        args.extend(['--step', rrd['step']])
+        args.extend(['--step', str(rrd['step'])])
         if rrd['type'] == 'GAUGE':
             args.append('RRA:AVERAGE:0.5:1:{}'.format(int(86400 / rrd['step']) * 7 + 8))  # 7 days
             args.append('RRA:AVERAGE:0.5:{}:1536'.format(int(1800 / rrd['step'])))  # 0.5h/32 days
