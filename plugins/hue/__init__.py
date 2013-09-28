@@ -31,7 +31,7 @@ class HUE():
 
     def __init__(self, smarthome, hue_ip='Philips-hue', hue_user=None, hue_port=80, cycle=10):
         self._sh = smarthome
-	self._hue_ip = hue_ip
+        self._hue_ip = hue_ip
         self._hue_user = hue_user
         self._lamps = {}
         self._sh.scheduler.add('hue-update', self._update_lamps, cycle=cycle)
@@ -92,7 +92,7 @@ class HUE():
                 self._set_state(item.hue_id,item())
             elif item.hue_feature == 'on':
                 bri = 254*item()
-	        self._set_state(item.hue_id, {"on": item(), "bri": bri, "transitiontime": item.hue_transitiontime})
+                self._set_state(item.hue_id, {"on": item(), "bri": bri, "transitiontime": item.hue_transitiontime})
                 for item in self._lamps[item.hue_id]['briitems']:
                     item(bri, caller='HUE')
             elif item.hue_feature == 'bri':
@@ -149,7 +149,7 @@ class HUE():
                             if parm in self._lamps[light_id]['state']:
                                 self._lamps[light_id]['state'][parm] = val
                     else:
-	                logger.error("hue: {0}: {1}".format(status, info))
+                        logger.error("hue: {0}: {1}".format(status, info))
                         raise Exception("Hue error: {0}: {1}".format(status, info))
             self._lamps[light_id]['lastupdate'] = time.time()
         except Exception:
@@ -173,7 +173,7 @@ class HUE():
                             diff = list(state.keys())
                         else:
                             diff = set(o for o in state if oldstate[o] != state[o])
-		        # Update the differences
+                        # Update the differences
                         for up in diff:
                             newval = state[up]
                             logger.info("New value for {0}: {1}".format(up, newval))
@@ -212,7 +212,7 @@ class HUE():
         resp = json.loads(resp)
 
         logger.debug(resp)
-	return resp
+        return resp
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
