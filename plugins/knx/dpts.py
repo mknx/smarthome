@@ -155,7 +155,8 @@ def de9(payload):
     m = (i1 & 0x07) << 8 | i2
     if s == 1:
         s = -1 << 11
-    return (m | s) * 0.01 * pow(2, e)
+    f = (m | s) * 0.01 * pow(2, e)
+    return round(f, 2)
 
 
 def en10(dt):
