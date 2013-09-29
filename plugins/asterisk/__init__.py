@@ -21,7 +21,7 @@
 
 import threading
 import logging
-import dateutil.relativedelta
+import datetime
 
 import lib.my_asynchat
 import lib.log
@@ -42,8 +42,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._devices = {}
         self._mailboxes = {}
         self._trigger_logics = {}
-        # [start, number, duration, direction]
-        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', '<li><h3><a href="tel:{2}">{1}</a></h3><p class="ui-li-aside">{0:%a %H:%M}<br />{3} s</p></li>')
+        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', ['start', 'name', 'number', 'duration', 'direction'])
         smarthome.monitor_connection(self)
 
     def _command(self, d, reply=True):
@@ -183,7 +182,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
                     self._mailboxes[mb](0)
         elif event['Event'] == 'Cdr':
             end = self._sh.now()
-            start = end - dateutil.relativedelta.relativedelta(seconds=int(event['Duration']))
+            start = end - datetime.timedelta(seconds=int(event['Duration']))
             duration = event['BillableSeconds']
             if len(event['Source']) <= 4:
                 direction = '=>'
