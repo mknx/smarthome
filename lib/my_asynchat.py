@@ -86,7 +86,7 @@ class AsynChat(asynchat.async_chat):
             pass
         self._connection_attempts -= 1
         if self._connection_attempts <= 0:
-            logger.exception('{0}: could not connect to {1}:{2}: {3}'.format(self.__class__.__name__, self.addr[0], self.addr[1], err))
+            logger.warning('{0}: could not connect to {1}:{2}: {3}'.format(self.__class__.__name__, self.addr[0], self.addr[1], err))
             self._connection_attempts = self._connection_errorlog
         self.handle_close()
 
