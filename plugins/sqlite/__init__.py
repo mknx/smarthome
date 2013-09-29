@@ -51,8 +51,8 @@ class SQL():
         MIN(vmin),
         MAX(vmax)
         FROM history
-        WHERE time <= :period
-        GROUP by CAST((time / :granularity) AS INTEGER), item
+        WHERE time <= ?
+        GROUP by CAST((time / ?) AS INTEGER), item
         ORDER BY time DESC """
 
     def __init__(self, smarthome, path=None):
@@ -197,7 +197,8 @@ class SQL():
         except Exception as e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
             reply = None
-        self._fdb_lock.release()
+        finally:
+            self._fdb_lock.release()
         return reply
 
     def fetchall(self, *query):
@@ -210,7 +211,8 @@ class SQL():
         except Exception as e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
             reply = None
-        self._fdb_lock.release()
+        finally:
+            self._fdb_lock.release()
         return reply
 
     def _avg(self, tuples, end):
@@ -372,7 +374,7 @@ class SQL():
                 period, granularity = entry
                 period = int(now - period * 24 * 3600 * 1000)
                 granularity = int(granularity * 3600 * 1000)
-                for row in self._fdb.execute(self._pack_query, {'period': str(period), 'granularity': str(granularity)}):
+                for row in self._fdb.execute(self._pack_query, (str(period), str(granularity))):
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
                     gtime = [int(float(t)) for t in gtime.split(',')]
                     if len(gtime) == 1:  # ignore
@@ -400,4 +402,5 @@ class SQL():
         except Exception as e:
             logger.exception("problem packing sqlite database: {} period: {} type: {}".format(e, period, type(period)))
             self._fdb.rollback()
-        self._fdb_lock.release()
+        finally:
+            self._fdb_lock.release()
