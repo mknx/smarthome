@@ -105,7 +105,7 @@ class SQL():
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         # self.query("alter table history add column power INTEGER;")
-        smarthome.scheduler.add('sqlite', self._pack, cron='2 3 * *', prio=5)
+        smarthome.scheduler.add('SQLite pack', self._pack, cron='2 3 * *', prio=5)
 
     def update_item(self, item, caller=None, source=None, dest=None):
         now = self.timestamp(self._sh.now())
@@ -115,7 +115,8 @@ class SQL():
             sum = val
         else:
             sum = 0
-        self._fdb_lock.acquire()
+        if not self._fdb_lock.acquire(timeout=20):
+            return
         if not self.connected:
             self._fdb_lock.release()
             return
@@ -188,7 +189,8 @@ class SQL():
         return ts
 
     def fetchone(self, *query):
-        self._fdb_lock.acquire()
+        if not self._fdb_lock.acquire(timeout=2):
+            return
         if not self.connected:
             self._fdb_lock.release()
             return
@@ -202,7 +204,8 @@ class SQL():
         return reply
 
     def fetchall(self, *query):
-        self._fdb_lock.acquire()
+        if not self._fdb_lock.acquire(timeout=2):
+            return
         if not self.connected:
             self._fdb_lock.release()
             return
@@ -366,7 +369,8 @@ class SQL():
         now = self.timestamp(self._sh.now())
         insert = []
         delete = []
-        self._fdb_lock.acquire()
+        if not self._fdb_lock.acquire(timeout=2):
+            return
         try:
             logger.debug("SQLite: pack database")
             for entry in self.periods:
