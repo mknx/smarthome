@@ -319,11 +319,15 @@ class WebSocketHandler(asynchat.async_chat):
                     logger.info("Client {0} requested invalid item: {1}".format(self.addr, path))
             self.monitor['item'] = data['items']
         elif command == 'logic':  # logic
+            if 'name' not in data or 'val' not in data:
+                return
             name = data['name']
             value = data['val']
             if name in self.logics:
                 logger.info("Client {0} triggerd logic {1} with '{2}'".format(self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
+            else:
+                logger.info("Client {0} requested invalid logic: {1}".format(self.addr, name))
         elif command == 'series':
             path = data['item']
             series = data['series']
@@ -349,10 +353,10 @@ class WebSocketHandler(asynchat.async_chat):
                     logger.info("Client {0} requested invalid series: {1}.".format(self.addr, path))
         elif command == 'log':
             self.log = True
-            name = data['log']
+            name = data['name']
             num = int(data['max'])
             if name in self.logs:
-                self.json_send({'cmd': 'log', 'name': name, 'log': [self.logs[name].export(num)], 'init': 'y'})
+                self.json_send({'cmd': 'log', 'name': name, 'log': self.logs[name].export(num), 'init': 'y'})
             else:
                 logger.info("Client {0} requested invalid log: {1}".format(self.addr, name))
             if name not in self.monitor['log']:
