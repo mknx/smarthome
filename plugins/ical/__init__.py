@@ -32,6 +32,7 @@ logger = logging.getLogger('')
 class iCal():
     DAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
     FREQ = ("YEARLY", "MONTHLY", "WEEKLY", "DAILY", "HOURLY", "MINUTELY", "SECONDLY")
+    PROPERTIES = ("SUMMARY", "DESCRIPTION", "LOCATION", "CATEGORIES")
 
     def __init__(self, smarthome):
         self._sh = smarthome
@@ -51,7 +52,7 @@ class iCal():
     def update_item(self, item, caller=None, source=None, dest=None):
         pass
 
-    def __call__(self, ics, delta=1, offset=0, opt=None):
+    def __call__(self, ics, delta=1, offset=0):
         if ics.startswith('http'):
             ical = self._sh.tools.fetch_url(ics)
             if ical is False:
@@ -67,10 +68,6 @@ class iCal():
         now = self._sh.now()
         offset = offset - 1  # start at 23:59:59 the day before
         delta += 1  # extend delta for negetiv offset
-        if opt:
-            opts = opt.split(',')
-        else:
-            opts = {}
         start = now.replace(hour=23, minute=59, second=59, microsecond=0) + datetime.timedelta(days=offset)
         end = start + datetime.timedelta(days=delta)
         events = self._parse_ical(ical, ics)
@@ -82,10 +79,10 @@ class iCal():
                     if dt not in event['EXDATES']:
                         time = dt.time()
                         date = dt.date()
-                        eret = [time, event['SUMMARY'], dt]
-                        for o in opts:
-                            if o in event:
-                                eret.append(event[o])
+                        eret = {'Time': time, 'Datetime': dt}
+                        for prop in self.PROPERTIES:
+                            if prop in event:
+                                eret[prop.capitalize()] = event[prop]
                         if date not in ret:
                             ret[date] = [eret]
                         else:
@@ -96,10 +93,10 @@ class iCal():
                 if (ds > start and ds < end) or (ds < start and de > start):
                     time = ds.time()
                     date = ds.date()
-                    eret = [time, event['SUMMARY'], ds]
-                    for o in opts:
-                        if o in event:
-                            eret.append(event[o])
+                    eret = {'Time': time, 'Datetime': dt}
+                    for prop in self.PROPERTIES:
+                        if prop in event:
+                            eret[prop.capitalize()] = event[prop]
                     if date not in ret:
                         ret[date] = [eret]
                     else:
