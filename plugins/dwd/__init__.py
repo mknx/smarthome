@@ -109,7 +109,8 @@ class DWD():
             filelist = self._ftp.nlst(dirname)
         except Exception:
             filelist = []
-        self.lock.release()
+        finally:
+            self.lock.release()
         return filelist
 
     def warnings(self, region, location):
@@ -141,7 +142,10 @@ class DWD():
 
     def current(self, location):
         directory = 'gds/specials/observations/tables/germany'
-        last = sorted(self._retr_list(directory)).pop()
+        files = self._retr_list(directory)
+        if files == []:
+            return {}
+        last = sorted(files)[-1]
         fb = self._retr_file(last)
         fb = fb.splitlines()
         if len(fb) < 8:
