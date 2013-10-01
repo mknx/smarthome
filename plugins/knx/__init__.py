@@ -64,6 +64,8 @@ class KNX(lib.my_asynchat.AsynChat):
         try:
             self._lock.acquire()
             self.push(send)
+        except:
+            pass
         finally:
             self._lock.release()
 
