@@ -71,37 +71,36 @@ class iCal():
         start = now.replace(hour=23, minute=59, second=59, microsecond=0) + datetime.timedelta(days=offset)
         end = start + datetime.timedelta(days=delta)
         events = self._parse_ical(ical, ics)
-        ret = {}
+        revents = {}
         for event in events:
             event = events[event]
+            e_start = event['DTSTART']
+            e_end = event['DTEND']
             if 'RRULE' in event:
-                for dt in event['RRULE'].between(start, end, inc=True):
-                    if dt not in event['EXDATES']:
-                        time = dt.time()
-                        date = dt.date()
-                        eret = {'Time': time, 'Datetime': dt}
+                e_duration = e_end - e_start
+                for e_rstart in event['RRULE'].between(start, end, inc=True):
+                    if e_rstart not in event['EXDATES']:
+                        date = e_rstart.date()
+                        revent = {'Start': e_rstart, 'End': e_rstart + e_duration}
                         for prop in self.PROPERTIES:
                             if prop in event:
-                                eret[prop.capitalize()] = event[prop]
-                        if date not in ret:
-                            ret[date] = [eret]
+                                revent[prop.capitalize()] = event[prop]
+                        if date not in revents:
+                            revents[date] = [revent]
                         else:
-                            ret[date].append(eret)
+                            revents[date].append(revent)
             else:
-                ds = event['DTSTART']
-                de = event['DTEND']
-                if (ds > start and ds < end) or (ds < start and de > start):
-                    time = ds.time()
-                    date = ds.date()
-                    eret = {'Time': time, 'Datetime': dt}
+                if (e_start > start and e_start < end) or (e_start < start and e_end > start):
+                    date = e_start.date()
+                    revent = {'Start': e_start, 'End': e_end}
                     for prop in self.PROPERTIES:
                         if prop in event:
-                            eret[prop.capitalize()] = event[prop]
-                    if date not in ret:
-                        ret[date] = [eret]
+                            revent[prop.capitalize()] = event[prop]
+                    if date not in revents:
+                        revents[date] = [revent]
                     else:
-                        ret[date].append(eret)
-        return ret
+                        revents[date].append(revent)
+        return revents
 
     def _parse_date(self, val, dtzinfo, par=''):
         if par.startswith('TZID='):
