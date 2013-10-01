@@ -51,9 +51,9 @@ class SQL():
         MIN(vmin),
         MAX(vmax)
         FROM history
-        WHERE time <= ?
-        GROUP by CAST((time / ?) AS INTEGER), item
-        ORDER BY time DESC """
+        WHERE (time < {})
+        GROUP by CAST((time / {}) AS INTEGER), item
+        ORDER BY time DESC;"""
 
     def __init__(self, smarthome, path=None):
         self._sh = smarthome
@@ -378,7 +378,7 @@ class SQL():
                 period, granularity = entry
                 period = int(now - period * 24 * 3600 * 1000)
                 granularity = int(granularity * 3600 * 1000)
-                for row in self._fdb.execute(self._pack_query, (str(period), str(granularity))):
+                for row in self._fdb.execute(self._pack_query.format(period, granularity)):
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
                     gtime = [int(float(t)) for t in gtime.split(',')]
                     if len(gtime) == 1:  # ignore
@@ -398,7 +398,7 @@ class SQL():
                     prev[item] = gtime[0]
                     # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
                     insert = (gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power)
-                    self._fdb.execute("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
+                    self._fdb.execute("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?);", insert)
                     self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(delete))
                     self._fdb.commit()
             self._fdb.execute("VACUUM;")
