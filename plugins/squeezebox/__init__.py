@@ -25,6 +25,7 @@ import urllib.error
 import urllib.parse
 import lib.my_asynchat
 import re
+import sys
 
 logger = logging.getLogger('Squeezebox')
 
@@ -82,7 +83,7 @@ class Squeezebox(lib.my_asynchat.AsynChat):
                 self._init_cmds.append(cmd)
 
         if 'squeezebox_send' in item.conf:
-            cmd = self._resolv_full_cmd(item,'squeezebox_send')
+            cmd = self._resolv_full_cmd(item, 'squeezebox_send')
             if (cmd == None):
                 return None
             logger.debug("squeezebox: {0} is send to \"{1}\"".format(item, cmd))
@@ -97,11 +98,9 @@ class Squeezebox(lib.my_asynchat.AsynChat):
         # be careful: as the server echoes ALL comands not using this will result in a loop
         if caller != 'LMS':
             cmd = self._resolv_full_cmd(item, 'squeezebox_send').split()
-            if self._check_mac(cmd[0]):
-                cmd[0] = urllib.parse.quote(cmd[0])
-            if isinstance(item(), str):
-                value = urllib.parse.quote(item().encode('utf-8'))
-            elif (item._type == 'bool'):
+            if not self._check_mac(cmd[0]):
+                return
+            if (item._type == 'bool'):
                 # convert to get '0'/'1' instead of 'True'/'False'
                 value = int(item())
             else:
@@ -117,96 +116,93 @@ class Squeezebox(lib.my_asynchat.AsynChat):
                     # if a boolean item of [...] was set to false, send '0' to disable the option whatsoever
                     # replace cmd[3], as there are fixed values given and filling in 'value' is pointless
                     cmd[3] = '0'
-
-            self._send(' '.join(cmd_str for cmd_str in cmd).format(value).replace('°','%B0'))
+            self._send(' '.join(urllib.parse.quote(cmd_str.format(value), encoding='iso-8859-1') for cmd_str in cmd))
 
     def _send(self, cmd):
-        logger.debug("Sending request: {0}".format(cmd))
-        self.push((cmd + '\r\n').encode())
+        logger.debug("squeezebox: Sending request: {0}".format(cmd))
+        self.push(bytes(cmd + '\r\n','utf-8'))
 
     def _parse_response(self, response):
-        data = [urllib.parse.unquote(data_str) for data_str in response.split()]
-        logger.debug("Got: {0}".format(data))
+        data = [urllib.parse.unquote(data_str, encoding='iso-8859-1') for data_str in response.split()]
+        logger.debug("squeezebox: Got: {0}".format(data))
 
-        if (data[0].lower() == 'listen'):
-            value = int(data[1])
-            if (value == 1):
-                logger.info("Listen-mode enabled")
-            else:
-                logger.info("Listen-mode disabled")
-
-        if self._check_mac(data[0]):
-            if (data[1] == 'play'):
-                self._update_items_with_data([data[0], 'play', 1])
-                self._update_items_with_data([data[0], 'stop', 0])
-                self._update_items_with_data([data[0], 'pause', 0])
-                # play also overrules mute
-                self._update_items_with_data([data[0], 'prefset server mute', 0])
+        try:
+            if (data[0].lower() == 'listen'):
+                value = int(data[1])
+                if (value == 1):
+                    logger.info("squeezebox: Listen-mode enabled")
+                else:
+                    logger.info("squeezebox: Listen-mode disabled")
+    
+            if self._check_mac(data[0]):
+                if (data[1] == 'play'):
+                    self._update_items_with_data([data[0], 'play', '1'])
+                    self._update_items_with_data([data[0], 'stop', '0'])
+                    self._update_items_with_data([data[0], 'pause', '0'])
+                    # play also overrules mute
+                    self._update_items_with_data([data[0], 'prefset server mute', '0'])
+                    return
+                elif (data[1] == 'stop'):
+                    self._update_items_with_data([data[0], 'play', '0'])
+                    self._update_items_with_data([data[0], 'stop', '1'])
+                    self._update_items_with_data([data[0], 'pause', '0'])
+                    return
+                elif (data[1] == 'pause'):
+                    self._send(data[0] + ' mode ?')
+                    self._send(data[0] + ' mixer muting ?')
+                    return
+                elif (data[1] == 'mode'):
+                    self._update_items_with_data([data[0], 'play', str(data[2] == 'play')])
+                    self._update_items_with_data([data[0], 'stop', str(data[2] == 'stop')])
+                    self._update_items_with_data([data[0], 'pause', str(data[2] == 'pause')])
+                    # play also overrules mute
+                    if (data[2] == 'play'):
+                        self._update_items_with_data([data[0], 'prefset server mute', '0'])
+                    return
+                elif ((((data[1] == 'prefset') and (data[2] == 'server')) or (data[1] == 'mixer'))
+                      and (data[-1] == 'volume') and data[-1].startswith('-')):
+                    # make sure value is always positive - also if muted!
+                    self._update_items_with_data([data[0], 'prefset server mute', '1'])
+                    data[-1] = data[-1][1:]
+                elif (data[1] == 'playlist'):
+                    if (data[2] == 'jump') and (len(data) == 4):
+                        self._update_items_with_data([data[0], 'playlist index', data[3]]) 
+                    elif (data[2] == 'newsong'):
+                        if (len(data) >= 4):
+                            self._update_items_with_data([data[0], 'title', data[3]])
+                        else:
+                            self._send(data[0] + ' title ?')
+                        if (len(data) >= 5):
+                            self._update_items_with_data([data[0], 'playlist index', data[4]])
+                        # trigger reading of other song fields
+                        for field in ['genre', 'artist', 'album', 'duration']:
+                            self._send(data[0] + ' ' + field + ' ?')
+                elif (data[1] in ['genre', 'artist', 'album', 'title']) and (len(data) == 2):
+                    # these fields are returned empty so update fails - append '' to allow update
+                    data.append('')
+                elif (data[1] in ['duration']) and (len(data) == 2):
+                    # these fields are returned empty so update fails - append '0' to allow update
+                    data.append('0')
+            # finally check for '?'
+            if (data[-1] == '?'):
                 return
-            elif (data[1] == 'stop'):
-                self._update_items_with_data([data[0], 'play', 0])
-                self._update_items_with_data([data[0], 'stop', 1])
-                self._update_items_with_data([data[0], 'pause', 0])
-                return
-            elif (data[1] == 'pause'):
-                self._send(data[0] + ' mode ?')
-                self._send(data[0] + ' mixer muting ?')
-                return
-            elif (data[1] == 'mode'):
-                self._update_items_with_data([data[0], 'play', data[2] == 'play'])
-                self._update_items_with_data([data[0], 'stop', data[2] == 'stop'])
-                self._update_items_with_data([data[0], 'pause', data[2] == 'pause'])
-                # play also overrules mute
-                if (data[2] == 'play'):
-                    self._update_items_with_data([data[0], 'prefset server mute', 0])
-                return
-            elif re.match("[+-][0-9]+$", data[-1]):
-                # handle a relative step like '+1' or '-10'
-                logger.debug('got relative value - can\'t handle that - requesting absolute value')
-                self._send(' '.join(data_str for data_str in data[:-1]) + ' ?')
-                return
-            elif (data[1] == 'prefset'):
-                if (data[2] == 'server'):
-                    if (data[3] == 'volume'):
-                        # make sure value is always positive - also if muted!
-                        data[4] = abs(int(data[4]))
-            elif (data[1] == 'playlist'):
-                if (data[2] == 'jump') and (len(data) == 4):
-                    self._update_items_with_data([data[0], 'playlist index', data[3]]) 
-                elif (data[2] == 'newsong'):
-                    if (len(data) >= 4):
-                        self._update_items_with_data([data[0], 'title', data[3]])
-                    else:
-                        self._send(data[0] + ' title ?')
-                    if (len(data) >= 5):
-                        self._update_items_with_data([data[0], 'playlist index', data[4]])
-                    # trigger reading of other song fields
-                    for field in ['genre', 'artist', 'album', 'duration']:
-                        self._send(data[0] + ' ' + field + ' ?')
-            elif (data[1] in ['genre', 'artist', 'album', 'title']) and (len(data) == 2):
-                # these fields are returned empty so update fails - append '' to allow update
-                data.append('')
-            elif (data[1] in ['duration']) and (len(data) == 2):
-                # these fields are returned empty so update fails - append '0' to allow update
-                data.append('0')
-        # finally check for '?'
-        if (data[-1] == '?'):
-            return
-        self._update_items_with_data(data)
+            self._update_items_with_data(data)
+        except:
+            logger.error("squeezebox: exception while parsing \'{0}\'".format(data))
+            logger.error("squeezebox: exception: \'{0}\'".format(sys.exc_info()))
 
     def _update_items_with_data(self, data):
         cmd = ' '.join(data_str for data_str in data[:-1])
         if (cmd in self._val):
             for item in self._val[cmd]['items']:
-                if isinstance(item(), str):
-                    data[-1] = data[-1].decode('utf-8')
-
+                if re.match("[+-][0-9]+$", data[-1]) and not isinstance(item(), str):
+                    data[-1] = int(data[-1]) + item()
                 item(data[-1], 'LMS', "{}:{}".format(self.addr[0],self.addr[1]))
 
     def found_terminator(self):
-        response = self.buffer
+        byte_response = self.buffer
         self.buffer = bytearray()
-        self._parse_response(response.decode())
+        self._parse_response(str(byte_response,'utf-8'))
 
     def handle_connect(self):
         self.discard_buffers()
