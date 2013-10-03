@@ -48,6 +48,13 @@ class Tools():
         log = math.log((rf + 0.01) / 100)  # + 0.01 to 'cast' float
         return round((241.2 * log + 4222.03716 * t / (241.2 + t)) / (17.5043 - log - 17.5043 * t / (241.2 + t)), 2)
 
+    def rel2abs(self, t, rf):
+        t += 273.15
+        sat = 611.0 * math.exp(-2.5e6 * 18.0160 / 8.31432E3 * (1.0 / t - 1.0 / 273.16))
+        mix = 18.0160 / 28.9660 * rf * sat / (100000 - rf * sat)
+        rhov = 100000 / (287.0 * (1 - mix) + 462.0 * mix) / t
+        return mix * rhov * 1000
+
     def runtime(self):
         return datetime.datetime.now() - self._start
 
