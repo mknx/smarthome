@@ -36,7 +36,6 @@ class Squeezebox(lib.my_asynchat.AsynChat):
         self._val = {}
         self._obj = {}
         self._init_cmds = []
-        self.terminator = '\r\n'.encode('utf-8')
         smarthome.monitor_connection(self)
 
     def _check_mac(self, mac):
@@ -66,7 +65,7 @@ class Squeezebox(lib.my_asynchat.AsynChat):
             else:
                 if not item in self._val[cmd]['items']:
                     self._val[cmd]['items'].append(item)
-            
+
             if ('squeezebox_init' in item.conf):
                 cmd = self._resolv_full_cmd(item,'squeezebox_init')
                 if (cmd == None):
@@ -78,17 +77,16 @@ class Squeezebox(lib.my_asynchat.AsynChat):
                 else:
                     if not item in self._val[cmd]['items']:
                         self._val[cmd]['items'].append(item)
-            
+
             if not cmd in self._init_cmds:
                 self._init_cmds.append(cmd)
-        
+
         if 'squeezebox_send' in item.conf:
             cmd = self._resolv_full_cmd(item,'squeezebox_send')
             if (cmd == None):
                 return None
             logger.debug("squeezebox: {0} is send to \"{1}\"".format(item, cmd))
             return self.update_item
-        
         else:
             return None
 
@@ -123,10 +121,8 @@ class Squeezebox(lib.my_asynchat.AsynChat):
             self._send(' '.join(cmd_str for cmd_str in cmd).format(value).replace('°','%B0'))
 
     def _send(self, cmd):
-
         logger.debug("Sending request: {0}".format(cmd))
         self.push((cmd + '\r\n').encode())
-        
 
     def _parse_response(self, response):
         data = [urllib.parse.unquote(data_str) for data_str in response.split()]
@@ -202,6 +198,9 @@ class Squeezebox(lib.my_asynchat.AsynChat):
         cmd = ' '.join(data_str for data_str in data[:-1])
         if (cmd in self._val):
             for item in self._val[cmd]['items']:
+                if isinstance(item(), str):
+                    data[-1] = data[-1].decode('utf-8')
+
                 item(data[-1], 'LMS', "{}:{}".format(self.addr[0],self.addr[1]))
 
     def found_terminator(self):
