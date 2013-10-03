@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2013 Jan N. Klug
 #
@@ -41,7 +41,7 @@ class wettercom():
 
         searchURL = 'http://' + self._server + '/location/index/search/' \
             + location + '/project/' + self._project + '/cs/' \
-            + hashlib.md5(self._project + self._apikey + location).hexdigest()
+            + hashlib.md5((self._project + self._apikey + location).encode('UTF-8')).hexdigest()
 
         content = self._sh.tools.fetch_url(searchURL)
         if content:
@@ -73,7 +73,7 @@ class wettercom():
         retval = {}
         forecastURL = 'http://' + self._server + '/forecast/weather/city/' \
             + city_code + '/project/' + self._project + '/cs/' \
-            + hashlib.md5(self._project + self._apikey + city_code).hexdigest()
+            + hashlib.md5((self._project + self._apikey + city_code).encode('UTF-8')).hexdigest()
 
         content = self._sh.tools.fetch_url(forecastURL)
         if content:

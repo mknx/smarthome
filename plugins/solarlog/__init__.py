@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -43,7 +43,7 @@ class SolarLog():
         self._refresh(True)
 
         cycle = 300
-        if vars(self).has_key('Intervall'):
+        if 'Intervall' in vars(self):
             cycle = int(vars(self)['Intervall'])
         self._sh.scheduler.add('solarlog', self._refresh, cycle=cycle)
 
@@ -68,7 +68,7 @@ class SolarLog():
 
             # reset all out values at midnight
             if now.hour is 0:
-                for name in self._items.keys():
+                for name in list(self._items.keys()):
                     if 'out_' in name:
                         self._items[name](0)
 
@@ -91,7 +91,7 @@ class SolarLog():
 
         # set state and error messages
         for x in range(0, self._count_inverter):
-            if self._items.has_key('curStatusCode_{0}'.format(x)):
+            if 'curStatusCode_{0}'.format(x) in self._items:
                 item = self._items['curStatusCode_{0}'.format(x)]
                 status = int(vars(self)['curStatusCode'][x])
                 if isinstance(item(), str):
@@ -103,7 +103,7 @@ class SolarLog():
                         item(vars(self)['StatusCodes'][x][status])
                 else:
                     item(status)
-            if self._items.has_key('curFehlerCode_{0}'.format(x)):
+            if 'curFehlerCode_{0}'.format(x) in self._items:
                 item = self._items['curFehlerCode_{0}'.format(x)]
                 error = int(vars(self)['curFehlerCode'][x])
                 if isinstance(item(), str):
@@ -118,8 +118,8 @@ class SolarLog():
 
         groups = self._read_min_day()
         if groups:
-            for name in groups.keys():
-                if self._items.has_key(name):
+            for name in list(groups.keys()):
+                if name in self._items:
                     if not self._is_online and ('pdc_' in name or 'udc_' in name or 'pac_' in name):
                         self._items[name](0)
                     elif now.hour is 0 and 'out_' in name:
@@ -127,8 +127,8 @@ class SolarLog():
                     else:
                         self._items[name](groups[name])
         
-        for name in vars(self).keys():
-            if self._items.has_key(name):
+        for name in list(vars(self).keys()):
+            if name in self._items:
                 self._items[name](vars(self)[name])
 
     def _read_base_vars(self):
@@ -154,7 +154,7 @@ class SolarLog():
 
                     vars(self)[name] = []
 
-                    if vars(self).has_key(value):
+                    if value in vars(self):
                         vars(self)[name] = [None] * int(vars(self)[value])
                     else:
                         try:
@@ -176,7 +176,7 @@ class SolarLog():
                     name = matches.group('varname')
                     idx1 = int(matches.group('idx1'))
 
-                    if vars(self).has_key(name):
+                    if name in vars(self):
                         values = matches.group('arrayvalues')
                         if not values:
                             values = matches.group('arraystring')
@@ -191,7 +191,7 @@ class SolarLog():
                 if matches:
                     name, idx1, idx2, value = matches.groups()
 
-                    if vars(self).has_key(name):
+                    if name in vars(self):
                         vars(self)[name][int(idx1)][int(idx2)] = [x.strip(' "') for x in value.split(',')]
                     continue
 

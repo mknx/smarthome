@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.
 #
@@ -30,19 +30,18 @@ def en1(value):
 def de1(payload):
     if len(payload) != 1:
         return None
-    return bool(ord(payload) & 0x01)
+    return bool(payload[0] & 0x01)
 
 
-def en2(vlist):
+def en2(payload):
     # control, value
-    return [(int(vlist[0]) << 1) & 0x02 | int(vlist[1]) & 0x01]
+    return [(payload[0] << 1) & 0x02 | payload[1] & 0x01]
 
 
 def de2(payload):
     if len(payload) != 1:
         return None
-    payload = ord(payload)
-    return [int(payload) >> 1 & 0x01, int(payload) & 0x01]
+    return [payload[0] >> 1 & 0x01, payload[0] & 0x01]
 
 
 def en3(vlist):
@@ -53,13 +52,12 @@ def en3(vlist):
 def de3(payload):
     if len(payload) != 1:
         return None
-    payload = ord(payload)
     # up/down, stepping
-    return [int(payload) >> 3 & 0x01, int(payload) & 0x07]
+    return [payload[0] >> 3 & 0x01, payload[0] & 0x07]
 
 
 def en4002(value):
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         value = value.encode('iso-8859-1')
     else:
         value = str(value)
@@ -97,7 +95,7 @@ def en6(value):
         value = -128
     elif value > 127:
         value = 127
-    return [0, ord(struct.pack('b', value)[0])]
+    return [0, struct.pack('b', int(value))[0]]
 
 
 def de6(payload):
@@ -107,9 +105,9 @@ def de6(payload):
 
 
 def en7(value):
-    yield 0
-    for c in struct.pack('>H', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>H', int(value)))
+    return ret
 
 
 def de7(payload):
@@ -123,9 +121,9 @@ def en8(value):
         value = -32768
     elif value > 32767:
         value = 32767
-    yield 0
-    for c in struct.pack('>h', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>h', int(value)))
+    return ret
 
 
 def de8(payload):
@@ -150,14 +148,15 @@ def en9(value):
 def de9(payload):
     if len(payload) != 2:
         return None
-    i1 = ord(payload[0])
-    i2 = ord(payload[1])
+    i1 = payload[0]
+    i2 = payload[1]
     s = (i1 & 0x80) >> 7
     e = (i1 & 0x78) >> 3
     m = (i1 & 0x07) << 8 | i2
     if s == 1:
         s = -1 << 11
-    return (m | s) * 0.01 * pow(2, e)
+    f = (m | s) * 0.01 * pow(2, e)
+    return round(f, 2)
 
 
 def en10(dt):
@@ -165,10 +164,9 @@ def en10(dt):
 
 
 def de10(payload):
-    ba = bytearray(payload)
-    h = ba[0] & 0x1f
-    m = ba[1] & 0x3f
-    s = ba[2] & 0x3f
+    h = payload[0] & 0x1f
+    m = payload[1] & 0x3f
+    s = payload[2] & 0x3f
     return datetime.time(h, m, s)
 
 
@@ -177,10 +175,9 @@ def en11(date):
 
 
 def de11(payload):
-    ba = bytearray(payload)
-    d = ba[0] & 0x1f
-    m = ba[1] & 0x0f
-    y = (ba[2] & 0x7f) + 2000  # sorry no 20th century...
+    d = payload[0] & 0x1f
+    m = payload[1] & 0x0f
+    y = (payload[2] & 0x7f) + 2000  # sorry no 20th century...
     return datetime.date(y, m, d)
 
 
@@ -189,9 +186,9 @@ def en12(value):
         value = 0
     elif value > 4294967295:
         value = 4294967295
-    yield 0
-    for c in struct.pack('>I', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>I', int(value)))
+    return ret
 
 
 def de12(payload):
@@ -205,9 +202,9 @@ def en13(value):
         value = -2147483648
     elif value > 2147483647:
         value = 2147483647
-    yield 0
-    for c in struct.pack('>i', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>i', int(value)))
+    return ret
 
 
 def de13(payload):
@@ -217,9 +214,9 @@ def de13(payload):
 
 
 def en14(value):
-    yield 0
-    for c in struct.pack('>f', value):
-        yield ord(c)
+    ret = bytearray([0])
+    ret.extend(struct.pack('>f', int(value)))
+    return ret
 
 
 def de14(payload):
@@ -229,33 +226,25 @@ def de14(payload):
 
 
 def en16000(value):
-    if isinstance(value, unicode):
-        value = value.encode('ascii')
-    else:
-        value = str(value)
-    value = value[:14]
-    a = [0]
-    for c in value:
-        a.append(ord(c))
-    a = a + [0] * (15 - len(a))
-    return a
+    enc = bytearray(1)
+    enc.extend(value.encode('ascii')[:14])
+    enc.extend([0] * (15 - len(enc)))
+    return enc
 
 
 def en16001(value):
-    if isinstance(value, unicode):
-        value = value.encode('iso-8859-1')
-    else:
-        value = str(value)
-    value = value[:14]
-    a = [0]
-    for c in value:
-        a.append(ord(c))
-    a = a + [0] * (15 - len(a))
-    return a
+    enc = bytearray(1)
+    enc.extend(value.encode('iso-8859-1')[:14])
+    enc.extend([0] * (15 - len(enc)))
+    return enc
 
 
-def de16(payload):
-    return str(payload).rstrip('\0')
+def de16000(payload):
+    return payload.rstrip(b'0').decode()
+
+
+def de16001(payload):
+    return payload.rstrip(b'0').decode('iso-8859-1')
 
 
 def en17(value):
@@ -279,18 +268,14 @@ def de20(payload):
 
 
 def en24(value):
-    if isinstance(value, unicode):
-        value = value.encode('iso-8859-1')
-    else:
-        value = str(value)
-    yield 0
-    for c in value:
-        yield ord(c)
-    yield 0x00
+    enc = bytearray(1)
+    enc.extend(value.encode('iso-8859-1'))
+    enc.append(0)
+    return enc
 
 
 def de24(payload):
-    return str(payload).rstrip('\0')
+    return payload.rstrip(b'0').decode('iso-8859-1')
 
 
 def en232(value):
@@ -300,7 +285,7 @@ def en232(value):
 def de232(payload):
     if len(payload) != 3:
         return None
-    return struct.unpack('>BBB', payload)
+    return list(struct.unpack('>BBB', payload))
 
 
 def depa(string):
@@ -322,12 +307,6 @@ def dega(string):
     return "{0}/{1}/{2}".format((ga >> 11) & 0x1f, (ga >> 8) & 0x07, (ga) & 0xff)
 
 
-def dehex(payload):
-    #xlist = ["{0:02x}".format(ord(char)) for char in payload]
-    xlist = ["{0:x}".format(ord(char)) for char in payload]
-    return ' '.join(xlist)
-
-
 decode = {
     '1': de1,
     '2': de2,
@@ -344,14 +323,14 @@ decode = {
     '12': de12,
     '13': de13,
     '14': de14,
-    '16000': de16,
-    '16001': de16,
+    '16000': de16000,
+    '16001': de16001,
+    '17': de17,
     '20': de20,
     '24': de24,
     '232': de232,
     'pa': depa,
-    'ga': dega,
-    'hex': dehex
+    'ga': dega
 }
 
 encode = {
@@ -372,6 +351,7 @@ encode = {
     '14': en14,
     '16000': en16000,
     '16001': en16001,
+    '17': en17,
     '20': en20,
     '24': en24,
     '232': en232,

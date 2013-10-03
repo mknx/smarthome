@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -46,22 +46,22 @@ class DWD():
         self.lock = threading.Lock()
         self.tz = dateutil.tz.gettz('Europe/Berlin')
         try:
-            warnings = csv.reader(open(self._warnings_csv, "rb"), delimiter=';')
-        except IOError, e:
-            logger.error('Could not open warning catalog %s: %s' % (self._warnings_csv, e))
+            warnings = csv.reader(open(self._warnings_csv, "r"), delimiter=';')
+        except IOError as e:
+            logger.error('Could not open warning catalog {}: {}'.format(self._warnings_csv, e))
         for row in warnings:
-            self._warning_cat[int(row[0])] = {'summary': unicode(row[1], 'utf-8'), 'kind': unicode(row[2], 'utf-8')}
+            self._warning_cat[int(row[0])] = {'summary': row[1], 'kind': row[2]}
 
     def _connect(self):
         # open ftp connection to dwd
         if not hasattr(self, '_ftp'):
             try:
-                self._ftp = ftplib.FTP(self._dwd_host, self._dwd_user, self._dwd_password, timeout=3)
-            except (socket.error, socket.gaierror), e:
-                logger.error('Could not connect to %s: %s' % (self._dwd_host, e))
+                self._ftp = ftplib.FTP(self._dwd_host, self._dwd_user, self._dwd_password, timeout=1)
+            except (socket.error, socket.gaierror) as e:
+                logger.error('Could not connect to {}: {}'.format(self._dwd_host, e))
                 self.ftp_quit()
-            except ftplib.error_perm, e:
-                logger.error('Could not login: %s' % e)
+            except ftplib.error_perm as e:
+                logger.error('Could not login: {}'.format(e))
                 self.ftp_quit()
 
     def run(self):
@@ -77,7 +77,7 @@ class DWD():
         except Exception:
             pass
         if hasattr(self, '_ftp'):
-            del self._ftp
+            del(self._ftp)
 
     def parse_item(self, item):
         return None
@@ -86,18 +86,21 @@ class DWD():
         return None
 
     def _buffer_file(self, data):
-        self._buffer += data
+        self._buffer.extend(data)
 
     def _retr_file(self, filename):
         self.lock.acquire()
         self._connect()
-        self._buffer = ''
+        self._buffer = bytearray()
         try:
-            self._ftp.retrbinary("RETR %s" % filename, self._buffer_file)
-        except Exception, e:
+            self._ftp.retrbinary("RETR {}".format(filename), self._buffer_file)
+        except Exception as e:
             logger.info("problem fetching {0}: {1}".format(filename, e))
+            del(self._buffer)
+            self._buffer = bytearray()
+            self.ftp_quit()
         self.lock.release()
-        return self._buffer
+        return self._buffer.decode('iso-8859-1')
 
     def _retr_list(self, dirname):
         self.lock.acquire()
@@ -106,7 +109,8 @@ class DWD():
             filelist = self._ftp.nlst(dirname)
         except Exception:
             filelist = []
-        self.lock.release()
+        finally:
+            self.lock.release()
         return filelist
 
     def warnings(self, region, location):
@@ -116,7 +120,8 @@ class DWD():
         files = self._retr_list(filepath)
         for filename in files:
             fb = self._retr_file(filename)
-            fb = fb.decode('iso-8859-1')
+            if fb == '':
+                continue
             dates = re.findall(r"\d\d\.\d\d\.\d\d\d\d \d\d:\d\d", fb)
             now = datetime.datetime.now(self.tz)
             if len(dates) > 1:  # Entwarnungen haben nur ein Datum
@@ -137,9 +142,11 @@ class DWD():
 
     def current(self, location):
         directory = 'gds/specials/observations/tables/germany'
-        last = sorted(self._retr_list(directory)).pop()
+        files = self._retr_list(directory)
+        if files == []:
+            return {}
+        last = sorted(files)[-1]
         fb = self._retr_file(last)
-        fb = fb.decode('iso-8859-1')
         fb = fb.splitlines()
         if len(fb) < 8:
             logger.info("problem fetching {0}".format(last))
@@ -147,7 +154,7 @@ class DWD():
         header = fb[4]
         legend = fb[8].split()
         date = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
-        date = "%s-%s-%s" % (date[2], date[1], date[0])
+        date = "{}-{}-{}".format(date[2], date[1], date[0])
         for line in fb:
             if line.count(location):
                 space = re.compile(r'  +')
@@ -162,7 +169,8 @@ class DWD():
         for frame in frames:
             filepath = "{0}{1}_{2}".format(path, region, frame)
             fb = self._retr_file(filepath)
-            fb = fb.decode('iso-8859-1')
+            if fb == '':
+                continue
             minute = 0
             if frame.count('frueh'):
                 hour = 6
@@ -200,7 +208,7 @@ class DWD():
             except:
                 continue
             date = datetime.datetime(int(year), int(month), int(day), 12, 0, 0, 0, tzinfo=self.tz)
-            uv = re.findall(r"%s<\/tns:Ort>\n *<tns:Wert>([^<]+)" % location, fb)
+            uv = re.findall(r"{}<\/tns:Ort>\n *<tns:Wert>([^<]+)".format(location), fb)
             if len(uv) == 1:
                 forecast[date] = int(uv[0])
         return forecast

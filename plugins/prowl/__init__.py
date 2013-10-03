@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -20,18 +20,19 @@
 #########################################################################
 
 import logging
-import urllib
-import urllib2
+import urllib.parse
+import http.client
 
-# prowl notifications
 logger = logging.getLogger('Prowl')
 
 
 class Prowl():
-    _apiuri = 'https://api.prowlapp.com/publicapi/add'
+    _host = 'api.prowlapp.com'
+    _api = '/publicapi/add'
 
     def __init__(self, smarthome, apikey=None):
         self._apikey = apikey
+        self._sh = smarthome
 
     def run(self):
         pass
@@ -41,23 +42,24 @@ class Prowl():
 
     def __call__(self, event='', description='', priority=None, url=None, apikey=None, application='SmartHome'):
         data = {}
-        data['event'] = event[:1024].encode('utf-8')
-        data['description'] = description[:10000].encode('utf-8')
-        data['application'] = application[:256].encode('utf-8')
+        headers = {'User-Agent': "SmartHome.py", 'Content-Type': "application/x-www-form-urlencoded"}
+        data['event'] = event[:1024].encode()
+        data['description'] = description[:10000].encode()
+        data['application'] = application[:256].encode()
         if apikey:
             data['apikey'] = apikey
         else:
-            data['apikey'] = self._apikey
+            data['apikey'] = self._apikey.encode()
         if priority:
             data['priority'] = priority
         if url:
             data['url'] = url[:512]
-
         try:
-            p = urllib2.urlopen(self._apiuri, urllib.urlencode(data), 4)
-            p.read(1)
-            p.fp._sock.recv = None
-            p.close()
-            del(p)
-        except Exception, e:
+            conn = http.client.HTTPSConnection(self._host, timeout=4)
+            conn.request("POST", self._api, urllib.parse.urlencode(data), headers)
+            resp = conn.getresponse()
+            conn.close()
+            if resp.status != 200:
+                raise Exception("{} {}".format(resp.status, resp.reason))
+        except Exception as e:
             logger.warning("Could not send prowl notification: {0}. Error: {1}".format(event, e))

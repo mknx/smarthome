@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012-2013 Marcus Popp
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -21,7 +21,7 @@
 
 import threading
 import logging
-import dateutil.relativedelta
+import datetime
 
 import lib.my_asynchat
 import lib.log
@@ -33,7 +33,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
 
     def __init__(self, smarthome, username, password, host='127.0.0.1', port=5038):
         lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
-        self.terminator = '\r\n\r\n'
+        self.terminator = '\r\n\r\n'.encode()
         self._init_cmd = {'Action': 'Login', 'Username': username, 'Secret': password, 'Events': 'call,user,cdr'}
         self._sh = smarthome
         self._reply_lock = threading.Condition()
@@ -42,8 +42,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._devices = {}
         self._mailboxes = {}
         self._trigger_logics = {}
-        # [start, number, duration, direction]
-        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', '<li><h3><a href="tel:{2}">{1}</a></h3><p class="ui-li-aside">{0:%a %H:%M}<br />{3} s</p></li>')
+        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', ['start', 'name', 'number', 'duration', 'direction'])
         smarthome.monitor_connection(self)
 
     def _command(self, d, reply=True):
@@ -59,7 +58,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
             d['ActionID'] = self._aid
         #logger.debug("Request {0} - sending: {1}".format(self._aid, d))
         self._reply_lock.acquire()
-        self.push('\r\n'.join(['{0}: {1}'.format(key, value) for (key, value) in d.items()]) + '\r\n\r\n')
+        self.push(('\r\n'.join(['{0}: {1}'.format(key, value) for (key, value) in list(d.items())]) + '\r\n\r\n').encode())
         if reply:
             self._reply_lock.wait(2)
         self._reply_lock.release()
@@ -82,13 +81,13 @@ class Asterisk(lib.my_asynchat.AsynChat):
         fam, sep, key = key.partition('/')
         try:
             return self._command({'Action': 'DBPut', 'Family': fam, 'Key': key, 'Val': value})
-        except Exception, e:
+        except Exception as e:
             logger.warning("Asterisk: Problem updating {0}/{1} to {2}: {3}.".format(fam, key, value, e))
 
     def mailbox_count(self, mailbox, context='default'):
         try:
             return self._command({'Action': 'MailboxCount', 'Mailbox': mailbox + '@' + context})
-        except Exception, e:
+        except Exception as e:
             logger.warning("Asterisk: Problem reading mailbox count {0}@{1}: {2}.".format(mailbox, context, e))
             return (0, 0)
 
@@ -98,7 +97,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
             cmd['Callerid'] = callerid
         try:
             self._command(cmd, reply=False)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Asterisk: Problem calling {0} from {1} with context {2}: {3}.".format(dest, source, context, e))
 
     def hangup(self, hang):
@@ -111,8 +110,8 @@ class Asterisk(lib.my_asynchat.AsynChat):
                 self._command({'Action': 'Hangup', 'Channel': channel}, reply=False)
 
     def found_terminator(self):
-        data = self.buffer
-        self.buffer = ''
+        data = self.buffer.decode()
+        self.buffer = bytearray()
         event = {}
         for line in data.splitlines():
             key, sep, value = line.partition(': ')
@@ -183,7 +182,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
                     self._mailboxes[mb](0)
         elif event['Event'] == 'Cdr':
             end = self._sh.now()
-            start = end - dateutil.relativedelta.relativedelta(seconds=int(event['Duration']))
+            start = end - datetime.timedelta(seconds=int(event['Duration']))
             duration = event['BillableSeconds']
             if len(event['Source']) <= 4:
                 direction = '=>'
@@ -198,7 +197,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
         active_channels = self._command({'Action': 'CoreShowChannels'})
         if active_channels is None:
             active_channels = []
-        active_devices = map(self._get_device, active_channels)
+        active_devices = list(map(self._get_device, active_channels))
         for device in self._devices:
             if device not in active_devices:
                 self._devices[device](False, 'Asterisk')

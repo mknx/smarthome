@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013-2013 Marcus Popp                          marcus@popp.mx
@@ -54,7 +54,7 @@ class Scenes():
                                     self._scenes[item.id()][row[0]] = [[ditem, row[2]]]
                             else:
                                 self._scenes[item.id()] = {row[0]: [[ditem, row[2]]]}
-                except Exception, e:
+                except Exception as e:
                     logger.warning("Problem reading scene file {0}: {1}".format(scene_file, e))
                     continue
                 item.add_trigger_method(self._trigger)

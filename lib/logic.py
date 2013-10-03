@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
@@ -21,7 +21,8 @@
 
 import logging
 import os
-import configobj
+
+import lib.config
 
 logger = logging.getLogger('')
 
@@ -35,14 +36,14 @@ class Logics():
         self._logics = {}
         self._bytecode = {}
         self.alive = True
-        logger.debug("reading logics from %s" % configfile)
+        logger.debug("reading logics from {}".format(configfile))
         try:
-            self._config = configobj.ConfigObj(configfile, file_error=True)
-        except Exception, e:
+            self._config = lib.config.parse(configfile)
+        except Exception as e:
             logger.critical(e)
             return
         for name in self._config:
-            logger.debug("Logic: %s" % name)
+            logger.debug("Logic: {}".format(name))
             logic = Logic(self._sh, name, self._config[name])
             if hasattr(logic, 'bytecode'):
                 self._logics[name] = logic
@@ -114,11 +115,11 @@ class Logic():
         if hasattr(self, 'filename'):
             filename = self._sh.base_dir + '/logics/' + self.filename
             if not os.access(filename, os.R_OK):
-                logger.warning("%s: Could not access logic file (%s) => ignoring." % (self.name, self.filename))
+                logger.warning("{}: Could not access logic file ({}) => ignoring.".format(self.name, self.filename))
                 return
             try:
                 self.bytecode = compile(open(filename).read(), self.filename, 'exec')
-            except Exception, e:
-                logger.warning("Exception: %s" % e)
+            except Exception as e:
+                logger.exception("Exception: {}".format(e))
         else:
-            logger.warning("%s: No filename specified => ignoring." % self.name)
+            logger.warning("{}: No filename specified => ignoring.".format(self.name))

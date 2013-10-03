@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
@@ -22,7 +22,7 @@
 import logging
 import threading
 import datetime
-import cPickle
+import pickle
 
 logger = logging.getLogger('')
 
@@ -66,17 +66,7 @@ class Item():
     def parse(self, smarthome, parent, path, config):
         # parse config
         for attr in config:
-            if isinstance(config[attr], dict):  # sub item
-                sub_path = self._path + '.' + attr
-                sub_item = smarthome.return_item(sub_path)
-                if sub_item is None:  # new item
-                    sub_item = Item(smarthome, self, sub_path, config[attr])
-                    vars(self)[attr] = sub_item
-                    smarthome.add_item(sub_path, sub_item)
-                    self._sub_items.append(sub_item)
-                else:  # existing item
-                    sub_item.parse(smarthome, self, sub_path, config[attr])
-            else:  # attribute
+            if not isinstance(config[attr], dict):  # attribute
                 if attr == 'type':
                     self._type = config[attr]
                 elif attr == 'value':
@@ -84,9 +74,17 @@ class Item():
                 elif attr == 'name':
                     self._name = config[attr]
                 elif attr == 'cache':
-                    self._cache = self._return_bool(config[attr])
+                    try:
+                        self._cache = self._return_bool(config[attr])
+                    except:
+                        logger.error("Item '{0}' problem parsing '{1}'.Ignoring Item!".format(path, config[attr]))
+                        return
                 elif attr == 'enforce_updates':
-                    self._enforce_updates = self._return_bool(config[attr])
+                    try:
+                        self._enforce_updates = self._return_bool(config[attr])
+                    except:
+                        logger.error("Item '{0}' problem parsing '{1}'.Ignoring Item!".format(path, config[attr]))
+                        return
                 elif attr == 'threshold':
                     self._threshold = config[attr]
                 elif attr == 'eval':
@@ -112,9 +110,20 @@ class Item():
                         self._autotimer = time, value
                 else:
                     self.conf[attr] = config[attr]
+        for attr in config:
+            if isinstance(config[attr], dict):  # sub item
+                sub_path = self._path + '.' + attr
+                sub_item = smarthome.return_item(sub_path)
+                if sub_item is None:  # new item
+                    sub_item = Item(smarthome, self, sub_path, config[attr])
+                    vars(self)[attr] = sub_item
+                    smarthome.add_item(sub_path, sub_item)
+                    self._sub_items.append(sub_item)
+                else:  # existing item
+                    sub_item.parse(smarthome, self, sub_path, config[attr])
         if self._type is not None:
             if self._type not in self._defaults:
-                logger.warning(u"Item {0}: type '{1}' unknown. Please use one of: {2}.".format(path, self._type, ', '.join(self._defaults.keys())))
+                logger.warning("Item {0}: type '{1}' unknown. Please use one of: {2}.".format(path, self._type, ', '.join(list(self._defaults.keys()))))
                 return
             if self._value is None:
                 self._value = self._defaults[self._type]
@@ -122,7 +131,7 @@ class Item():
                 try:
                     self._value = getattr(self, '_return_' + self._type)(self._value)
                 except:
-                    logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Ignoring!".format(path, self._value, self._type))
+                    logger.error("Item '{0}': value ({1}) does not match type ({2}). Ignoring!".format(path, self._value, self._type))
                     return
         else:
             #logger.debug("Item '{0}': No type specified.".format(self._path))
@@ -157,7 +166,7 @@ class Item():
                 if item != self:  # prevent loop
                     item._items_to_trigger.append(self)
             if self._eval:
-                items = map(lambda x: 'sh.' + x.id() + '()', triggers)
+                items = ['sh.' + x.id() + '()' for x in triggers]
                 if self._eval == 'and':
                     self._eval = ' and '.join(items)
                 elif self._eval == 'or':
@@ -184,13 +193,17 @@ class Item():
 
     def age(self):
         delta = self._sh.now() - self._last_change
-        return delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
+        return delta.total_seconds()
 
     def _run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
             sh = self._sh  # noqa
-            value = eval(self._eval)
-            self._update(value, caller, source)
+            try:
+                value = eval(self._eval)
+            except Exception as e:
+                logger.warning("Problem evaluating {0}: {1}".format(self._eval, e))
+            else:
+                self._update(value, caller, source)
 
     def __del__(self):
         # dummy for garbage collection
@@ -200,12 +213,12 @@ class Item():
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
+            logger.error("Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
             return
         self._lock.acquire()
         self._value = value
         self._lock.release()
-        self._change_logger(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
+        self._change_logger("{0} = {1} via {2} {3}".format(self._path, value, caller, source))
 
     def __call__(self, value=None, caller='Logic', source=None, dest=None):
         if value is None or self._type is None:
@@ -214,7 +227,7 @@ class Item():
             value = getattr(self, '_return_' + self._type)(value)
         except:
             try:
-                logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
+                logger.error("Item '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
             except:
                 pass
             return
@@ -228,26 +241,25 @@ class Item():
         try:
             value = getattr(self, '_return_' + self._type)(value)
         except:
-            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
+            logger.error("Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
             return
         self._lock.acquire()
         if value != self._value or self._enforce_updates:  # value change
-            #logger.debug("update item: %s" % self._path)
             if caller != "fade":
                 self.__fade = False
                 self._lock.notify_all()
-                self._change_logger(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
+                self._change_logger("{0} = {1} via {2} {3}".format(self._path, value, caller, source))
             self._value = value
             delta = self._sh.now() - self._last_change
-            self._prev_change = delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
+            self._prev_change = delta.total_seconds()
             self._last_change = self._sh.now()
             self._changed_by = "{0}:{1}".format(caller, source)
             self._lock.release()
             for update_plugin in self._methods_to_trigger:
                 try:
                     update_plugin(self, caller, source, dest)
-                except Exception, e:
-                    logger.error("Problem running {0}: {1}".format(update_plugin, e))
+                except Exception as e:
+                    logger.exception("{} problem running {} {}".format(self._path, update_plugin, e))
             if self._threshold and self._logics_to_trigger:
                 if self._th and self._value <= self._th_low:  # cross lower bound
                     self._th = False
@@ -287,8 +299,8 @@ class Item():
 
     def _db_read(self):
         try:
-            with open(self._sh._cache_dir + self._path, 'r') as f:
-                return cPickle.load(f)
+            with open(self._sh._cache_dir + self._path, 'rb') as f:
+                return pickle.load(f)
         except IOError:
             logger.info("Could not read {0}{1}".format(self._sh._cache_dir, self._path))
             try:
@@ -304,8 +316,8 @@ class Item():
 
     def _db_update(self, value):
         try:
-            with open(self._sh._cache_dir + self._path, 'w') as f:
-                cPickle.dump(value, f)
+            with open(self._sh._cache_dir + self._path, 'wb') as f:
+                pickle.dump(value, f)
         except IOError:
             logger.warning("Could not write to {0}{1}".format(self._sh._cache_dir, self._path))
 
@@ -316,7 +328,7 @@ class Item():
     def id(self):
         return self._path
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self._value
 
     def __str__(self):
@@ -333,7 +345,7 @@ class Item():
             logic.trigger('Item', self._path, self._value)
 
     def _return_str(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
         else:
             raise ValueError
@@ -354,14 +366,14 @@ class Item():
         return value
 
     def _return_bool(self, value):
-        if type(value) in [bool, int, long, float]:
+        if type(value) in [bool, int, float]:
             if value in [False, 0]:
                 return False
             elif value in [True, 1]:
                 return True
             else:
                 raise ValueError
-        elif type(value) in [str, unicode]:
+        elif type(value) in [str, str]:
             if value.lower() in ['0', 'false', 'no', 'off']:
                 return False
             elif value.lower() in ['1', 'true', 'yes', 'on']:

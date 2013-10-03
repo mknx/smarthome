@@ -20,24 +20,25 @@ tn = {}
 tc = threading.activeCount()
 for t in threading.enumerate():
     tn[t.name] = tn.get(t.name, 0) + 1
-logger.info('Threads ({0}): '.format(tc) + ', '.join("{0}: {1}".format(k, v) for (k, v) in tn.items()))
+logger.info('Threads ({0}): '.format(tc) + ', '.join("{0}: {1}".format(k, v) for (k, v) in list(tn.items())))
 sh.technik.smarthome.threads(tc)
 
 # Object Counter
 d = {}
 sys.modules
 # collect all classes
-for m in sys.modules.values():
+for m in list(sys.modules.values()):
     for sym in dir(m):
         o = getattr(m, sym)
-        if isinstance(o, types.ClassType):
+        if isinstance(o, type):
             d[o] = sys.getrefcount(o)
 # sort by refcount
-pairs = map(lambda x: (x[1], x[0]), d.items())
-pairs.sort()
-pairs.reverse()
+pairs = [(x[1], x[0]) for x in list(d.items())]
+pairs = sorted(pairs, key=lambda element: element[0])
+#sorted(pairs)
+#pairs.reverse()
 obj = ''
-for n, c in pairs[:10]:
+for n, c in pairs[-10:]:
     obj += "{0}: {1}, ".format(c.__name__, n)
 obj = obj.strip(', ')
 logger.info("Objects (Top 10): {0}".format(obj))
@@ -67,7 +68,7 @@ for line in data.splitlines():
     key, sep, value = line.partition(':')
     status[key] = value.strip()
 size, unit = status['VmRSS'].split(' ')
-mem = int(size) * units[unit]
+mem = round(int(size) * units[unit])
 sh.technik.smarthome.memory(mem)
 
 ## System Memory

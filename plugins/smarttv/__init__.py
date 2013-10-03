@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -42,7 +42,7 @@ class SmartTV():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((self._host, int(self._port)))
             logger.debug("Connected to {0}:{1}".format(self._host, self._port))
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not connect to %s:%s, to send key: %s." % (self._host, self._port, key))
             return
 

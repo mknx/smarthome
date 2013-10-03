@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
@@ -37,11 +37,11 @@ class AsynChat(asynchat.async_chat):
         self.acception = False
         asynchat.async_chat.__init__(self, map=smarthome.socket_map)
         self.addr = (host, int(port))
-        self._send_lock = threading.Lock()
-        self.buffer = ''
+        self.buffer = bytearray()
         self.terminator = '\r\n'
         self.is_connected = False
         self._sh = smarthome
+        self._send_lock = threading.Lock()
         self._conn_lock = threading.Lock()
         self._connection_attempts = 0
         self._connection_errorlog = 60
@@ -49,7 +49,7 @@ class AsynChat(asynchat.async_chat):
     def connect(self):
         self._conn_lock.acquire()
         if self.is_connected:  # only allow one connection at a time
-            logger.debug("Don't be hasty. Reduce connection attempts from: {0}".format(self.__class__.__name__))
+            logger.debug("Don't be hasty. Reduce connection attempts of: {0}".format(self.__class__.__name__))
             self._conn_lock.release()
             return
         try:
@@ -57,22 +57,21 @@ class AsynChat(asynchat.async_chat):
             self.settimeout(1)
             err = self.socket.connect_ex(self.addr)
             if err in (114, 115):
-                self._conn_lock.release()
                 return
             if err not in (0, 106):
                 self.handle_exception(err)
-                self._conn_lock.release()
                 return
             self.connected = True
             self.is_connected = True
             self.handle_connect_event()
             logger.info('{0}: connected to {1}:{2}'.format(self.__class__.__name__, self.addr[0], self.addr[1]))
-        except Exception, err:
+        except Exception as err:
             self.handle_exception(err)
-        self._conn_lock.release()
+        finally:
+            self._conn_lock.release()
 
     def collect_incoming_data(self, data):
-        self.buffer += data
+        self.buffer.extend(data)
 
     def initiate_send(self):
         self._send_lock.acquire()
@@ -86,7 +85,7 @@ class AsynChat(asynchat.async_chat):
             pass
         self._connection_attempts -= 1
         if self._connection_attempts <= 0:
-            logger.error('{0}: could not connect to {1}:{2}: {3}'.format(self.__class__.__name__, self.addr[0], self.addr[1], err))
+            logger.warning('{0}: could not connect to {1}:{2}: {3}'.format(self.__class__.__name__, self.addr[0], self.addr[1], err))
             self._connection_attempts = self._connection_errorlog
         self.handle_close()
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
@@ -24,24 +24,28 @@ import collections
 
 class Log(collections.deque):
 
-    def __init__(self, smarthome, name, log_string, maxlen=50):
+    def __init__(self, smarthome, name, mapping, maxlen=50):
         collections.deque.__init__(self, maxlen=maxlen)
-        self.log_string = log_string
+        self.mapping = mapping
         self.update_hooks = []
         self._sh = smarthome
         self._name = name
         smarthome.add_log(name, self)
 
     def add(self, entry):
+        try:
+            entry[0] = entry[0].strftime("%Y-%m-%d %H:%M:%S")
+        except:
+            pass
         self.appendleft(entry)
         for listener in self._sh.return_event_listeners('log'):
-            listener('log', {'name': self._name, 'log': [self.log_string.format(*entry)]})
+            listener('log', {'name': self._name, 'log': [dict(zip(self.mapping, entry))]})
 
     def last(self, number):
         return(list(self)[-number:])
 
     def export(self, number):
-        return map(lambda x: self.log_string.format(*x), list(self)[:number])
+        return [dict(zip(self.mapping, x)) for x in list(self)[:number]]
 
     def clean(self, dt):
         while True:

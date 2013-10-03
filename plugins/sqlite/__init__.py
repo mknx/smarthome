@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 Marcus Popp                               marcus@popp.mx
@@ -51,14 +51,14 @@ class SQL():
         MIN(vmin),
         MAX(vmax)
         FROM history
-        WHERE time <= :period
-        GROUP by CAST((time / :granularity) AS INTEGER), item
-        ORDER BY time DESC """
+        WHERE (time < {})
+        GROUP by CAST((time / {}) AS INTEGER), item
+        ORDER BY time DESC;"""
 
     def __init__(self, smarthome, path=None):
         self._sh = smarthome
         self.connected = False
-        sqlite3.register_adapter(datetime.datetime, self.timestamp)
+#       sqlite3.register_adapter(datetime.datetime, self.timestamp)
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
@@ -68,8 +68,8 @@ class SQL():
             self.path = path + '/smarthome.db'
         try:
             self._fdb = sqlite3.connect(self.path, check_same_thread=False)
-        except Exception, e:
-            logger.warning("SQLite: Could not connect to the database {}: {}".format(self.path, e))
+        except Exception as e:
+            logger.error("SQLite: Could not connect to the database {}: {}".format(self.path, e))
             self._fdb_lock.release()
             return
         self.connected = True
@@ -105,7 +105,7 @@ class SQL():
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         # self.query("alter table history add column power INTEGER;")
-        smarthome.scheduler.add('sqlite', self._pack, cron='2 3 * *', prio=5)
+        smarthome.scheduler.add('SQLite pack', self._pack, cron='2 3 * *', prio=5)
 
     def update_item(self, item, caller=None, source=None, dest=None):
         now = self.timestamp(self._sh.now())
@@ -115,17 +115,17 @@ class SQL():
             sum = val
         else:
             sum = 0
-        self._fdb_lock.acquire()
+        if not self._fdb_lock.acquire(timeout=20):
+            return
         if not self.connected:
             self._fdb_lock.release()
             return
         try:
             self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :sum, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'sum': sum, 'power': power})
             self._fdb.commit()
-        except Exception, e:
+        except Exception as e:
             logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
         self._fdb_lock.release()
-        #self.dump()
 
     def run(self):
         self.alive = True
@@ -148,7 +148,7 @@ class SQL():
             item.series = functools.partial(self._series, item=item.id())
             item.db = functools.partial(self._single, item=item.id())
             if item.conf['sqlite'] == 'init':
-                last = self.query("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id())).fetchone()
+                last = self.fetchone("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id()))
                 if last is not None:
                     last = last[0]
                     item.set(last, 'SQLite')
@@ -162,7 +162,7 @@ class SQL():
             pass
 
     def timestamp(self, dt):
-        return int(time.mktime(dt.timetuple())) * 1000 + dt.microsecond / 1000
+        return time.mktime(dt.timetuple()) * 1000 + int(dt.microsecond / 1000)
 
     def datetime(self, ts):
         return datetime.datetime.fromtimestamp(ts / 1000, self._sh.tzinfo())
@@ -173,7 +173,7 @@ class SQL():
         except:
             pass
         dt = self._sh.now()
-        ts = int(time.mktime(dt.timetuple())) * 1000 + dt.microsecond / 1000
+        ts = int(time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000)
         if frame == 'now':
             fac = 0
             frame = 0
@@ -188,18 +188,34 @@ class SQL():
             logger.warning("DB select: unkown time frame '{0}'".format(frame))
         return ts
 
-    def query(self, *query):
-        self._fdb_lock.acquire()
+    def fetchone(self, *query):
+        if not self._fdb_lock.acquire(timeout=2):
+            return
         if not self.connected:
             self._fdb_lock.release()
             return
-#       logger.info(*query)
         try:
-            reply = self._fdb.execute(*query)
-        except Exception, e:
+            reply = self._fdb.execute(*query).fetchone()
+        except Exception as e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
             reply = None
-        self._fdb_lock.release()
+        finally:
+            self._fdb_lock.release()
+        return reply
+
+    def fetchall(self, *query):
+        if not self._fdb_lock.acquire(timeout=2):
+            return
+        if not self.connected:
+            self._fdb_lock.release()
+            return
+        try:
+            reply = self._fdb.execute(*query).fetchall()
+        except Exception as e:
+            logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
+            reply = None
+        finally:
+            self._fdb_lock.release()
         return reply
 
     def _avg(self, tuples, end):
@@ -215,9 +231,6 @@ class SQL():
         else:
             return val
 
-    def _cast_tuples(self, time, val):
-        return (int(time), float(val))
-
     def _avg_ser(self, tuples, end):
         prev = end
         result = []
@@ -226,7 +239,7 @@ class SQL():
                 times, vals = tpl
             else:
                 continue
-            tpls = map(self._cast_tuples, times.split(','), vals.split(','))
+            tpls = [(int(float(t)), float(v)) for t in times.split(',') for v in vals.split(',')]
             avg = self._avg(tpls, prev)
             first = sorted(tpls)[0][0]
             prev = first
@@ -270,7 +283,7 @@ class SQL():
             sid = item + '|' + func + '|' + start + '|' + end
         istart = self.get_timestamp(start)
         iend = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart)).fetchone()
+        prev = self.fetchone("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
         if prev is None:
             first = istart
         else:
@@ -299,8 +312,8 @@ class SQL():
             logger.warning("Unknown export function: {0}".format(func))
             return reply
         try:
-            tuples = self.query(query).fetchall()
-        except Exception, e:
+            tuples = self.fetchall(query)
+        except Exception as e:
             logger.warning("Problem {0} with query: {1}".format(e, query))
             return reply
         if tuples == []:
@@ -317,15 +330,16 @@ class SQL():
         tuples.append((iend, lval))  # add end entry with last valid entry
         if update:  # remove first entry
             tuples = tuples[1:]
+        step = int(step / 1000)
         reply['series'] = tuples
         reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
-        reply['update'] = self.datetime(iend + step)
+        reply['update'] = self._sh.now() + datetime.timedelta(seconds=step)
         return reply
 
     def _single(self, func, start, end='now', item=None):
         start = self.get_timestamp(start)
         end = self.get_timestamp(end)
-        prev = self.query("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start)).fetchone()
+        prev = self.fetchone("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start))
         if prev is None:
             first = start
         else:
@@ -342,7 +356,7 @@ class SQL():
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return
-        tuples = self.query(query).fetchall()
+        tuples = self.fetchall(query)
         if tuples is None:
             return
         if func == 'avg':
@@ -355,16 +369,18 @@ class SQL():
         now = self.timestamp(self._sh.now())
         insert = []
         delete = []
-        self._fdb_lock.acquire()
+        if not self._fdb_lock.acquire(timeout=2):
+            return
         try:
+            logger.debug("SQLite: pack database")
             for entry in self.periods:
                 prev = {}
                 period, granularity = entry
-                period = now - period * 24 * 3600 * 1000
+                period = int(now - period * 24 * 3600 * 1000)
                 granularity = int(granularity * 3600 * 1000)
-                for row in self._fdb.execute(self._pack_query, {'period': period, 'granularity': granularity}).fetchall():
+                for row in self._fdb.execute(self._pack_query.format(period, granularity)):
                     gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
-                    gtime = map(int, gtime.split(','))
+                    gtime = [int(float(t)) for t in gtime.split(',')]
                     if len(gtime) == 1:  # ignore
                         prev[item] = gtime[0]
                         continue
@@ -373,25 +389,22 @@ class SQL():
                     else:
                         upper = prev[item]
                     # pack !!!
-                    delete.append(gid)
-                    gval = map(float, gval.split(','))
-                    gvavg = map(float, gvavg.split(','))
-                    gpower = map(float, gpower.split(','))
-                    avg = self._avg(zip(gtime, gvavg), upper)
-                    power = self._avg(zip(gtime, gpower), upper)
+                    delete = gid
+                    gval = list(map(float, gval.split(',')))
+                    gvavg = list(map(float, gvavg.split(',')))
+                    gpower = list(map(float, gpower.split(',')))
+                    avg = self._avg(list(zip(gtime, gvavg)), upper)
+                    power = self._avg(list(zip(gtime, gpower)), upper)
                     prev[item] = gtime[0]
                     # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
-                    insert.append((gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power))
-            self._fdb.executemany("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?)", insert)
-            self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(','.join(delete)))
-            self._fdb.commit()
+                    insert = (gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power)
+                    self._fdb.execute("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?);", insert)
+                    self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(delete))
+                    self._fdb.commit()
             self._fdb.execute("VACUUM;")
             self._fdb.execute("PRAGMA shrink_memory;")
-        except Exception, e:
-            logger.warning("problem packing sqlite database: {0}".format(e))
+        except Exception as e:
+            logger.exception("problem packing sqlite database: {} period: {} type: {}".format(e, period, type(period)))
             self._fdb.rollback()
-        self._fdb_lock.release()
-
-    def dump(self):
-        for row in self.query('SELECT rowid, * FROM history ORDER BY item, time ASC').fetchall():
-            print row
+        finally:
+            self._fdb_lock.release()

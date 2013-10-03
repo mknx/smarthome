@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -38,7 +38,7 @@ class DMX():
         try:
             self._port = serial.Serial(tty, 38400, timeout=1)
         except:
-            logger.error("Could not open %s." % tty)
+            logger.error("Could not open {}.".format(tty))
             return
         else:
             self._is_connected = True
@@ -50,8 +50,8 @@ class DMX():
         elif interface == 'enttec':
             self._enttec_data = [chr(0)] * 513
             self.send = self.send_enttec
-            self._send_enttec(chr(03) + chr(02) + chr(0) + chr(0) + chr(0))
-            self._send_enttec(chr(10) + chr(02) + chr(0) + chr(0) + chr(0))
+            self._send_enttec(chr(0o3) + chr(0o2) + chr(0) + chr(0) + chr(0))
+            self._send_enttec(chr(10) + chr(0o2) + chr(0) + chr(0) + chr(0))
         else:
             logger.error("Unknown interface: {0}".format(interface))
 
@@ -98,7 +98,7 @@ class DMX():
             channels = item.conf['dmx_ch']
             if isinstance(channels, str):
                 channels = [channels, ]
-            channels = map(int, channels)
+            channels = list(map(int, channels))
             item.conf['dmx_ch'] = channels
             return self.update_item
         else:

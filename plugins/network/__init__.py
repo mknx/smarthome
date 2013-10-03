@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -24,21 +24,23 @@ import asynchat
 import asyncore
 import socket
 import threading
-import urllib
+import urllib.request
+import urllib.parse
+import urllib.error
 
 logger = logging.getLogger('')
 
 
 class TCPHandler(asynchat.async_chat):
 
-    terminator = '\n'
+    terminator = '\n'.encode()
 
     def __init__(self, socket_map, parser, dest, sock, source):
         asynchat.async_chat.__init__(self, sock=sock, map=socket_map)
         self.parser = parser
         self._lock = threading.Lock()
         self.dest = dest
-        self.buffer = ''
+        self.buffer = bytearray()
         self.source = source
 
     def initiate_send(self):
@@ -47,11 +49,11 @@ class TCPHandler(asynchat.async_chat):
         self._lock.release()
 
     def collect_incoming_data(self, data):
-        self.buffer += data
+        self.buffer.extend(data)
 
     def found_terminator(self):
         data = self.buffer
-        self.buffer = ''
+        self.buffer = bytearray()
         self.parser(self.source, self.dest, data.strip())
         try:
             self.shutdown(socket.SHUT_RDWR)
@@ -77,27 +79,27 @@ class TCPDispatcher(asyncore.dispatcher):
             self.listen(5)
             self.listening = True
         except Exception:
-            logger.error("Could not bind TCP socket on %s:%s" % (ip, port))
+            logger.error("Could not bind TCP socket on {}:{}".format(ip, port))
             self.listening = False
 
     def handle_accept(self):
         pair = self.accept()
         if pair is not None:
             sock, (ip, port) = pair
-            logger.debug('%s Incoming connection from %s:%s' % (self.dest, ip, port))
+            logger.debug('{} Incoming connection from {}:{}'.format(self.dest, ip, port))
             TCPHandler(self.socket_map, self.parser, self.dest, sock, ip)
 
 
 class HTTPHandler(asynchat.async_chat):
 
-    terminator = "\r\n\r\n"
+    terminator = "\r\n\r\n".encode()
 
     def __init__(self, socket_map, parser, dest, sock, source):
         asynchat.async_chat.__init__(self, sock=sock, map=socket_map)
         self.parser = parser
         self._lock = threading.Lock()
         self.dest = dest
-        self.buffer = ''
+        self.buffer = bytearray()
         self.source = source
 
     def initiate_send(self):
@@ -106,15 +108,15 @@ class HTTPHandler(asynchat.async_chat):
         self._lock.release()
 
     def collect_incoming_data(self, data):
-        self.buffer += data
+        self.buffer.extend(data)
 
     def found_terminator(self):
         data = self.buffer
-        self.buffer = ''
-        for line in data.splitlines():
+        self.buffer = bytearray()
+        for line in data.decode().splitlines():
             if line.startswith('GET'):
                 request = line.split(' ')[1].strip('/')
-                self.parser(self.source, self.dest, urllib.unquote(request))
+                self.parser(self.source, self.dest, urllib.parse.unquote(request))
                 break
         try:
             self.shutdown(socket.SHUT_RDWR)
@@ -140,14 +142,14 @@ class HTTPDispatcher(asyncore.dispatcher):
             self.listen(5)
             self.listening = True
         except Exception:
-            logger.error("Could not bind TCP socket for HTTP on %s:%s" % (ip, port))
+            logger.error("Could not bind TCP socket for HTTP on {}:{}".format(ip, port))
             self.listening = False
 
     def handle_accept(self):
         pair = self.accept()
         if pair is not None:
             sock, (ip, port) = pair
-            logger.debug('%s Incoming connection from %s:%s' % (self.dest, ip, port))
+            logger.debug('{} Incoming connection from {}:{}'.format(self.dest, ip, port))
             HTTPHandler(self.socket_map, self.parser, self.dest, sock, ip)
 
 
@@ -163,12 +165,12 @@ class UDPDispatcher(asyncore.dispatcher):
             self.bind((ip, int(port)))
             self.listening = True
         except Exception:
-            logger.error("Could not bind UDP socket on %s:%s" % (ip, port))
+            logger.error("Could not bind UDP socket on {}:{}".format(ip, port))
             self.listening = False
 
     def handle_read(self):
         data, (ip, port) = self.recvfrom(4096)
-        logger.debug('%s Incoming connection from %s:%s' % (self.dest, ip, port))
+        logger.debug('{} Incoming connection from {}:{}'.format(self.dest, ip, port))
         self.parser(ip, self.dest, data.strip())
 
     def writable(self):
@@ -183,7 +185,7 @@ class UDPSend(asyncore.dispatcher_with_send):
             self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.connect((host, int(port)))
         except Exception:
-            logger.warning("Could not connect to %s:%s, to send data: %s." % (host, port, data))
+            logger.warning("Could not connect to {}:{}, to send data: {}.".format(host, port, data))
             return
         self.send(data)
 
@@ -228,16 +230,12 @@ class Network():
         if http != 'no':
             self.add_listener('http', ip, http, http_acl, generic=True)
 
-    # XXX
-    #def tcp(self, host, port, data):
-    #    self._send_data('tcp', host, port, data)
-
     def udp(self, host, port, data):
         UDPSend(self.socket_map, host, port, data)
 
     def add_listener(self, proto, ip, port, acl='*', generic=False):
         dest = proto + ':' + ip + ':' + port
-        logger.debug("Adding listener on: %s" % dest)
+        logger.debug("Adding listener on: {}".format(dest))
         if proto == 'tcp':
             dispatcher = TCPDispatcher(self.parse_input, self.socket_map, ip, port)
         elif proto == 'udp':
@@ -266,39 +264,39 @@ class Network():
         if dest in self.generic_listeners:
             inp = data.split(self.input_seperator, 2)  # max 3 elements
             if len(inp) < 3:
-                logger.info("Ignoring input %s. Format not recognized." % data)
+                logger.info("Ignoring input {}. Format not recognized.".format(data))
                 return False
             typ, name, value = inp
             proto = dest.split(':')[0].upper()
             gacl = self.generic_listeners[dest]['acl']
             if typ == 'item':
                 if name not in self.generic_listeners[dest]['items']:
-                    logger.error("Item '%s' not available in the generic listener." % name)
+                    logger.error("Item '{}' not available in the generic listener.".format(name))
                     return False
                 iacl = self.generic_listeners[dest]['items'][name]['acl']
                 if iacl:
                     if source not in iacl:
-                        logger.error("Item '%s' acl doesn't permit updates from %s." % (name, source))
+                        logger.error("Item '{}' acl doesn't permit updates from {}.".format(name, source))
                         return False
                 elif gacl:
                     if source not in gacl:
-                        logger.error("Generic network acl doesn't permit updates from %s." % (source))
+                        logger.error("Generic network acl doesn't permit updates from {}.".format(source))
                         return False
                 item = self.generic_listeners[dest]['items'][name]['item']
                 item(value, proto, source)
 
             elif typ == 'logic':
                 if name not in self.generic_listeners[dest]['logics']:
-                    logger.error("Logic '%s' not available in the generic listener." % name)
+                    logger.error("Logic '{}' not available in the generic listener.".format(name))
                     return False
                 lacl = self.generic_listeners[dest]['logics'][name]['acl']
                 if lacl:
                     if source not in lacl:
-                        logger.error("Logic '%s' acl doesn't permit triggering from %s." % (name, source))
+                        logger.error("Logic '{}' acl doesn't permit triggering from {}.".format(name, source))
                         return False
                 elif gacl:
                     if source not in gacl:
-                        logger.error("Generic network acl doesn't permit triggering from %s." % (source))
+                        logger.error("Generic network acl doesn't permit triggering from {}.".format(source))
                         return False
                 logic = self.generic_listeners[dest]['logics'][name]['logic']
                 logic.trigger(proto, source, value)
@@ -306,7 +304,7 @@ class Network():
             elif typ == 'log':
                 if gacl:
                     if source not in gacl:
-                        logger.error("Generic network acl doesn't permit log entries from %s." % (source))
+                        logger.error("Generic network acl doesn't permit log entries from {}".format(source))
                         return False
                 if name == 'info':
                     logger.info(value)
@@ -315,9 +313,9 @@ class Network():
                 elif name == 'error':
                     logger.error(value)
                 else:
-                    logger.warning("Unknown logging priority '%s'. Data: '%s'" % (name, data))
+                    logger.warning("Unknown logging priority '{}'. Data: '{}'".format(name, data))
             else:
-                logger.error("Unsupporter key element %s. Data: %s" % (typ, data))
+                logger.error("Unsupporter key element {}. Data: {}".format(typ, data))
                 return False
         elif dest in self.special_listeners:
             proto, t1, t2 = dest.partition(':')
@@ -332,11 +330,11 @@ class Network():
                 logic = self.special_listeners[dest]['logics'][entry]['logic']
                 if lacl:
                     if source not in lacl:
-                        logger.error("Logic '%s' acl doesn't permit triggering from %s." % (logic.name, source))
+                        logger.error("Logic '{}' acl doesn't permit triggering from {}.".format(logic.name, source))
                         return False
                 elif gacl:
                     if source not in gacl:
-                        logger.error("Generic network acl doesn't permit triggering from %s." % (source))
+                        logger.error("Generic network acl doesn't permit triggering from {}.".format(source))
                         return False
                 logic.trigger('network', source, data)
             for entry in self.special_listeners[dest]['items']:
@@ -352,7 +350,7 @@ class Network():
                         return False
                 item(data, 'network', source)
         else:
-            logger.error("Destination %s, not in listeners!" % dest)
+            logger.error("Destination {}, not in listeners!".format(dest))
             return False
 
     def run(self):
@@ -395,7 +393,7 @@ class Network():
                 if self.add_listener('udp', ip, port):
                     self.special_listeners[dest][obj_type + 's'][oid] = {obj_type: obj, 'acl': acl}
                 else:
-                    logger.warning("Could not add listener %s for %s" % (dest, oid))
+                    logger.warning("Could not add listener {} for {}".format(dest, oid))
             else:
                 self.special_listeners[dest][obj_type + 's'][oid] = {obj_type: obj, 'acl': acl}
 
@@ -408,6 +406,6 @@ class Network():
                 if self.add_listener('tcp', ip, port):
                     self.special_listeners[dest][obj_type + 's'][oid] = {obj_type: obj, 'acl': acl}
                 else:
-                    logger.warning("Could not add listener %s for %s" % (dest, oid))
+                    logger.warning("Could not add listener {} for {}".format(dest, oid))
             else:
                 self.special_listeners[dest][obj_type + 's'][oid] = {obj_type: obj, 'acl': acl}

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
@@ -20,6 +20,14 @@
 #########################################################################
 
 #####################################################################
+# Check Python Version
+#####################################################################
+import sys
+if sys.hexversion < 0x03020000:
+    print("Sorry your python interpreter ({0}.{1}) is too old. Please update to 3.2 or newer.".format(sys.version_info[0], sys.version_info[1]))
+    exit()
+
+#####################################################################
 # Import Python Core Modules
 #####################################################################
 import argparse
@@ -33,17 +41,9 @@ import os
 import re
 import signal
 import subprocess
-import sys
 import threading
 import time
 import traceback
-import types
-
-#####################################################################
-# Import 3rd Party Modules
-#####################################################################
-from configobj import ConfigObj
-from dateutil.tz import gettz
 
 #####################################################################
 # Base
@@ -51,6 +51,12 @@ from dateutil.tz import gettz
 logger = logging.getLogger('')
 BASE = '/'.join(os.path.realpath(__file__).split('/')[:-2])
 sys.path.append(BASE)
+sys.path.append(BASE + '/lib/3rd')
+
+#####################################################################
+# Import 3rd Party Modules
+#####################################################################
+from dateutil.tz import gettz
 
 #####################################################################
 # Import SmartHome.py Modules
@@ -63,6 +69,7 @@ import lib.tools
 import lib.orb
 import lib.log
 import lib.scene
+import lib.config
 
 #####################################################################
 # Globals
@@ -74,8 +81,8 @@ VERSION = '0.9'
 TZ = gettz('UTC')
 try:
     os.chdir(BASE)
-    VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty=+'], stderr=subprocess.STDOUT).strip('\n')
-except Exception, e:
+    VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty=+'], stderr=subprocess.STDOUT).decode().strip('\n')
+except Exception as e:
     pass
 
 
@@ -124,7 +131,7 @@ class SmartHome():
         try:
             with open(self._logfile, 'a') as f:
                 f.write("Init SmartHome.py {0}\n".format(VERSION))
-        except IOError, e:
+        except IOError as e:
             print("Error creating logfile {}: {}".format(self._logfile, e))
 
         #############################################################
@@ -137,7 +144,7 @@ class SmartHome():
                 pid = os.fork()  # fork second child
                 if pid == 0:
                     os.chdir('/')
-                    os.umask(022)
+                    os.umask(0o22)
                     print("Starting SmartHome.py in the background with pid: {}".format(os.getpid()))
                 else:
                     time.sleep(0.1)
@@ -167,10 +174,10 @@ class SmartHome():
         # Logging
         #############################################################
         _logdate = "%Y-%m-%d %H:%M:%S"
-        _logformat = "%(asctime)s %(threadName)-12s %(levelname)-8s %(message)s"
+        _logformat = "%(asctime)s %(levelname)-8s %(threadName)-12s %(message)s"
         if LOGLEVEL == logging.DEBUG:
             _logdate = None
-            _logformat = "%(asctime)s %(threadName)-12s %(levelname)-8s %(message)s -- %(filename)s:%(funcName)s:%(lineno)d"
+            _logformat = "%(asctime)s %(levelname)-8s %(threadName)-12s %(message)s -- %(filename)s:%(funcName)s:%(lineno)d"
         logging.basicConfig(level=LOGLEVEL, format=_logformat, datefmt=_logdate)
         if MODE == 'interactive':  # remove default stream handler
             logger.removeHandler(logger.handlers[0])
@@ -181,14 +188,8 @@ class SmartHome():
             log_file.setLevel(LOGLEVEL)
             log_file.setFormatter(formatter)
             logging.getLogger('').addHandler(log_file)
-        except IOError, e:
+        except IOError as e:
             print("Error creating logfile {}: {}".format(self._logfile, e))
-        # adding SH.py log
-        self.log = lib.log.Log(self, 'SmartHome.py', '<li><p style="font-weight:bold;">{1}</p><p>{3}</p><p class="ui-li-aside">{0:%a %H:%M:%S}<br />{2}</p></li>', maxlen=self._log_buffer)
-        log_mem = LogHandler(self.log)
-        log_mem.setLevel(logging.WARNING)
-        log_mem.setFormatter(formatter)
-        logging.getLogger('').addHandler(log_mem)
 
         #############################################################
         # Catching Exceptions
@@ -210,13 +211,27 @@ class SmartHome():
         # Reading smarthome.conf
         #############################################################
         try:
-            config = ConfigObj(smarthome_conf)
+            config = lib.config.parse(smarthome_conf)
             for attr in config:
                 if not isinstance(config[attr], dict):  # ignore sub items
                     vars(self)['_' + attr] = config[attr]
             del(config)  # clean up
-        except Exception, e:
+        except Exception as e:
             logger.warning("Problem reading smarthome.conf: {0}".format(e))
+
+        #############################################################
+        # Setting debug level and adding memory handler
+        #############################################################
+        if hasattr(self, '_loglevel'):
+            try:
+                logging.getLogger('').setLevel(vars(logging)[self._loglevel.upper()])
+            except:
+                pass
+        self.log = lib.log.Log(self, 'SmartHome.py', ['time', 'thread', 'level', 'message'], maxlen=self._log_buffer)
+        log_mem = LogHandler(self.log)
+        log_mem.setLevel(logging.WARNING)
+        log_mem.setFormatter(formatter)
+        logging.getLogger('').addHandler(log_mem)
 
         #############################################################
         # Setting (local) tz
@@ -274,25 +289,26 @@ class SmartHome():
         # Init Items
         #############################################################
         logger.info("Init Items")
+        item_conf = {}
         for item_file in sorted(os.listdir(self._items_dir)):
             if item_file.endswith('.conf'):
                 try:
-                    item_conf = ConfigObj(self._items_dir + item_file)
-                except Exception, e:
-                    logger.warning("Problem reading {0}: {1}".format(item_file, e))
+                    item_conf = lib.config.parse(self._items_dir + item_file, item_conf)
+                except Exception as e:
+                    logger.exception("Problem reading {0}: {1}".format(item_file, e))
                     continue
-                for entry in item_conf:
-                    if isinstance(item_conf[entry], dict):
-                        path = entry
-                        sub_item = self.return_item(path)
-                        if sub_item is None:  # new item
-                            sub_item = lib.item.Item(self, self, path, item_conf[path])
-                            vars(self)[path] = sub_item
-                            self.add_item(path, sub_item)
-                            self._sub_items.append(sub_item)
-                        else:  # existing item
-                            sub_item.parse(self, self, path, item_conf[path])
-                del(item_conf)  # clean up
+        for entry in item_conf:
+            if isinstance(item_conf[entry], dict):
+                path = entry
+                sub_item = self.return_item(path)
+                if sub_item is None:  # new item
+                    sub_item = lib.item.Item(self, self, path, item_conf[path])
+                    vars(self)[path] = sub_item
+                    self.add_item(path, sub_item)
+                    self._sub_items.append(sub_item)
+                else:  # existing item
+                    sub_item.parse(self, self, path, item_conf[path])
+        del(item_conf)  # clean up
         for item in self.return_items():
             item.init_prerun()
         for item in self.return_items():
@@ -354,7 +370,7 @@ class SmartHome():
                 logger.info("Thread: {}, still alive".format(thread.name))
         try:
             os.remove(PID_FILE)
-        except OSError, e:
+        except OSError as e:
             logger.critical("Could not remove pid file: {0} - {1}".format(PID_FILE, e))
         logger.info("SmartHome.py stopped")
         logging.shutdown()
@@ -486,7 +502,7 @@ class SmartHome():
 
     def _excepthook(self, typ, value, tb):
         mytb = "".join(traceback.format_tb(tb))
-        logger.critical("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
+        logger.exception("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
 
     def _garbage_collection(self):
         c = gc.collect()
@@ -504,16 +520,16 @@ class SmartHome():
 
     def object_refcount(self):
         objects = self._object_refcount()
-        objects = map(lambda x: (x[1], x[0]), objects.items())
+        objects = [(x[1], x[0]) for x in list(objects.items())]
         objects.sort(reverse=True)
         return objects
 
     def _object_refcount(self):
         objects = {}
-        for module in sys.modules.values():
+        for module in list(sys.modules.values()):
             for sym in dir(module):
                 obj = getattr(module, sym)
-                if isinstance(obj, types.ClassType):
+                if isinstance(obj, type):
                     objects[obj] = sys.getrefcount(obj)
         return objects
 
@@ -576,6 +592,7 @@ if __name__ == '__main__':
     arggroup.add_argument('-l', '--logics', help='reload all logics', action='store_true')
     arggroup.add_argument('-s', '--stop', help='stop SmartHome.py', action='store_true')
     arggroup.add_argument('-q', '--quiet', help='reduce logging to the logfile', action='store_true')
+    arggroup.add_argument('-V', '--version', help='show SmartHome.py version', action='store_true')
     arggroup.add_argument('--start', help='start SmartHome.py and detach from console (default)', default=True, action='store_true')
     args = argparser.parse_args()
 
@@ -603,6 +620,9 @@ if __name__ == '__main__':
     elif args.logics:
         reload_logics()
         exit(0)
+    elif args.version:
+        print("SmartHome.py {0}".format(VERSION))
+        exit(0)
     elif args.stop:
         _stop()
         exit(0)
@@ -622,7 +642,7 @@ if __name__ == '__main__':
         except OSError:
             try:
                 os.remove(PID_FILE)
-            except OSError, e:
+            except OSError as e:
                 print("Could not remove pid file: {0} - {1}".format(PID_FILE, e))
     pid = _read_pid()
     if pid:

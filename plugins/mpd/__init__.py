@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 Marcus Popp                               marcus@popp.mx
@@ -68,7 +68,7 @@ class mpd(lib.my_asynchat.AsynChat):
             port = 6600
         host = item.conf['mpd_host']
         lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
-        self.terminator = '\n'
+        self.terminator = '\n'.encode()
         self.parse_data = self.handshake
         self._sh = smarthome
         smarthome.monitor_connection(self)
@@ -165,7 +165,7 @@ class mpd(lib.my_asynchat.AsynChat):
         self._cmd_lock.acquire()
         self._reply = {}
         self._reply_lock.acquire()
-        self.push(command.encode('utf-8') + '\n')
+        self.push((command + '\n').encode())
         if wait:
             self._reply_lock.wait(1)
         self._reply_lock.release()
@@ -185,7 +185,7 @@ class mpd(lib.my_asynchat.AsynChat):
         if 'time' in status:
             status['time'], sep, status['total'] = status['time'].partition(':')
             if 'percent' in self._items:
-                if status['total'] != u'0':
+                if status['total'] != '0':
                     status['percent'] = int(int(status['time']) / (int(status['total']) / 100.0))
                 else:
                     status['percent'] = 0
@@ -196,9 +196,9 @@ class mpd(lib.my_asynchat.AsynChat):
         for attr in self._items:
             if attr in status:
                 try:
-                    self._items[attr](unicode(status[attr]), 'MPD')
+                    self._items[attr](str(status[attr]), 'MPD')
                 except Exception as e:
-                    logger.warning(u"Error processing attr '{0}' value '{1}'".format(attr, unicode(status[attr])))
+                    logger.warning("Error processing attr '{0}' value '{1}'".format(attr, str(status[attr])))
                     logger.warning("Exception: {0}".format(e))
 
     def handle_connect(self):
@@ -210,8 +210,8 @@ class mpd(lib.my_asynchat.AsynChat):
 
     def found_terminator(self):
         data = self.buffer
-        self.buffer = ''
-        self.parse_data(data)
+        self.buffer = bytearray()
+        self.parse_data(data.decode())
 
     def parse_reply(self, data):
         if data.startswith('OK'):
@@ -222,4 +222,4 @@ class mpd(lib.my_asynchat.AsynChat):
             logger.warning(data)
         else:
             key, sep, value = data.partition(': ')
-            self._reply[key] = value.decode('utf-8')
+            self._reply[key] = value

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -20,8 +20,8 @@
 #########################################################################
 
 import logging
-import urllib
-import httplib
+import urllib.request, urllib.parse, urllib.error
+import http.client
 
 # boxcar notifications
 logger = logging.getLogger('Boxcar')
@@ -61,8 +61,8 @@ class Boxcar():
             self.__set_path(apikey)
 
         try:
-            conn = httplib.HTTPSConnection(self._apiurl)
-            conn.request("POST", self._path, urllib.urlencode(data), self._headers)
+            conn = http.client.HTTPSConnection(self._apiurl)
+            conn.request("POST", self._path, urllib.parse.urlencode(data), self._headers)
             response = conn.getresponse()
             if response.status == 200:
                 logger.info("Boxcar: Message %s %s successfully sent - %s %s"%(sender, message,response.status,response.reason))
@@ -70,5 +70,5 @@ class Boxcar():
                 logger.warning("Boxcar: Could not send message %s %s - %s %s"%(sender, message,response.status,response.reason))
             conn.close()
             del(conn)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not send boxcar notification: {0}. Error: {1}".format(event, e))

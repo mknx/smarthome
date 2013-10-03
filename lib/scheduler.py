@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
@@ -24,7 +24,7 @@ import time
 import datetime
 import calendar
 import sys
-import Queue
+import queue
 import traceback
 import threading
 import os  # noqa
@@ -46,8 +46,8 @@ class Scheduler(threading.Thread):
     _worker_max = 30
     _worker_delta = 60  # wait 60 seconds before adding another worker thread
     _scheduler = {}
-    _runq = Queue.PriorityQueue()
-    _triggerq = Queue.PriorityQueue()
+    _runq = queue.PriorityQueue()
+    _triggerq = queue.PriorityQueue()
 
     def __init__(self, smarthome):
         threading.Thread.__init__(self, name='Scheduler')
@@ -72,12 +72,12 @@ class Scheduler(threading.Thread):
                         tn = {}
                         for t in threading.enumerate():
                             tn[t.name] = tn.get(t.name, 0) + 1
-                        logger.info('Threads: ' + ', '.join("{0}: {1}".format(k, v) for (k, v) in tn.items()))
+                        logger.info('Threads: ' + ', '.join("{0}: {1}".format(k, v) for (k, v) in list(tn.items())))
                         self._add_worker()
             while self._triggerq.qsize() > 0:
                 try:
                     dt, prio, name, obj, by, source, dest, value = self._triggerq.get()
-                except Exception, e:
+                except Exception as e:
                     logger.warning("Trigger queue exception: {0}".format(e))
                     break
 
@@ -120,7 +120,7 @@ class Scheduler(threading.Thread):
                 logger.debug("Logic '{0}' deactivated. Ignoring trigger from {1} {2}".format(name, by, source))
                 return
         if dt is None:
-            logger.debug(u"Triggering {0} - by: {1} source: {2} dest: {3} value: {4}".format(name, by, source, dest, unicode(value)[:40]))
+            logger.debug("Triggering {0} - by: {1} source: {2} dest: {3} value: {4}".format(name, by, source, dest, str(value)[:40]))
             self._runq.put((prio, name, obj, by, source, dest, value))
         else:
             if not isinstance(dt, datetime.datetime):
@@ -129,7 +129,7 @@ class Scheduler(threading.Thread):
             if dt.tzinfo is None:
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
                 return
-            logger.debug(u"Triggering {0} - by: {1} source: {2} dest: {3} value: {4} at: {5}".format(name, by, source, dest, unicode(value)[:40], dt))
+            logger.debug("Triggering {0} - by: {1} source: {2} dest: {3} value: {4} at: {5}".format(name, by, source, dest, str(value)[:40], dt))
             self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
 
     def remove(self, name):
@@ -213,7 +213,7 @@ class Scheduler(threading.Thread):
         now = self._sh.now()
         now = now.replace(microsecond=0)
         if job['cycle'] is not None:
-            cycle = job['cycle'].keys()[0]
+            cycle = list(job['cycle'].keys())[0]
             value = job['cycle'][cycle]
             if offset is None:
                 offset = cycle
@@ -266,7 +266,7 @@ class Scheduler(threading.Thread):
             try:
                 prio, name, obj, by, source, dest, value = self._runq.get(timeout=0.5)
                 self._runq.task_done()
-            except Queue.Empty:
+            except queue.Empty:
                 continue
             self._task(name, obj, by, source, dest, value)
 
@@ -282,24 +282,24 @@ class Scheduler(threading.Thread):
             except SystemExit:
                 # ignore exit() call from logic.
                 pass
-            except Exception, e:
+            except Exception as e:
                 tb = sys.exc_info()[2]
                 tb = traceback.extract_tb(tb)[-1]
-                logger.warning("Logic: {0}, File: {1}, Line: {2}, Method: {3}, Exception: {4}".format(name, tb[0], tb[1], tb[2], e))
+                logger.exception("Logic: {0}, File: {1}, Line: {2}, Method: {3}, Exception: {4}".format(name, tb[0], tb[1], tb[2], e))
         elif obj.__class__.__name__ == 'Item':
             try:
                 if value is not None:
                     obj(value, caller="Scheduler")
-            except Exception, e:
-                logger.warning("Item {0} exception: {1}".format(name, e))
+            except Exception as e:
+                logger.exception("Item {0} exception: {1}".format(name, e))
         else:  # method
             try:
                 if value is None:
                     obj()
                 else:
                     obj(**value)
-            except Exception, e:
-                logger.warning("Method {0} exception: {1}".format(name, e))
+            except Exception as e:
+                logger.exception("Method {0} exception: {1}".format(name, e))
         threading.current_thread().name = 'idle'
 
     def _crontab(self, crontab):
@@ -325,9 +325,9 @@ class Scheduler(threading.Thread):
             day_range = self._day_range(wday)
         elif wday != '*' and day != '*':
             day_range = self._day_range(wday)
-            day_range = day_range + self._range(day, 01, mdays)
+            day_range = day_range + self._range(day, 0o1, mdays)
         else:
-            day_range = self._range(day, 01, mdays)
+            day_range = self._range(day, 0o1, mdays)
         # combine the differnt ranges
         event_range = sorted([str(day) + '-' + str(hour) + '-' + str(minute) for minute in minute_range for hour in hour_range for day in day_range])
         if offset:  # next month
@@ -423,7 +423,7 @@ class Scheduler(threading.Thread):
         result = []
         item_range = []
         if entry == '*':
-            item_range = range(low, high + 1)
+            item_range = list(range(low, high + 1))
         else:
             for item in entry.split(','):
                 item = int(item)
@@ -431,7 +431,7 @@ class Scheduler(threading.Thread):
                     item = high  # truncate value to highest possible
                 item_range.append(item)
         for entry in item_range:
-            result.append('%0*d' % (2, entry))
+            result.append('{:02d}'.format(entry))
         return result
 
     def _day_range(self, days):

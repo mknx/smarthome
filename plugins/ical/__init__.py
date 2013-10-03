@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2013 Marcus Popp                              marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -32,6 +32,7 @@ logger = logging.getLogger('')
 class iCal():
     DAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
     FREQ = ("YEARLY", "MONTHLY", "WEEKLY", "DAILY", "HOURLY", "MINUTELY", "SECONDLY")
+    PROPERTIES = ("SUMMARY", "DESCRIPTION", "LOCATION", "CATEGORIES")
 
     def __init__(self, smarthome):
         self._sh = smarthome
@@ -60,37 +61,46 @@ class iCal():
             try:
                 with open(ics, 'r') as f:
                     ical = f.read()
-            except IOError, e:
+            except IOError as e:
                 logger.error('Could not open ics file {0}: {1}'.format(ics, e))
                 return {}
+        ical = ical.decode()
         now = self._sh.now()
         offset = offset - 1  # start at 23:59:59 the day before
         delta += 1  # extend delta for negetiv offset
         start = now.replace(hour=23, minute=59, second=59, microsecond=0) + datetime.timedelta(days=offset)
         end = start + datetime.timedelta(days=delta)
         events = self._parse_ical(ical, ics)
-        ret = {}
+        revents = {}
         for event in events:
             event = events[event]
+            e_start = event['DTSTART']
+            e_end = event['DTEND']
             if 'RRULE' in event:
-                for dt in event['RRULE'].between(start, end):
-                    if dt not in event['EXDATES']:
-                        time = dt.time()
-                        date = dt.date()
-                        if date not in ret:
-                            ret[date] = [[time, event['SUMMARY']]]
+                e_duration = e_end - e_start
+                for e_rstart in event['RRULE'].between(start, end, inc=True):
+                    if e_rstart not in event['EXDATES']:
+                        date = e_rstart.date()
+                        revent = {'Start': e_rstart, 'End': e_rstart + e_duration}
+                        for prop in self.PROPERTIES:
+                            if prop in event:
+                                revent[prop.capitalize()] = event[prop]
+                        if date not in revents:
+                            revents[date] = [revent]
                         else:
-                            ret[date].append([time, event['SUMMARY']])
+                            revents[date].append(revent)
             else:
-                dt = event['DTSTART']
-                if dt > start and dt < end:
-                    time = dt.time()
-                    date = dt.date()
-                    if date not in ret:
-                        ret[date] = [[time, event['SUMMARY']]]
+                if (e_start > start and e_start < end) or (e_start < start and e_end > start):
+                    date = e_start.date()
+                    revent = {'Start': e_start, 'End': e_end}
+                    for prop in self.PROPERTIES:
+                        if prop in event:
+                            revent[prop.capitalize()] = event[prop]
+                    if date not in revents:
+                        revents[date] = [revent]
                     else:
-                        ret[date].append([time, event['SUMMARY']])
-        return ret
+                        revents[date].append(revent)
+        return revents
 
     def _parse_date(self, val, dtzinfo, par=''):
         if par.startswith('TZID='):
@@ -148,13 +158,15 @@ class iCal():
                 elif key in ['DTSTART', 'DTEND', 'EXDATE', 'RECURRENCE-ID']:
                     try:
                         date = self._parse_date(val, tzinfo, par)
-                    except Exception, e:
+                    except Exception as e:
                         logger.warning("Problem parsing: {0}: {1}".format(ics, e))
                         continue
                     if key == 'EXDATE':
                         event['EXDATES'].append(date)  # noqa
                     else:
                         event[key] = date  # noqa
+                else:
+                    event[key] = val  # noqa
         return events
 
     def _parse_rrule(self, event, tzinfo):
@@ -189,7 +201,7 @@ class iCal():
         if 'UNTIL' in rrule:
             try:
                 rrule['UNTIL'] = self._parse_date(rrule['UNTIL'], tzinfo)
-            except Exception, e:
+            except Exception as e:
                 logger.warning("Problem parsing UNTIL: {1} --- {0} ".format(event, e))
                 return
         for par in rrule:
