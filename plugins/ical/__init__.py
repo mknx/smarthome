@@ -57,6 +57,7 @@ class iCal():
             ical = self._sh.tools.fetch_url(ics)
             if ical is False:
                 return {}
+            ical = ical.decode()
         else:
             try:
                 with open(ics, 'r') as f:
@@ -64,7 +65,6 @@ class iCal():
             except IOError as e:
                 logger.error('Could not open ics file {0}: {1}'.format(ics, e))
                 return {}
-        ical = ical.decode()
         now = self._sh.now()
         offset = offset - 1  # start at 23:59:59 the day before
         delta += 1  # extend delta for negetiv offset

@@ -38,7 +38,7 @@ class AsynChat(asynchat.async_chat):
         asynchat.async_chat.__init__(self, map=smarthome.socket_map)
         self.addr = (host, int(port))
         self.buffer = bytearray()
-        self.terminator = '\r\n'
+        self.terminator = b'\r\n'
         self.is_connected = False
         self._sh = smarthome
         self._send_lock = threading.Lock()
