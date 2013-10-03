@@ -221,7 +221,7 @@ class WebSocketHandler(asynchat.async_chat):
         self._lock = threading.Lock()
         self._series_lock = threading.Lock()
         self.logics = logics
-        self.proto = 2
+        self.proto = 3
 
     def send_event(self, event, data):
         data = data.copy()  # don't filter the orignal data dict
@@ -354,7 +354,9 @@ class WebSocketHandler(asynchat.async_chat):
         elif command == 'log':
             self.log = True
             name = data['name']
-            num = int(data['max'])
+            num = 10
+            if 'max' in data:
+                num = int(data['max'])
             if name in self.logs:
                 self.json_send({'cmd': 'log', 'name': name, 'log': self.logs[name].export(num), 'init': 'y'})
             else:
@@ -365,7 +367,7 @@ class WebSocketHandler(asynchat.async_chat):
             proto = data['ver']
             if proto != self.proto:
                 logger.warning("Protocol missmatch. Update smarthome(.min).js. Client: {0}".format(self.addr))
-                self.handle_close()
+#               self.handle_close()
                 return
             self.json_send({'cmd': 'proto', 'ver': self.proto})
 
