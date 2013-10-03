@@ -20,6 +20,7 @@
 #########################################################################
 
 import collections
+import time
 
 
 class Log(collections.deque):
@@ -34,7 +35,7 @@ class Log(collections.deque):
 
     def add(self, entry):
         try:
-            entry[0] = entry[0].strftime("%Y-%m-%d %H:%M:%S")
+            entry[0] = time.mktime(entry[0].timetuple()) * 1000 + int(entry[0].microsecond / 1000)
         except:
             pass
         self.appendleft(entry)
