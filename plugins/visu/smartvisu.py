@@ -30,7 +30,7 @@ def parse_tpl(template, replace):
     try:
         with open(template, 'r') as f:
             tpl = f.read()
-    except IOError as e:
+    except Exception as e:
         logger.error("Could not read template file '{0}': {1}".format(template, e))
         return ''
     for s, r in replace:
