@@ -316,7 +316,7 @@ class SQL():
         except Exception as e:
             logger.warning("Problem {0} with query: {1}".format(e, query))
             return reply
-        if tuples == []:
+        if tuples is None:
             return reply
         if func == 'avg':
             tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
