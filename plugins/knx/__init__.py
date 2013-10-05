@@ -119,7 +119,7 @@ class KNX(lib.connection.Client):
         self._send(init)
         self.terminator = 2
         if self._init_ga != []:
-            if self.is_connected:
+            if self.connected:
                 logger.debug('KNX: init read')
                 for ga in self._init_ga:
                     self.groupread(ga)
