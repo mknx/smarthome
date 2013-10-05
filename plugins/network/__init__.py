@@ -31,7 +31,7 @@ logger = logging.getLogger('')
 
 class TCPHandler(lib.connection.Connection):
 
-    def __init__(self, socket_map, parser, dest, sock, source):
+    def __init__(self, parser, dest, sock, source):
         lib.connection.Connection.__init__(self, sock, source)
         self.terminator = b'\n'
         self.parser = parser
@@ -46,25 +46,23 @@ class TCPHandler(lib.connection.Connection):
 
 class TCPDispatcher(lib.connection.Server):
 
-    def __init__(self, parser, socket_map, ip, port):
+    def __init__(self, parser, ip, port):
         lib.connection.Server.__init__(self, ip, port)
-        self.socket_map = socket_map
         self.parser = parser
         self.dest = 'tcp:' + ip + ':' + port
 
-    def handle_accept(self):
+    def handle_connection(self):
         sock, address = self.accept()
         if sock is None:
             return
-        TCPHandler(self.socket_map, self.parser, self.dest, sock, address)
+        TCPHandler(self.parser, self.dest, sock, address)
 
 
 class HTTPHandler(lib.connection.Connection):
 
-    terminator = b"\r\n\r\n"
-
-    def __init__(self, socket_map, parser, dest, sock, source):
+    def __init__(self, parser, dest, sock, source):
         lib.connection.Connection.__init__(self, sock, source)
+        self.terminator = b"\r\n\r\n"
         self.parser = parser
         self._lock = threading.Lock()
         self.dest = dest
@@ -81,35 +79,40 @@ class HTTPHandler(lib.connection.Connection):
 
 class HTTPDispatcher(lib.connection.Server):
 
-    def __init__(self, parser, socket_map, ip, port):
+    def __init__(self, parser, ip, port):
         lib.connection.Server.__init__(self, ip, port)
-        self.socket_map = socket_map
         self.parser = parser
         self.dest = 'http:' + ip + ':' + port
 
-    def handle_accept(self):
+    def handle_connection(self):
         sock, address = self.accept()
         if sock is None:
             return
-        HTTPHandler(self.socket_map, self.parser, self.dest, sock, address)
+        HTTPHandler(self.parser, self.dest, sock, address)
 
 
 class UDPDispatcher(lib.connection.Server):
 
-    def __init__(self, parser, socket_map, ip, port):
+    def __init__(self, parser, ip, port):
         lib.connection.Server.__init__(self, ip, port, proto='UDP')
         self.dest = 'udp:' + ip + ':' + port
         self.parser = parser
 
-#   def handle_read(self):
-#       data, (ip, port) = self.recvfrom(4096)
-#       logger.debug('{} Incoming connection from {}:{}'.format(self.dest, ip, port))
-#       self.parser(ip, self.dest, data.strip())
+    def handle_connection(self):
+        try:
+            data, addr = self.recvfrom(4096)
+            ip = addr[0]
+            addr = "{}:{}".format(addr[0], addr[1])
+            logger.debug("{}: incoming connection from {} to {}".format(self._name, addr, self.address))
+        except Exception as e:
+            logger.exception("{}: {}".format(self._name, e))
+            return
+        self.parser(ip, self.dest, data.decode().strip())
 
 
 class UDPSend(lib.connection.Client):
 
-    def __init__(self, socket_map, host, port, data):
+    def __init__(self, host, port, data):
         lib.connection.Client(self, host, port)
         self.connect()
         self.send(data)
@@ -126,7 +129,6 @@ class Network():
 
     def __init__(self, smarthome, ip='0.0.0.0', port='2727', udp='no', tcp='no', http='no', udp_acl='*', tcp_acl='*', http_acl='*'):
         self._sh = smarthome
-        self.socket_map = smarthome.socket_map
         self.tcp_acl = self.parse_acl(tcp_acl)
         self.udp_acl = self.parse_acl(udp_acl)
         self.http_acl = self.parse_acl(http_acl)
@@ -138,20 +140,20 @@ class Network():
             self.add_listener('http', ip, http, http_acl, generic=True)
 
     def udp(self, host, port, data):
-        UDPSend(self.socket_map, host, port, data)
+        UDPSend(host, port, data)
 
     def add_listener(self, proto, ip, port, acl='*', generic=False):
         dest = proto + ':' + ip + ':' + port
         logger.debug("Adding listener on: {}".format(dest))
         if proto == 'tcp':
-            dispatcher = TCPDispatcher(self.parse_input, self.socket_map, ip, port)
+            dispatcher = TCPDispatcher(self.parse_input, ip, port)
         elif proto == 'udp':
-            dispatcher = UDPDispatcher(self.parse_input, self.socket_map, ip, port)
+            dispatcher = UDPDispatcher(self.parse_input, ip, port)
         elif proto == 'http':
-            dispatcher = HTTPDispatcher(self.parse_input, self.socket_map, ip, port)
+            dispatcher = HTTPDispatcher(self.parse_input, ip, port)
         else:
             return
-        if not dispatcher.listening:
+        if not dispatcher.connected:
             return False
         acl = self.parse_acl(acl)
         if generic:

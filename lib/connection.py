@@ -95,7 +95,7 @@ class Connections(Base):
         for fileno, event in self._epoll.poll(timeout=1):
             if fileno in self._servers:
                 server = self._servers[fileno]
-                server.handle_accept()
+                server.handle_connection()
             else:
                 if event & select.EPOLLIN:
                     try:
@@ -139,7 +139,8 @@ class Server(Base):
             sockaddr = self._create_socket()
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self._socket.bind(sockaddr)
-            self._socket.listen(5)
+            if self._proto.startswith('TCP'):
+                self._socket.listen(5)
             self._socket.setblocking(0)
         except Exception as e:
             logger.error("{}: problem binding {} ({}): {}".format(self._name, self.address, self._proto, e))
@@ -165,7 +166,7 @@ class Server(Base):
         except:
             return None, None
 
-    def handle_accept(self):
+    def handle_connection(self):
         pass
 
 
@@ -195,6 +196,8 @@ class Connection(Base):
             data = self._socket.recv(max_size)
         except Exception as e:
             logger.exception("{}: {}".format(self._name, e))
+            self.close()
+            return
         if data == b'':
             self.close()
             return
