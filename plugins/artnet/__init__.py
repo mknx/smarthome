@@ -107,11 +107,17 @@ class ArtNet():
 		for d in self.dmxdata:
 			data.append(struct.pack('B',d))
 		# convert from list to string
-		data = "".join(data)
+		result = bytes()
+		for token in data:
+			try: # Handels all strings
+				result = result + token.encode('utf-8','ignore')
+			except : # Handels all bytes
+				result = result + token
+#		data = "".join(data)
 		# debug
 #		logger.info("Outgoing Artnet:%s"%(':'.join(x.encode('hex') for x in data)))
 		# send over ethernet
-		self.s.sendto(data, (self.ip, self.port))
+		self.s.sendto(result, (self.ip, self.port))
 
 	def close(self):
 		self.s.close()
