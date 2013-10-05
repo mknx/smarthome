@@ -357,15 +357,15 @@ class SmartHome():
         self.alive = False
         logger.info("Number of Threads: {0}".format(threading.activeCount()))
         try:
-            self.connections.close()
-        except:
-            pass
-        try:
             self.scheduler.stop()
         except:
             pass
         try:
             self._plugins.stop()
+        except:
+            pass
+        try:
+            self.connections.close()
         except:
             pass
         time.sleep(0.5)
