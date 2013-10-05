@@ -57,13 +57,13 @@ class OwBase():
         except Exception as e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
-                logger.error('Onewire: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
+                logger.error('1-Wire: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
                 self._connection_attempts = self._connection_errorlog
             self._lock.release()
             return
         else:
             self.connected = True
-            logger.info('Onewire: connected to {0}:{1}'.format(self.host, self.port))
+            logger.info('1-Wire: connected to {0}:{1}'.format(self.host, self.port))
             self._connection_attempts = 0
             self._lock.release()
         try:
@@ -284,10 +284,11 @@ class OneWire(OwBase):
 
     def stop(self):
         self.alive = False
+        self.close()
 
     def _io_loop(self):
         threading.currentThread().name = '1w-io'
-        logger.debug("Starting I/O detection")
+        logger.debug("1-Wire: Starting I/O detection")
         while self.alive:
             # start = time.time()
             self._io_cycle()
@@ -299,10 +300,10 @@ class OneWire(OwBase):
         if not self.connected:
             return
         for addr in self._ios:
-            if not self.alive:
+            if not self.alive or not self.connected:
                 break
             for key in self._ios[addr]:
-                if key.startswith('O'):  # ignore Output
+                if key.startswith('O'):  # ignore output
                     continue
                 item = self._ios[addr][key]['item']
                 path = self._ios[addr][key]['path']
@@ -322,7 +323,7 @@ class OneWire(OwBase):
 
     def _ibutton_loop(self):
         threading.currentThread().name = '1w-b'
-        logger.debug("Starting iButton detection")
+        logger.debug("1-Wire: Starting iButton detection")
         while self.alive:
             self._ibutton_cycle()
             time.sleep(self._button_wait)
@@ -393,7 +394,7 @@ class OneWire(OwBase):
                     continue
                 item(value, '1-Wire', path)
         cycletime = time.time() - start
-        logger.debug("cycle takes {0} seconds".format(cycletime))
+        logger.debug("1-Wire: sensor cycle takes {0} seconds".format(cycletime))
 
     def _discovery(self):
         self._intruders = []  # reset intrusion detection
@@ -457,7 +458,7 @@ class OneWire(OwBase):
         if 'ow_addr' not in item.conf:
             return
         if 'ow_sensor' not in item.conf:
-            logger.warning("No ow_sensor for {0} defined".format(item.id()))
+            logger.warning("1-Wire: No ow_sensor for {0} defined".format(item.id()))
             return
         addr = item.conf['ow_addr']
         key = item.conf['ow_sensor']
