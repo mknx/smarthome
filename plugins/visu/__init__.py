@@ -95,7 +95,7 @@ class WebSocket(lib.connection.Server):
         with open(directory + '/gen/index.html', 'w') as f:
             f.write(index)
 
-    def handle_accept(self):
+    def handle_connection(self):
         sock, address = self.accept()
         if sock is None:
             return

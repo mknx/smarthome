@@ -181,7 +181,7 @@ class CLI(lib.connection.Server):
         self.sh = smarthome
         self.updates_allowed = smarthome.string2bool(update)
 
-    def handle_accept(self):
+    def handle_connection(self):
         sock, address = self.accept()
         if sock is None:
             return
