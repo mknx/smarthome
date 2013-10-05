@@ -118,7 +118,9 @@ class Logic():
                 logger.warning("{}: Could not access logic file ({}) => ignoring.".format(self.name, self.filename))
                 return
             try:
-                self.bytecode = compile(open(filename).read(), self.filename, 'exec')
+                code = open(filename).read()
+                code = code.lstrip('\ufeff')  # remove BOM
+                self.bytecode = compile(code, self.filename, 'exec')
             except Exception as e:
                 logger.exception("Exception: {}".format(e))
         else:

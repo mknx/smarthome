@@ -30,6 +30,7 @@ def parse_tpl(template, replace):
     try:
         with open(template, 'r') as f:
             tpl = f.read()
+            tpl = tpl.lstrip('\ufeff')  # remove BOM
     except Exception as e:
         logger.error("Could not read template file '{0}': {1}".format(template, e))
         return ''
