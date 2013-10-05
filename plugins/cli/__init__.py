@@ -20,42 +20,29 @@
 #########################################################################
 
 import logging
-import asynchat
-import asyncore
-import socket
 import threading
+import lib.connection
 
 logger = logging.getLogger('')
 
 
-class CLIHandler(asynchat.async_chat):
+class CLIHandler(lib.connection.Connection):
     terminator = '\n'.encode()
 
     def __init__(self, smarthome, sock, source, updates):
-        asynchat.async_chat.__init__(self, sock=sock, map=smarthome.socket_map)
+        lib.connection.Connection.__init__(self, sock, source)
         self.source = source
         self.updates_allowed = updates
         self.sh = smarthome
-        self._lock = threading.Lock()
-        self.buffer = bytearray()
         self.push("SmartHome.py v{0}\n".format(self.sh.version))
         self.push("Enter 'help' for a list of available commands.\n")
         self.push("> ")
 
     def push(self, data):
-        asynchat.async_chat.push(self, data.encode())
+        self.send(data.encode())
 
-    def collect_incoming_data(self, data):
-        self.buffer.extend(data)
-
-    def initiate_send(self):
-        self._lock.acquire()
-        asynchat.async_chat.initiate_send(self)
-        self._lock.release()
-
-    def found_terminator(self):
-        cmd = self.buffer.decode().strip()
-        self.buffer = bytearray()
+    def found_terminator(self, data):
+        cmd = data.decode().strip()
         if cmd.startswith('ls'):
             self.push("Items:\n======\n")
             self.ls(cmd.lstrip('ls').strip())
@@ -79,14 +66,7 @@ class CLIHandler(asynchat.async_chat):
             self.usage()
         elif cmd in ('quit', 'q', 'exit', 'x'):
             self.push('bye\n')
-            try:
-                self.shutdown(socket.SHUT_RDWR)
-            except:
-                pass
-            try:
-                self.close()
-            except:
-                pass
+            self.close()
             return
         self.push("> ")
 
@@ -194,39 +174,23 @@ class CLIHandler(asynchat.async_chat):
         self.push('q: alias for quit\n')
 
 
-class CLI(asyncore.dispatcher):
+class CLI(lib.connection.Server):
 
     def __init__(self, smarthome, update='False', ip='127.0.0.1', port=2323):
-        asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
+        lib.connection.Server.__init__(self, ip, port)
         self.sh = smarthome
         self.updates_allowed = smarthome.string2bool(update)
-        try:
-            self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.set_reuse_addr()
-            self.bind((ip, int(port)))
-            self.listen(5)
-        except Exception:
-            logger.error("CLI: Could not bind socket on {}:{}".format(ip, port))
 
     def handle_accept(self):
-        pair = self.accept()
-        if pair is not None:
-            sock, (ip, port) = pair
-            logger.debug('CLI: Incoming connection from {}:{}'.format(ip, port))
-            CLIHandler(self.sh, sock, ip, self.updates_allowed)
+        sock, address = self.accept()
+        if sock is None:
+            return
+        logger.debug("{}: incoming connection from {} to {}".format(self._name, address, self.address))
+        CLIHandler(self.sh, sock, address, self.updates_allowed)
 
     def run(self):
         self.alive = True
 
     def stop(self):
         self.alive = False
-        try:
-            self.shutdown(socket.SHUT_RDWR)
-            self.close()
-        except:
-            pass
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    myplugin = CLI('smarthome-dummy')
-    myplugin.run()
+        self.close()

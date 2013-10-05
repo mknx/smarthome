@@ -34,12 +34,12 @@ class eBus():
         self._sh = smarthome
         self._cycle = int(cycle)
         self._sock = False
-        self.is_connected = False
+        self.connected = False
         self.host = host
         self.port = int(port)
         self._connection_attempts = 0
         self._connection_errorlog = 60
-        self._sh.monitor_connection(self)
+        smarthome.connections.monitor(self)
         self._lock = threading.Lock()
         self.refresh_cycle = self._cycle
 
@@ -70,7 +70,7 @@ class eBus():
                 break
 
     def request(self, request):
-        if not self.is_connected:
+        if not self.connected:
             logger.info("eBusd not connected")
             return
         self._lock.acquire()
@@ -111,12 +111,12 @@ class eBus():
             self._lock.release()
             return
         logger.info('Connected to {0}:{1}'.format(self.host, self.port))
-        self.is_connected = True
+        self.connected = True
         self._connection_attempts = 0
         self._lock.release()
 
     def close(self):
-        self.is_connected = False
+        self.connected = False
         try:
             self._sock.shutdown(socket.SHUT_RDWR)
         except:

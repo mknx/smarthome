@@ -241,7 +241,7 @@ class Scheduler(threading.Thread):
                     value = job['cron'][entry]
         self._scheduler[name]['next'] = next_time
         self._scheduler[name]['value'] = value
-        if name not in ['sh.con', 'series']:
+        if name not in ['Connections', 'series']:
             logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):

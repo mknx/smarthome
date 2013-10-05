@@ -20,23 +20,21 @@
 #########################################################################
 
 import logging
-import asynchat
-import asyncore
-import socket
 import ssl
 import hashlib
 import base64
 import threading
 import json
+import lib.connection
 
 
 logger = logging.getLogger('')
 
 
-class WebSocket(asyncore.dispatcher):
+class WebSocket(lib.connection.Server):
 
     def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False):
-        asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
+        lib.connection.Server.__init__(self, ip, port)
         self._sh = smarthome
         smarthome.add_event_listener(['log', 'rrd'], self._send_event)
         self.clients = []
@@ -54,13 +52,6 @@ class WebSocket(asyncore.dispatcher):
         if generator_dir:  # transition feature
             self.generator_dir = generator_dir
         self.smartvisu_dir = smartvisu_dir
-        try:
-            self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.set_reuse_addr()
-            self.bind((ip, int(port)))
-            self.listen(5)
-        except Exception:
-            logger.error("Could not bind to socket {0}:{1}".format(ip, port))
 
     def _smartvisu_pages(self, directory):
         from . import smartvisu
@@ -105,25 +96,20 @@ class WebSocket(asyncore.dispatcher):
             f.write(index)
 
     def handle_accept(self):
-        pair = self.accept()
-        if pair is None:
+        sock, address = self.accept()
+        if sock is None:
             return
-        else:
-            sock, addr = pair
-            client_sock = sock
-            addr = "{0}:{1}".format(addr[0], addr[1])
-            logger.info('WebSocket: incoming connection from {0}'.format(addr))
         if self.tls:
             try:
                 # cert_reqs=ssl.CERT_REQUIRED
-                client_sock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_OPTIONAL, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_TLSv1)
-                logger.debug('Client cert: {0}'.format(client_sock.getpeercert()))
-                logger.debug('Cipher: {0}'.format(client_sock.cipher()))
+                sock = ssl.wrap_socket(sock, server_side=True, cert_reqs=ssl.CERT_OPTIONAL, certfile=self.tls_crt, ca_certs=self.tls_ca, keyfile=self.tls_key, ssl_version=ssl.PROTOCOL_TLSv1)
+                logger.debug('Client cert: {0}'.format(sock.getpeercert()))
+                logger.debug('Cipher: {0}'.format(sock.cipher()))
 #               print ssl.OPENSSL_VERSION
             except Exception as e:
                 logger.exception(e)
                 return
-        client = WebSocketHandler(self._sh, self, client_sock, addr, self.visu_items, self.visu_logics)
+        client = WebSocketHandler(self._sh, self, sock, address, self.visu_items, self.visu_logics)
         self._lock.acquire()
         self.clients.append(client)
         self._lock.release()
@@ -138,20 +124,12 @@ class WebSocket(asyncore.dispatcher):
 
     def stop(self):
         self.alive = False
-        logger.debug('Closing WebSocket')
         for client in self.clients:
             try:
-                client.handle_close()
+                client.close()
             except:
                 pass
-        try:
-            self.shutdown(socket.SHUT_RDWR)
-        except:
-            pass
-        try:
-            self.close()
-        except:
-            pass
+        self.close()
 
     def parse_item(self, item):
         if 'visu' in item.conf:
@@ -200,16 +178,15 @@ class WebSocket(asyncore.dispatcher):
         self._lock.release()
 
 
-class WebSocketHandler(asynchat.async_chat):
+class WebSocketHandler(lib.connection.Connection):
 
     def __init__(self, smarthome, dispatcher, sock, addr, items, logics):
-        asynchat.async_chat.__init__(self, sock, map=smarthome.socket_map)
-        self.set_terminator("\r\n\r\n".encode())
+        lib.connection.Connection.__init__(self, sock, addr)
+        self.terminator = b"\r\n\r\n"
         self._sh = smarthome
         self._dp = dispatcher
-        self.parse_data = self.parse_header
+        self.found_terminator = self.parse_header
         self.addr = addr
-        self.ibuffer = bytearray()
         self.header = {}
         self.monitor = {'item': [], 'rrd': [], 'log': []}
         self.monitor_id = {'item': 'item', 'rrd': 'item', 'log': 'name'}
@@ -237,33 +214,10 @@ class WebSocketHandler(asynchat.async_chat):
     def handle_close(self):
         # remove circular references
         self._dp.remove_client(self)
-        self.ibuffer = bytearray()
-        self.del_channel(map=self._sh.socket_map)
         try:
-            del(self.json_send, self.parse_data)
+            del(self.json_send, self.found_terminator)
         except:
             pass
-        try:
-            self.shutdown(socket.SHUT_RDWR)
-        except:
-            pass
-        try:
-            self.close()
-        except:
-            pass
-
-    def collect_incoming_data(self, data):
-        self.ibuffer.extend(data)
-
-    def initiate_send(self):
-        self._lock.acquire()
-        asynchat.async_chat.initiate_send(self)
-        self._lock.release()
-
-    def found_terminator(self):
-        data = self.ibuffer
-        self.ibuffer = bytearray()
-        self.parse_data(data)
 
     def update(self, path, data, source):
         if path in self.monitor['item']:
@@ -365,10 +319,10 @@ class WebSocketHandler(asynchat.async_chat):
                 self.monitor['log'].append(name)
         elif command == 'proto':  # protocol version
             proto = data['ver']
-            if proto != self.proto:
-                logger.warning("Protocol missmatch. Update smarthome(.min).js. Client: {0}".format(self.addr))
-#               self.handle_close()
-                return
+            if proto > self.proto:
+                logger.warning("Protocol missmatch. update your client: {0}".format(self.addr))
+            elif proto < self.proto:
+                logger.warning("Protocol missmatch. update SmartHome.py")
             self.json_send({'cmd': 'proto', 'ver': self.proto})
 
     def parse_header(self, data):
@@ -386,7 +340,7 @@ class WebSocketHandler(asynchat.async_chat):
 
     def handshake_failed(self):
         logger.debug("Handshake for {0} with the following header failed! {1}".format(self.addr, repr(self.header)))
-        self.handle_close()
+        self.close()
 
     def set_bit(self, byte, bit):
         return byte | (1 << bit)
@@ -395,16 +349,16 @@ class WebSocketHandler(asynchat.async_chat):
         return not 0 == (byte & (1 << bit))
 
     def rfc6455_handshake(self):
-        self.set_terminator(8)
-        self.parse_data = self.rfc6455_parse
+        self.terminator = 8
+        self.found_terminator = self.rfc6455_parse
         self.json_send = self.rfc6455_send
         key = self.header[b'Sec-WebSocket-Key'] + b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
         key = base64.b64encode(hashlib.sha1(key).digest()).decode()
-        self.push('HTTP/1.1 101 Switching Protocols\r\n'.encode())
-        self.push('Upgrade: websocket\r\n'.encode())
-        self.push('Connection: Upgrade\r\n'.encode())
-        self.push('Sec-WebSocket-Accept: {0}\r\n'.format(key).encode())
-        self.push('\r\n'.encode())
+        self.send('HTTP/1.1 101 Switching Protocols\r\n'.encode())
+        self.send('Upgrade: websocket\r\n'.encode())
+        self.send('Connection: Upgrade\r\n'.encode())
+        self.send('Sec-WebSocket-Accept: {0}\r\n'.format(key).encode())
+        self.send('\r\n'.encode())
 
     def rfc6455_parse(self, data):
         # fin = bit_set(data[0], 7)
@@ -414,7 +368,7 @@ class WebSocketHandler(asynchat.async_chat):
         opcode = data[0] & 0x0f
         if opcode == 8:
             logger.debug("WebSocket: closing connection to {0}.".format(self.addr))
-            self.handle_close()
+            self.close()
             return
         header = 2
         masked = self.bit_set(data[1], 7)
@@ -429,8 +383,8 @@ class WebSocketHandler(asynchat.async_chat):
             length = int.from_bytes(data[2:10], byteorder='big')
         read = header + length
         if len(data) < read:  # data too short, read more
-            self.ibuffer = data
-            self.set_terminator(read - 8)
+            self.inbuffer = data + self.inbuffer
+            self.terminator = read
             return
         if masked:
             key = data[header - 4:header]
@@ -440,7 +394,7 @@ class WebSocketHandler(asynchat.async_chat):
         else:
             payload = data[header:]
         self.json_parse(payload.decode())
-        self.set_terminator(8)
+        self.terminator = 8
 
     def rfc6455_send(self, data):
         data = json.dumps(data, separators=(',', ':'))
@@ -459,4 +413,4 @@ class WebSocketHandler(asynchat.async_chat):
         else:
             logger.warning("data to big: {0}".format(data))
             return
-        self.push(header + data.encode())
+        self.send(header + data.encode())

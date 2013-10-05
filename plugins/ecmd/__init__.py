@@ -41,7 +41,7 @@ class ECMD1wireBase():
         self.host = host
         self.port = int(port)
         self._lock = threading.Lock()
-        self.is_connected = False
+        self.connected = False
         self._connection_attempts = 0
         self._connection_errorlog = 60
 
@@ -58,7 +58,7 @@ class ECMD1wireBase():
                 self._connection_attempts = self._connection_errorlog
             return
         else:
-            self.is_connected = True
+            self.connected = True
             logger.info('ecmd1wire: connected to {0}:{1}'.format(self.host, self.port))
             self._connection_attempts = 0
         finally:
@@ -73,7 +73,7 @@ class ECMD1wireBase():
         #     OK
         #  @return dict {'addr' : value}
         #
-        if not self.is_connected:
+        if not self.connected:
             raise owex("ecmd1wire: No connection to ethersex server {0}:{1}.".format(self.host, self.port))
         self._lock.acquire()
         try:
@@ -101,7 +101,7 @@ class ECMD1wireBase():
         return table
 
     def close(self):
-        self.is_connected = False
+        self.connected = False
         try:
             self._sock.close()
         except:
@@ -116,7 +116,7 @@ class ECMD(ECMD1wireBase):
         ECMD1wireBase.__init__(self, host, port)
         self._sh = smarthome
         self._cycle = int(cycle)
-        smarthome.monitor_connection(self)
+        smarthome.connections.monitor(self)
 
     def _refresh(self):
         start = time.time()

@@ -23,17 +23,17 @@ import threading
 import logging
 import datetime
 
-import lib.my_asynchat
+import lib.connection
 import lib.log
 
 logger = logging.getLogger('')
 
 
-class Asterisk(lib.my_asynchat.AsynChat):
+class Asterisk(lib.connection.Client):
 
     def __init__(self, smarthome, username, password, host='127.0.0.1', port=5038):
-        lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
-        self.terminator = '\r\n\r\n'.encode()
+        lib.connection.Client.__init__(self, host, port, monitor=True)
+        self.terminator = b'\r\n\r\n'
         self._init_cmd = {'Action': 'Login', 'Username': username, 'Secret': password, 'Events': 'call,user,cdr'}
         self._sh = smarthome
         self._reply_lock = threading.Condition()
@@ -43,10 +43,9 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._mailboxes = {}
         self._trigger_logics = {}
         self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', ['start', 'name', 'number', 'duration', 'direction'])
-        smarthome.monitor_connection(self)
 
     def _command(self, d, reply=True):
-        if not self.is_connected:
+        if not self.connected:
             return
         self._cmd_lock.acquire()
         if self._aid > 100:
@@ -58,7 +57,7 @@ class Asterisk(lib.my_asynchat.AsynChat):
             d['ActionID'] = self._aid
         #logger.debug("Request {0} - sending: {1}".format(self._aid, d))
         self._reply_lock.acquire()
-        self.push(('\r\n'.join(['{0}: {1}'.format(key, value) for (key, value) in list(d.items())]) + '\r\n\r\n').encode())
+        self.send(('\r\n'.join(['{0}: {1}'.format(key, value) for (key, value) in list(d.items())]) + '\r\n\r\n').encode())
         if reply:
             self._reply_lock.wait(2)
         self._reply_lock.release()
@@ -109,9 +108,8 @@ class Asterisk(lib.my_asynchat.AsynChat):
             if device == hang:
                 self._command({'Action': 'Hangup', 'Channel': channel}, reply=False)
 
-    def found_terminator(self):
-        data = self.buffer.decode()
-        self.buffer = bytearray()
+    def found_terminator(self, data):
+        data = data.decode()
         event = {}
         for line in data.splitlines():
             key, sep, value = line.partition(': ')
@@ -244,4 +242,4 @@ class Asterisk(lib.my_asynchat.AsynChat):
         self._reply_lock.acquire()
         self._reply_lock.notify()
         self._reply_lock.release()
-        self.handle_close()
+        self.close()

@@ -44,7 +44,7 @@ class OwBase():
         self._flag = 0x00000100   # ownet
         self._flag += 0x00000004  # persistence
         self._flag += 0x00000002  # list special directories
-        self.is_connected = False
+        self.connected = False
         self._connection_attempts = 0
         self._connection_errorlog = 60
 
@@ -62,7 +62,7 @@ class OwBase():
             self._lock.release()
             return
         else:
-            self.is_connected = True
+            self.connected = True
             logger.info('Onewire: connected to {0}:{1}'.format(self.host, self.port))
             self._connection_attempts = 0
             self._lock.release()
@@ -102,7 +102,7 @@ class OwBase():
         header[8:12] = cmd.to_bytes(4, byteorder='big')
         header[12:16] = self._flag.to_bytes(4, byteorder='big')
         header[16:20] = data.to_bytes(4, byteorder='big')
-        if not self.is_connected:
+        if not self.connected:
             raise owex("No connection to owserver.")
         self._lock.acquire()
         try:
@@ -158,7 +158,7 @@ class OwBase():
         return payload.decode()
 
     def close(self):
-        self.is_connected = False
+        self.connected = False
         try:
             self._sock.shutdown(socket.SHUT_RDWR)
         except:
@@ -179,7 +179,8 @@ class OwBase():
         elif typ == 'DS2438':  # Multi
             try:
                 page3 = self.read(path + 'pages/page.3').encode('hex').upper()
-            except Exception:
+            except Exception as e:
+                logger.exception(e)
                 return
             try:
                 vis = float(self.read(path + 'vis'))
@@ -241,7 +242,7 @@ class OneWire(OwBase):
         self._io_wait = float(io_wait)
         self._button_wait = float(button_wait)
         self._cycle = int(cycle)
-        smarthome.monitor_connection(self)
+        smarthome.connections.monitor(self)
 
     def wrapper(self, bus):  # dummy method not needed right now
         import types
@@ -295,7 +296,7 @@ class OneWire(OwBase):
             time.sleep(self._io_wait)
 
     def _io_cycle(self):
-        if not self.is_connected:
+        if not self.connected:
             return
         for addr in self._ios:
             if not self.alive:
@@ -329,7 +330,7 @@ class OneWire(OwBase):
     def _ibutton_cycle(self):
         found = []
         error = False
-        if not self.is_connected:
+        if not self.connected:
             return
         for bus in self._ibutton_buses:
             if not self.alive:
@@ -362,7 +363,7 @@ class OneWire(OwBase):
         pass
 
     def _sensor_cycle(self):
-        if not self.is_connected:
+        if not self.connected:
             return
         start = time.time()
         for addr in self._sensors:
@@ -378,7 +379,7 @@ class OneWire(OwBase):
                     value = self.read('/uncached' + path)
                 except Exception:
                     logger.info("1-Wire: problem reading {0}".format(addr))
-                    if not self.is_connected:
+                    if not self.connected:
                         return
                     else:
                         continue
@@ -396,7 +397,7 @@ class OneWire(OwBase):
 
     def _discovery(self):
         self._intruders = []  # reset intrusion detection
-        if not self.is_connected:
+        if not self.connected:
             return
         try:
             listing = self.dir('/')

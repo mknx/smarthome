@@ -20,26 +20,22 @@
 #########################################################################
 
 import logging
-import socket
-import threading
-import struct
 
-import lib.my_asynchat
+import lib.connections
 
 logger = logging.getLogger('')
 
-REQ_DELIMITER = '\r'
-RESP_DELIMITER = '\r\n'
+REQ_DELIMITER = b'\r'
+RESP_DELIMITER = b'\r\n'
 
-class Russound(lib.my_asynchat.AsynChat):
+class Russound(lib.connections.Client):
 
     def __init__(self, smarthome, host, port=9621):
-        lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
+        lib.connections.Client.__init__(self, host, port, monitor=True)
         self.terminator = RESP_DELIMITER
         self._sh = smarthome
         self.params = {}
         self.sources = {}
-        smarthome.monitor_connection(self)
 
     def parse_item(self, item):
 #        if 'rus_src' in item.conf:
@@ -51,7 +47,7 @@ class Russound(lib.my_asynchat.AsynChat):
         if 'rus_path' in item.conf:
             path = item.conf['rus_path']
             parts = path.split('.', 2)
-            
+
             if len(parts) is not 3:
                 logger.warning("Invalid Russound path with value {0}, format should be 'c.z.p' c = controller, z = zone, p = parameter name.".format(path))
                 return None
@@ -85,7 +81,7 @@ class Russound(lib.my_asynchat.AsynChat):
                 item._enforce_updates = True
 
             item.conf['rus_path'] = path
-            
+
         param = param.lower()
         self.params[path] = {'c': int(c), 'z': int(z), 'param':param, 'item':item}
         logger.debug("Parameter {0} with path {1} added".format(item, path))
@@ -98,7 +94,7 @@ class Russound(lib.my_asynchat.AsynChat):
     def _restrict(self, val, minval, maxval):
         if val < minval: return minval
         if val > maxval: return maxval
-        return val        
+        return val
 
     def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'Russound':
@@ -163,15 +159,16 @@ class Russound(lib.my_asynchat.AsynChat):
 
     def _send_cmd(self, cmd):
         logger.debug("Sending request: {0}".format(cmd))
-        
+
         # if connection is closed we don't wait for sh.con to reopen it
         # instead we reconnect immediatly
-        if not self.is_connected:
+        if not self.connected:
             self.connect()
 
-        self.push(cmd)
+        self.send(cmd)
 
-    def _parse_response(self, resp):
+    def found_terminator(self, resp):
+        resp = resp.decode()
         try:
             logger.debug("Parse response: {0}".format(resp))
             if resp[0] == 'S':
@@ -223,11 +220,6 @@ class Russound(lib.my_asynchat.AsynChat):
         elif cmd == 'name':
             return str(value, 'utf-8')
 
-    def found_terminator(self):
-        data = self.buffer
-        self.buffer = bytearray()
-        self._parse_response(data.decode())
-
     def handle_connect(self):
         self.discard_buffers()
         self.terminator = RESP_DELIMITER
@@ -249,4 +241,4 @@ class Russound(lib.my_asynchat.AsynChat):
 
     def stop(self):
         self.alive = False
-        self.handle_close()
+        self.close()

@@ -20,193 +20,100 @@
 #########################################################################
 
 import logging
-import asynchat
-import asyncore
-import socket
 import threading
 import urllib.request
 import urllib.parse
 import urllib.error
+import lib.connection
 
 logger = logging.getLogger('')
 
 
-class TCPHandler(asynchat.async_chat):
-
-    terminator = '\n'.encode()
+class TCPHandler(lib.connection.Connection):
 
     def __init__(self, socket_map, parser, dest, sock, source):
-        asynchat.async_chat.__init__(self, sock=sock, map=socket_map)
+        lib.connection.Connection.__init__(self, sock, source)
+        self.terminator = b'\n'
         self.parser = parser
         self._lock = threading.Lock()
         self.dest = dest
-        self.buffer = bytearray()
         self.source = source
 
-    def initiate_send(self):
-        self._lock.acquire()
-        asynchat.async_chat.initiate_send(self)
-        self._lock.release()
-
-    def collect_incoming_data(self, data):
-        self.buffer.extend(data)
-
-    def found_terminator(self):
-        data = self.buffer
-        self.buffer = bytearray()
+    def found_terminator(self, data):
         self.parser(self.source, self.dest, data.strip())
-        try:
-            self.shutdown(socket.SHUT_RDWR)
-        except:
-            pass
-        try:
-            self.close()
-        except:
-            pass
+        self.close()
 
 
-class TCPDispatcher(asyncore.dispatcher):
+class TCPDispatcher(lib.connection.Server):
 
     def __init__(self, parser, socket_map, ip, port):
-        asyncore.dispatcher.__init__(self, map=socket_map)
+        lib.connection.Server.__init__(self, ip, port)
         self.socket_map = socket_map
         self.parser = parser
         self.dest = 'tcp:' + ip + ':' + port
-        try:
-            self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.set_reuse_addr()
-            self.bind((ip, int(port)))
-            self.listen(5)
-            self.listening = True
-        except Exception:
-            logger.error("Could not bind TCP socket on {}:{}".format(ip, port))
-            self.listening = False
 
     def handle_accept(self):
-        pair = self.accept()
-        if pair is not None:
-            sock, (ip, port) = pair
-            logger.debug('{} Incoming connection from {}:{}'.format(self.dest, ip, port))
-            TCPHandler(self.socket_map, self.parser, self.dest, sock, ip)
+        sock, address = self.accept()
+        if sock is None:
+            return
+        TCPHandler(self.socket_map, self.parser, self.dest, sock, address)
 
 
-class HTTPHandler(asynchat.async_chat):
+class HTTPHandler(lib.connection.Connection):
 
-    terminator = "\r\n\r\n".encode()
+    terminator = b"\r\n\r\n"
 
     def __init__(self, socket_map, parser, dest, sock, source):
-        asynchat.async_chat.__init__(self, sock=sock, map=socket_map)
+        lib.connection.Connection.__init__(self, sock, source)
         self.parser = parser
         self._lock = threading.Lock()
         self.dest = dest
-        self.buffer = bytearray()
         self.source = source
 
-    def initiate_send(self):
-        self._lock.acquire()
-        asynchat.async_chat.initiate_send(self)
-        self._lock.release()
-
-    def collect_incoming_data(self, data):
-        self.buffer.extend(data)
-
-    def found_terminator(self):
-        data = self.buffer
-        self.buffer = bytearray()
+    def found_terminator(self, data):
         for line in data.decode().splitlines():
             if line.startswith('GET'):
                 request = line.split(' ')[1].strip('/')
                 self.parser(self.source, self.dest, urllib.parse.unquote(request))
                 break
-        try:
-            self.shutdown(socket.SHUT_RDWR)
-        except:
-            pass
-        try:
-            self.close()
-        except:
-            pass
+        self.close()
 
 
-class HTTPDispatcher(asyncore.dispatcher):
+class HTTPDispatcher(lib.connection.Server):
 
     def __init__(self, parser, socket_map, ip, port):
-        asyncore.dispatcher.__init__(self, map=socket_map)
+        lib.connection.Server.__init__(self, ip, port)
         self.socket_map = socket_map
         self.parser = parser
         self.dest = 'http:' + ip + ':' + port
-        try:
-            self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.set_reuse_addr()
-            self.bind((ip, int(port)))
-            self.listen(5)
-            self.listening = True
-        except Exception:
-            logger.error("Could not bind TCP socket for HTTP on {}:{}".format(ip, port))
-            self.listening = False
 
     def handle_accept(self):
-        pair = self.accept()
-        if pair is not None:
-            sock, (ip, port) = pair
-            logger.debug('{} Incoming connection from {}:{}'.format(self.dest, ip, port))
-            HTTPHandler(self.socket_map, self.parser, self.dest, sock, ip)
+        sock, address = self.accept()
+        if sock is None:
+            return
+        HTTPHandler(self.socket_map, self.parser, self.dest, sock, address)
 
 
-class UDPDispatcher(asyncore.dispatcher):
+class UDPDispatcher(lib.connection.Server):
 
     def __init__(self, parser, socket_map, ip, port):
-        asyncore.dispatcher.__init__(self, map=socket_map)
+        lib.connection.Server.__init__(self, ip, port, proto='UDP')
         self.dest = 'udp:' + ip + ':' + port
         self.parser = parser
-        try:
-            self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.set_reuse_addr()
-            self.bind((ip, int(port)))
-            self.listening = True
-        except Exception:
-            logger.error("Could not bind UDP socket on {}:{}".format(ip, port))
-            self.listening = False
 
-    def handle_read(self):
-        data, (ip, port) = self.recvfrom(4096)
-        logger.debug('{} Incoming connection from {}:{}'.format(self.dest, ip, port))
-        self.parser(ip, self.dest, data.strip())
-
-    def writable(self):
-        return False
+#   def handle_read(self):
+#       data, (ip, port) = self.recvfrom(4096)
+#       logger.debug('{} Incoming connection from {}:{}'.format(self.dest, ip, port))
+#       self.parser(ip, self.dest, data.strip())
 
 
-class UDPSend(asyncore.dispatcher_with_send):
+class UDPSend(lib.connection.Client):
 
     def __init__(self, socket_map, host, port, data):
-        asyncore.dispatcher_with_send.__init__(self, map=socket_map)
-        try:
-            self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.connect((host, int(port)))
-        except Exception:
-            logger.warning("Could not connect to {}:{}, to send data: {}.".format(host, port, data))
-            return
+        lib.connection.Client(self, host, port)
+        self.connect()
         self.send(data)
-
-    def writable(self):
-        if len(self.out_buffer) > 0 and self.connected:
-            return True
-        else:
-            self.close()
-            return False
-
-    def readable(self):
-        return False
-
-    def handle_connect(self):
-        pass
-
-    def handle_close(self):
-        try:
-            self.close()
-        except:
-            pass
+        self.close()
 
 
 class Network():
