@@ -348,7 +348,10 @@ class SmartHome():
         # Main Loop
         #############################################################
         while self.alive:
-            self.connections.poll()
+            try:
+                self.connections.poll(e)
+            except Exception as e:
+                logger.exception("Connection polling failed: {}".format(e))
 
     def stop(self, signum=None, frame=None):
         self.alive = False

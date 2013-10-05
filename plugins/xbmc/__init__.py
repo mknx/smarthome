@@ -109,7 +109,7 @@ class xbmc(lib.connection.Client):
             data = {"jsonrpc": "2.0", "id": id, "method": method}
         self._reply_lock.acquire()
         #logger.debug("XBMC sending: {0}".format(json.dumps(data, separators=(',', ':'))))
-        self.send(json.dumps(data, separators=(',', ':')) + '\r\n')
+        self.send((json.dumps(data, separators=(',', ':')) + '\r\n').encode())
         if wait:
             self._reply_lock.wait(2)
         self._reply_lock.release()
