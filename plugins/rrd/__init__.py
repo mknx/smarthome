@@ -66,8 +66,8 @@ class RRD():
                     value
                 )
             except Exception as e:
-                logger.warning("error updating rrd for {}: {}".format(itempath, e))
-                return
+                logger.warning("RRD: error updating {}: {}".format(itempath, e))
+                continue
 
     def parse_item(self, item):
         if 'rrd' not in item.conf:
