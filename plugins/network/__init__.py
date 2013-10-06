@@ -287,7 +287,7 @@ class Network():
             if message is None:
                 message = str(item()).encode()
             else:
-                message = message.replace('itemvalue', item()).encode()
+                message = message.replace('itemvalue', str(item())).encode()
             host, __, port = addr.partition(':')
             self.udp(host, port, message)
 
