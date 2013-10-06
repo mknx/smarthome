@@ -284,7 +284,10 @@ class Network():
     def update_item(self, item, caller=None, source=None, dest=None):
         if 'nw_udp_send' in item.conf:
             addr, __, message = item.conf['nw_udp_send'].partition('=')
-            message = message.replace('value', item()).encode()
+            if message is None:
+                message = str(item()).encode()
+            else:
+                message = message.replace('value', item()).encode()
             host, __, port = addr.partition(':')
             self.udp(host, port, message)
 
