@@ -137,7 +137,7 @@ class Network():
     def udp(self, host, port, data):
         try:
             family, type, proto, canonname, sockaddr = socket.getaddrinfo(host, port)[0]
-            sock = socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.sendto(data.encode(), (sockaddr[0], sockaddr[1]))
             sock.close()
             del(sock)
