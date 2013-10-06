@@ -275,6 +275,15 @@ class Network():
 
     def parse_item(self, item):
         self.parse_obj(item, 'item')
+        if 'nw_udp_send' in item.conf:
+            return self.update_item
+
+    def update_item(self, item, caller=None, source=None, dest=None):
+        if 'nw_udp_send' in item.conf:
+            addr, __, message = item.conf['nw_udp_send'].partition('=')
+            message = message.replace('value', item()).encode()
+            host, __, port = addr.partition(':')
+            self.udp(host, port, message)
 
     def parse_obj(self, obj, obj_type):
         # nw_acl, nw_udp, nw_tcp
