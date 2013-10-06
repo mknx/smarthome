@@ -155,6 +155,7 @@ class Server(Base):
         self._poller.unregister_connection(self._socket.fileno())
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
+        del(self._socket)
 
     def accept(self):
         try:
@@ -253,6 +254,7 @@ class Connection(Base):
         self.handle_close()
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
+        del(self._socket)
 
     def discard_buffers(self):
         self.inbuffer = bytearray()
