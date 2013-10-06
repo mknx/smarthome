@@ -21,6 +21,7 @@
 
 import logging
 import threading
+import socket
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -110,15 +111,6 @@ class UDPDispatcher(lib.connection.Server):
         self.parser(ip, self.dest, data.decode().strip())
 
 
-class UDPSend(lib.connection.Client):
-
-    def __init__(self, host, port, data):
-        lib.connection.Client(self, host, port)
-        self.connect()
-        self.send(data)
-        self.close()
-
-
 class Network():
 
     generic_listeners = {}
@@ -140,7 +132,17 @@ class Network():
             self.add_listener('http', ip, http, http_acl, generic=True)
 
     def udp(self, host, port, data):
-        UDPSend(host, port, data)
+        try:
+            family, type, proto, canonname, sockaddr = socket.getaddrinfo(host, port)[0]
+            sock = socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.sendto(data.encode(), (sockaddr[0], sockaddr[1]))
+            sock.close()
+            del(sock)
+        except Exception as e:
+            logger.warning("UDP: Problem sending data to {}:{}: ".format(host, port, e))
+            pass
+        else:
+            logger.debug("UDP: Sending data to {}:{}: ".format(host, port, data))
 
     def add_listener(self, proto, ip, port, acl='*', generic=False):
         dest = proto + ':' + ip + ':' + port
