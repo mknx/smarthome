@@ -51,6 +51,7 @@ class TCPDispatcher(lib.connection.Server):
         lib.connection.Server.__init__(self, ip, port)
         self.parser = parser
         self.dest = 'tcp:' + ip + ':' + port
+        self.connect()
 
     def handle_connection(self):
         sock, address = self.accept()
@@ -84,6 +85,7 @@ class HTTPDispatcher(lib.connection.Server):
         lib.connection.Server.__init__(self, ip, port)
         self.parser = parser
         self.dest = 'http:' + ip + ':' + port
+        self.connect()
 
     def handle_connection(self):
         sock, address = self.accept()
@@ -98,6 +100,7 @@ class UDPDispatcher(lib.connection.Server):
         lib.connection.Server.__init__(self, ip, port, proto='UDP')
         self.dest = 'udp:' + ip + ':' + port
         self.parser = parser
+        self.connect()
 
     def handle_connection(self):
         try:
