@@ -20,11 +20,11 @@
 ##########################################################################
 
 import logging
+import bisect
 import time
 import datetime
 import calendar
 import sys
-import queue
 import traceback
 import threading
 import os  # noqa
@@ -39,6 +39,30 @@ from dateutil.tz import tzutc
 logger = logging.getLogger('')
 
 
+class PriorityQueue:
+
+    def __init__(self):
+        self.queue = []
+        self.lock = threading.Lock()
+
+    def insert(self, priority, data):
+        self.lock.acquire()
+        bisect.insort(self.queue, (priority, data))
+        self.lock.release()
+
+    def get(self):
+        self.lock.acquire()
+        try:
+            return self.queue.pop(0)
+        except IndexError:
+            raise
+        finally:
+            self.lock.release()
+
+    def qsize(self):
+        return len(self.queue)
+
+
 class Scheduler(threading.Thread):
 
     _workers = []
@@ -46,8 +70,8 @@ class Scheduler(threading.Thread):
     _worker_max = 30
     _worker_delta = 60  # wait 60 seconds before adding another worker thread
     _scheduler = {}
-    _runq = queue.PriorityQueue()
-    _triggerq = queue.PriorityQueue()
+    _runq = PriorityQueue()
+    _triggerq = PriorityQueue()
 
     def __init__(self, smarthome):
         threading.Thread.__init__(self, name='Scheduler')
@@ -76,22 +100,22 @@ class Scheduler(threading.Thread):
                         self._add_worker()
             while self._triggerq.qsize() > 0:
                 try:
-                    dt, prio, name, obj, by, source, dest, value = self._triggerq.get()
+                    (dt, prio), (name, obj, by, source, dest, value) = self._triggerq.get()
                 except Exception as e:
                     logger.warning("Trigger queue exception: {0}".format(e))
                     break
 
                 if dt < now:  # run it
-                    self._runq.put((prio, name, obj, by, source, dest, value))
+                    self._runq.insert(prio, (name, obj, by, source, dest, value))
                 else:  # put last entry back and break while loop
-                    self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
+                    self._triggerq.insert((dt, prio), (name, obj, by, source, dest, value))
                     break
             self._lock.acquire()
             for name in self._scheduler:
                 task = self._scheduler[name]
                 if task['next'] is not None:
                     if task['next'] < now:
-                        self._runq.put((task['prio'], name, task['obj'], 'Scheduler', None, None, task['value']))
+                        self._runq.insert(task['prio'], (name, task['obj'], 'Scheduler', None, None, task['value']))
                         task['next'] = None
                     else:
                         continue
@@ -121,7 +145,7 @@ class Scheduler(threading.Thread):
                 return
         if dt is None:
             logger.debug("Triggering {0} - by: {1} source: {2} dest: {3} value: {4}".format(name, by, source, dest, str(value)[:40]))
-            self._runq.put((prio, name, obj, by, source, dest, value))
+            self._runq.insert(prio, (name, obj, by, source, dest, value))
         else:
             if not isinstance(dt, datetime.datetime):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
@@ -130,7 +154,7 @@ class Scheduler(threading.Thread):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
                 return
             logger.debug("Triggering {0} - by: {1} source: {2} dest: {3} value: {4} at: {5}".format(name, by, source, dest, str(value)[:40], dt))
-            self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
+            self._triggerq.insert((dt, prio), (name, obj, by, source, dest, value))
 
     def remove(self, name):
         self._lock.acquire()
@@ -264,11 +288,10 @@ class Scheduler(threading.Thread):
     def _worker(self):
         while self.alive:
             try:
-                prio, name, obj, by, source, dest, value = self._runq.get(timeout=0.5)
-                self._runq.task_done()
-            except queue.Empty:
-                continue
-            self._task(name, obj, by, source, dest, value)
+                prio, (name, obj, by, source, dest, value) = self._runq.get()
+                self._task(name, obj, by, source, dest, value)
+            except IndexError:
+                time.sleep(0.5)
 
     def _task(self, name, obj, by, source, dest, value):
         threading.current_thread().name = name
