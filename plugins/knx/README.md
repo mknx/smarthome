@@ -14,11 +14,13 @@ I'm using the vanilla eibd from Martins repository.
 <pre>$ sudo add-apt-repository ppa:mkoegler/bcusdk
 $ sudo apt-get install eibd-clients eibd-server libeibclient-dev</pre>
 
+
 Configuration
 =============
 
 plugin.conf
 -----------
+
 <pre>
 [knx]
    class_name = KNX
