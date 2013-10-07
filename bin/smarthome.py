@@ -108,7 +108,6 @@ class SmartHome():
     _cache_dir = BASE + '/var/cache/'
     _logfile = BASE + '/var/log/smarthome.log'
     _log_buffer = 50
-    socket_map = {}
     __logs = {}
     __event_listeners = {}
     __all_listeners = []
