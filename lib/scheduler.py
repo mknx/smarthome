@@ -20,7 +20,6 @@
 ##########################################################################
 
 import logging
-import bisect
 import time
 import datetime
 import calendar
@@ -47,7 +46,15 @@ class PriorityQueue:
 
     def insert(self, priority, data):
         self.lock.acquire()
-        bisect.insort(self.queue, (priority, data))
+        lo = 0
+        hi = len(self.queue)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if priority < self.queue[mid][0]:
+                hi = mid
+            else:
+                lo = mid + 1
+        self.queue.insert(lo, (priority, data))
         self.lock.release()
 
     def get(self):
