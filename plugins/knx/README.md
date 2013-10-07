@@ -43,27 +43,29 @@ items.conf
 This attribute is mandatory. If you don't provide one the item will be ignored.
 Right know the following datapoint types are supported:
 
-* 1 = 1.x: type must be bool
-* 2 = 2.x: type must be foo
-* 3 = 3.x: type must be foo
-* 4002 = 4.002: type must be str
-* 5 = 5.x: type must be num
-* 5001 = 5.001: type must be num
-* 6 = 6.x: type must be num
-* 7 = 7.x: type must be num
-* 8 = 8.x: type must be num
-* 9 = 9.x: type must be num
-* 10 = 10.x: type must be foo # datetime.time
-* 11 = 11.x: type must be foo # datetime.date
-* 12 = 12.x: type must be num
-* 13 = 13.x: type must be num
-* 14 = 14.x: type must be num
-* 16000 = 16.000: type must be str
-* 16001 = 16.001: type must be str
-* 17 = 17.x: type must be num
-* 20 = 20.x: type must be num
-* 24 = 24.x: type must be str
-* 232 = 232.600: type must be foo # [r, g, b]
+| DPT | Data | SH.py type | Values |
+|--------|------|------------|--------|
+| 1 | 1 bit | bool | True &#124; False |
+| 2 | 2 bit | list | [0, 0] - [1, 1] |
+| 3 | 4 bit | list | [0, 0] - [1, 7] |
+| 4 | 8 bit | str | 1 character (8859_1) e.g. 'c'|
+| 5 | 8 bit | num | 0 - 255 |
+| 5.001 | 8 bit | num | 0 - 100 |
+| 6 | 8 bit | num | -128 - 127 |
+| 7 | 2 byte | num | 0 - 65535 |
+| 8 | 2 byte | num | -32768 - 32767 |
+| 9 | 2 byte | num | -671088,64 - 670760,96 |
+| 10 | 3 byte | foo | datetime.time |
+| 11 | 3 byte | foo | datetime.date |
+| 12 | 4 byte | num | 0 - 4294967295 |
+| 13 | 4 byte | num | -2147483648 - 2147483647 |
+| 14 | 4 byte | num | 4-Octet Float Value IEEE 754 |
+| 16 | 14 byte | str | 14 characters (ASCII) |
+| 16.001 | 14 byte | str | 14 characters (8859_1) |
+| 17 | 8 bit | num | Scene: 0 - 63 |
+| 20 | 8 bit | num | HVAC: 0 - 255 |
+| 24 | var | str | ulimited string (8859_1) |
+| 232 | 3 byte | list | RGB: [0, 0, 0] - [255, 255, 255] |
 
 If you are missing one, open a bug report or drop me a message in the knx user forum.
 
