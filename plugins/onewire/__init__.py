@@ -78,7 +78,7 @@ class OwBase():
         return self._request(path, cmd=3, value=value)
 
     def dir(self, path='/'):
-        return self._request(path, cmd=9).strip('\x00').split(',')
+        return self._request(path, cmd=9).decode().strip('\x00').split(',')
 
     def tree(self, path='/'):
         try:
@@ -155,7 +155,7 @@ class OwBase():
             self._lock.release()
             raise owex("error receiving payload: {0}".format(e))
         self._lock.release()
-        return payload.decode()
+        return payload
 
     def close(self):
         self.connected = False
@@ -170,7 +170,7 @@ class OwBase():
 
     def identify_sensor(self, path):
         try:
-            typ = self.read(path + 'type')
+            typ = self.read(path + 'type').decode()
         except Exception:
             return
         addr = path.split("/")[-2]
@@ -178,12 +178,12 @@ class OwBase():
             return {'T': 'temperature', 'T9': 'temperature9', 'T10': 'temperature10', 'T11': 'temperature11', 'T12': 'temperature12'}
         elif typ == 'DS2438':  # Multi
             try:
-                page3 = self.read(path + 'pages/page.3').encode('hex').upper()
+                page3 = self.read(path + 'pages/page.3')  # .encode('hex').upper()
             except Exception as e:
                 logger.exception(e)
                 return
             try:
-                vis = float(self.read(path + 'vis'))
+                vis = float(self.read(path + 'vis').decode())
             except Exception:
                 vis = 0
             if vis > 0:
@@ -191,7 +191,7 @@ class OwBase():
             else:
                 keys = {'T': 'temperature', 'H': 'HIH4000/humidity'}
             try:
-                vdd = float(self.read(path + 'VDD'))
+                vdd = float(self.read(path + 'VDD').decode())
             except Exception:
                 vdd = None
             if vdd is not None:
@@ -199,13 +199,13 @@ class OwBase():
                 keys['VDD'] = 'VDD'
             if page3[:2] == '19':
                 return keys
-            elif page3[:2] == 'F2':  # BMS
+            elif page3[0] == 0xF2:  # BMS
                 return keys
-            elif page3[:2] == 'F3':  # AMSv2 TH
+            elif page3[0] == 0xF3:  # AMSv2 TH
                 return keys
-            elif page3[:2] == 'F4':  # AMSv2 V
+            elif page3[0] == 0xF4:  # AMSv2 V
                 return {'V': 'VAD'}
-            elif page3 == '48554D4944495433':  # DataNab
+            elif page3 == 0x48554D4944495433:  # DataNab
                 keys['H'] = 'humidity'
                 return keys
             else:
@@ -377,7 +377,7 @@ class OneWire(OwBase):
                     logger.info("1-Wire: path not found for {0}".format(item.id()))
                     continue
                 try:
-                    value = self.read('/uncached' + path)
+                    value = float(self.read('/uncached' + path).decode())
                 except Exception:
                     logger.info("1-Wire: problem reading {0}".format(addr))
                     if not self.connected:
