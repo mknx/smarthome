@@ -236,16 +236,20 @@ class Connection(Base):
     def _out(self):
         while self.outbuffer and self.connected:
             frame = self.outbuffer.pop()
-            if frame == b'':
-                continue
+            if not frame:
+                if frame is None:
+                    self.close()
+                    return
+                continue  # ignore empty frames
             try:
                 sent = self._socket.send(frame)
             except socket.error as e:
                 logger.exception("{}: {}".format(self._name, e))
+                self.outbuffer.append(frame)
                 return
             else:
                 if sent < len(frame):
-                    self.outbuffer.appendright(frame[sent:])
+                    self.outbuffer.append(frame[sent:])
 
     def close(self):
         self.connected = False
