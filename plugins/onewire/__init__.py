@@ -197,7 +197,7 @@ class OwBase():
             if vdd is not None:
                 logger.debug("1-Wire: sensor {0} voltage: {1}".format(addr, vdd))
                 keys['VDD'] = 'VDD'
-            if page3[:2] == '19':
+            if page3[0] == 0x19:
                 return keys
             elif page3[0] == 0xF2:  # BMS
                 return keys
@@ -209,7 +209,7 @@ class OwBase():
                 keys['H'] = 'humidity'
                 return keys
             else:
-                logger.info("1-Wire: unknown sensor {0} {1} page3: {2}".format(addr, typ, page3))
+                logger.info("1-Wire: unknown sensor {0} {1} page3: TBD".format(addr, typ))
                 keys.update({'V': 'VAD', 'VDD': 'VDD'})
                 return keys
         elif typ == 'DS2401':  # iButton

@@ -153,9 +153,18 @@ class Server(Base):
     def close(self):
         self.connected = False
         self._poller.unregister_connection(self._socket.fileno())
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
-        del(self._socket)
+        try:
+            self._socket.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
+            self._socket.close()
+        except:
+            pass
+        try:
+            del(self._socket)
+        except:
+            pass
 
     def accept(self):
         try:
@@ -255,10 +264,22 @@ class Connection(Base):
         self.connected = False
         logger.debug("{}: closing socket {}".format(self._name, self.address))
         self._poller.unregister_connection(self._socket.fileno())
-        self.handle_close()
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
-        del(self._socket)
+        try:
+            self.handle_close()
+        except:
+            pass
+        try:
+            self._socket.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
+            self._socket.close()
+        except:
+            pass
+        try:
+            del(self._socket)
+        except:
+            pass
 
     def discard_buffers(self):
         self.inbuffer = bytearray()
