@@ -315,7 +315,7 @@ class OneWire(OwBase):
                         entries = [entry.split("/")[-2] for entry in self.dir('/uncached')]
                         value = (addr in entries)
                     else:
-                        value = self._flip[self.read('/uncached' + path)]
+                        value = self._flip[self.read('/uncached' + path).decode()]
                 except Exception:
                     logger.warning("1-Wire: problem reading {0}".format(addr))
                     continue
