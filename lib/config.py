@@ -85,16 +85,8 @@ def parse(filename, config=None):
                     logger.error("Problem parsing '{}' invalid character in line {}: {}. Valid characters are: {}".format(filename, linenu, attr, valid_chars))
                     continue
                 value = value.strip()
-                if value[0] == '"':  # split values with "
-                    values = list(map(str.strip, value.split('"')))
-                    if ',' in values:
-                        value = [x for x in values if x not in ['', ',']]
-                    else:
-                        value = value.strip('"')
-                elif ',' in value:
-                    value = list(map(str.strip, value.split(',')))
-                else:
-                    value = value.strip("'")
+                if '|' in value:
+                    value = [x.strip() for x in value.split('|')]
                 item[attr] = value
         return config
 
