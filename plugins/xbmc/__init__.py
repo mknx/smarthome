@@ -22,7 +22,7 @@
 import logging
 import threading
 import json
-import lib.my_asynchat
+import lib.connection
 
 logger = logging.getLogger('')
 
@@ -50,7 +50,7 @@ class XBMC():
             self._boxes.append(xbmc(self._sh, item))
 
 
-class xbmc(lib.my_asynchat.AsynChat):
+class xbmc(lib.connection.Client):
 
     _notification_time = 10000
     _listen_keys = ['volume', 'mute', 'title', 'media', 'state']
@@ -62,10 +62,9 @@ class xbmc(lib.my_asynchat.AsynChat):
         else:
             port = 9090
         host = item.conf['xbmc_host']
-        lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
-        self.terminator = '}'
+        lib.connetion.Client.__init__(self, host, port, monitor=True)
+        self.terminator = b'}'
         self._sh = smarthome
-        smarthome.monitor_connection(self)
         self._id = 1
         self._rid = None
         self._cmd_lock = threading.Lock()
@@ -110,7 +109,7 @@ class xbmc(lib.my_asynchat.AsynChat):
             data = {"jsonrpc": "2.0", "id": id, "method": method}
         self._reply_lock.acquire()
         #logger.debug("XBMC sending: {0}".format(json.dumps(data, separators=(',', ':'))))
-        self.push(json.dumps(data, separators=(',', ':')) + '\r\n')
+        self.send((json.dumps(data, separators=(',', ':')) + '\r\n').encode())
         if wait:
             self._reply_lock.wait(2)
         self._reply_lock.release()
@@ -123,35 +122,36 @@ class xbmc(lib.my_asynchat.AsynChat):
         if key in self._items:
             self._items[key](value, 'XBMC')
 
-    def found_terminator(self):
-        self.buffer.extend(b'}')
-        if self.buffer.count(b'{') == self.buffer.count(b'}'):
-            event = json.loads(self.buffer.decode())
-            self.buffer = bytearray()
-            #logger.debug("XBMC receiving: {0}".format(event))
-            if 'id' in event:
-                if event['id'] == self._rid:
-                    self._rid = None
-                    self._reply = event
-                self._reply_lock.acquire()
-                self._reply_lock.notify()
-                self._reply_lock.release()
-                return
-            if 'method' in event:
-                if event['method'] == 'Player.OnPause':
-                    self._items['state']('Pause', 'XBMC')
-                elif event['method'] == 'Player.OnStop':
-                    self._items['state']('Menu', 'XBMC')
-                    self._items['media']('', 'XBMC')
-                    self._items['title']('', 'XBMC')
-                if event['method'] in ['Player.OnPlay']:
-                    # use a different thread for event handling
-                    self._sh.trigger('xmbc-event', self._parse_event, 'XBMC', value={'event': event})
-                elif event['method'] in ['Application.OnVolumeChanged']:
-                    if 'mute' in self._items:
-                        self._set_item('mute', event['params']['data']['muted'])
-                    if 'volume' in self._items:
-                        self._set_item('volume', event['params']['data']['volume'])
+    def found_terminator(self, data):
+        data.extend(b'}')
+        if data.count(b'{') != data.count(b'}'):
+            self.inbuffer = data[:-1]
+            return
+        event = json.loads(data.decode())
+        #logger.debug("XBMC receiving: {0}".format(event))
+        if 'id' in event:
+            if event['id'] == self._rid:
+                self._rid = None
+                self._reply = event
+            self._reply_lock.acquire()
+            self._reply_lock.notify()
+            self._reply_lock.release()
+            return
+        if 'method' in event:
+            if event['method'] == 'Player.OnPause':
+                self._items['state']('Pause', 'XBMC')
+            elif event['method'] == 'Player.OnStop':
+                self._items['state']('Menu', 'XBMC')
+                self._items['media']('', 'XBMC')
+                self._items['title']('', 'XBMC')
+            if event['method'] in ['Player.OnPlay']:
+                # use a different thread for event handling
+                self._sh.trigger('xmbc-event', self._parse_event, 'XBMC', value={'event': event})
+            elif event['method'] in ['Application.OnVolumeChanged']:
+                if 'mute' in self._items:
+                    self._set_item('mute', event['params']['data']['muted'])
+                if 'volume' in self._items:
+                    self._set_item('volume', event['params']['data']['volume'])
 
     def _parse_event(self, event):
         if event['method'] == 'Player.OnPlay':

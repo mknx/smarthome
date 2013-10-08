@@ -23,21 +23,20 @@ import logging
 import urllib.request
 import urllib.error
 import urllib.parse
-import lib.my_asynchat
+import lib.connections
 import re
 import sys
 
 logger = logging.getLogger('Squeezebox')
 
-class Squeezebox(lib.my_asynchat.AsynChat):
+class Squeezebox(lib.connections.Client):
 
     def __init__(self, smarthome, host='127.0.0.1', port=9090):
-        lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
+        lib.connections.Client.__init__(self, host, port, monitor=True)
         self._sh = smarthome
         self._val = {}
         self._obj = {}
         self._init_cmds = []
-        smarthome.monitor_connection(self)
 
     def _check_mac(self, mac):
         return re.match("[0-9a-f]{2}([:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower())
@@ -114,18 +113,17 @@ class Squeezebox(lib.my_asynchat.AsynChat):
                     value = 1
                 if (cmd[1] == 'playlist') and (cmd[2] in ['shuffle', 'repeat']):
                     # if a boolean item of [...] was set to false, send '0' to disable the option whatsoever
-                    # replace cmd[3], as there are fixed values given and filling in 'value' is pointless
+                    # replace cmd[2], as there are fixed values given and filling in 'value' is pointless
                     cmd[3] = '0'
             self._send(' '.join(urllib.parse.quote(cmd_str.format(value), encoding='iso-8859-1') for cmd_str in cmd))
 
     def _send(self, cmd):
         logger.debug("squeezebox: Sending request: {0}".format(cmd))
-        self.push(bytes(cmd + '\r\n','utf-8'))
+        self.send(bytes(cmd + '\r\n','utf-8'))
 
-    def _parse_response(self, response):
-#        logger.debug("squeezebox: Raw: {0}".format(response))
-#        logger.debug("squeezebox: Raw: {0}".format(bytes(response,'ascii').decode()))
-#        logger.debug("squeezebox: Raw: {0}".format(bytes([int(ord(i)) for i in response]).decode('utf-8')))
+    def found_terminator(self, response):
+        response = response.decode()
+        logger.debug("squeezebox: Raw: {0}".format(response))
         data = [urllib.parse.unquote(data_str, encoding='iso-8859-1') for data_str in response.split()]
         logger.debug("squeezebox: Got: {0}".format(data))
 
@@ -202,17 +200,12 @@ class Squeezebox(lib.my_asynchat.AsynChat):
                     data[-1] = int(data[-1]) + item()
                 item(data[-1], 'LMS', "{}:{}".format(self.addr[0],self.addr[1]))
 
-    def found_terminator(self):
-        byte_response = self.buffer
-        self.buffer = bytearray()
-        self._parse_response(str(byte_response,'utf-8'))
-
     def handle_connect(self):
         self.discard_buffers()
         # enable listen-mode to get notified of changes
         self._send('listen 1')
         if self._init_cmds != []:
-            if self.is_connected:
+            if self.connected:
                 logger.debug('squeezebox: init read')
                 for cmd in self._init_cmds:
                     self._send(cmd + ' ?')
@@ -222,4 +215,4 @@ class Squeezebox(lib.my_asynchat.AsynChat):
 
     def stop(self):
         self.alive = False
-        self.handle_close()
+        self.close()

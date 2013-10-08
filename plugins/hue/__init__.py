@@ -23,6 +23,7 @@ import logging
 import json
 import http.client
 import time
+import threading
 
 logger = logging.getLogger('')
 
@@ -34,6 +35,7 @@ class HUE():
         self._hue_ip = hue_ip
         self._hue_user = hue_user
         self._lamps = {}
+        self._lampslock = threading.Lock()
         self._sh.scheduler.add('hue-update', self._update_lamps, cycle=cycle)
         self._sh.trigger('hue-update', self._update_lamps)
 
@@ -65,21 +67,25 @@ class HUE():
                 else:
                     logger.error("Can't decide for hue feature based on item type. Item {0}".format(item))
             itemkey = item.hue_feature+'items'
-            if not item.hue_id in self._lamps:
-                self._lamps[item.hue_id] = {itemkey: [item], 'state':None, 'lastupdate':0}
-            else:
-                if itemkey in self._lamps[item.hue_id]:
-                    self._lamps[item.hue_id][itemkey].append(item)
-                else:
-                    self._lamps[item.hue_id][itemkey] = [item]
-            # if a state is already available, set it
+            self._lampslock.acquire()
             try:
-                if item.hue_feature == 'all':
-                    item(self._lamps[item.hue_id]['state'],caller='HUE')
+                if not item.hue_id in self._lamps:
+                    self._lamps[item.hue_id] = {itemkey: [item], 'state':None, 'lastupdate':0}
                 else:
-                    item(self._lamps[item.hue_id]['state'][item.hue_feature],caller='HUE')
-            except:
-                pass
+                    if itemkey in self._lamps[item.hue_id]:
+                        logger.debug("Add Lamp {0}".format(item.hue_id))
+                        self._lamps[item.hue_id][itemkey].append(item)
+                    else:
+                        self._lamps[item.hue_id][itemkey] = [item]
+                # if a state is already available, set it
+                currentstate = self._lamps[item.hue_id].get('state',None)
+                if currentstate is not None:
+                    if item.hue_feature == 'all':
+                        item(self._lamps[item.hue_id]['state'],caller='HUE')
+                    else:
+                        item(self._lamps[item.hue_id]['state'][item.hue_feature],caller='HUE')
+            finally:
+                self._lampslock.release()
             return self.update_item
         else:
             return None
@@ -119,7 +125,7 @@ class HUE():
             logger.error("Request failed")
             return None
 
-        resp = resp.read()
+        resp = resp.read().decode("utf-8")
         #logger.debug(resp)
 
         resp = json.loads(resp)
@@ -163,33 +169,35 @@ class HUE():
                 lamp_id = int(lamp_id)
                 state = lamp_info['state']
                 logger.debug("Lamp {0}, State {1}".format(lamp_id, state))
+                self._lampslock.acquire()
                 try:
-                    lamp = self._lamps[lamp_id]
-                    tick = time.time()
-                    if (tick - lamp['lastupdate'] > 2):
-                        # determine difference
-                        oldstate = self._lamps[lamp_id]['state']
-                        if oldstate is None:
-                            diff = list(state.keys())
-                        else:
-                            diff = set(o for o in state if oldstate[o] != state[o])
-                        # Update the differences
-                        for up in diff:
-                            newval = state[up]
-                            logger.info("New value for {0}: {1}".format(up, newval))
-                            try:
-                                for item in self._lamps[lamp_id][up+'items']:
+                    lamp = self._lamps.get(lamp_id,None)
+                    if lamp is not None:
+                        tick = time.time()
+                        if (tick - lamp['lastupdate'] > 2):
+                            # determine difference
+                            oldstate = lamp['state']
+                            if oldstate is None:
+                                diff = list(state.keys())
+                            else:
+                                diff = set(o for o in state if oldstate[o] != state[o])
+                            # Update the differences
+                            for up in diff:
+                                newval = state[up]
+                                logger.info("New value for {0}: {1}".format(up, newval))
+                                for item in lamp.get(up+'items',[]):
                                     item(newval, caller='HUE')
-                            except:
-                                pass
-                        if len(diff)>0:
-                            for item in self._lamps[lamp_id]['allitems']:
-                                    item(state, caller='HUE')
-                    lamp['state'] = state
-                    lamp['lastupdate'] = tick
-                except:
-                    # lamp not used, add it to databse
-                    self._lamps[lamp_id] = {'state':state, 'lastupdate':time.time()}
+                            if len(diff)>0:
+                                for item in lamp.get('allitems',[]):
+                                        item(state, caller='HUE')
+                        lamp['state'] = state
+                        lamp['lastupdate'] = tick
+                    else:
+                        # lamp not used, add it to databse
+                        logger.debug("Add lamp {0}".format(lamp_id))
+                        self._lamps[lamp_id] = {'state':state, 'lastupdate':time.time()}
+                finally:
+                    self._lampslock.release()
         except:
             # communication failed
             pass

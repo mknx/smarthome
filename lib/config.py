@@ -36,7 +36,8 @@ def parse(filename, config=None):
         parent = collections.OrderedDict()
         for raw in f.readlines():
             linenu += 1
-            line = raw.partition('#')[0].strip()
+            line = raw.lstrip('\ufeff')  # remove BOM
+            line = line.partition('#')[0].strip()
             if line is '':
                 continue
             if line[0] == '[':  # item

@@ -44,7 +44,7 @@ class OwBase():
         self._flag = 0x00000100   # ownet
         self._flag += 0x00000004  # persistence
         self._flag += 0x00000002  # list special directories
-        self.is_connected = False
+        self.connected = False
         self._connection_attempts = 0
         self._connection_errorlog = 60
 
@@ -57,13 +57,13 @@ class OwBase():
         except Exception as e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
-                logger.error('Onewire: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
+                logger.error('1-Wire: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
                 self._connection_attempts = self._connection_errorlog
             self._lock.release()
             return
         else:
-            self.is_connected = True
-            logger.info('Onewire: connected to {0}:{1}'.format(self.host, self.port))
+            self.connected = True
+            logger.info('1-Wire: connected to {0}:{1}'.format(self.host, self.port))
             self._connection_attempts = 0
             self._lock.release()
         try:
@@ -78,7 +78,7 @@ class OwBase():
         return self._request(path, cmd=3, value=value)
 
     def dir(self, path='/'):
-        return self._request(path, cmd=9).strip('\x00').split(',')
+        return self._request(path, cmd=9).decode().strip('\x00').split(',')
 
     def tree(self, path='/'):
         try:
@@ -102,7 +102,7 @@ class OwBase():
         header[8:12] = cmd.to_bytes(4, byteorder='big')
         header[12:16] = self._flag.to_bytes(4, byteorder='big')
         header[16:20] = data.to_bytes(4, byteorder='big')
-        if not self.is_connected:
+        if not self.connected:
             raise owex("No connection to owserver.")
         self._lock.acquire()
         try:
@@ -155,10 +155,10 @@ class OwBase():
             self._lock.release()
             raise owex("error receiving payload: {0}".format(e))
         self._lock.release()
-        return payload.decode()
+        return payload
 
     def close(self):
-        self.is_connected = False
+        self.connected = False
         try:
             self._sock.shutdown(socket.SHUT_RDWR)
         except:
@@ -170,7 +170,7 @@ class OwBase():
 
     def identify_sensor(self, path):
         try:
-            typ = self.read(path + 'type')
+            typ = self.read(path + 'type').decode()
         except Exception:
             return
         addr = path.split("/")[-2]
@@ -178,11 +178,12 @@ class OwBase():
             return {'T': 'temperature', 'T9': 'temperature9', 'T10': 'temperature10', 'T11': 'temperature11', 'T12': 'temperature12'}
         elif typ == 'DS2438':  # Multi
             try:
-                page3 = self.read(path + 'pages/page.3').encode('hex').upper()
-            except Exception:
+                page3 = self.read(path + 'pages/page.3')  # .encode('hex').upper()
+            except Exception as e:
+                logger.exception(e)
                 return
             try:
-                vis = float(self.read(path + 'vis'))
+                vis = float(self.read(path + 'vis').decode())
             except Exception:
                 vis = 0
             if vis > 0:
@@ -190,25 +191,25 @@ class OwBase():
             else:
                 keys = {'T': 'temperature', 'H': 'HIH4000/humidity'}
             try:
-                vdd = float(self.read(path + 'VDD'))
+                vdd = float(self.read(path + 'VDD').decode())
             except Exception:
                 vdd = None
             if vdd is not None:
                 logger.debug("1-Wire: sensor {0} voltage: {1}".format(addr, vdd))
                 keys['VDD'] = 'VDD'
-            if page3[:2] == '19':
+            if page3[0] == 0x19:
                 return keys
-            elif page3[:2] == 'F2':  # BMS
+            elif page3[0] == 0xF2:  # BMS
                 return keys
-            elif page3[:2] == 'F3':  # AMSv2 TH
+            elif page3[0] == 0xF3:  # AMSv2 TH
                 return keys
-            elif page3[:2] == 'F4':  # AMSv2 V
+            elif page3[0] == 0xF4:  # AMSv2 V
                 return {'V': 'VAD'}
-            elif page3 == '48554D4944495433':  # DataNab
+            elif page3 == 0x48554D4944495433:  # DataNab
                 keys['H'] = 'humidity'
                 return keys
             else:
-                logger.info("1-Wire: unknown sensor {0} {1} page3: {2}".format(addr, typ, page3))
+                logger.info("1-Wire: unknown sensor {0} {1} page3: TBD".format(addr, typ))
                 keys.update({'V': 'VAD', 'VDD': 'VDD'})
                 return keys
         elif typ == 'DS2401':  # iButton
@@ -241,7 +242,7 @@ class OneWire(OwBase):
         self._io_wait = float(io_wait)
         self._button_wait = float(button_wait)
         self._cycle = int(cycle)
-        smarthome.monitor_connection(self)
+        smarthome.connections.monitor(self)
 
     def wrapper(self, bus):  # dummy method not needed right now
         import types
@@ -283,10 +284,11 @@ class OneWire(OwBase):
 
     def stop(self):
         self.alive = False
+        self.close()
 
     def _io_loop(self):
         threading.currentThread().name = '1w-io'
-        logger.debug("Starting I/O detection")
+        logger.debug("1-Wire: Starting I/O detection")
         while self.alive:
             # start = time.time()
             self._io_cycle()
@@ -295,13 +297,13 @@ class OneWire(OwBase):
             time.sleep(self._io_wait)
 
     def _io_cycle(self):
-        if not self.is_connected:
+        if not self.connected:
             return
         for addr in self._ios:
-            if not self.alive:
+            if not self.alive or not self.connected:
                 break
             for key in self._ios[addr]:
-                if key.startswith('O'):  # ignore Output
+                if key.startswith('O'):  # ignore output
                     continue
                 item = self._ios[addr][key]['item']
                 path = self._ios[addr][key]['path']
@@ -321,7 +323,7 @@ class OneWire(OwBase):
 
     def _ibutton_loop(self):
         threading.currentThread().name = '1w-b'
-        logger.debug("Starting iButton detection")
+        logger.debug("1-Wire: Starting iButton detection")
         while self.alive:
             self._ibutton_cycle()
             time.sleep(self._button_wait)
@@ -329,7 +331,7 @@ class OneWire(OwBase):
     def _ibutton_cycle(self):
         found = []
         error = False
-        if not self.is_connected:
+        if not self.connected:
             return
         for bus in self._ibutton_buses:
             if not self.alive:
@@ -362,7 +364,7 @@ class OneWire(OwBase):
         pass
 
     def _sensor_cycle(self):
-        if not self.is_connected:
+        if not self.connected:
             return
         start = time.time()
         for addr in self._sensors:
@@ -375,10 +377,10 @@ class OneWire(OwBase):
                     logger.info("1-Wire: path not found for {0}".format(item.id()))
                     continue
                 try:
-                    value = self.read('/uncached' + path)
+                    value = float(self.read('/uncached' + path).decode())
                 except Exception:
                     logger.info("1-Wire: problem reading {0}".format(addr))
-                    if not self.is_connected:
+                    if not self.connected:
                         return
                     else:
                         continue
@@ -392,11 +394,11 @@ class OneWire(OwBase):
                     continue
                 item(value, '1-Wire', path)
         cycletime = time.time() - start
-        logger.debug("cycle takes {0} seconds".format(cycletime))
+        logger.debug("1-Wire: sensor cycle takes {0} seconds".format(cycletime))
 
     def _discovery(self):
         self._intruders = []  # reset intrusion detection
-        if not self.is_connected:
+        if not self.connected:
             return
         try:
             listing = self.dir('/')
@@ -456,7 +458,7 @@ class OneWire(OwBase):
         if 'ow_addr' not in item.conf:
             return
         if 'ow_sensor' not in item.conf:
-            logger.warning("No ow_sensor for {0} defined".format(item.id()))
+            logger.warning("1-Wire: No ow_sensor for {0} defined".format(item.id()))
             return
         addr = item.conf['ow_addr']
         key = item.conf['ow_sensor']

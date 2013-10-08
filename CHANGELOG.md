@@ -12,6 +12,7 @@ In Developement
    * Mark Hönisch
    * Niko Will
    * Robert Budde
+   * 
 
 ## New Plugins
    * SMA
@@ -22,6 +23,7 @@ In Developement
 ## Features
    * watch_item: supports item attribute matches by ':attribute' e.b. '*:my' every item with the attribute my.
    * item.timer and autotimer
+   * Network Plugin: nw_udp_send
 
 
 # 0.9
@@ -32,7 +34,7 @@ In Developement
    * Niko Will
 
 ## New Plugins
-r   * Fritzbox Plugin
+   * Fritzbox Plugin
    * Luxtronic2 Plugin
    * MPD Plugin
    * Samsung Smart TV Plugin

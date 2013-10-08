@@ -25,7 +25,7 @@ import time
 
 logger = logging.getLogger('')
 
-import lib.my_asynchat
+import lib.connection
 
 
 class MPD():
@@ -48,14 +48,14 @@ class MPD():
     def stop(self):
         self.alive = False
         for d in self._mpds:
-            d.handle_close()
+            d.close()
 
     def parse_item(self, item):
         if 'mpd_host' in item.conf:
             self._mpds.append(mpd(self._sh, item))
 
 
-class mpd(lib.my_asynchat.AsynChat):
+class mpd(lib.connection.Client):
 
     _listen_keys = ['state', 'volume', 'repeat', 'random', 'single', 'time', 'total', 'percent', 'play', 'pause', 'stop', 'song', 'playlistlength', 'nextsongid']
     _current_keys = {'title': 'Title', 'name': 'Name', 'album': 'Album', 'artist': 'Artist', 'albumartist': 'AlbumArtist', 'track': 'Track', 'disc': 'Disc', 'file': 'file'}
@@ -67,15 +67,14 @@ class mpd(lib.my_asynchat.AsynChat):
         else:
             port = 6600
         host = item.conf['mpd_host']
-        lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
-        self.terminator = '\n'.encode()
-        self.parse_data = self.handshake
+        lib.connection.Client.__init__(self, host, port, monitor=True)
         self._sh = smarthome
-        smarthome.monitor_connection(self)
         self._cmd_lock = threading.Lock()
         self._reply_lock = threading.Condition()
         self._reply = {}
         self._items = {}
+        self.terminator = b'\n'
+        self.found_terminator = self.handshake
         for child in self._sh.find_children(item, 'mpd_listen'):
             listen_to = child.conf['mpd_listen']
             if listen_to in self._listen_keys:
@@ -165,7 +164,7 @@ class mpd(lib.my_asynchat.AsynChat):
         self._cmd_lock.acquire()
         self._reply = {}
         self._reply_lock.acquire()
-        self.push((command + '\n').encode())
+        self.send((command + '\n').encode())
         if wait:
             self._reply_lock.wait(1)
         self._reply_lock.release()
@@ -202,18 +201,15 @@ class mpd(lib.my_asynchat.AsynChat):
                     logger.warning("Exception: {0}".format(e))
 
     def handle_connect(self):
-        self.parse_data = self.handshake
+        self.found_terminator = self.handshake
 
     def handshake(self, data):
+        data = data.decode()
         if data.startswith('OK MPD'):
-            self.parse_data = self.parse_reply
-
-    def found_terminator(self):
-        data = self.buffer
-        self.buffer = bytearray()
-        self.parse_data(data.decode())
+            self.found_terminator = self.parse_reply
 
     def parse_reply(self, data):
+        data = data.decode()
         if data.startswith('OK'):
             self._reply_lock.acquire()
             self._reply_lock.notify()

@@ -31,7 +31,6 @@ if sys.hexversion < 0x03020000:
 # Import Python Core Modules
 #####################################################################
 import argparse
-import asyncore
 import datetime
 import gc
 import locale
@@ -70,6 +69,7 @@ import lib.orb
 import lib.log
 import lib.scene
 import lib.config
+import lib.connection
 
 #####################################################################
 # Globals
@@ -108,7 +108,6 @@ class SmartHome():
     _cache_dir = BASE + '/var/cache/'
     _logfile = BASE + '/var/log/smarthome.log'
     _log_buffer = 50
-    socket_map = {}
     __logs = {}
     __event_listeners = {}
     __all_listeners = []
@@ -123,7 +122,7 @@ class SmartHome():
         threading.currentThread().name = 'Main'
         self.alive = True
         self.version = VERSION
-        self._connections = []
+        self.connections = []
 
         #############################################################
         # logfile write test
@@ -280,6 +279,11 @@ class SmartHome():
         self.scheduler.start()
 
         #############################################################
+        # Init Connections
+        #############################################################
+        self.connections = lib.connection.Connections()
+
+        #############################################################
         # Init Plugins
         #############################################################
         logger.info("Init Plugins")
@@ -315,10 +319,9 @@ class SmartHome():
             item.init_run()
 
         #############################################################
-        # Add connection monitor
+        # Start Connections
         #############################################################
-        if self._connections != []:
-            self.scheduler.add('sh.con', self._connection_monitor, cycle=10, offset=0)
+        self.scheduler.add('Connections', self.connections.check, cycle=10, offset=0)
 
         #############################################################
         # Start Plugins
@@ -344,24 +347,24 @@ class SmartHome():
         # Main Loop
         #############################################################
         while self.alive:
-            if self.socket_map != {}:
-                asyncore.loop(timeout=1, use_poll=True, count=1, map=self.socket_map)
-            else:
-                time.sleep(2)
+            try:
+                self.connections.poll()
+            except Exception as e:
+                logger.exception("Connection polling failed: {}".format(e))
 
     def stop(self, signum=None, frame=None):
         self.alive = False
         logger.info("Number of Threads: {0}".format(threading.activeCount()))
-        try:
-            asyncore.close_all(self.socket_map)
-        except:
-            pass
         try:
             self.scheduler.stop()
         except:
             pass
         try:
             self._plugins.stop()
+        except:
+            pass
+        try:
+            self.connections.close()
         except:
             pass
         time.sleep(0.5)
@@ -436,18 +439,6 @@ class SmartHome():
             yield logic
 
     #################################################################
-    # Connection Monitor
-    #################################################################
-    def monitor_connection(self, obj):
-        if hasattr(obj, 'is_connected') and hasattr(obj, 'connect'):
-            self._connections.append(obj)
-
-    def _connection_monitor(self):
-        for connection in self._connections:
-            if not connection.is_connected:
-                connection.connect()
-
-    #################################################################
     # Log Methods
     #################################################################
     def add_log(self, name, log):
@@ -502,7 +493,7 @@ class SmartHome():
 
     def _excepthook(self, typ, value, tb):
         mytb = "".join(traceback.format_tb(tb))
-        logger.exception("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
+        logger.error("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
 
     def _garbage_collection(self):
         c = gc.collect()
