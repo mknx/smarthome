@@ -320,9 +320,9 @@ class WebSocketHandler(lib.connection.Connection):
         elif command == 'proto':  # protocol version
             proto = data['ver']
             if proto > self.proto:
-                logger.warning("WebSocket: protocol mismatch. Update your client: {0}".format(self.addr))
-            elif proto < self.proto:
                 logger.warning("WebSocket: protocol mismatch. Update SmartHome.py")
+            elif proto < self.proto:
+                logger.warning("WebSocket: protocol mismatch. Update your client: {0}".format(self.addr))
             self.json_send({'cmd': 'proto', 'ver': self.proto})
 
     def parse_header(self, data):
