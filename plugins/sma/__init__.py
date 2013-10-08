@@ -152,6 +152,7 @@ class SMA():
 
     def __init__(self, smarthome, bt_addr, password="0000", update_cycle="60"):
         self._sh = smarthome
+        self._update_cycle = int(update_cycle)
         self._fields = {}
         self._read_ops = []
         self._inv_bt_addr = bt_addr
@@ -163,7 +164,6 @@ class SMA():
         self._inv_bt_addr_le = bytearray.fromhex(self._inv_bt_addr.replace(':',' '))
         self._inv_bt_addr_le.reverse()
         self._btsocket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-        self._sh.scheduler.add('SMA', self._update_values, prio=5, cycle=int(update_cycle))
 
     def _update_values(self):
         #logger.warning("sma: signal strength = {}%%".format(self._inv_get_bt_signal_strength()))
@@ -188,6 +188,7 @@ class SMA():
 
     def run(self):
         self.alive = True
+        self._send_count = 0
         try:
             self._btsocket.connect((self._inv_bt_addr, 1))
             logger.info("sma: via bluetooth connected to {}".format(self._inv_bt_addr))
@@ -204,6 +205,7 @@ class SMA():
                     item(self._inv_serial, 'SMA', self._inv_bt_addr)
         except:
             logger.error("sma: establishing connection to inverter failed - {}".format(sys.exc_info()))
+        self._sh.scheduler.add('SMA', self._update_values, prio = 5, cycle = self._update_cycle)
 
     def stop(self):
         self.alive = False
@@ -368,7 +370,6 @@ class SMA():
         return crc
 
     def _inv_connect(self):
-        self._send_count = 0
         # receive broadcast-msg from inverter
         msg = self._recv_smanet1_msg_with_cmdcode([0x0002])
 
