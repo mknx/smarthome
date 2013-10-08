@@ -23,16 +23,16 @@ import logging
 import urllib.request
 import urllib.error
 import urllib.parse
-import lib.connections
+import lib.connection
 import re
 import sys
 
 logger = logging.getLogger('Squeezebox')
 
-class Squeezebox(lib.connections.Client):
+class Squeezebox(lib.connection.Client):
 
     def __init__(self, smarthome, host='127.0.0.1', port=9090):
-        lib.connections.Client.__init__(self, host, port, monitor=True)
+        lib.connection.Client.__init__(self, host, port, monitor=True)
         self._sh = smarthome
         self._val = {}
         self._obj = {}
@@ -123,6 +123,7 @@ class Squeezebox(lib.connections.Client):
 
     def found_terminator(self, response):
         response = response.decode()
+        logger.debug("squeezebox: Raw: {0}".format(response))
         data = [urllib.parse.unquote(data_str, encoding='iso-8859-1') for data_str in response.split()]
         logger.debug("squeezebox: Got: {0}".format(data))
 
@@ -160,7 +161,7 @@ class Squeezebox(lib.connections.Client):
                         self._update_items_with_data([data[0], 'prefset server mute', '0'])
                     return
                 elif ((((data[1] == 'prefset') and (data[2] == 'server')) or (data[1] == 'mixer'))
-                      and (data[-1] == 'volume') and data[-1].startswith('-')):
+                      and (data[-2] == 'volume') and data[-1].startswith('-')):
                     # make sure value is always positive - also if muted!
                     self._update_items_with_data([data[0], 'prefset server mute', '1'])
                     data[-1] = data[-1][1:]
@@ -197,7 +198,7 @@ class Squeezebox(lib.connections.Client):
             for item in self._val[cmd]['items']:
                 if re.match("[+-][0-9]+$", data[-1]) and not isinstance(item(), str):
                     data[-1] = int(data[-1]) + item()
-                item(data[-1], 'LMS', "{}:{}".format(self.addr[0],self.addr[1]))
+                item(data[-1], 'LMS', self.address)
 
     def handle_connect(self):
         self.discard_buffers()
