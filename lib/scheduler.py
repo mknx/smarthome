@@ -134,7 +134,7 @@ class Scheduler(threading.Thread):
                     else:
                         self._next_time(name)
             self._lock.release()
-            time.sleep(0.2)
+            time.sleep(0.1)
 
     def stop(self):
         self.alive = False
@@ -298,7 +298,7 @@ class Scheduler(threading.Thread):
                 prio, (name, obj, by, source, dest, value) = self._runq.get()
                 self._task(name, obj, by, source, dest, value)
             except IndexError:
-                time.sleep(0.5)
+                time.sleep(0.05)
 
     def _task(self, name, obj, by, source, dest, value):
         threading.current_thread().name = name
