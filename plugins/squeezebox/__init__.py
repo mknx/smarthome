@@ -123,6 +123,9 @@ class Squeezebox(lib.my_asynchat.AsynChat):
         self.push(bytes(cmd + '\r\n','utf-8'))
 
     def _parse_response(self, response):
+#        logger.debug("squeezebox: Raw: {0}".format(response))
+#        logger.debug("squeezebox: Raw: {0}".format(bytes(response,'ascii').decode()))
+#        logger.debug("squeezebox: Raw: {0}".format(bytes([int(ord(i)) for i in response]).decode('utf-8')))
         data = [urllib.parse.unquote(data_str, encoding='iso-8859-1') for data_str in response.split()]
         logger.debug("squeezebox: Got: {0}".format(data))
 
@@ -160,7 +163,7 @@ class Squeezebox(lib.my_asynchat.AsynChat):
                         self._update_items_with_data([data[0], 'prefset server mute', '0'])
                     return
                 elif ((((data[1] == 'prefset') and (data[2] == 'server')) or (data[1] == 'mixer'))
-                      and (data[-1] == 'volume') and data[-1].startswith('-')):
+                      and (data[-2] == 'volume') and data[-1].startswith('-')):
                     # make sure value is always positive - also if muted!
                     self._update_items_with_data([data[0], 'prefset server mute', '1'])
                     data[-1] = data[-1][1:]
