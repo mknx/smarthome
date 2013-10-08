@@ -41,7 +41,7 @@ class Base():
 
     def _create_socket(self, flags=None):
         family, type, proto, canonname, sockaddr = socket.getaddrinfo(self._host, self._port, family=self._family[self._proto], type=self._type[self._proto])[0]
-        self._socket = socket.socket(family, type, proto)
+        self.socket = socket.socket(family, type, proto)
         return sockaddr
 
 
@@ -128,47 +128,50 @@ class Server(Base):
 
     def __init__(self, host, port, proto='TCP'):
         Base.__init__(self, monitor=True)
-        self._proto = proto
         self._host = host
         self._port = port
+        self._proto = proto
         self.address = "{}:{}".format(host, port)
         self.connected = False
 
     def connect(self):
         try:
             sockaddr = self._create_socket()
-            self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self._socket.bind(sockaddr)
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.socket.bind(sockaddr)
             if self._proto.startswith('TCP'):
-                self._socket.listen(5)
-            self._socket.setblocking(0)
+                self.socket.listen(5)
+            self.socket.setblocking(0)
         except Exception as e:
             logger.error("{}: problem binding {} ({}): {}".format(self._name, self.address, self._proto, e))
             self.close()
         else:
             self.connected = True
             logger.debug("{}: binding to {} ({})".format(self._name, self.address, self._proto))
-            self._poller.register_server(self._socket.fileno(), self)
+            self._poller.register_server(self.socket.fileno(), self)
 
     def close(self):
         self.connected = False
-        self._poller.unregister_connection(self._socket.fileno())
         try:
-            self._socket.shutdown(socket.SHUT_RDWR)
+            self._poller.unregister_connection(self.socket.fileno())
         except:
             pass
         try:
-            self._socket.close()
+            self.socket.shutdown(socket.SHUT_RDWR)
         except:
             pass
         try:
-            del(self._socket)
+            self.socket.close()
+        except:
+            pass
+        try:
+            del(self.socket)
         except:
             pass
 
     def accept(self):
         try:
-            sock, addr = self._socket.accept()
+            sock, addr = self.socket.accept()
             sock.setblocking(0)
             addr = "{}:{}".format(addr[0], addr[1])
             logger.debug("{}: incoming connection from {} to {}".format(self._name, addr, self.address))
@@ -192,18 +195,18 @@ class Connection(Base):
         self._frame_size_out = 4096
         self.terminator = b'\r\n'
         if sock is not None:
-            self._socket = sock
+            self.socket = sock
             self._connected()
 
     def _connected(self):
-            self._poller.register_connection(self._socket.fileno(), self)
+            self._poller.register_connection(self.socket.fileno(), self)
             self.connected = True
             self.handle_connect()
 
     def _in(self):
         max_size = self._frame_size_in
         try:
-            data = self._socket.recv(max_size)
+            data = self.socket.recv(max_size)
         except Exception as e:
             logger.exception("{}: {}".format(self._name, e))
             self.close()
@@ -251,7 +254,7 @@ class Connection(Base):
                     return
                 continue  # ignore empty frames
             try:
-                sent = self._socket.send(frame)
+                sent = self.socket.send(frame)
             except socket.error as e:
                 logger.exception("{}: {}".format(self._name, e))
                 self.outbuffer.append(frame)
@@ -263,21 +266,24 @@ class Connection(Base):
     def close(self):
         self.connected = False
         logger.debug("{}: closing socket {}".format(self._name, self.address))
-        self._poller.unregister_connection(self._socket.fileno())
+        try:
+            self._poller.unregister_connection(self.socket.fileno())
+        except:
+            pass
         try:
             self.handle_close()
         except:
             pass
         try:
-            self._socket.shutdown(socket.SHUT_RDWR)
+            self.socket.shutdown(socket.SHUT_RDWR)
         except:
             pass
         try:
-            self._socket.close()
+            self.socket.close()
         except:
             pass
         try:
-            del(self._socket)
+            del(self.socket)
         except:
             pass
 
@@ -307,8 +313,8 @@ class Client(Connection):
     def connect(self):
         try:
             sockaddr = self._create_socket()
-            self._socket.connect(sockaddr)
-            self._socket.setblocking(0)
+            self.socket.connect(sockaddr)
+            self.socket.setblocking(0)
         except Exception as e:
             logger.error("{}: problem connecting to {} ({}): {}".format(self._name, self.address, self._proto, e))
             self.close()

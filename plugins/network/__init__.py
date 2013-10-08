@@ -104,7 +104,7 @@ class UDPDispatcher(lib.connection.Server):
 
     def handle_connection(self):
         try:
-            data, addr = self._socket.recvfrom(4096)
+            data, addr = self.socket.recvfrom(4096)
             ip = addr[0]
             addr = "{}:{}".format(addr[0], addr[1])
             logger.debug("{}: incoming connection from {} to {}".format(self._name, addr, self.address))
