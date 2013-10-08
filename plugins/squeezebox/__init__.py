@@ -23,16 +23,16 @@ import logging
 import urllib.request
 import urllib.error
 import urllib.parse
-import lib.connections
+import lib.connection
 import re
 import sys
 
 logger = logging.getLogger('Squeezebox')
 
-class Squeezebox(lib.connections.Client):
+class Squeezebox(lib.connection.Client):
 
     def __init__(self, smarthome, host='127.0.0.1', port=9090):
-        lib.connections.Client.__init__(self, host, port, monitor=True)
+        lib.connection.Client.__init__(self, host, port, monitor=True)
         self._sh = smarthome
         self._val = {}
         self._obj = {}
@@ -113,7 +113,7 @@ class Squeezebox(lib.connections.Client):
                     value = 1
                 if (cmd[1] == 'playlist') and (cmd[2] in ['shuffle', 'repeat']):
                     # if a boolean item of [...] was set to false, send '0' to disable the option whatsoever
-                    # replace cmd[2], as there are fixed values given and filling in 'value' is pointless
+                    # replace cmd[3], as there are fixed values given and filling in 'value' is pointless
                     cmd[3] = '0'
             self._send(' '.join(urllib.parse.quote(cmd_str.format(value), encoding='iso-8859-1') for cmd_str in cmd))
 
@@ -198,7 +198,7 @@ class Squeezebox(lib.connections.Client):
             for item in self._val[cmd]['items']:
                 if re.match("[+-][0-9]+$", data[-1]) and not isinstance(item(), str):
                     data[-1] = int(data[-1]) + item()
-                item(data[-1], 'LMS', "{}:{}".format(self.addr[0],self.addr[1]))
+                item(data[-1], 'LMS', self.address)
 
     def handle_connect(self):
         self.discard_buffers()
