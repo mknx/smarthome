@@ -35,7 +35,7 @@ The branch setup is based on [this model](http://nvie.com/posts/a-successful-git
   * create your own (local) branch (from develop) `git checkout -b myplugin develop`
 
 ## Python Version
-You should only use Python =< 2.6 methods. If not make it clear in the documentation what kind of Python version you need.
+You should only use Python =< 3.2 methods. If not make it clear in the documentation what kind of Python version you need.
 
 ## Coding style
 Your code should conform to [pep 8](http://www.python.org/dev/peps/pep-0008/). (I'm ignoring "E501 line too long".)
@@ -70,12 +70,17 @@ In your plugin directory should be a __README.md__ (from the skeleton directory)
    * changes to bin/smarthome.py and lib/\* must be checked with me.
    * changes to plugins from other developers must be checked with the developer.
 
-### Push changes
-   * `git checkout develop`: goto the develop branch
-   * `git status`: check the status of the files in the develop branch
-   * `git add changedfile.py`: select one or more files for commit
-   * `git commit` describe the commit with a useful comment
-   * `git pull && git push`: sync with the origin repository
+### Fork
+   * Goto [SmartHome Repo](https://github.com/mknx/smarthome) logged in with your username/password.
+   * Click on 'fork' in the right upper corner.
+   * Change to your Terminal and enter `git clone https://USER:PASSWORD@github.com/USER/smarthome`
+   * Checkout the develop branch `git checkout develop`
+   * Change/create a file.
+   * Add the file `git add FILE`
+   * Commit the changes with a usefull comment: 'git commit'
+   * Push your changes to your repository: `git pull && git push`
+   * Create a pull request on github: base: mknx/develop  compare: USER/develop
+
 
 ### Merge
 If you think your code is ready for prime time send me a __pull request via github__ or an [email](mailto:marcus@popp.mx) with the code.
