@@ -44,7 +44,8 @@ items.conf
 ### knx_dpt
 This attribute is mandatory. If you don't provide one the item will be ignored.
 The DPT has to match the type of the item!
-Right know the following datapoint types are supported:
+
+The following datapoint types are supported:
 
 | DPT | Data | Type | Values |
 |--------|------|------------|--------|
