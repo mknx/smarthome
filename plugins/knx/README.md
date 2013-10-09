@@ -50,7 +50,7 @@ Right know the following datapoint types are supported:
 | 1 | 1 bit | bool | True &#124; False |
 | 2 | 2 bit | list | [0, 0] - [1, 1] |
 | 3 | 4 bit | list | [0, 0] - [1, 7] |
-| 4 | 8 bit | str | 1 character (8859_1) e.g. 'c'|
+| 4.002 | 8 bit | str | 1 character (8859_1) e.g. 'c'|
 | 5 | 8 bit | num | 0 - 255 |
 | 5.001 | 8 bit | num | 0 - 100 |
 | 6 | 8 bit | num | -128 - 127 |

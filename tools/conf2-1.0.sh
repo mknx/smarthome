@@ -8,5 +8,9 @@ for CONF in items/*.conf etc/*.conf; do
             -e "/\[\|filename/s/'//g" \
             -e '/sv_widget/s/" *, *"/" | "/g' \
             -e '/sv_widget/s/"//g' \
+            -e '/knx_dpt/s/4002/4.002/g' \
+            -e '/knx_dpt/s/5001/5.001/g' \
+            -e '/knx_dpt/s/16000/16/g' \
+            -e '/knx_dpt/s/16001/16.001/g' \
             -e '/eval *=/s/"//g' $CONF
 done
