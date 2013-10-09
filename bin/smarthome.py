@@ -245,7 +245,7 @@ class SmartHome():
                 self.tz = self._tz
                 os.environ['TZ'] = self.tz
             else:
-                logger.warning("Problem parsing timezone: {}. Using UTC".format(self._tz))
+                logger.warning("Problem parsing timezone: {}. Using UTC.".format(self._tz))
             del(self._tz, tzinfo)
 
         logger.info("Start SmartHome.py {0}".format(VERSION))
