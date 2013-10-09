@@ -235,15 +235,18 @@ class SmartHome():
         #############################################################
         # Setting (local) tz
         #############################################################
+        self.tz = 'UTC'
+        os.environ['TZ'] = self.tz
+        self._tzinfo = self._utctz
         if hasattr(self, '_tz'):
-            os.environ['TZ'] = self._tz
-            self.tz = self._tz
-            self._tzinfo = gettz(self._tz)
-            TZ = self._tzinfo
-        else:
-            self.tz = 'UTC'
-            os.environ['TZ'] = self.tz
-            self._tzinfo = self._utc
+            tzinfo = gettz(self._tz)
+            if tzinfo is not None:
+                TZ = tzinfo
+                self.tz = self._tz
+                os.environ['TZ'] = self.tz
+            else:
+                logger.warning("Problem parsing timezone: {}. Using UTC".format(self._tz))
+            del(self._tz, tzinfo)
 
         logger.info("Start SmartHome.py {0}".format(VERSION))
         logger.debug("Python {0}".format(sys.version.split()[0]))
