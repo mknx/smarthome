@@ -62,7 +62,7 @@ class xbmc(lib.connection.Client):
         else:
             port = 9090
         host = item.conf['xbmc_host']
-        lib.connetion.Client.__init__(self, host, port, monitor=True)
+        lib.connection.Client.__init__(self, host, port, monitor=True)
         self.terminator = b'}'
         self._sh = smarthome
         self._id = 1
@@ -139,11 +139,15 @@ class xbmc(lib.connection.Client):
             return
         if 'method' in event:
             if event['method'] == 'Player.OnPause':
-                self._items['state']('Pause', 'XBMC')
+                if 'state' in self._items:
+                    self._items['state']('Pause', 'XBMC')
             elif event['method'] == 'Player.OnStop':
-                self._items['state']('Menu', 'XBMC')
-                self._items['media']('', 'XBMC')
-                self._items['title']('', 'XBMC')
+                if 'state' in self._items:
+                    self._items['state']('Menu', 'XBMC')
+                if 'media' in self._items:
+                    self._items['media']('', 'XBMC')
+                if 'title' in self._items:
+                    self._items['title']('', 'XBMC')
             if event['method'] in ['Player.OnPlay']:
                 # use a different thread for event handling
                 self._sh.trigger('xmbc-event', self._parse_event, 'XBMC', value={'event': event})
@@ -162,17 +166,23 @@ class xbmc(lib.connection.Client):
             if typ == 'video':
                 result = self._send('Player.GetItem', {"properties": ["title"], "playerid": playerid}, "VideoGetItem")['result']
                 title = result['item']['title']
-                typ = result['item']['type']
-                self._items['media'](typ.capitalize(), 'XBMC')
+                if not title and 'label' in result['item']:
+                    title = result['item']['label']
+                if 'media' in self._items:
+                    typ = result['item']['type']
+                    self._items['media'](typ.capitalize(), 'XBMC')
             elif typ == 'audio':
-                self._items['media'](typ.capitalize(), 'XBMC')
+                if 'media' in self._items:
+                    self._items['media'](typ.capitalize(), 'XBMC')
                 result = self._send('Player.GetItem', {"properties": ["title", "artist"], "playerid": playerid}, "AudioGetItem")['result']
                 artist = result['item']['artist'][0]
                 title = artist + ' - ' + result['item']['title']
             elif typ == 'picture':
-                self._items['media'](typ.capitalize(), 'XBMC')
+                if 'media' in self._items:
+                    self._items['media'](typ.capitalize(), 'XBMC')
                 title = ''
             else:
                 logger.warning("Unknown type: {0}".format(typ))
                 return
-            self._items['title'](title, 'XBMC')
+            if 'title' in self._items:
+                self._items['title'](title, 'XBMC')
