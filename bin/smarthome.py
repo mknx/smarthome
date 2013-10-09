@@ -341,7 +341,7 @@ class SmartHome():
         #############################################################
         # Execute Maintenance Method
         #############################################################
-        self.scheduler.add('sh.gc', self._maintenance, prio=8, cron="init | 4 2 * *", offset=0)
+        self.scheduler.add('sh.gc', self._maintenance, prio=8, cron=['init', '4 2 * *'], offset=0)
 
         #############################################################
         # Main Loop

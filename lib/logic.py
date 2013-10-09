@@ -95,9 +95,6 @@ class Logic():
             vars(self)[attribute] = attributes[attribute]
         self.generate_bytecode()
         self.prio = int(self.prio)
-        if self.crontab is not None:
-            if isinstance(self.crontab, list):
-                self.crontab = ','.join(self.crontab)  # rejoin crontab entry to a string
 
     def id(self):
         return self.name

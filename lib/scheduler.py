@@ -186,9 +186,11 @@ class Scheduler(threading.Thread):
     def add(self, name, obj, prio=3, cron=None, cycle=None, value=None, offset=None, next=None):
         self._lock.acquire()
         if isinstance(cron, str):
+            cron = [cron, ]
+        if isinstance(cron, list):
             _cron = {}
-            for entry in cron.split('|'):
-                desc, sep, value = entry.partition('=')
+            for entry in cron:
+                desc, __, value = entry.partition('=')
                 desc = desc.strip()
                 if value != '':
                     value = value.strip()
