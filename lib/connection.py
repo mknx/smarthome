@@ -82,6 +82,10 @@ class Connections(Base):
             if not obj.connected:
                 obj.connect()
 
+    def trigger(self, fileno):
+        if self._connections[fileno].outbuffer:
+            self._epoll.modify(fileno, self._rw)
+
     def poll(self):
         if not self._connections:
             time.sleep(1)
@@ -92,7 +96,7 @@ class Connections(Base):
                     self._epoll.modify(fileno, self._rw)
                 else:
                     self._epoll.modify(fileno, self._ro)
-        for fileno, event in self._epoll.poll(timeout=0.1):
+        for fileno, event in self._epoll.poll(timeout=1):
             if fileno in self._servers:
                 server = self._servers[fileno]
                 server.handle_connection()
@@ -244,7 +248,7 @@ class Connection(Base):
                 self.outbuffer.appendleft(data[i:i + frame_size])
         else:
             self.outbuffer.appendleft(data)
-#       self._out()
+        self._poller.trigger(self.socket.fileno())
 
     def _out(self):
         while self.outbuffer and self.connected:
@@ -316,7 +320,7 @@ class Client(Connection):
             sockaddr = self._create_socket()
             self.socket.connect(sockaddr)
             self.socket.setblocking(0)
-            self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+#           self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         except Exception as e:
             logger.error("{}: problem connecting to {} ({}): {}".format(self._name, self.address, self._proto, e))
             self.close()

@@ -85,6 +85,7 @@ class Scheduler(threading.Thread):
         logger.info('Init Scheduler')
         self._sh = smarthome
         self._lock = threading.Lock()
+        self._runc = threading.Condition()
 
     def run(self):
         self.alive = True
@@ -113,7 +114,10 @@ class Scheduler(threading.Thread):
                     break
 
                 if dt < now:  # run it
+                    self._runc.acquire()
                     self._runq.insert(prio, (name, obj, by, source, dest, value))
+                    self._runc.notify()
+                    self._runc.release()
                 else:  # put last entry back and break while loop
                     self._triggerq.insert((dt, prio), (name, obj, by, source, dest, value))
                     break
@@ -122,7 +126,10 @@ class Scheduler(threading.Thread):
                 task = self._scheduler[name]
                 if task['next'] is not None:
                     if task['next'] < now:
+                        self._runc.acquire()
                         self._runq.insert(task['prio'], (name, task['obj'], 'Scheduler', None, None, task['value']))
+                        self._runc.notify()
+                        self._runc.release()
                         task['next'] = None
                     else:
                         continue
@@ -134,7 +141,7 @@ class Scheduler(threading.Thread):
                     else:
                         self._next_time(name)
             self._lock.release()
-            time.sleep(0.1)
+            time.sleep(0.5)
 
     def stop(self):
         self.alive = False
@@ -152,7 +159,10 @@ class Scheduler(threading.Thread):
                 return
         if dt is None:
             logger.debug("Triggering {0} - by: {1} source: {2} dest: {3} value: {4}".format(name, by, source, dest, str(value)[:40]))
+            self._runc.acquire()
             self._runq.insert(prio, (name, obj, by, source, dest, value))
+            self._runc.notify()
+            self._runc.release()
         else:
             if not isinstance(dt, datetime.datetime):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
@@ -294,11 +304,15 @@ class Scheduler(threading.Thread):
 
     def _worker(self):
         while self.alive:
+            self._runc.acquire()
+            self._runc.wait(timeout=1)
             try:
                 prio, (name, obj, by, source, dest, value) = self._runq.get()
-                self._task(name, obj, by, source, dest, value)
             except IndexError:
-                time.sleep(0.05)
+                continue
+            finally:
+                self._runc.release()
+            self._task(name, obj, by, source, dest, value)
 
     def _task(self, name, obj, by, source, dest, value):
         threading.current_thread().name = name
