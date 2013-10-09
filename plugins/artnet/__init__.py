@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # coding=utf-8
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
@@ -37,7 +37,8 @@ class ArtNet():
 		self.universe = int(artnet_universe)
 		self.ip = ip
 		self.port = int(port)
-
+		logger.debug("Init ArtNet Plugin done")
+		
 	def run(self):
 		pass
 
