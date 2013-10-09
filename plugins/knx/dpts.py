@@ -71,6 +71,10 @@ def de4002(payload):
 
 
 def en5(value):
+    if value < 0:
+        value = 0
+    elif value > 255:
+        value = 255
     return [0, int(value) & 0xff]
 
 
@@ -81,6 +85,10 @@ def de5(payload):
 
 
 def en5001(value):
+    if value < 0:
+        value = 0
+    elif value > 100:
+        value = 100
     return [0, int(value * 255.0 / 100) & 0xff]
 
 
