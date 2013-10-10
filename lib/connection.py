@@ -242,13 +242,13 @@ class Connection(Base):
                 self.found_terminator(data)
 
     def send(self, data):
-        frame_size = self._frame_size_out
-        if len(data) > frame_size:
-            for i in range(0, len(data), frame_size):
-                self.outbuffer.appendleft(data[i:i + frame_size])
-        else:
-            self.outbuffer.appendleft(data)
         if self.connected:
+            frame_size = self._frame_size_out
+            if len(data) > frame_size:
+                for i in range(0, len(data), frame_size):
+                    self.outbuffer.appendleft(data[i:i + frame_size])
+            else:
+                self.outbuffer.appendleft(data)
             self._poller.trigger(self.socket.fileno())
 
     def _out(self):
