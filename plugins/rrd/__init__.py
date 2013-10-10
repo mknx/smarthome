@@ -30,7 +30,6 @@ logger = logging.getLogger('')
 
 
 class RRD():
-    _cf = {'avg': 'AVERAGE', 'max': 'MAX', 'min': 'MIN', 'last': 'AVERAGE'}
 
     def __init__(self, smarthome, step=300, rrd_dir=None):
         self._sh = smarthome
@@ -72,11 +71,6 @@ class RRD():
     def parse_item(self, item):
         if 'rrd' not in item.conf:
             return
-        if item.conf['rrd'] == 'init':
-            last = self._single('last', '50d', item=item.id())
-            if last is not None:
-                item.set(last, 'RRDtool')
-
         rrdb = self._rrd_dir + item.id() + '.rrd'
         rrd_min = False
         rrd_max = False
@@ -92,15 +86,36 @@ class RRD():
         if 'rrd_step' in item.conf:
             rrd_step = int(item.conf['rrd_step'])
         item.series = functools.partial(self._series, item=item.id())
+        item.db = functools.partial(self._single, item=item.id())
         self._rrds[item.id()] = {'item': item, 'id': item.id(), 'rrdb': rrdb, 'max': rrd_max, 'min': rrd_min, 'step': rrd_step, 'type': rrd_type}
+
+        if item.conf['rrd'] == 'init':
+            last = self._single('last', '5d', item=item.id())
+            if last is not None:
+                item.set(last, 'RRDtool')
 
     def parse_logic(self, logic):
         pass
 
     def _series(self, func, start='1d', end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
-        query = ["{}{}.rrd".format(self._rrd_dir, item)]
-        if func in self._cf:
-            query.append(self._cf[func])
+        if item in self._rrds:
+            rrd = self._rrds[item]
+        else:
+            logger.warning("RRDtool: not enabled for {}".format(item))
+            return
+        query = ["{}".format(rrd['rrdb'])]
+        if func == 'avg':
+            query.append('AVERAGE')
+        elif func == 'max':
+            if not rrd['max']:
+                logger.warning("RRDtool: unsupported consolidation function {} for {}".format(func, item))
+                return
+            query.append('MAX')
+        elif func == 'min':
+            if not rrd['min']:
+                logger.warning("RRDtool: unsupported consolidation function {} for {}".format(func, item))
+                return
+            query.append('MIN')
         else:
             logger.warning("RRDtool: unsupported consolidation function {} for {}".format(func, item))
             return
@@ -133,9 +148,26 @@ class RRD():
         return reply
 
     def _single(self, func, start='1d', end='now', item=None):
-        query = ["{}{}.rrd".format(self._rrd_dir, item)]
-        if func in self._cf:
-            query.append(self._cf[func])
+        if item in self._rrds:
+            rrd = self._rrds[item]
+        else:
+            logger.warning("RRDtool: not enabled for {}".format(item))
+            return
+        query = ["{}".format(rrd['rrdb'])]
+        if func == 'avg':
+            query.append('AVERAGE')
+        elif func == 'max':
+            if rrd['max']:
+                query.append('MAX')
+            else:
+                query.append('AVERAGE')
+        elif func == 'min':
+            if rrd['min']:
+                query.append('MIN')
+            else:
+                query.append('AVERAGE')
+        elif func == 'last':
+            query.append('AVERAGE')
         else:
             logger.warning("RRDtool: unsupported consolidation function {} for {}".format(func, item))
             return
@@ -153,12 +185,17 @@ class RRD():
         except Exception as e:
             logger.warning("error reading {0} data: {1}".format(item, e))
             return None
+        values = [v[0] for v in data if v[0] is not None]
         if func == 'avg':
-            values = [t[0] for t in data if t[0] is not None]
             if len(values) > 0:
                 return sum(values) / len(values)
+        elif func == 'min':
+            if len(values) > 0:
+                return min(values)
+        elif func == 'max':
+            if len(values) > 0:
+                return max(values)
         elif func == 'last':
-            values = [t[0] for t in data if t[0] is not None]
             if len(values) > 0:
                 return values[-1]
 
