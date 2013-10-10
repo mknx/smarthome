@@ -243,14 +243,16 @@ class Connection(Base):
                 self.found_terminator(data)
 
     def send(self, data):
-        if self.connected:
-            frame_size = self._frame_size_out
-            if len(data) > frame_size:
-                for i in range(0, len(data), frame_size):
-                    self.outbuffer.appendleft(data[i:i + frame_size])
-            else:
-                self.outbuffer.appendleft(data)
-            self._poller.trigger(self.socket.fileno())
+        if not self.connected:
+            return False
+        frame_size = self._frame_size_out
+        if len(data) > frame_size:
+            for i in range(0, len(data), frame_size):
+                self.outbuffer.appendleft(data[i:i + frame_size])
+        else:
+            self.outbuffer.appendleft(data)
+        self._poller.trigger(self.socket.fileno())
+        return True
 
     def _out(self):
         while self.outbuffer and self.connected:
@@ -271,8 +273,9 @@ class Connection(Base):
                     self.outbuffer.append(frame[sent:])
 
     def close(self):
+        if self.connected:
+            logger.debug("{}: closing socket {}".format(self._name, self.address))
         self.connected = False
-        logger.debug("{}: closing socket {}".format(self._name, self.address))
         try:
             self._poller.unregister_connection(self.socket.fileno())
         except:
