@@ -21,6 +21,7 @@
 import logging
 import socket
 import collections
+import threading
 import select
 import time
 
@@ -315,16 +316,28 @@ class Client(Connection):
         self._port = port
         self._proto = proto
         self.address = "{}:{}".format(host, port)
+        self._connection_attempts = 0
+        self._connection_errorlog = 60
+        self._connection_lock = threading.Lock()
 
     def connect(self):
+        self._connection_lock.acquire()
+        if self.connected:
+            self._connection_lock.release()
+            return
         try:
             sockaddr = self._create_socket()
             self.socket.connect(sockaddr)
             self.socket.setblocking(0)
 #           self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         except Exception as e:
-            logger.error("{}: problem connecting to {} ({}): {}".format(self._name, self.address, self._proto, e))
+            self._connection_attempts -= 1
+            if self._connection_attempts <= 0:
+                logger.error("{}: could not connect to {} ({}): {}".format(self._name, self.address, self._proto, e))
+                self._connection_attempts = self._connection_errorlog
             self.close()
         else:
             logger.debug("{}: connected to {}".format(self._name, self.address))
             self._connected()
+        finally:
+            self._connection_lock.release()
