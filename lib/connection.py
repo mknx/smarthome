@@ -248,7 +248,8 @@ class Connection(Base):
                 self.outbuffer.appendleft(data[i:i + frame_size])
         else:
             self.outbuffer.appendleft(data)
-        self._poller.trigger(self.socket.fileno())
+        if self.connected:
+            self._poller.trigger(self.socket.fileno())
 
     def _out(self):
         while self.outbuffer and self.connected:
