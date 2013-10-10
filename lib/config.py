@@ -25,6 +25,15 @@ import collections
 logger = logging.getLogger('')
 
 
+def strip_quotes(string):
+    string = string.strip()
+    if string[0] in ['"', "'"]:  # check if string starts with ' or "
+        if string[0] == string[-1]:  # and end with it
+            if string.count(string[0]) == 2:  # if they are the only one
+                string = string[1:-1]  # remove them
+    return string
+
+
 def parse(filename, config=None):
     valid_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
     valid_set = set(valid_chars)
@@ -59,7 +68,8 @@ def parse(filename, config=None):
                 if brackets != 0:
                     logger.error("Problem parsing '{}' unbalanced brackets in line {}: {}".format(filename, linenu, line))
                     return config
-                name = line.strip("[]'")
+                name = line.strip("[]")
+                name = strip_quotes(name)
                 if level == 1:
                     if name not in config:
                         config[name] = collections.OrderedDict()
@@ -77,17 +87,17 @@ def parse(filename, config=None):
                     parents[level] = item
 
             else:  # attribute
-                attr, sep, value = line.partition('=')
-                if sep is '':
+                attr, __, value = line.partition('=')
+                if not value:
                     continue
                 attr = attr.strip()
                 if not set(attr).issubset(valid_set):
                     logger.error("Problem parsing '{}' invalid character in line {}: {}. Valid characters are: {}".format(filename, linenu, attr, valid_chars))
                     continue
-                value = value.strip()
                 if '|' in value:
-                    value = [x.strip() for x in value.split('|')]
-                item[attr] = value
+                    item[attr] = [strip_quotes(x) for x in value.split('|')]
+                else:
+                    item[attr] = strip_quotes(value)
         return config
 
 
