@@ -20,6 +20,7 @@ items.conf
 --------------
 
 For num and bool items, you could set the attribute: `sqlite`. By this you enable logging of the item values.
+If you set this attribute to `init`, SmartHome.py tries to set the item to the last know value (like cache = yes).
 
 <pre>
 [outside]
@@ -29,6 +30,7 @@ For num and bool items, you could set the attribute: `sqlite`. By this you enabl
         type = num
         sqlite = yes
 </pre>
+
 
 # Functions
 This plugin adds one item method to every item which has sqlite enabled.
