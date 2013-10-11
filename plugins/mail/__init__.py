@@ -144,15 +144,23 @@ class SMTP():
         except Exception as e:
             logger.warning("Could not connect to {0}: {1}".format(self._host, e))
             return
-        msg = MIMEText(msg.encode('utf-8'), 'plain', 'utf-8')
-        msg['Subject'] = Header(sub, 'utf-8')
-        msg['From'] = self._from
-        msg['Date'] = email.utils.formatdate()
-        msg['To'] = to
-        msg['Message-ID'] = email.utils.make_msgid('SmartHome.py')
-        to = [x.strip() for x in to.split(',')]
-        smtp.sendmail(self._from, to, msg.as_string())
-        smtp.quit()
+        try:
+            msg = MIMEText(msg, 'plain', 'utf-8')
+            msg['Subject'] = Header(sub, 'utf-8')
+            msg['From'] = self._from
+            msg['Date'] = email.utils.formatdate()
+            msg['To'] = to
+            msg['Message-ID'] = email.utils.make_msgid('SmartHome.py')
+            to = [x.strip() for x in to.split(',')]
+            smtp.sendmail(self._from, to, msg.as_string())
+        except Exception as e:
+            logger.warning("Could not send message {} to {}: {}".format(sub, to, e))
+        finally:
+            try:
+                smtp.quit()
+                del(smtp)
+            except:
+                pass
 
     def _connect(self):
         smtp = smtplib.SMTP(self._host, self._port)
