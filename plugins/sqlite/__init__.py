@@ -58,7 +58,7 @@ class SQL():
     def __init__(self, smarthome, path=None):
         self._sh = smarthome
         self.connected = False
-#       sqlite3.register_adapter(datetime.datetime, self.timestamp)
+#       sqlite3.register_adapter(datetime.datetime, self._timestamp)
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
@@ -108,7 +108,7 @@ class SQL():
         smarthome.scheduler.add('SQLite pack', self._pack, cron='2 3 * *', prio=5)
 
     def update_item(self, item, caller=None, source=None, dest=None):
-        now = self.timestamp(self._sh.now())
+        now = self._timestamp(self._sh.now())
         val = float(item())
         power = int(bool(val))
         if item.conf['sqlite'] == 'sum':
@@ -148,7 +148,7 @@ class SQL():
             item.series = functools.partial(self._series, item=item.id())
             item.db = functools.partial(self._single, item=item.id())
             if item.conf['sqlite'] == 'init':
-                last = self.fetchone("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id()))
+                last = self._fetchone("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id()))
                 if last is not None:
                     last = last[0]
                     item.set(last, 'SQLite')
@@ -161,13 +161,13 @@ class SQL():
             # self.function(logic['name'])
             pass
 
-    def timestamp(self, dt):
+    def _timestamp(self, dt):
         return time.mktime(dt.timetuple()) * 1000 + int(dt.microsecond / 1000)
 
-    def datetime(self, ts):
+    def _datetime(self, ts):
         return datetime.datetime.fromtimestamp(ts / 1000, self._sh.tzinfo())
 
-    def get_timestamp(self, frame='now'):
+    def _get_timestamp(self, frame='now'):
         try:
             return int(frame)
         except:
@@ -188,7 +188,7 @@ class SQL():
             logger.warning("DB select: unkown time frame '{0}'".format(frame))
         return ts
 
-    def fetchone(self, *query):
+    def _fetchone(self, *query):
         if not self._fdb_lock.acquire(timeout=2):
             return
         if not self.connected:
@@ -203,7 +203,7 @@ class SQL():
             self._fdb_lock.release()
         return reply
 
-    def fetchall(self, *query):
+    def _fetchall(self, *query):
         if not self._fdb_lock.acquire(timeout=2):
             return
         if not self.connected:
@@ -281,9 +281,9 @@ class SQL():
     def _series(self, func, start, end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
         if sid is None:
             sid = item + '|' + func + '|' + start + '|' + end
-        istart = self.get_timestamp(start)
-        iend = self.get_timestamp(end)
-        prev = self.fetchone("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
+        istart = self._get_timestamp(start)
+        iend = self._get_timestamp(end)
+        prev = self._fetchone("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
         if prev is None:
             first = istart
         else:
@@ -312,7 +312,7 @@ class SQL():
             logger.warning("Unknown export function: {0}".format(func))
             return reply
         try:
-            tuples = self.fetchall(query)
+            tuples = self._fetchall(query)
         except Exception as e:
             logger.warning("Problem {0} with query: {1}".format(e, query))
             return reply
@@ -337,9 +337,9 @@ class SQL():
         return reply
 
     def _single(self, func, start, end='now', item=None):
-        start = self.get_timestamp(start)
-        end = self.get_timestamp(end)
-        prev = self.fetchone("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start))
+        start = self._get_timestamp(start)
+        end = self._get_timestamp(end)
+        prev = self._fetchone("SELECT time from history WHERE item = '{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, start))
         if prev is None:
             first = start
         else:
@@ -356,7 +356,7 @@ class SQL():
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return
-        tuples = self.fetchall(query)
+        tuples = self._fetchall(query)
         if tuples is None:
             return
         if func == 'avg':
@@ -366,7 +366,7 @@ class SQL():
                 return tuples[0][0]
 
     def _pack(self):
-        now = self.timestamp(self._sh.now())
+        now = self._timestamp(self._sh.now())
         insert = []
         delete = []
         if not self._fdb_lock.acquire(timeout=2):
