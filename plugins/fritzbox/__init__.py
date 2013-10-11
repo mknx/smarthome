@@ -18,7 +18,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
- 
+
 import sys
 import logging
 import http.client
@@ -28,8 +28,10 @@ import re
 
 logger = logging.getLogger('')
 
+
 class fbex(Exception):
     pass
+
 
 class FritzBoxBase():
 
@@ -88,13 +90,14 @@ class FritzBoxBase():
     def call(self, call_from, call_to):
         logger.debug("initiate call from {0} to {1}".format(call_from, call_to))
         resp = self.execute({
-            'telcfg:settings/UseClickToDial': 1, 
-            'telcfg:command/Dial': call_to, 
+            'telcfg:settings/UseClickToDial': 1,
+            'telcfg:command/Dial': call_to,
             'telcfg:settings/DialPort': call_from
         })
 
+
 class FritzBox(FritzBoxBase):
-    
+
     def __init__(self, smarthome, host='fritz.box', password=None):
         FritzBoxBase.__init__(self, host, password)
         self._sh = smarthome
@@ -130,19 +133,20 @@ class FritzBox(FritzBoxBase):
                     return
             logger.debug("fritzbox attribute value {0} on item {1} not recognized".format(attr, item))
 
+
 def main():
     if len(sys.argv) != 4:
         print("usage: {0} password from to".format(sys.argv[0]))
         return 1
 
-    handler = logging.StreamHandler(sys.stdout) 
-    frm = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%d.%m.%Y %H:%M:%S") 
+    handler = logging.StreamHandler(sys.stdout)
+    frm = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%d.%m.%Y %H:%M:%S")
     handler.setFormatter(frm)
 
-    logger = logging.getLogger() 
-    logger.addHandler(handler) 
+    logger = logging.getLogger()
+    logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
-    
+
     fb = FritzBoxBase(password=sys.argv[1])
     fb.call(sys.argv[2], sys.argv[3])
 
