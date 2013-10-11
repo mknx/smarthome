@@ -1,0 +1,5 @@
+
+[SH_Init]
+    filename = init.py
+    crontab = init
+

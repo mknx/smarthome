@@ -103,8 +103,11 @@ class LogHandler(logging.StreamHandler):
 class SmartHome():
     base_dir = BASE
     _plugin_conf = BASE + '/etc/plugin.conf'
+    _env_dir = BASE + '/lib/env/'
+    _env_logic_conf = _env_dir + 'logic_conf'
     _items_dir = BASE + '/items/'
     _logic_conf = BASE + '/etc/logic.conf'
+    _logic_dir = BASE + '/logics/'
     _cache_dir = BASE + '/var/cache/'
     _logfile = BASE + '/var/log/smarthome.log'
     _log_buffer = 50
@@ -297,6 +300,12 @@ class SmartHome():
         #############################################################
         logger.info("Init Items")
         item_conf = {}
+        for item_file in sorted(os.listdir(self._env_dir)):
+            if item_file.endswith('.conf'):
+                try:
+                    item_conf = lib.config.parse(self._env_dir + item_file, item_conf)
+                except Exception as e:
+                    logger.exception("Problem reading {0}: {1}".format(item_file, e))
         for item_file in sorted(os.listdir(self._items_dir)):
             if item_file.endswith('.conf'):
                 try:
@@ -334,7 +343,7 @@ class SmartHome():
         #############################################################
         # Init Logics
         #############################################################
-        self._logics = lib.logic.Logics(self, configfile=self._logic_conf)
+        self._logics = lib.logic.Logics(self, self._logic_conf, self._env_logic_conf)
 
         #############################################################
         # Init Scenes

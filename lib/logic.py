@@ -29,22 +29,20 @@ logger = logging.getLogger('')
 
 class Logics():
 
-    def __init__(self, smarthome, configfile):
+    def __init__(self, smarthome, userlogicconf, envlogicconf):
         logger.info('Start Logics')
         self._sh = smarthome
         self._workers = []
         self._logics = {}
         self._bytecode = {}
         self.alive = True
-        logger.debug("reading logics from {}".format(configfile))
-        try:
-            self._config = lib.config.parse(configfile)
-        except Exception as e:
-            logger.critical(e)
-            return
-        for name in self._config:
+        _config = {}
+        _config.update(self._read_logics(envlogicconf, smarthome._env_dir))
+        _config.update(self._read_logics(userlogicconf, smarthome._logic_dir))
+
+        for name in _config:
             logger.debug("Logic: {}".format(name))
-            logic = Logic(self._sh, name, self._config[name])
+            logic = Logic(self._sh, name, _config[name])
             if hasattr(logic, 'bytecode'):
                 self._logics[name] = logic
                 self._sh.scheduler.add(name, logic, logic.prio, logic.crontab, logic.cycle)
@@ -71,6 +69,18 @@ class Logics():
                                 item.add_logic_trigger(logic)
                         else:
                             item.add_logic_trigger(logic)
+
+    def _read_logics(self, filename, directory):
+        logger.debug("Reading Logics from {}".format(filename))
+        try:
+            config = lib.config.parse(filename)
+            for name in config:
+                if 'filename' in config[name]:
+                    config[name]['filename'] = directory + config[name]['filename']
+        except Exception as e:
+            logger.critical(e)
+            config = {}
+        return config
 
     def __iter__(self):
         for logic in self._logics:
@@ -110,12 +120,11 @@ class Logic():
 
     def generate_bytecode(self):
         if hasattr(self, 'filename'):
-            filename = self._sh.base_dir + '/logics/' + self.filename
-            if not os.access(filename, os.R_OK):
+            if not os.access(self.filename, os.R_OK):
                 logger.warning("{}: Could not access logic file ({}) => ignoring.".format(self.name, self.filename))
                 return
             try:
-                code = open(filename).read()
+                code = open(self.filename).read()
                 code = code.lstrip('\ufeff')  # remove BOM
                 self.bytecode = compile(code, self.filename, 'exec')
             except Exception as e:
