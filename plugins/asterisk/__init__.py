@@ -42,7 +42,7 @@ class Asterisk(lib.connection.Client):
         self._devices = {}
         self._mailboxes = {}
         self._trigger_logics = {}
-        self._log_in = lib.log.Log(smarthome, 'Asterisk-Incoming', ['start', 'name', 'number', 'duration', 'direction'])
+        self._log_in = lib.log.Log(smarthome, 'env.asterisk.log.in', ['start', 'name', 'number', 'duration', 'direction'])
 
     def _command(self, d, reply=True):
         if not self.connected:

@@ -229,7 +229,7 @@ class SmartHome():
                 logging.getLogger('').setLevel(vars(logging)[self._loglevel.upper()])
             except:
                 pass
-        self.log = lib.log.Log(self, 'SmartHome.py', ['time', 'thread', 'level', 'message'], maxlen=self._log_buffer)
+        self.log = lib.log.Log(self, 'env.core.log', ['time', 'thread', 'level', 'message'], maxlen=self._log_buffer)
         log_mem = LogHandler(self.log)
         log_mem.setLevel(logging.WARNING)
         log_mem.setFormatter(formatter)
