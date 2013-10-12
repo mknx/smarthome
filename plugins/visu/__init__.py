@@ -19,16 +19,26 @@
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
+import base64
+import datetime
+import hashlib
+import json
 import logging
 import ssl
-import hashlib
-import base64
 import threading
-import json
+import time
+
 import lib.connection
 
-
 logger = logging.getLogger('')
+
+
+class JSONEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return int(time.mktime(obj.timetuple()) * 1000 + obj.microsecond / 1000)
+        return json.JSONEncoder.default(self, obj)
 
 
 class WebSocket(lib.connection.Server):
@@ -397,7 +407,7 @@ class WebSocketHandler(lib.connection.Connection):
         self.terminator = 8
 
     def rfc6455_send(self, data):
-        data = json.dumps(data, separators=(',', ':'))
+        data = json.dumps(data, cls=JSONEncoder, separators=(',', ':'))
         header = bytearray(2)
         header[0] = self.set_bit(header[0], 0)  # opcode text
         header[0] = self.set_bit(header[0], 7)  # final
