@@ -19,6 +19,7 @@
 #  along with SmartHome.py.  If not, see <http://www.gnu.org/licenses/>.
 ##########################################################################
 
+import gc  # noqa
 import logging
 import time
 import datetime
@@ -298,11 +299,10 @@ class Scheduler(threading.Thread):
         self._workers.append(t)
         if len(self._workers) > self._worker_num:
             logger.info("Adding worker thread. Total: {0}".format(len(self._workers)))
-            tn = []
+            tn = {}
             for t in threading.enumerate():
-                tn.append(t.name)
-            tn = ', '.join(tn)
-            logger.info("Current Threads: {0}".format(tn))
+                tn[t.name] = tn.get(t.name, 0) + 1
+            logger.info('Threads: ' + ', '.join("{0}: {1}".format(k, v) for (k, v) in list(tn.items())))
 
     def _worker(self):
         while self.alive:
