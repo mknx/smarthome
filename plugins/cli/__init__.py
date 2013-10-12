@@ -50,6 +50,8 @@ class CLIHandler(lib.connection.Connection):
             self.la()
         elif cmd == 'lo':
             self.lo()
+        elif cmd == 'll':
+            self.lo()
         elif cmd == 'lt':
             self.lt()
         elif cmd == 'cl':
