@@ -3,3 +3,6 @@
     filename = init.py
     crontab = init
 
+[SH_Stat]
+    filename = stat.py
+    cycle = 600
