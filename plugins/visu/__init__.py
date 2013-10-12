@@ -38,6 +38,8 @@ class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return int(time.mktime(obj.timetuple()) * 1000 + obj.microsecond / 1000)
+        elif isinstance(obj, datetime.timedelta):
+            return int(obj.total_seconds() * 1000)
         return json.JSONEncoder.default(self, obj)
 
 
