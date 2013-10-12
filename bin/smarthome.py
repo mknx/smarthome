@@ -240,7 +240,6 @@ class SmartHome():
         #############################################################
         self.tz = 'UTC'
         os.environ['TZ'] = self.tz
-        self._tzinfo = self._utctz
         if hasattr(self, '_tz'):
             tzinfo = gettz(self._tz)
             if tzinfo is not None:
@@ -483,10 +482,10 @@ class SmartHome():
     #################################################################
     def now(self):
         # tz aware 'localtime'
-        return datetime.datetime.now(self._tzinfo)
+        return datetime.datetime.now(TZ)
 
     def tzinfo(self):
-        return self._tzinfo
+        return TZ
 
     def utcnow(self):
         # tz aware utc time
