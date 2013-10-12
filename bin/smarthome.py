@@ -249,6 +249,7 @@ class SmartHome():
             else:
                 logger.warning("Problem parsing timezone: {}. Using UTC.".format(self._tz))
             del(self._tz, tzinfo)
+        self._tzinfo = TZ
 
         logger.info("Start SmartHome.py {0}".format(VERSION))
         logger.debug("Python {0}".format(sys.version.split()[0]))
@@ -482,10 +483,10 @@ class SmartHome():
     #################################################################
     def now(self):
         # tz aware 'localtime'
-        return datetime.datetime.now(TZ)
+        return datetime.datetime.now(self._tzinfo)
 
     def tzinfo(self):
-        return TZ
+        return self._tzinfo
 
     def utcnow(self):
         # tz aware utc time
