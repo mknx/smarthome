@@ -39,3 +39,5 @@ with open(statusfile, 'r') as f:
 uptime = int(float(data.split()[0]))
 uptime = datetime.timedelta(seconds=uptime)
 sh.env.system.uptime(uptime)
+
+sh.env.location.moonlight(sh.moon.light())

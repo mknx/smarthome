@@ -6,3 +6,7 @@
 [SH_Stat]
     filename = stat.py
     cycle = 600
+
+[SH_Loc]
+    filename = location.py
+    crontab = init | sunrise+5m | sunset+5m
