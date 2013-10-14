@@ -329,10 +329,11 @@ class SQL():
                 tuples = self._diff_ser(tuples)  # compute diff for concatenation groups
             elif func == 'rate':
                 tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
-            _value = tuples  # XXX
             tuples = [(istart, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
-            _value = tuples  # XXX
             tuples = sorted(tuples)
+            if tuples is None:
+                logger.error("Tuples for {}: {}".format(sid, tuples, _value))  # XXX
+                return reply
             lval = tuples[-1][1]
             tuples.append((iend, lval))  # add end entry with last valid entry
             _value = tuples  # XXX
