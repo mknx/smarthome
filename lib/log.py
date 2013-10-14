@@ -34,10 +34,6 @@ class Log(collections.deque):
         smarthome.add_log(name, self)
 
     def add(self, entry):
-        try:
-            entry[0] = time.mktime(entry[0].timetuple()) * 1000 + int(entry[0].microsecond / 1000)
-        except:
-            pass
         self.appendleft(entry)
         for listener in self._sh.return_event_listeners('log'):
             listener('log', {'name': self._name, 'log': [dict(zip(self.mapping, entry))]})
