@@ -30,7 +30,7 @@ import time
 
 import lib.connection
 
-logger = logging.getLogger('')
+logger = logging.getLogger()
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -48,7 +48,7 @@ class WebSocket(lib.connection.Server):
     def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False):
         lib.connection.Server.__init__(self, ip, port)
         self._sh = smarthome
-        smarthome.add_event_listener(['log', 'rrd'], self._send_event)
+        smarthome.add_event_listener(['log'], self._send_event)
         self.clients = []
         self.visu_items = {}
         self.visu_logics = {}
@@ -122,9 +122,7 @@ class WebSocket(lib.connection.Server):
                 logger.exception(e)
                 return
         client = WebSocketHandler(self._sh, self, sock, address, self.visu_items, self.visu_logics)
-        self._lock.acquire()
         self.clients.append(client)
-        self._lock.release()
 
     def run(self):
         self.alive = True
@@ -154,40 +152,42 @@ class WebSocket(lib.connection.Server):
 
     def update_item(self, item, caller=None, source=None, dest=None):
         data = {'cmd': 'item', 'items': [[item.id(), item()]]}
-        self._lock.acquire()
-        for client in self.clients:
-            client.update(item.id(), data, source)
-        self._lock.release()
+        for client in list(self.clients):
+            try:
+                client.update(item.id(), data, source)
+            except:
+                pass
 
     def remove_client(self, client):
-        self._lock.acquire()
-        if client in self.clients:
-            self.clients.remove(client)
-        self._lock.release()
+        self.clients.remove(client)
 
     def _send_event(self, event, data):
-        self._lock.acquire()
-        for client in self.clients:
-            client.send_event(event, data)
-        self._lock.release()
+        for client in list(self.clients):
+            try:
+                client.send_event(event, data)
+            except:
+                pass
 
     def _update_series(self):
-        self._lock.acquire()
-        for client in self.clients:
-            client.update_series()
-        self._lock.release()
+        for client in list(self.clients):
+            try:
+                client.update_series()
+            except:
+                pass
 
     def dialog(self, header, content):
-        self._lock.acquire()
-        for client in self.clients:
-            client.json_send({'cmd': 'dialog', 'header': header, 'content': content})
-        self._lock.release()
+        for client in list(self.clients):
+            try:
+                client.json_send({'cmd': 'dialog', 'header': header, 'content': content})
+            except:
+                pass
 
     def url(self, url):
-        self._lock.acquire()
-        for client in self.clients:
-            client.json_send({'cmd': 'url', 'url': url})
-        self._lock.release()
+        for client in list(self.clients):
+            try:
+                client.json_send({'cmd': 'url', 'url': url})
+            except:
+                pass
 
 
 class WebSocketHandler(lib.connection.Connection):
@@ -239,19 +239,21 @@ class WebSocketHandler(lib.connection.Connection):
     def update_series(self):
         now = self._sh.now()
         self._series_lock.acquire()
-        for sid in self._update_series:
-            series = self._update_series[sid]
+        remove = []
+        for sid, series in self._update_series.items():
             if series['update'] < now:
                 try:
                     reply = self.items[series['params']['item']].series(**series['params'])
                 except Exception as e:
                     logger.exception("Problem updating series for {0}: {1}".format(series['params'], e))
+                    remove.append(sid)
                     continue
-                if 'update' in reply:
-                    self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
-                    del(reply['update'])
-                    del(reply['params'])
+                self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
+                del(reply['update'])
+                del(reply['params'])
                 self.json_send(reply)
+        for sid in remove:
+            del(self._update_series[sid])
         self._series_lock.release()
 
     def difference(self, a, b):
