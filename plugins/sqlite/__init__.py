@@ -282,72 +282,56 @@ class SQL():
         if sid is None:
             sid = item + '|' + func + '|' + start + '|' + end
         reply = {'cmd': 'series', 'series': None, 'sid': sid}
-        _value = ''  # XXX
-        try:
-            istart = self._get_timestamp(start)
-            iend = self._get_timestamp(end)
-            prev = self._fetchone("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
-            _value = prev  # XXX
-            if prev is None:
-                first = istart
+        istart = self._get_timestamp(start)
+        iend = self._get_timestamp(end)
+        prev = self._fetchone("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
+        if prev is None:
+            first = istart
+        else:
+            first = prev[0]
+        where = " from history WHERE item='{0}' AND time >= {1} AND time <= {2}".format(item, first, iend)
+        if step is None:
+            if count != 0:
+                step = (iend - istart) / count
             else:
-                first = prev[0]
-            _value = first  # XXX
-            where = " from history WHERE item='{0}' AND time >= {1} AND time <= {2}".format(item, first, iend)
-            if step is None:
-                if count != 0:
-                    step = (iend - istart) / count
-                else:
-                    step = (iend - istart)
-            where += " GROUP by CAST((time / {0}) AS INTEGER)".format(step)
-            if func == 'avg':
-                query = "SELECT group_concat(time), group_concat(vavg)" + where + " ORDER BY time DESC"
-            elif func in ('diff-ser', 'rate-ser'):
-                query = "SELECT group_concat(time), group_concat(val)" + where + " ORDER BY time ASC"
-            elif func == 'rate':
-                query = "SELECT group_concat(time), group_concat(val)" + where + " ORDER BY time ASC"
-            elif func == 'min':
-                query = "SELECT MIN(time), MIN(vmin)" + where
-            elif func == 'max':
-                query = "SELECT MIN(time), MAX(vmax)" + where
-            elif func == 'sum':
-                query = "SELECT MIN(time), SUM(vsum)" + where
-            else:
-                logger.warning("Unknown export function: {0}".format(func))
-                return reply
-            try:
-                tuples = self._fetchall(query)
-            except Exception as e:
-                logger.warning("Problem {0} with query: {1}".format(e, query))
-                return reply
-            if tuples is None:
-                return reply
-            _value = tuples  # XXX
-            if func == 'avg':
-                tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
-            elif func == 'diff':
-                tuples = self._diff_ser(tuples)  # compute diff for concatenation groups
-            elif func == 'rate':
-                tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
-            tuples = [(istart, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
-            tuples = sorted(tuples)
-            if tuples is None:
-                logger.error("Tuples for {}: {}".format(sid, tuples, _value))  # XXX
-                return reply
-            lval = tuples[-1][1]
-            tuples.append((iend, lval))  # add end entry with last valid entry
-            _value = tuples  # XXX
-            if update:  # remove first entry
-                tuples = tuples[1:]
-            _value = tuples  # XXX
-            step = int(step / 1000)
-            reply['series'] = tuples
-            reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
-            reply['update'] = self._sh.now() + datetime.timedelta(seconds=step)
-            return reply
-        except Exception as e:
-            logger.exception("SQLite: problem generating series value: '{}': {}".format(_value, e))
-            return reply
+                step = (iend - istart)
+        where += " GROUP by CAST((time / {0}) AS INTEGER)".format(step)
+        if func == 'avg':
+            query = "SELECT group_concat(time), group_concat(vavg)" + where + " ORDER BY time DESC"
+        elif func in ('diff-ser', 'rate-ser'):
+            query = "SELECT group_concat(time), group_concat(val)" + where + " ORDER BY time ASC"
+        elif func == 'rate':
+            query = "SELECT group_concat(time), group_concat(val)" + where + " ORDER BY time ASC"
+        elif func == 'min':
+            query = "SELECT MIN(time), MIN(vmin)" + where
+        elif func == 'max':
+            query = "SELECT MIN(time), MAX(vmax)" + where
+        elif func == 'sum':
+            query = "SELECT MIN(time), SUM(vsum)" + where
+        else:
+            raise NotImplementedError
+        tuples = self._fetchall(query)
+        if tuples is None:
+            raise IndexError
+        if func == 'avg':
+            tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
+        elif func == 'diff':
+            tuples = self._diff_ser(tuples)  # compute diff for concatenation groups
+        elif func == 'rate':
+            tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
+        tuples = [(istart, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
+        tuples = sorted(tuples)
+        if tuples is None:
+            raise IndexError
+        lval = tuples[-1][1]
+        tuples.append((iend, lval))  # add end entry with last valid entry
+        if update:  # remove first entry
+            tuples = tuples[1:]
+        step = int(step / 1000)
+        reply['series'] = tuples
+        reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
+        reply['update'] = self._sh.now() + datetime.timedelta(seconds=step)
+        return reply
 
     def _single(self, func, start, end='now', item=None):
         start = self._get_timestamp(start)
