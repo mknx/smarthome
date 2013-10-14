@@ -189,6 +189,9 @@ class SmartHome():
             log_file = logging.handlers.TimedRotatingFileHandler(self._logfile, when='midnight', backupCount=7)
             log_file.setLevel(LOGLEVEL)
             log_file.setFormatter(formatter)
+            if LOGLEVEL == logging.DEBUG:  # clean log
+                log_file.doRollover()
+            _logdate = None
             logging.getLogger('').addHandler(log_file)
         except IOError as e:
             print("Error creating logfile {}: {}".format(self._logfile, e))
