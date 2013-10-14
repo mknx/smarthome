@@ -39,7 +39,7 @@ class Item():
         # public attributes
         self.conf = {}
         self._last_change = smarthome.now()
-        self._prev_change = self._last_change
+        self._prev_change = 0
         self._changed_by = 'Init'
         # special attributes
         self._sh = smarthome
