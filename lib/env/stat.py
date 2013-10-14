@@ -40,4 +40,5 @@ uptime = int(float(data.split()[0]))
 uptime = datetime.timedelta(seconds=uptime)
 sh.env.system.uptime(uptime)
 
-sh.env.location.moonlight(sh.moon.light())
+if sh.moon:
+    sh.env.location.moonlight(sh.moon.light())

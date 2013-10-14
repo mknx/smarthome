@@ -269,6 +269,8 @@ class SmartHome():
             self.moon = lib.orb.Orb('moon', self._lon, self._lat, self._elev)
         else:
             logger.warning('No latitude/longitude specified => you could not use the sun and moon object.')
+            self.sun = None
+            self.moon = None
 
     #################################################################
     # Process Methods
