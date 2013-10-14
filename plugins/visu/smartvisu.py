@@ -28,7 +28,7 @@ logger = logging.getLogger('')
 
 def parse_tpl(template, replace):
     try:
-        with open(template, 'r') as f:
+        with open(template, 'r', encoding='utf-8') as f:
             tpl = f.read()
             tpl = tpl.lstrip('\ufeff')  # remove BOM
     except Exception as e:
