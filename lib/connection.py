@@ -109,6 +109,7 @@ class Connections(Base):
                     except Exception as e:
                         logger.exception("{}: {}".format(self._name, e))
                         con.close()
+                        continue
                 if event & select.EPOLLOUT:
                     try:
                         con = self._connections[fileno]
@@ -116,10 +117,12 @@ class Connections(Base):
                     except Exception as e:
                         logger.exception("{}: {}".format(self._name, e))
                         con.close()
+                        continue
                 if event & (select.EPOLLHUP | select.EPOLLERR):
                     try:
                         con = self._connections[fileno]
                         con.close()
+                        continue
                     except:
                         pass
 
