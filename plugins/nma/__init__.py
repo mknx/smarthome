@@ -3,7 +3,7 @@
 #########################################################################
 # Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
 #########################################################################
-#  This file is part of SmartHome.py.   http://mknx.github.com/smarthome/
+#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,18 +20,19 @@
 #########################################################################
 
 import logging
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+import urllib.parse
+import http.client
 
-# nma notifications
 logger = logging.getLogger('NMA')
 
 
 class NMA():
-    _apiuri = 'https://www.notifymyandroid.com/publicapi/notify'
+    _host = 'www.notifymyandroid.com'
+    _api = '/publicapi/notify'
 
     def __init__(self, smarthome, apikey=None):
         self._apikey = apikey
+        self._sh = smarthome
 
     def run(self):
         pass
@@ -41,36 +42,34 @@ class NMA():
 
     def __call__(self, event='', description='', priority=None, url=None, apikey=None, application='SmartHome'):
         data = {}
+        headers = {'User-Agent': "SmartHome.py", 'Content-Type': "application/x-www-form-urlencoded"}
+        data['event'] = event[:1000].encode()
+        data['description'] = description[:1000].encode()
+        data['application'] = application[:256].encode()
         if apikey:
             data['apikey'] = apikey
         else:
             data['apikey'] = self._apikey
-        data['application'] = application[:256].encode('utf-8')
-        data['event'] = event[:1000].encode('utf-8')
-        data['description'] = description[:1000].encode('utf-8')
         if priority:
             data['priority'] = priority
         if url:
             data['url'] = url[:2000]
-
         try:
-            p = urllib.request.urlopen(self._apiuri, urllib.parse.urlencode(data), 4)
-            status_code = p.getcode()
-            if (status_code == 200):
+            conn = http.client.HTTPSConnection(self._host, timeout=4)
+            conn.request("POST", self._api, urllib.parse.urlencode(data), headers)
+            resp = conn.getresponse()
+            conn.close()
+            if (resp.status == 200):
                 logger.debug("NMA returns: Notification submitted.")
-            elif (status_code == 400):
+            elif (resp.status == 400):
                 logger.warning("NMA returns: The data supplied is in the wrong format, invalid length or null.")
-            elif (status_code == 401):
+            elif (resp.status == 401):
                 logger.warning("NMA returns: None of the API keys provided were valid.")
-            elif (status_code == 402):
+            elif (resp.status == 402):
                 logger.warning("NMA returns: Maximum number of API calls per hour exceeded.")
-            elif (status_code == 500):
+            elif (resp.status == 500):
                 logger.warning("NMA returns: Internal server error. Please contact our support if the problem persists.")
             else:
                 logger.error("NAME returns unknown HTTP status code = {0}".format(p.getcode()))
-            p.read(1)
-            p.fp._sock.recv = None
-            p.close()
-            del(p)
         except Exception as e:
             logger.warning("Could not send NMA notification: {0}. Error: {1}".format(event, e))
