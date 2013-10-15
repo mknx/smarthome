@@ -157,8 +157,7 @@ class SMA():
         self._read_ops = []
         self._inv_bt_addr = bt_addr
         self._inv_password = password
-        self._inv_last_read_datetime = datetime.fromtimestamp(0, tz.tzlocal())
-        self._inv_last_read = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
+        self._inv_last_read_timestamp_utc = 0
         self._inv_serial = 0
         self._own_bt_addr_le = bytearray(BCAST_ADDR)
         self._inv_bt_addr_le = bytearray.fromhex(self._inv_bt_addr.replace(':',' '))
@@ -167,7 +166,7 @@ class SMA():
 
     def _update_values(self):
         #logger.warning("sma: signal strength = {}%%".format(self._inv_get_bt_signal_strength()))
-
+        timestamp_utc = 0
         for read_op in self._read_ops:
             data = self._inv_get_value(read_op)
             if (data != []):
@@ -176,15 +175,16 @@ class SMA():
                     if field_addr in self._fields:
                         for item in self._fields[field_addr]['items']:
                             item(field[2] / self._fields[field_addr]['eval'], 'SMA', self._inv_bt_addr)
-                    self._inv_last_read_timestamp_utc = field[1]
-
-        # extract time(utc)
-        self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
-        self._inv_last_read = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
-        logger.debug("sma: last successful update = {}".format(self._inv_last_read))
-        if 'LAST_UPDATE' in self._fields:
-            for item in self._fields['LAST_UPDATE']['items']:
-                item(self._inv_last_read, 'SMA', self._inv_bt_addr)
+                    timestamp_utc = field[1]
+        # update time
+        if (timestamp_utc > self._inv_last_read_timestamp_utc):
+            self._inv_last_read_timestamp_utc = timestamp_utc
+            self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
+            self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
+            logger.debug("sma: last successful update = {}".format(self._inv_last_read_str))
+            if 'LAST_UPDATE' in self._fields:
+                for item in self._fields['LAST_UPDATE']['items']:
+                    item(self._inv_last_read_str, 'SMA', self._inv_bt_addr)
 
     def run(self):
         self.alive = True
@@ -241,7 +241,6 @@ class SMA():
                 else:
                     if not item in self._fields[field_addr]['items']:
                         self._fields[field_addr]['items'].append(item)
-
         # return None to indicate "read-only"
         return None
 
@@ -393,7 +392,7 @@ class SMA():
 
         # extract own bluetooth addr
         self._own_bt_addr_le = msg[26:32]
-        logger.debug("sma: own bluetooth address: {}".format(':'.join(['%02x' % b for b in self._own_bt_addr_le[::-1]])))
+        logger.info("sma: own bluetooth address: {}".format(':'.join(['%02x' % b for b in self._own_bt_addr_le[::-1]])))
 
         # first SMA net2 msg
         retries = 10 
@@ -465,7 +464,7 @@ class SMA():
 
         # extract serial
         self._inv_serial = int.from_bytes(msg[17:21], byteorder='little')
-        logger.debug("sma: inverter serial = {}".format(self._inv_serial))
+        logger.info("sma: inverter serial = {}".format(self._inv_serial))
 
     def _inv_get_bt_signal_strength(self):
         cmdcode = 0x0003
