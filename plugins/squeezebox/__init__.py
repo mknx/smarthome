@@ -25,7 +25,6 @@ import urllib.error
 import urllib.parse
 import lib.connection
 import re
-import sys
 
 logger = logging.getLogger('Squeezebox')
 
@@ -122,9 +121,15 @@ class Squeezebox(lib.connection.Client):
         self.send(bytes(cmd + '\r\n','utf-8'))
 
     def found_terminator(self, response):
-        response = response.decode()
-        logger.debug("squeezebox: Raw: {0}".format(response))
-        data = [urllib.parse.unquote(data_str, encoding='iso-8859-1') for data_str in response.split()]
+        #logger.debug("squeezebox: #####################################")
+        #print(type(response))
+        #print(response.decode('iso-8859-1').encode('utf-8').decode('unicode-escape'))
+        #print(urllib.parse.unquote(response.decode('iso-8859-1')))
+        #print(urllib.parse.unquote(response.decode('unicode-escape')))
+        #response = response.decode('iso-8859-1')
+        #print(type(response))
+        #logger.debug("squeezebox: Raw: {0}".format(response))
+        data = [urllib.parse.unquote(data_str) for data_str in response.decode().split()]
         logger.debug("squeezebox: Got: {0}".format(data))
 
         try:
@@ -188,9 +193,9 @@ class Squeezebox(lib.connection.Client):
             if (data[-1] == '?'):
                 return
             self._update_items_with_data(data)
-        except:
+        except Exception as e:
             logger.error("squeezebox: exception while parsing \'{0}\'".format(data))
-            logger.error("squeezebox: exception: \'{0}\'".format(sys.exc_info()))
+            logger.error("squeezebox: exception: {}".format(e))
 
     def _update_items_with_data(self, data):
         cmd = ' '.join(data_str for data_str in data[:-1])
