@@ -1,13 +1,13 @@
 
-[SH_Init]
+[env_init]
     filename = init.py
     crontab = init
 
-[SH_Stat]
+[env_stat]
     filename = stat.py
     cycle = 300
 
-[SH_Loc]
+[env_loc]
     filename = location.py
     crontab = init | sunrise+1m | sunset+1m | sunrise-5 | sunset-7
     cycle = 1800
