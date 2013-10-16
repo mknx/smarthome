@@ -5,8 +5,9 @@
 
 [SH_Stat]
     filename = stat.py
-    cycle = 600
+    cycle = 300
 
 [SH_Loc]
     filename = location.py
-    crontab = init | sunrise+5m | sunset+5m
+    crontab = init | sunrise+1m | sunset+1m | sunrise-5 | sunset-7
+    cycle = 1800
