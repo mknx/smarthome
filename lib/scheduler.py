@@ -191,34 +191,45 @@ class Scheduler(threading.Thread):
         if isinstance(cron, list):
             _cron = {}
             for entry in cron:
-                desc, __, value = entry.partition('=')
+                desc, __, _value = entry.partition('=')
                 desc = desc.strip()
-                if value != '':
-                    value = value.strip()
+                if _value == '':
+                    _value = None
                 else:
-                    value = None
-                _cron[desc] = value
-            cron = _cron
-            if 'init' in cron and offset is None:
-                offset = 4
-        if isinstance(cycle, str):
-            cycle, sep, value = cycle.partition('=')
+                    _value = _value.strip()
+                if desc.startswith('init'):
+                    offset = 5  # default init offset
+                    desc, op, seconds = desc.partition('+')
+                    if op:
+                        offset += int(seconds)
+                    else:
+                        desc, op, seconds = desc.partition('-')
+                        if op:
+                            offset -= int(seconds)
+                    value = _value
+                    next = self._sh.now() + datetime.timedelta(seconds=offset)
+                else:
+                    _cron[desc] = _value
+            if _cron == {}:
+                cron = None
+            else:
+                cron = _cron
+        if isinstance(cycle, int):
+            cycle = {cycle: None}
+        elif isinstance(cycle, str):
+            cycle, __, _value = cycle.partition('=')
             try:
                 cycle = int(cycle.strip())
             except Exception:
                 logger.warning("Scheduler: invalid cycle entry for {0} {1}".format(name, cycle))
                 return
-            if value != '':
-                value = value.strip()
+            if _value != '':
+                _value = _value.strip()
             else:
-                value = None
-            cycle = {cycle: value}
-            if offset is None:
-                offset = random.randint(6, 12)  # spread cycle jobs
-        elif isinstance(cycle, int):
-            cycle = {cycle: None}
-            if offset is None:
-                offset = random.randint(6, 12)  # spread cycle jobs
+                _value = None
+            cycle = {cycle: _value}
+        if cycle is not None and offset is None:  # spread cycle jobs
+                offset = random.randint(10, 15)
         self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': next, 'active': True}
         if next is None:
             self._next_time(name, offset)
@@ -261,19 +272,8 @@ class Scheduler(threading.Thread):
             value = job['cycle'][cycle]
             if offset is None:
                 offset = cycle
-            next_time = now + dateutil.relativedelta.relativedelta(seconds=offset)
+            next_time = now + datetime.timedelta(seconds=offset)
         if job['cron'] is not None:
-            if 'init' in job['cron']:
-                value = job['cron']['init']
-                del self._scheduler[name]['cron']['init']
-                if self._scheduler[name]['cron'] == {}:
-                    self._scheduler[name]['cron'] = None
-                if offset is None:
-                    self._scheduler[name]['next'] = now
-                else:
-                    self._scheduler[name]['next'] = now + dateutil.relativedelta.relativedelta(seconds=offset)
-                self._scheduler[name]['value'] = value
-                return
             for entry in job['cron']:
                 ct = self._crontab(entry)
                 if next_time is not None:
@@ -349,14 +349,18 @@ class Scheduler(threading.Thread):
         threading.current_thread().name = 'idle'
 
     def _crontab(self, crontab):
-        # process sunrise/sunset
-        for entry in crontab.split('<'):
-            if entry.startswith('sun'):
-                return self._sun(crontab)
-        next_event = self._parse_month(crontab, offset=0)  # this month
-        if not next_event:
-            next_event = self._parse_month(crontab, offset=1)  # next month
-        return next_event
+        try:
+            # process sunrise/sunset
+            for entry in crontab.split('<'):
+                if entry.startswith('sun'):
+                    return self._sun(crontab)
+            next_event = self._parse_month(crontab, offset=0)  # this month
+            if not next_event:
+                next_event = self._parse_month(crontab, offset=1)  # next month
+            return next_event
+        except:
+            logger.error("Error parsing crontab: {}".format(crontab))
+            return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
 
     def _parse_month(self, crontab, offset=0):
         now = self._sh.now()
