@@ -75,7 +75,7 @@ class Scheduler(threading.Thread):
 
     _workers = []
     _worker_num = 5
-    _worker_max = 30
+    _worker_max = 20
     _worker_delta = 60  # wait 60 seconds before adding another worker thread
     _scheduler = {}
     _runq = PriorityQueue()
