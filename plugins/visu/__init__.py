@@ -273,7 +273,7 @@ class WebSocketHandler(lib.connection.Connection):
             if path in self.items:
                 self.items[path](value, 'Visu', self.addr)
             else:
-                logger.info("Client {0} want to update invalid item: {1}".format(self.addr, path))
+                logger.warning("Client {0} want to update invalid item: {1}".format(self.addr, path))
         elif command == 'monitor':
             if data['items'] == [None]:
                 return
@@ -284,7 +284,7 @@ class WebSocketHandler(lib.connection.Connection):
                     else:
                         self.json_send({'cmd': 'item', 'items': [[path, self.items[path]()]]})
                 else:
-                    logger.info("Client {0} requested invalid item: {1}".format(self.addr, path))
+                    logger.warning("Client {0} requested invalid item: {1}".format(self.addr, path))
             self.monitor['item'] = data['items']
         elif command == 'logic':  # logic
             if 'name' not in data or 'val' not in data:
@@ -295,7 +295,7 @@ class WebSocketHandler(lib.connection.Connection):
                 logger.info("Client {0} triggerd logic {1} with '{2}'".format(self.addr, name, value))
                 self.logics[name].trigger(by='Visu', value=value, source=self.addr)
             else:
-                logger.info("Client {0} requested invalid logic: {1}".format(self.addr, name))
+                logger.warning("Client {0} requested invalid logic: {1}".format(self.addr, name))
         elif command == 'series':
             path = data['item']
             series = data['series']
@@ -318,7 +318,7 @@ class WebSocketHandler(lib.connection.Connection):
                         del(reply['params'])
                     self.json_send(reply)
                 else:
-                    logger.info("Client {0} requested invalid series: {1}.".format(self.addr, path))
+                    logger.warning("Client {0} requested invalid series: {1}.".format(self.addr, path))
         elif command == 'log':
             self.log = True
             name = data['name']
@@ -328,7 +328,7 @@ class WebSocketHandler(lib.connection.Connection):
             if name in self.logs:
                 self.json_send({'cmd': 'log', 'name': name, 'log': self.logs[name].export(num), 'init': 'y'})
             else:
-                logger.info("Client {0} requested invalid log: {1}".format(self.addr, name))
+                logger.warning("Client {0} requested invalid log: {1}".format(self.addr, name))
             if name not in self.monitor['log']:
                 self.monitor['log'].append(name)
         elif command == 'proto':  # protocol version
