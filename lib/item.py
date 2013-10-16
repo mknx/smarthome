@@ -121,7 +121,7 @@ def _cache_write(filename, value):
 
 
 class Item():
-    __defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None, 'scene': ''}
+    __defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None, 'scene': 0}
 
     def __init__(self, smarthome, parent, path, config):
         self._autotimer = False
@@ -192,7 +192,7 @@ class Item():
                 try:
                     child = Item(smarthome, self, child_path, value)
                 except Exception as e:
-                    logger.exception("Item {}: problem creating: ()".format(child_path, e))
+                    logger.error("Item {}: problem creating: ()".format(child_path, e))
                 else:
                     vars(self)[attr] = child
                     smarthome.add_item(child_path, child)
@@ -226,7 +226,7 @@ class Item():
             self._value = self.__cast(self._value)
         except:
             logger.error("Item {}: value {} does not match type {}.".format(self._path, self._value, self._type))
-            raise ValueError
+            raise
         #############################################################
         # Crontab/Cycle
         #############################################################
@@ -268,9 +268,6 @@ class Item():
 
     def __repr__(self):
         return "Item: {0}".format(self._value)
-
-    def _add_logic_trigger(self, logic):
-        self.__logics_to_trigger.append(logic)
 
     def _init_prerun(self):
         if self._eval_trigger:
@@ -352,6 +349,9 @@ class Item():
         if self._autotimer and caller != 'Autotimer':
             _time, _value = self._autotimer
             self.timer(_time, _value, True)
+
+    def add_logic_trigger(self, logic):
+        self.__logics_to_trigger.append(logic)
 
     def add_method_trigger(self, method):
         self.__methods_to_trigger.append(method)
