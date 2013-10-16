@@ -116,7 +116,7 @@ class SmartHome():
     __all_listeners = []
     _plugins = []
     __items = []
-    _sub_items = []
+    __children = []
     __item_dict = {}
     _utctz = TZ
 
@@ -318,22 +318,22 @@ class SmartHome():
                 except Exception as e:
                     logger.exception("Problem reading {0}: {1}".format(item_file, e))
                     continue
-        for entry in item_conf:
-            if isinstance(item_conf[entry], dict):
-                path = entry
-                sub_item = self.return_item(path)
-                if sub_item is None:  # new item
-                    sub_item = lib.item.Item(self, self, path, item_conf[path])
-                    vars(self)[path] = sub_item
-                    self.add_item(path, sub_item)
-                    self._sub_items.append(sub_item)
-                else:  # existing item
-                    sub_item.parse(self, self, path, item_conf[path])
+        for attr, value in item_conf.items():
+            if isinstance(value, dict):
+                child_path = attr
+                try:
+                    child = lib.item.Item(self, self, child_path, value)
+                except Exception as e:
+                    logger.exception("Item {}: problem creating: ()".format(child_path, e))
+                else:
+                    vars(self)[attr] = child
+                    self.add_item(child_path, child)
+                    self.__children.append(child)
         del(item_conf)  # clean up
         for item in self.return_items():
-            item.init_prerun()
+            item._init_prerun()
         for item in self.return_items():
-            item.init_run()
+            item._init_run()
 
         #############################################################
         # Start Connections
@@ -400,8 +400,8 @@ class SmartHome():
     # Item Methods
     #################################################################
     def __iter__(self):
-        for item in self._sub_items:
-            yield item
+        for child in self.__children:
+            yield child
 
     def add_item(self, path, item):
         if path not in self.__items:

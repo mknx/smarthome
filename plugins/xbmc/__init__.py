@@ -78,7 +78,7 @@ class xbmc(lib.connection.Client):
         for child in self._sh.find_children(item, 'xbmc_send'):
             send_to = child.conf['xbmc_send']
             if send_to in self._send_keys:
-                child.add_trigger_method(self._send_value)
+                child.add_method_trigger(self._send_value)
         item.notify = self.notify
 
     def notify(self, title, message, image=None):

@@ -57,7 +57,7 @@ class Scenes():
                 except Exception as e:
                     logger.warning("Problem reading scene file {0}: {1}".format(scene_file, e))
                     continue
-                item.add_trigger_method(self._trigger)
+                item.add_method_trigger(self._trigger)
 
     def _trigger(self, item, caller, source, dest):
         if not item.id() in self._scenes:

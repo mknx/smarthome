@@ -84,15 +84,15 @@ class mpd(lib.connection.Client):
         for child in self._sh.find_children(item, 'mpd_send'):
             send_to = child.conf['mpd_send']
             if send_to in self._bool_keys:
-                child.add_trigger_method(self._send_bool)
+                child.add_method_trigger(self._send_bool)
             elif send_to == 'volume':
-                child.add_trigger_method(self._send_volume)
+                child.add_method_trigger(self._send_volume)
             elif send_to == 'value':
-                child.add_trigger_method(self._send_value)
+                child.add_method_trigger(self._send_value)
             else:
-                child.add_trigger_method(self._send_command)
+                child.add_method_trigger(self._send_command)
         for child in self._sh.find_children(item, 'mpd_file'):
-            child.add_trigger_method(self._play_file)
+            child.add_method_trigger(self._play_file)
         # adding item methods
         item.command = self.command
         item.play_file = self.play_file
