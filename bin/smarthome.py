@@ -372,6 +372,8 @@ class SmartHome():
     def stop(self, signum=None, frame=None):
         self.alive = False
         logger.info("Number of Threads: {0}".format(threading.activeCount()))
+        for item in self.__items:
+            self.__item_dict[item]._fading = False
         try:
             self.scheduler.stop()
         except:
@@ -384,7 +386,7 @@ class SmartHome():
             self.connections.close()
         except:
             pass
-        time.sleep(0.5)
+        time.sleep(1)
         if threading.active_count() > 1:
             for thread in threading.enumerate():
                 logger.info("Thread: {}, still alive".format(thread.name))

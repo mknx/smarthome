@@ -115,6 +115,31 @@ def _cache_write(filename, value):
 
 
 #####################################################################
+# Fade Method
+#####################################################################
+def _fadejob(item, dest, step, delta):
+    if item._fading:
+        return
+    else:
+        item._fading = True
+    if item._value < dest:
+        while (item._value + step) < dest and item._fading:
+            item(item._value + step, 'Fader')
+            item._lock.acquire()
+            item._lock.wait(delta)
+            item._lock.release()
+    else:
+        while (item._value - step) > dest and item._fading:
+            item(item._value - step, 'Fader')
+            item._lock.acquire()
+            item._lock.wait(delta)
+            item._lock.release()
+    if item._fading:
+        item._fading = False
+        item(dest)
+
+
+#####################################################################
 # Item Class
 #####################################################################
 
@@ -134,10 +159,11 @@ class Item():
         self._enforce_updates = False
         self._eval = None
         self._eval_trigger = False
+        self._fading = False
         self.__items_to_trigger = []
         self.__last_change = smarthome.now()
         self.__last_update = smarthome.now()
-        self.__lock = threading.Condition()
+        self._lock = threading.Condition()
         self.__logics_to_trigger = []
         self._name = path
         self.__prev_age = 10
@@ -269,7 +295,7 @@ class Item():
         return self._name
 
     def __repr__(self):
-        return "Item: {0}".format(self._value)
+        return "Item: {}".format(self._path)
 
     def _init_prerun(self):
         if self._eval_trigger:
@@ -316,7 +342,7 @@ class Item():
             except:
                 pass
             return
-        self.__lock.acquire()
+        self._lock.acquire()
         _changed = False
         if value != self._value:
             _changed = True
@@ -326,7 +352,7 @@ class Item():
             self.__last_change = self._sh.now()
             self.__changed_by = "{0}:{1}".format(caller, source)
             self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
-        self.__lock.release()
+        self._lock.release()
         if _changed or self._enforce_updates:
             self.__last_update = self._sh.now()
             for method in self.__methods_to_trigger:
@@ -374,6 +400,10 @@ class Item():
     def changed_by(self):
         return self.__changed_by
 
+    def fade(self, dest, step=1, delta=1):
+        dest = float(dest)
+        self._sh.trigger(self._path, _fadejob, value={'item': self, 'dest': dest, 'step': step, 'delta': delta})
+
     def id(self):
         return self._path
 
@@ -405,13 +435,13 @@ class Item():
             except:
                 pass
             return
-        self.__lock.acquire()
+        self._lock.acquire()
         self._value = value
         self.__prev_age = (self._sh.now() - self.__last_change).total_seconds()
         self.__prev_change = self.__last_change
         self.__last_change = self._sh.now()
         self.__changed_by = "{0}:{1}".format(caller, None)
-        self.__lock.release()
+        self._lock.release()
         self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
 
     def timer(self, time, value, auto=False):
@@ -440,4 +470,3 @@ if __name__ == '__main__':
     i = Item('sh', 'parent', 'path1', {'type': 'str', 'child1': {'type': 'bool'}, 'value': 'tqwer'})
     i = Item('sh', 'parent', 'path', {'type': 'str', 'value': 'tqwer'})
     i('test2')
-    print(i())
