@@ -124,19 +124,19 @@ def _fadejob(item, dest, step, delta):
         item._fading = True
     if item._value < dest:
         while (item._value + step) < dest and item._fading:
-            item(item._value + step, 'Fader')
+            item(item._value + step, 'fader')
             item._lock.acquire()
             item._lock.wait(delta)
             item._lock.release()
     else:
         while (item._value - step) > dest and item._fading:
-            item(item._value - step, 'Fader')
+            item(item._value - step, 'fader')
             item._lock.acquire()
             item._lock.wait(delta)
             item._lock.release()
     if item._fading:
         item._fading = False
-        item(dest)
+        item(dest, 'Fader')
 
 
 #####################################################################
@@ -351,7 +351,10 @@ class Item():
             self.__prev_change = self.__last_change
             self.__last_change = self._sh.now()
             self.__changed_by = "{0}:{1}".format(caller, source)
-            self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
+            if caller != "fader":
+                self._fading = False
+                self._lock.notify_all()
+                self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
         self._lock.release()
         if _changed or self._enforce_updates:
             self.__last_update = self._sh.now()
@@ -372,12 +375,12 @@ class Item():
             for item in self.__items_to_trigger:
                 args = {'value': value, 'source': self._path}
                 self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source, dest=dest)
-        if _changed and self._cache:
+        if _changed and self._cache and not self._fading:
             try:
                 _cache_write(self._cache, value)
             except Exception as e:
                 logger.warning("Item: {}: could update cache {}".format(self._path, e))
-        if self._autotimer and caller != 'Autotimer':
+        if self._autotimer and caller != 'Autotimer' and not self._fading:
             _time, _value = self._autotimer
             self.timer(_time, _value, True)
 
