@@ -228,7 +228,7 @@ class Item():
         # Cache
         #############################################################
         if self._cache:
-            self._cache = self._path
+            self._cache = self._sh._cache_dir + self._path
             try:
                 self.__last_change, self._value = _cache_read(self._cache)
                 self.__last_update = self.__last_change
