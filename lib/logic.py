@@ -57,18 +57,8 @@ class Logics():
                 if isinstance(logic.watch_item, str):
                     logic.watch_item = [logic.watch_item]
                 for entry in logic.watch_item:
-                    itemexpr, sep, attribute = entry.partition(':')
-                    itemexpr = itemexpr.strip()
-                    if attribute != '':
-                        attribute = attribute.strip()
-                    else:
-                        attribute = False
-                    for item in self._sh.match_items(itemexpr):
-                        if attribute:
-                            if attribute in item.conf:
-                                item.add_logic_trigger(logic)
-                        else:
-                            item.add_logic_trigger(logic)
+                    for item in self._sh.match_items(entry):
+                        item.add_logic_trigger(logic)
 
     def _read_logics(self, filename, directory):
         logger.debug("Reading Logics from {}".format(filename))

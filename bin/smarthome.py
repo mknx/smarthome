@@ -419,9 +419,13 @@ class SmartHome():
             yield self.__item_dict[item]
 
     def match_items(self, regex):
+        regex, __, attr = regex.partition(':')
         regex = regex.replace('.', '\.').replace('*', '.*') + '$'
         regex = re.compile(regex)
-        return [self.__item_dict[item] for item in self.__items if regex.match(item)]
+        if attr != '':
+            return [self.__item_dict[item] for item in self.__items if regex.match(item) and attr in self.__item_dict[item].conf]
+        else:
+            return [self.__item_dict[item] for item in self.__items if regex.match(item)]
 
     def find_items(self, conf):
         for item in self.__items:
