@@ -107,7 +107,6 @@ def _cache_read(filename):
 
 
 def _cache_write(filename, value):
-    print('wtf')
     try:
         with open(filename, 'wb') as f:
             pickle.dump(value, f)
@@ -127,7 +126,7 @@ class Item():
         self._autotimer = False
         self._cache = False
         self.__cast = _cast_bool
-        self.__changed_by = 'init'
+        self.__changed_by = 'Init:None'
         self.__children = []
         self.conf = {}
         self._crontab = None
@@ -137,10 +136,12 @@ class Item():
         self._eval_trigger = False
         self.__items_to_trigger = []
         self.__last_change = smarthome.now()
+        self.__last_update = smarthome.now()
         self.__lock = threading.Condition()
         self.__logics_to_trigger = []
         self._name = path
-        self.__next2last_change = 10
+        self.__prev_age = 10
+        self.__prev_change = smarthome.now()
         self.__methods_to_trigger = []
         self.__parent = parent
         self._path = path
@@ -204,7 +205,8 @@ class Item():
             self._cache = self._path
             try:
                 self.__last_change, self._value = _cache_read(self._cache)
-                self.__changed_by = 'cache'
+                self.__last_update = self.__last_change
+                self.__changed_by = 'Cache:None'
             except Exception as e:
                 logger.warning("Item {}: problem reading cache: {}".format(self._path, e))
         #############################################################
@@ -315,13 +317,18 @@ class Item():
                 pass
             return
         self.__lock.acquire()
-        if value != self._value or self._enforce_updates:
+        _changed = False
+        if value != self._value:
+            _changed = True
             self._value = value
-            self.__next2last_change = (self._sh.now() - self.__last_change).total_seconds()
+            self.__prev_age = (self._sh.now() - self.__last_change).total_seconds()
+            self.__prev_change = self.__last_change
             self.__last_change = self._sh.now()
             self.__changed_by = "{0}:{1}".format(caller, source)
-            self.__lock.release()
             self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
+        self.__lock.release()
+        if _changed or self._enforce_updates:
+            self.__last_update = self._sh.now()
             for method in self.__methods_to_trigger:
                 try:
                     method(self, caller, source, dest)
@@ -339,13 +346,11 @@ class Item():
             for item in self.__items_to_trigger:
                 args = {'value': value, 'source': self._path}
                 self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source, dest=dest)
-            if self._cache:
-                try:
-                    _cache_write(self._cache, value)
-                except Exception as e:
-                    logger.warning("Item: {}: could update cache {}".format(self._path, e))
-        else:
-            self.__lock.release()
+        if _changed and self._cache:
+            try:
+                _cache_write(self._cache, value)
+            except Exception as e:
+                logger.warning("Item: {}: could update cache {}".format(self._path, e))
         if self._autotimer and caller != 'Autotimer':
             _time, _value = self._autotimer
             self.timer(_time, _value, True)
@@ -355,6 +360,10 @@ class Item():
 
     def add_method_trigger(self, method):
         self.__methods_to_trigger.append(method)
+
+    def age(self):
+        delta = self._sh.now() - self.__last_change
+        return delta.total_seconds()
 
     def autotimer(self, time=None, value=None):
         if time is not None and value is not None:
@@ -369,11 +378,16 @@ class Item():
         return self._path
 
     def last_change(self):
-        delta = self._sh.now() - self.__last_change
-        return delta.total_seconds()
+        return self.__last_change
 
-    def next2last_change(self):
-        return self.__next2last_change
+    def last_update(self):
+        return self.__last_update
+
+    def prev_age(self):
+        return self.__prev_age
+
+    def prev_change(self):
+        return self.__prev_change
 
     def return_children(self):
         for child in self.__children:
@@ -393,9 +407,10 @@ class Item():
             return
         self.__lock.acquire()
         self._value = value
-        self.__next2last_change = (self._sh.now() - self.__last_change).total_seconds()
+        self.__prev_age = (self._sh.now() - self.__last_change).total_seconds()
+        self.__prev_change = self.__last_change
         self.__last_change = self._sh.now()
-        self.__changed_by = "{0}:{1}".format(caller, source)
+        self.__changed_by = "{0}:{1}".format(caller, None)
         self.__lock.release()
         self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
 
