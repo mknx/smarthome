@@ -80,7 +80,7 @@ class NetIO230B():
 
         if (html):
             r = re.compile('[^0^1]')
-            cur_state = [_f for _f in r.split(html) if _f]
+            cur_state = [_f for _f in r.split(html.decode("utf-8")) if _f]
 
             # reset error state to False
             for key in self._error:
