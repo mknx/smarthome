@@ -188,7 +188,6 @@ Use nested items to build a tree representing your enviroment.
  * `cache`: if set to On, the value of the item will be cached in a local file (in /usr/local/smarthome/var/cache/).
  * `enforce_updates`: If set to On, every call of the item will trigger depending logics and item evaluations.
  * `threshold`: specify values to trigger depending logics only if the value transit the threshold. low:high to set a value for the lower and upper threshold, e.g. 21.4:25.0 which triggers the logic if the value exceeds 25.0 or fall below 21.4. Or simply a single value.
- * `offset` (only for num-types): the offset will be evaluated every time you try to update the value of the item. It could be a simple '+2' or a more complex '*3.0/2+3'.
  * `eval` and `eval_trigger`: see next section for a description of these attributes.
  * `crontab` and `cycle`: see logic.conf for possible options to set the value of an item at the specified times / cycles.
 
