@@ -160,7 +160,7 @@ class Item():
         self._eval = None
         self._eval_trigger = False
         self._fading = False
-        self.__items_to_trigger = []
+        self._items_to_trigger = []
         self.__last_change = smarthome.now()
         self.__last_update = smarthome.now()
         self._lock = threading.Condition()
@@ -195,6 +195,7 @@ class Item():
                 elif attr in ['crontab', 'eval_trigger']:  # cast to list
                     if isinstance(value, str):
                         value = [value, ]
+                    setattr(self, '_' + attr, value)
                 elif attr == 'autotimer':
                     time, __, value = value.partition('=')
                     if value is not None:
@@ -299,12 +300,14 @@ class Item():
 
     def _init_prerun(self):
         if self._eval_trigger:
+            _items = []
             for trigger in self._eval_trigger:
-                item = self._sh.match_items(trigger)
+                _items.extend(self._sh.match_items(trigger))
+            for item in _items:
                 if item != self:  # prevent loop
-                    item.__items_to_trigger.append(self)
+                        item._items_to_trigger.append(self)
             if self._eval:
-                items = ['sh.' + x.id() + '()' for x in self._eval_trigger]
+                items = ['sh.' + x.id() + '()' for x in _items]
                 if self._eval == 'and':
                     self._eval = ' and '.join(items)
                 elif self._eval == 'or':
@@ -317,7 +320,7 @@ class Item():
     def _init_run(self):
         if self._eval_trigger:
             if self._eval:
-                self._sh.trigger(name=self._path, obj=self._run_eval, by='Init')
+                self._sh.trigger(name=self._path, obj=self.__run_eval, by='Init')
 
     def __run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
@@ -372,9 +375,9 @@ class Item():
                     self.__trigger_logics()
             elif self.__logics_to_trigger:
                 self.__trigger_logics()
-            for item in self.__items_to_trigger:
+            for item in self._items_to_trigger:
                 args = {'value': value, 'source': self._path}
-                self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source, dest=dest)
+                self._sh.trigger(name=item.id(), obj=item.__run_eval, value=args, by=caller, source=source, dest=dest)
         if _changed and self._cache and not self._fading:
             try:
                 _cache_write(self._cache, value)
