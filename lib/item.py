@@ -97,9 +97,9 @@ def _cast_num(value):
 #####################################################################
 # Cache Methods
 #####################################################################
-def _cache_read(filename):
+def _cache_read(filename, tz):
     ts = os.path.getmtime(filename)
-    dt = datetime.datetime.fromtimestamp(ts)
+    dt = datetime.datetime.fromtimestamp(ts, tz)
     value = None
     with open(filename, 'rb') as f:
         value = pickle.load(f)
@@ -230,7 +230,7 @@ class Item():
         if self._cache:
             self._cache = self._sh._cache_dir + self._path
             try:
-                self.__last_change, self._value = _cache_read(self._cache)
+                self.__last_change, self._value = _cache_read(self._cache, self._sh._tzinfo)
                 self.__last_update = self.__last_change
                 self.__changed_by = 'Cache:None'
             except Exception as e:
