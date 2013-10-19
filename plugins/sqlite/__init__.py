@@ -284,8 +284,11 @@ class SQL():
         reply = {'cmd': 'series', 'series': None, 'sid': sid}
         istart = self._get_timestamp(start)
         iend = self._get_timestamp(end)
+        step = int(step / 1000)
+        reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
+        reply['update'] = self._sh.now() + datetime.timedelta(seconds=step)
         prev = self._fetchone("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
-        if prev is None:
+        if not prev:
             first = istart
         else:
             first = prev[0]
@@ -311,8 +314,8 @@ class SQL():
         else:
             raise NotImplementedError
         tuples = self._fetchall(query)
-        if tuples is None:
-            raise IndexError
+        if not tuples:
+            return reply
         if func == 'avg':
             tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
         elif func == 'diff':
@@ -321,16 +324,11 @@ class SQL():
             tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
         tuples = [(istart, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
         tuples = sorted(tuples)
-        if tuples is None:
-            raise IndexError
         lval = tuples[-1][1]
         tuples.append((iend, lval))  # add end entry with last valid entry
         if update:  # remove first entry
             tuples = tuples[1:]
-        step = int(step / 1000)
         reply['series'] = tuples
-        reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
-        reply['update'] = self._sh.now() + datetime.timedelta(seconds=step)
         return reply
 
     def _single(self, func, start, end='now', item=None):

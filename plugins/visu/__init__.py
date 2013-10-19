@@ -317,7 +317,10 @@ class WebSocketHandler(lib.connection.Connection):
                             self._series_lock.release()
                             del(reply['update'])
                             del(reply['params'])
-                        self.json_send(reply)
+                        if 'series' in reply:
+                            self.json_send(reply)
+                        else:
+                            logger.info("WebSocket: no entries for series {}".format(series))
                 else:
                     logger.warning("Client {0} requested invalid series: {1}.".format(self.addr, path))
         elif command == 'log':
