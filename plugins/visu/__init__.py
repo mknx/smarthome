@@ -310,13 +310,14 @@ class WebSocketHandler(lib.connection.Connection):
                         reply = self.items[path].series(series, start, end)
                     except Exception as e:
                         logger.exception("Problem fetching series for {0}: {1}".format(path, e))
-                    if 'update' in reply:
-                        self._series_lock.acquire()
-                        self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
-                        self._series_lock.release()
-                        del(reply['update'])
-                        del(reply['params'])
-                    self.json_send(reply)
+                    else:
+                        if 'update' in reply:
+                            self._series_lock.acquire()
+                            self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
+                            self._series_lock.release()
+                            del(reply['update'])
+                            del(reply['params'])
+                        self.json_send(reply)
                 else:
                     logger.warning("Client {0} requested invalid series: {1}.".format(self.addr, path))
         elif command == 'log':
