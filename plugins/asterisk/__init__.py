@@ -235,7 +235,8 @@ class Asterisk(lib.connection.Client):
         self._command(self._init_cmd, reply=False)
         for mb in self._mailboxes:
             mbc = self.mailbox_count(mb)
-            self._mailboxes[mb](mbc[1])
+            if mbc is not None:
+                self._mailboxes[mb](mbc[1])
 
     def stop(self):
         self.alive = False
