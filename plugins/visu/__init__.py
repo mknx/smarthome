@@ -305,10 +305,14 @@ class WebSocketHandler(lib.connection.Connection):
                 end = data['end']
             else:
                 end = 'now'
+            if 'count' in data:
+                count = data['count']
+            else:
+                count = 100
             if path in self.items:
                 if hasattr(self.items[path], 'series'):
                     try:
-                        reply = self.items[path].series(series, start, end)
+                        reply = self.items[path].series(series, start, end, count)
                     except Exception as e:
                         logger.exception("Problem fetching series for {0}: {1}".format(path, e))
                     else:
