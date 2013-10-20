@@ -251,7 +251,8 @@ class WebSocketHandler(lib.connection.Connection):
                 self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
                 del(reply['update'])
                 del(reply['params'])
-                self.json_send(reply)
+                if reply['series'] is not None:
+                    self.json_send(reply)
         for sid in remove:
             del(self._update_series[sid])
         self._series_lock.release()
@@ -317,7 +318,7 @@ class WebSocketHandler(lib.connection.Connection):
                             self._series_lock.release()
                             del(reply['update'])
                             del(reply['params'])
-                        if 'series' in reply:
+                        if reply['series'] is not None:
                             self.json_send(reply)
                         else:
                             logger.info("WebSocket: no entries for series {}".format(series))
