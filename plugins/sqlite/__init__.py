@@ -281,12 +281,8 @@ class SQL():
     def _series(self, func, start, end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
         if sid is None:
             sid = item + '|' + func + '|' + start + '|' + end
-        reply = {'cmd': 'series', 'series': None, 'sid': sid}
         istart = self._get_timestamp(start)
         iend = self._get_timestamp(end)
-        step = int(step / 1000)
-        reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
-        reply['update'] = self._sh.now() + datetime.timedelta(seconds=step)
         prev = self._fetchone("SELECT time from history WHERE item='{0}' AND time <= {1} ORDER BY time DESC LIMIT 1".format(item, istart))
         if not prev:
             first = istart
@@ -298,6 +294,9 @@ class SQL():
                 step = (iend - istart) / count
             else:
                 step = (iend - istart)
+        reply = {'cmd': 'series', 'series': None, 'sid': sid}
+        reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
+        reply['update'] = self._sh.now() + datetime.timedelta(seconds=int(step / 1000))
         where += " GROUP by CAST((time / {0}) AS INTEGER)".format(step)
         if func == 'avg':
             query = "SELECT group_concat(time), group_concat(vavg)" + where + " ORDER BY time DESC"
