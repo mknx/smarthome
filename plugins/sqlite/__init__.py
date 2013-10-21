@@ -310,12 +310,14 @@ class SQL():
             query = "SELECT MIN(time), MAX(vmax)" + where
         elif func == 'sum':
             query = "SELECT MIN(time), SUM(vsum)" + where
+        elif func == 'on':
+            query = "SELECT group_concat(time), group_concat(power)" + where + " ORDER BY time DESC"
         else:
             raise NotImplementedError
         tuples = self._fetchall(query)
         if not tuples:
             return reply
-        if func == 'avg':
+        if func in ('avg', 'on'):
             tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
         elif func == 'diff':
             tuples = self._diff_ser(tuples)  # compute diff for concatenation groups
@@ -347,13 +349,15 @@ class SQL():
             query = "SELECT MAX(vmax)" + where
         elif func == 'sum':
             query = "SELECT SUM(vsum)" + where
+        elif func == 'on':
+            query = "SELECT time, power" + where
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return
         tuples = self._fetchall(query)
         if tuples is None:
             return
-        if func == 'avg':
+        if func in ('avg', 'on'):
             tuples = [(start, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
             return self._avg(tuples, end)
         else:
