@@ -77,9 +77,14 @@ def pages(smarthome, directory):
                 shutil.rmtree(dp)
         except Exception as e:
             logger.warning("Could not delete directory {0}: {1}".format(dp, e))
+    # create output directory
+    try:
+        os.mkdir(outdir)
+    except:
+        pass
     # remove old dynamic files
     if not os.path.isdir(outdir):
-        logger.warning("Could not find directory: {0}".format(outdir))
+        logger.warning("Could not find/create directory: {0}".format(outdir))
         return
     for fn in os.listdir(outdir):
         fp = os.path.join(outdir, fn)
