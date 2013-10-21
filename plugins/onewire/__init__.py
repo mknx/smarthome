@@ -180,7 +180,7 @@ class OwBase():
             try:
                 page3 = self.read(path + 'pages/page.3')  # .encode('hex').upper()
             except Exception as e:
-                logger.exception(e)
+                logger.warning("1-Wire: sensor {0} problem reading page.3: {1}".format(addr, e))
                 return
             try:
                 vis = float(self.read(path + 'vis').decode())
