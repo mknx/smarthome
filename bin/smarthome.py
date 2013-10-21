@@ -130,6 +130,7 @@ class SmartHome():
         #############################################################
         # logfile write test
         #############################################################
+        os.umask(0o002)
         try:
             with open(self._logfile, 'a') as f:
                 f.write("Init SmartHome.py {0}\n".format(VERSION))
@@ -146,7 +147,6 @@ class SmartHome():
                 pid = os.fork()  # fork second child
                 if pid == 0:
                     os.chdir('/')
-                    os.umask(0o22)
                     print("Starting SmartHome.py in the background with pid: {}".format(os.getpid()))
                 else:
                     time.sleep(0.1)
