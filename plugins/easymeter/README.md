@@ -34,3 +34,8 @@ Description of the attributes:
   device = /dev/ttyUSB0
   type = num
 </pre>
+
+
+Please take care, there are different obis codes for different versions of Easymeter Q3D.
+For example Version 3.02 reports obis code 1-0:21.7.0*255, version 3.04 
+reports 1-0:21.7.255*255.
