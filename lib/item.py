@@ -166,7 +166,6 @@ class Item():
         self._lock = threading.Condition()
         self.__logics_to_trigger = []
         self._name = path
-        self.__prev_age = 10
         self.__prev_change = smarthome.now()
         self.__methods_to_trigger = []
         self.__parent = parent
@@ -355,7 +354,6 @@ class Item():
             _changed = True
             self.__prev_value = self._value
             self._value = value
-            self.__prev_age = (self._sh.now() - self.__last_change).total_seconds()
             self.__prev_change = self.__last_change
             self.__last_change = self._sh.now()
             self.__changed_by = "{0}:{1}".format(caller, source)
@@ -425,7 +423,8 @@ class Item():
         return self.__last_update
 
     def prev_age(self):
-        return self.__prev_age
+        delta = self.__last_change - self.__prev_change
+        return delta.total_seconds()
 
     def prev_change(self):
         return self.__prev_change
@@ -451,7 +450,6 @@ class Item():
             return
         self._lock.acquire()
         self._value = value
-        self.__prev_age = (self._sh.now() - self.__last_change).total_seconds()
         self.__prev_change = self.__last_change
         self.__last_change = self._sh.now()
         self.__changed_by = "{0}:{1}".format(caller, None)
