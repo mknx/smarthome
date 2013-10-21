@@ -256,6 +256,7 @@ class Item():
         except:
             logger.error("Item {}: value {} does not match type {}.".format(self._path, self._value, self._type))
             raise
+        self.__prev_value = self._value
         #############################################################
         # Crontab/Cycle
         #############################################################
@@ -349,6 +350,7 @@ class Item():
         _changed = False
         if value != self._value:
             _changed = True
+            self.__prev_value = self._value
             self._value = value
             self.__prev_age = (self._sh.now() - self.__last_change).total_seconds()
             self.__prev_change = self.__last_change
@@ -424,6 +426,9 @@ class Item():
 
     def prev_change(self):
         return self.__prev_change
+
+    def prev_value(self):
+        return self.__prev_value
 
     def return_children(self):
         for child in self.__children:
