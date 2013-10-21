@@ -331,7 +331,9 @@ class Item():
             except Exception as e:
                 logger.warning("Item {}: problem evaluating {}: {}".format(self._path, self._eval, e))
             else:
-                if value is not None:
+                if value is None:
+                    logger.info("Item {}: evaluating {} returns None".format(self._path, self._eval))
+                else:
                     self.__update(value, caller, source, dest)
 
     def __trigger_logics(self):
