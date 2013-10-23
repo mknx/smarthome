@@ -600,7 +600,7 @@ if __name__ == '__main__':
     # argument handling
     argparser = argparse.ArgumentParser()
     arggroup = argparser.add_mutually_exclusive_group()
-    arggroup.add_argument('-v', '--verbose', help='verbose logging to the logfile', action='store_true')
+    arggroup.add_argument('-v', '--verbose', help='verbose (debug output) logging to the logfile', action='store_true')
     arggroup.add_argument('-d', '--debug', help='stay in the foreground with verbose output', action='store_true')
     arggroup.add_argument('-i', '--interactive', help='open an interactive shell with tab completion and with verbose logging to the logfile', action='store_true')
     arggroup.add_argument('-l', '--logics', help='reload all logics', action='store_true')
