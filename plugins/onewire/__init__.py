@@ -176,6 +176,8 @@ class OwBase():
         addr = path.split("/")[-2]
         if typ == 'DS18B20':  # Temperature
             return {'T': 'temperature', 'T9': 'temperature9', 'T10': 'temperature10', 'T11': 'temperature11', 'T12': 'temperature12'}
+        elif typ == 'DS18S20':  # Temperature
+            return {'T': 'temperature'}
         elif typ == 'DS2438':  # Multi
             try:
                 page3 = self.read(path + 'pages/page.3')  # .encode('hex').upper()
