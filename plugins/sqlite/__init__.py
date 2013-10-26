@@ -37,7 +37,7 @@ class SQL():
     # SQL queries
     # time, item, cnt, val, vsum, vmin, vmax, vavg, power
     _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power REAL);"
-    _create_index = "CREATE INDEX IF NOT EXISTS idx ON history (time, item)"
+    _create_index = "CREATE INDEX IF NOT EXISTS idy ON history (item);"
     _pack_query = """
         SELECT
         group_concat(rowid),
@@ -87,10 +87,11 @@ class SQL():
             self._fdb.execute("CREATE TABLE common (version INTEGER);")
             self._fdb.execute("INSERT INTO common VALUES (:version);", {'version': self._version})
             self._fdb.execute(self._create_db)
-            self._fdb.execute(self._create_index)
             version = self._version
         else:
             version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
+        self._fdb.execute("DROP INDEX IF EXISTS idx;")
+        self._fdb.execute(self._create_index)
         if version < self._version:
             logger.debug("update database")
             self._fdb.execute("UPDATE common SET version=:version;", {'version': self._version})
