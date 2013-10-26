@@ -80,8 +80,6 @@ class SQL():
             logger.error("SQLite: database corrupt. Seek help.")
             self._fdb_lock.release()
             return
-        journal = self._fdb.execute("PRAGMA journal_mode=WAL;").fetchone()[0]
-        logger.debug("SQLite: database journal: {}".format(journal))
         common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
         if common is None:
             self._fdb.execute("CREATE TABLE common (version INTEGER);")
