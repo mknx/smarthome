@@ -150,7 +150,7 @@ class Item():
     def __init__(self, smarthome, parent, path, config):
         self._autotimer = False
         self._cache = False
-        self.__cast = _cast_bool
+        self.cast = _cast_bool
         self.__changed_by = 'Init:None'
         self.__children = []
         self.conf = {}
@@ -244,14 +244,14 @@ class Item():
         if self._type not in self.__defaults:
             logger.error("Item {}: type '{}' unknown. Please use one of: {}.".format(self._path, self._type, ', '.join(list(self.__defaults.keys()))))
             raise AttributeError
-        self.__cast = globals()['_cast_' + self._type]
+        self.cast = globals()['_cast_' + self._type]
         #############################################################
         # Value
         #############################################################
         if self._value is None:
             self._value = self.__defaults[self._type]
         try:
-            self._value = self.__cast(self._value)
+            self._value = self.cast(self._value)
         except:
             logger.error("Item {}: value {} does not match type {}.".format(self._path, self._value, self._type))
             raise
@@ -320,7 +320,7 @@ class Item():
     def _init_run(self):
         if self._eval_trigger:
             if self._eval:
-                self._sh.trigger(name=self._path, obj=self.__run_eval, by='Init')
+                self._sh.trigger(name=self._path, obj=self.__run_eval, by='Init', value={'caller': 'Init'})
 
     def __run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
@@ -341,7 +341,7 @@ class Item():
 
     def __update(self, value, caller='Logic', source=None, dest=None):
         try:
-            value = self.__cast(value)
+            value = self.cast(value)
         except:
             try:
                 logger.warning("Item {}: value {} does not match type {}. Via {} {}".format(self._path, value, self._type, caller, source))
@@ -441,7 +441,7 @@ class Item():
 
     def set(self, value, caller='Logic', source=None, dest=None):
         try:
-            value = self.__cast(value)
+            value = self.cast(value)
         except:
             try:
                 logger.warning("Item {}: value {} does not match type {}. Via {} {}".format(self._path, value, self._type, caller, source))
