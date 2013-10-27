@@ -172,6 +172,15 @@ class SmartHome():
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGTERM, self.stop)
 
+#+    # check time
+#+    i = 0
+#+    while datetime.date.today().isoformat() < '2013-10-24' and i < 10:  # XXX update date
+#+        i += 1
+#+        time.sleep(2)
+#+    if datetime.date.today().isoformat() < '2013-10-24':  # XXX update date
+#+        print('Update your time! Exiting...')
+#+        exit()
+
         #############################################################
         # Logging
         #############################################################
