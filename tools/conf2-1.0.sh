@@ -10,6 +10,7 @@ for CONF in items/*.conf etc/*.conf; do
             -e '/sv_widget/s/"//g' \
             -e "/tz *=/s/'//g" \
             -e "/host *=/s/'//g" \
+            -e "/visu *=/s/yes/rw/g" \
             -e "/history *=/s/history *=/sqlite =/g" \
             -e "/ip *=/s/'//g" \
             -e '/knx_dpt/s/4002/4.002/g' \

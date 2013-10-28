@@ -143,8 +143,18 @@ class WebSocket(lib.connection.Server):
 
     def parse_item(self, item):
         if 'visu' in item.conf:
-            self.visu_items[item.id()] = item
-            return self.update_item
+            if item.conf['visu'] in ('yes', 'rw'):
+                acl = 'rw'
+            elif item.conf['visu'] == 'no':
+                return
+            else:
+                acl = 'ro'
+        else:
+            acl = 'ro'
+        if item.id() == 'first.hallway.light':
+            print(item.id(), acl)
+        self.visu_items[item.id()] = {'acl': acl, 'item': item}
+        return self.update_item
 
     def parse_logic(self, logic):
         if hasattr(logic, 'visu'):
@@ -243,7 +253,7 @@ class WebSocketHandler(lib.connection.Connection):
         for sid, series in self._update_series.items():
             if series['update'] < now:
                 try:
-                    reply = self.items[series['params']['item']].series(**series['params'])
+                    reply = self.items[series['params']['item']]['item'].series(**series['params'])
                 except Exception as e:
                     logger.exception("Problem updating series for {0}: {1}".format(series['params'], e))
                     remove.append(sid)
@@ -272,7 +282,10 @@ class WebSocketHandler(lib.connection.Connection):
             path = data['id']
             value = data['val']
             if path in self.items:
-                self.items[path](value, 'Visu', self.addr)
+                if not self.items[path]['acl'] == 'ro':
+                    self.items[path]['item'](value, 'Visu', self.addr)
+                else:
+                    logger.warning("Client {0} want to update read only item: {1}".format(self.addr, path))
             else:
                 logger.warning("Client {0} want to update invalid item: {1}".format(self.addr, path))
         elif command == 'monitor':
@@ -280,10 +293,7 @@ class WebSocketHandler(lib.connection.Connection):
                 return
             for path in list(set(data['items']).difference(set(self.monitor['item']))):
                 if path in self.items:
-                    if 'visu_img' in self.items[path].conf:
-                        self.json_send({'cmd': 'item', 'items': [[path, self.items[path](), self.items[path].conf['visu_img']]]})
-                    else:
-                        self.json_send({'cmd': 'item', 'items': [[path, self.items[path]()]]})
+                    self.json_send({'cmd': 'item', 'items': [[path, self.items[path]['item']()]]})
                 else:
                     logger.warning("Client {0} requested invalid item: {1}".format(self.addr, path))
             self.monitor['item'] = data['items']
@@ -310,9 +320,9 @@ class WebSocketHandler(lib.connection.Connection):
             else:
                 count = 100
             if path in self.items:
-                if hasattr(self.items[path], 'series'):
+                if hasattr(self.items[path]['item'], 'series'):
                     try:
-                        reply = self.items[path].series(series, start, end, count)
+                        reply = self.items[path]['item'].series(series, start, end, count)
                     except Exception as e:
                         logger.exception("Problem fetching series for {0}: {1}".format(path, e))
                     else:
@@ -325,7 +335,7 @@ class WebSocketHandler(lib.connection.Connection):
                         if reply['series'] is not None:
                             self.json_send(reply)
                         else:
-                            logger.info("WebSocket: no entries for series {}".format(series))
+                            logger.info("WebSocket: no entries for series {} {}".format(path, series))
                 else:
                     logger.warning("Client {0} requested invalid series: {1}.".format(self.addr, path))
         elif command == 'log':
