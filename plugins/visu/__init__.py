@@ -147,7 +147,7 @@ class WebSocket(lib.connection.Server):
         if 'visu_acl' in item.conf:
             if item.conf['visu_acl'] in ('yes', 'rw'):
                 acl = 'rw'
-            elif item.conf['visu_acl'] == 'no':
+            elif item.conf['visu_acl'] in ('deny', 'no'):
                 return
             else:
                 acl = 'ro'
