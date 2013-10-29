@@ -45,9 +45,10 @@ class JSONEncoder(json.JSONEncoder):
 
 class WebSocket(lib.connection.Server):
 
-    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False):
+    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False, acl='ro'):
         lib.connection.Server.__init__(self, ip, port)
         self._sh = smarthome
+        self.__acl = acl
         smarthome.add_event_listener(['log'], self._send_event)
         self.clients = []
         self.visu_items = {}
@@ -142,15 +143,14 @@ class WebSocket(lib.connection.Server):
         self.close()
 
     def parse_item(self, item):
-        if 'visu' in item.conf:
-            if item.conf['visu'] in ('yes', 'rw'):
+        acl = self.__acl
+        if 'visu_acl' in item.conf:
+            if item.conf['visu_acl'] in ('yes', 'rw'):
                 acl = 'rw'
-            elif item.conf['visu'] == 'no':
+            elif item.conf['visu_acl'] == 'no':
                 return
             else:
                 acl = 'ro'
-        else:
-            acl = 'ro'
         if item.id() == 'first.hallway.light':
             print(item.id(), acl)
         self.visu_items[item.id()] = {'acl': acl, 'item': item}
