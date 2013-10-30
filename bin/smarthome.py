@@ -60,6 +60,7 @@ from dateutil.tz import gettz
 #####################################################################
 # Import SmartHome.py Modules
 #####################################################################
+import lib.daemon
 import lib.item
 import lib.scheduler
 import lib.logic
@@ -573,19 +574,7 @@ def _read_pid():
 
 
 def _stop():
-    pid = _read_pid()
-    if pid:
-        for i in range(4):
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except OSError:
-                os._exit(0)
-            time.sleep(0.7)
-        try:
-            os.kill(pid, signal.SIGKILL)
-            print("Hard kill SmartHome.py")
-        except OSError:
-            os._exit(0)
+    lib.daemon.stop(__file__)
 
 
 def reload_logics():
