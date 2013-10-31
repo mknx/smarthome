@@ -27,8 +27,9 @@ logger = logging.getLogger('')
 
 
 def get_pid(filename):
+    cpid = str(os.getpid())
     for pid in os.listdir('/proc'):
-        if pid.isdigit():
+        if pid.isdigit() and pid != cpid:
             try:
                 with open('/proc/{}/cmdline'.format(pid), 'r') as f:
                     proc = f.readline()
@@ -39,7 +40,7 @@ def get_pid(filename):
     return 0
 
 
-def stop(filename, wait=5):
+def kill(filename, wait=5):
     pid = get_pid(filename)
     delay = 0.25
     waited = 0

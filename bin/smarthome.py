@@ -573,10 +573,6 @@ def _read_pid():
     return pid
 
 
-def _stop():
-    lib.daemon.stop(__file__)
-
-
 def reload_logics():
     pid = _read_pid()
     if pid:
@@ -634,7 +630,7 @@ if __name__ == '__main__':
         print("SmartHome.py {0}".format(VERSION))
         exit(0)
     elif args.stop:
-        _stop()
+        lib.daemon.kill(__file__)
         exit(0)
     elif args.debug:
         LOGLEVEL = logging.DEBUG
