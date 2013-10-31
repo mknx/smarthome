@@ -334,9 +334,6 @@ class WebSocketHandler(lib.connection.Connection):
                             del(reply['params'])
                         if reply['series'] is not None:
                             self.json_send(reply)
-                        elif end == 'now':
-                            reply['series'] = [(self._sh.now(), self.items[path]['item']())]
-                            self.json_send(reply)
                         else:
                             logger.info("WebSocket: no entries for series {} {}".format(path, series))
                 else:

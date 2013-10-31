@@ -315,6 +315,8 @@ class SQL():
             raise NotImplementedError
         tuples = self._fetchall(query)
         if not tuples:
+            if not update:
+                reply['series'] = [(iend, 0)]
             return reply
         if func in ('avg', 'on'):
             tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
