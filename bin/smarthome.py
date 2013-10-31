@@ -60,22 +60,21 @@ from dateutil.tz import gettz
 #####################################################################
 # Import SmartHome.py Modules
 #####################################################################
-import lib.daemon
-import lib.item
-import lib.scheduler
-import lib.logic
-import lib.plugin
-import lib.tools
-import lib.orb
-import lib.log
-import lib.scene
 import lib.config
 import lib.connection
+import lib.daemon
+import lib.item
+import lib.log
+import lib.logic
+import lib.plugin
+import lib.scene
+import lib.scheduler
+import lib.tools
+import lib.orb
 
 #####################################################################
 # Globals
 #####################################################################
-PID_FILE = BASE + '/var/run/smarthome.pid'
 MODE = 'default'
 LOGLEVEL = logging.INFO
 VERSION = '0.9'
@@ -142,29 +141,7 @@ class SmartHome():
         # Fork
         #############################################################
         if MODE == 'default':
-            pid = os.fork()  # fork first child
-            if pid == 0:
-                os.setsid()
-                pid = os.fork()  # fork second child
-                if pid == 0:
-                    os.chdir('/')
-                    print("Starting SmartHome.py in the background with pid: {}".format(os.getpid()))
-                else:
-                    time.sleep(0.1)
-                    os._exit(0)  # exit parent
-            else:
-                time.sleep(0.1)
-                os._exit(0)  # exit parent
-            # close files
-            for fd in range(0, 1024):
-                try:
-                    os.close(fd)
-                except OSError:
-                    pass
-            # redirect I/O
-            os.open(os.devnull, os.O_RDWR)  # input
-            os.dup2(0, 1)  # output
-            os.dup2(0, 2)  # error
+            lib.daemon.daemonize()
 
         #############################################################
         # Signal Handling
@@ -208,17 +185,6 @@ class SmartHome():
         # Catching Exceptions
         #############################################################
         sys.excepthook = self._excepthook
-
-        #############################################################
-        # Write PID File
-        #############################################################
-        try:
-            with open(PID_FILE, 'w+') as fd:
-                fd.write("{}\n".format(os.getpid()))
-        except:
-            logger.critical("Could not write to pid file: {}".format(PID_FILE))
-            logger.critical("Exit")
-            os._exit(0)
 
         #############################################################
         # Reading smarthome.conf
@@ -398,10 +364,6 @@ class SmartHome():
         if threading.active_count() > 1:
             for thread in threading.enumerate():
                 logger.info("Thread: {}, still alive".format(thread.name))
-        try:
-            os.remove(PID_FILE)
-        except OSError as e:
-            logger.critical("Could not remove pid file: {0} - {1}".format(PID_FILE, e))
         logger.info("SmartHome.py stopped")
         logging.shutdown()
         exit()
@@ -560,21 +522,8 @@ class SmartHome():
 # Private Methods
 #####################################################################
 
-def _read_pid():
-    try:
-        with open(PID_FILE, 'r') as fd:
-            pid = fd.read().strip()
-            if pid == '':
-                pid = False
-            else:
-                pid = int(pid)
-    except IOError:
-        pid = False
-    return pid
-
-
 def reload_logics():
-    pid = _read_pid()
+    pid = lib.daemon.get_pid(__file__)
     if pid:
         os.kill(pid, signal.SIGHUP)
 
@@ -641,16 +590,7 @@ if __name__ == '__main__':
         LOGLEVEL = logging.DEBUG
 
     # check for pid file
-    pid = _read_pid()
-    if pid:
-        try:
-            os.getpgid(pid)  # check if the process is running
-        except OSError:
-            try:
-                os.remove(PID_FILE)
-            except OSError as e:
-                print("Could not remove pid file: {0} - {1}".format(PID_FILE, e))
-    pid = _read_pid()
+    pid = lib.daemon.get_pid(__file__)
     if pid:
         print("SmartHome.py already running with pid {}".format(pid))
         print("Run 'smarthome.py -s' to stop it.")

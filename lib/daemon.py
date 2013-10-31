@@ -26,15 +26,41 @@ import os
 logger = logging.getLogger('')
 
 
+def daemonize():
+    pid = os.fork()  # fork first child
+    if pid == 0:
+        os.setsid()
+        pid = os.fork()  # fork second child
+        if pid == 0:
+            os.chdir('/')
+        else:
+            time.sleep(0.1)
+            os._exit(0)  # exit parent
+    else:
+        time.sleep(0.1)
+        os._exit(0)  # exit parent
+    # close files
+    for fd in range(0, 1024):
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+    # redirect I/O
+    os.open(os.devnull, os.O_RDWR)  # input
+    os.dup2(0, 1)  # output
+    os.dup2(0, 2)  # error
+
+
 def get_pid(filename):
     cpid = str(os.getpid())
     for pid in os.listdir('/proc'):
         if pid.isdigit() and pid != cpid:
             try:
                 with open('/proc/{}/cmdline'.format(pid), 'r') as f:
-                    proc = f.readline()
-                    if filename in proc:
-                        return int(pid)
+                    cmdline = f.readline()
+                    if filename in cmdline:
+                        if cmdline.startswith('python'):
+                            return int(pid)
             except:
                 pass
     return 0
