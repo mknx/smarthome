@@ -360,11 +360,16 @@ class SmartHome():
             self.connections.close()
         except:
             pass
-        time.sleep(1)
+        for thread in threading.enumerate():
+            try:
+                thread.join(1)
+            except:
+                pass
         if threading.active_count() > 1:
             for thread in threading.enumerate():
                 logger.info("Thread: {}, still alive".format(thread.name))
-        logger.info("SmartHome.py stopped")
+        else:
+            logger.info("SmartHome.py stopped")
         logging.shutdown()
         exit()
 
