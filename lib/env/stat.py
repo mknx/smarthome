@@ -1,9 +1,6 @@
 
 # lib/env/statistic.py
 
-# Runtime
-sh.env.core.uptime(sh.tools.runtime())
-
 # Garbage
 gc.collect()
 if gc.garbage != []:
@@ -31,14 +28,6 @@ sh.env.core.memory(mem)
 # Load
 l1, l5, l15 = os.getloadavg()
 sh.env.system.load(round(l5, 2))
-
-# uptime
-statusfile = "/proc/uptime"
-with open(statusfile, 'r') as f:
-    data = f.read()
-uptime = int(float(data.split()[0]))
-uptime = datetime.timedelta(seconds=uptime)
-sh.env.system.uptime(uptime)
 
 if sh.moon:
     sh.env.location.moonlight(sh.moon.light())
