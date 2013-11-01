@@ -26,7 +26,6 @@ import json
 import logging
 import ssl
 import threading
-import time
 
 import lib.connection
 
@@ -37,9 +36,9 @@ class JSONEncoder(json.JSONEncoder):
 
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
-            return int(time.mktime(obj.timetuple()) * 1000 + obj.microsecond / 1000)
+            return obj.isoformat()
         elif isinstance(obj, datetime.timedelta):
-            return int(obj.total_seconds() * 1000)
+            return int(obj.total_seconds())
         return json.JSONEncoder.default(self, obj)
 
 
@@ -356,7 +355,7 @@ class WebSocketHandler(lib.connection.Connection):
                 logger.warning("WebSocket: protocol mismatch. Update SmartHome.py")
             elif proto < self.proto:
                 logger.warning("WebSocket: protocol mismatch. Update your client: {0}".format(self.addr))
-            self.json_send({'cmd': 'proto', 'ver': self.proto})
+            self.json_send({'cmd': 'proto', 'ver': self.proto, 'time': self._sh.now()})
 
     def parse_header(self, data):
         data = bytes(data)
