@@ -21,17 +21,17 @@
 
 import logging
 
-import lib.connections
+import lib.connection
 
 logger = logging.getLogger('')
 
 REQ_DELIMITER = b'\r'
 RESP_DELIMITER = b'\r\n'
 
-class Russound(lib.connections.Client):
+class Russound(lib.connection.Client):
 
     def __init__(self, smarthome, host, port=9621):
-        lib.connections.Client.__init__(self, host, port, monitor=True)
+        lib.connection.Client.__init__(self, host, port, monitor=True)
         self.terminator = RESP_DELIMITER
         self._sh = smarthome
         self.params = {}
