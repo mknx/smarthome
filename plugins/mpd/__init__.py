@@ -130,6 +130,7 @@ class mpd(lib.connection.Client):
             content = self._sh.tools.fetch_url(url, timeout=4)
             if content is False:
                 return play
+            content = content.decode()
             if ext == 'pls':
                 for line in content.splitlines():
                     if line.startswith('File'):
