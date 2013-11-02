@@ -297,5 +297,5 @@ class SolarLog():
 
     def _read(self, filename):
         url = self._host + filename
-        return self._sh.tools.fetch_url(url)
+        return self._sh.tools.fetch_url(url).decode(encoding='latin_1')
 
