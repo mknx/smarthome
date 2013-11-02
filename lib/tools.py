@@ -77,7 +77,7 @@ class Tools():
             return False
         resp = conn.getresponse()
         if resp.status == 200:
-            content = resp.read().decode()
+            content = resp.read()
         else:
             logger.warning("Problem fetching {0}: {1} {2}".format(url, resp.status, resp.reason))
             content = False
