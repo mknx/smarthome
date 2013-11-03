@@ -124,7 +124,6 @@ This global function triggers any specified logic by its name. `sh.trigger(name 
 `source` the reason for triggering 
 `value` a variable.
 `dt` timezone aware datetime object, which specifies the triggering time
-But watch out, if something else triggers that logic before the given datetime, it will not be triggered at the specified time! E.g. setting the `cycle` attribute to 60 seconds it does not trigger after the next scheduled execution.
 
 ### sh.scheduler.change()
 This method changes some runtime options of the logics. `sh.scheduler.change('alarmclock', active=False)` disables the logic 'alarmclock'. Besides the `active` flag, it is possible to change: `cron` and `cycle`.
