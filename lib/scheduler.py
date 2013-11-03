@@ -285,7 +285,7 @@ class Scheduler(threading.Thread):
                     value = job['cron'][entry]
         self._scheduler[name]['next'] = next_time
         self._scheduler[name]['value'] = value
-        if name not in ['Connections', 'series']:
+        if name not in ['Connections', 'series' 'SQLite dump']:
             logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):
@@ -400,7 +400,7 @@ class Scheduler(threading.Thread):
 
     def _sun(self, crontab):
         if not self._sh.sun:  # no sun object created
-            logger.warning('No latitude/longitued specified. You could not use sunrise/sunset as crontab entry.')
+            logger.warning('No latitude/longitude specified. You could not use sunrise/sunset as crontab entry.')
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
         # find min/max times
         tabs = crontab.split('<')
