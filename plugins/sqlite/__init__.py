@@ -88,7 +88,7 @@ class SQL():
         else:
             version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
             if version == 1:
-                logger.warning("SQLite: dropping histor!")
+                logger.warning("SQLite: dropping history!")
                 self._fdb.execute("DROP TABLE history;")
         self._fdb.execute("DROP INDEX IF EXISTS idx;")
         self._fdb.execute(self._create_db)
@@ -111,6 +111,7 @@ class SQL():
 
     def parse_item(self, item):
         if 'history' in item.conf:  # XXX legacy history option remove sometime
+            logger.warning("{} deprecated history attribute. Use sqlite as keyword instead.".format(item.id()))
             item.conf['sqlite'] = item.conf['history']
         if 'sqlite' in item.conf:
             item.series = functools.partial(self._series, item=item.id())
