@@ -320,13 +320,13 @@ class SQL():
         reply['update'] = self._sh.now() + datetime.timedelta(seconds=int(step / 1000))
         where += " GROUP by CAST((time / {0}) AS INTEGER)".format(step)
         if func == 'avg':
-            query = "SELECT CAST(AVG(time) AS INTEGER), AVG(avg)" + where + " ORDER BY time DESC"
+            query = "SELECT CAST(AVG(time) AS INTEGER), ROUND(AVG(avg), 2)" + where + " ORDER BY time DESC"
         elif func == 'min':
             query = "SELECT CAST(AVG(time) AS INTEGER), MIN(vmin)" + where
         elif func == 'max':
             query = "SELECT CAST(AVG(time) AS INTEGER), MAX(vmax)" + where
         elif func == 'on':
-            query = "SELECT CAST(AVG(time) AS INTEGER), AVG(power)" + where + " ORDER BY time DESC"
+            query = "SELECT CAST(AVG(time) AS INTEGER), ROUND(AVG(power), 2)" + where + " ORDER BY time DESC"
         else:
             raise NotImplementedError
         tuples = self._fetchall(query)
