@@ -35,7 +35,6 @@ commands = {
     'KEY_Badschalter':'000300',
     'KEY_AktuelleStufe':'00CD00',
     'KEY_Komforttemperatur': '00D301',
-    'KEY_StufeAuto':'00990100',
     'KEY_StufeAbwesend':'00990101',
     'KEY_StufeEins':'00990102',
     'KEY_StufeZwei':'00990103',

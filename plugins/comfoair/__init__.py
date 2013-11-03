@@ -23,6 +23,7 @@ import serial
 import threading
 import commands
 import re
+import sys
 
 logger = logging.getLogger('')
 
@@ -101,7 +102,8 @@ class comfoAir():
                     key = listenItem.conf['comfoAir_listen']
                     self.__push(key, listenItem, True)
             except:
-                logger.error("ComfoAir __iterate(): Error occurred")
+                e = sys.exc_info()[0]
+                logger.error("ComfoAir __iterate():" + e)
             finally:
                 self.__disconnectSerial()
                 
@@ -287,8 +289,8 @@ class comfoAir():
                         elif re.search("000C06", reciv) is not None:
                             vent_zul = int(reciv[6:8],16)
                             vent_abl = int(reciv[8:10],16)
-                            vent_zul_um = int(reciv[10:14], 16)
-                            vent_abl_um = int(reciv[14:18], 16)
+                            vent_zul_um = 1875000 / int(reciv[10:14], 16)
+                            vent_abl_um = 1875000 / int(reciv[14:18], 16)
                             logger.debug("ComfoAir __command_send(): Incoming vent(Zuluft) = " + str(vent_zul) + "% " + str(vent_zul_um) + "U/min; Outgoing vent(Abluft) = " + str(vent_abl) + "% " + str(vent_abl_um) + "U/min")
 
                             answer = str(vent_zul) + "/" + str(vent_zul_um) + "/" + str(vent_abl) + "/" + str(vent_abl_um)
