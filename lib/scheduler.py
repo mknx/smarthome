@@ -285,7 +285,7 @@ class Scheduler(threading.Thread):
                     value = job['cron'][entry]
         self._scheduler[name]['next'] = next_time
         self._scheduler[name]['value'] = value
-        if name not in ['Connections', 'series']:
+        if name not in ['Connections', 'series' 'SQLite dump']:
             logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):

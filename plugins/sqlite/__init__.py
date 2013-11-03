@@ -31,23 +31,20 @@ logger = logging.getLogger('')
 
 class SQL():
 
-    _version = 1
+    _version = 2
     # (period days, granularity hours)
     periods = [(1900, 168), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
     # SQL queries
-    # time, item, cnt, val, vsum, vmin, vmax, vavg, power
-    _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, cnt INTEGER, val REAL, vsum REAL, vmin REAL, vmax REAL, vavg REAL, power REAL);"
+    # time, item, avg, vmin, vmax, power
+    _create_db = "CREATE TABLE IF NOT EXISTS history (time INTEGER, item TEXT, avg REAL, vmin REAL, vmax REAL, power REAL);"
     _create_index = "CREATE INDEX IF NOT EXISTS idy ON history (item);"
     _pack_query = """
         SELECT
         group_concat(rowid),
         group_concat(time),
-        group_concat(val),
-        group_concat(vavg),
+        group_concat(avg),
         group_concat(power),
         item,
-        SUM(cnt),
-        SUM(vsum),
         MIN(vmin),
         MAX(vmax)
         FROM history
@@ -55,9 +52,12 @@ class SQL():
         GROUP by CAST((time / {}) AS INTEGER), item
         ORDER BY time DESC;"""
 
-    def __init__(self, smarthome, path=None):
+    def __init__(self, smarthome, cycle=300, path=None):
         self._sh = smarthome
         self.connected = False
+        self._dump_cycle = int(cycle)
+        self._buffer = {}
+        self._buffer_lock = threading.Lock()
 #       sqlite3.register_adapter(datetime.datetime, self._timestamp)
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
         self._fdb_lock = threading.Lock()
@@ -84,15 +84,18 @@ class SQL():
         if common is None:
             self._fdb.execute("CREATE TABLE common (version INTEGER);")
             self._fdb.execute("INSERT INTO common VALUES (:version);", {'version': self._version})
-            self._fdb.execute(self._create_db)
             version = self._version
         else:
             version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
+            if version == 1:
+                logger.warning("SQLite: dropping histor!")
+                self._fdb.execute("DROP TABLE history;")
         self._fdb.execute("DROP INDEX IF EXISTS idx;")
+        self._fdb.execute(self._create_db)
         self._fdb.execute(self._create_index)
         if version < self._version:
-            logger.debug("update database")
             self._fdb.execute("UPDATE common SET version=:version;", {'version': self._version})
+            # self.query("alter table history add column power INTEGER;")
         self._fdb.commit()
         self._fdb_lock.release()
         minute = 60 * 1000
@@ -103,28 +106,25 @@ class SQL():
         year = 365 * day
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
-        # self.query("alter table history add column power INTEGER;")
         smarthome.scheduler.add('SQLite pack', self._pack, cron='2 3 * *', prio=5)
+        smarthome.scheduler.add('SQLite dump', self._dump, cycle=self._dump_cycle, prio=5)
 
-    def update_item(self, item, caller=None, source=None, dest=None):
-        now = self._timestamp(self._sh.now())
-        val = float(item())
-        power = int(bool(val))
-        if item.conf['sqlite'] == 'sum':
-            sum = val
+    def parse_item(self, item):
+        if 'history' in item.conf:  # XXX legacy history option remove sometime
+            item.conf['sqlite'] = item.conf['history']
+        if 'sqlite' in item.conf:
+            item.series = functools.partial(self._series, item=item.id())
+            item.db = functools.partial(self._single, item=item.id())
+            if item.conf['sqlite'] == 'init':
+                last = self._fetchone("SELECT avg from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id()))
+                if last is not None:
+                    last = last[0]
+                    item.set(last, 'SQLite')
+            self._buffer[item] = []
+            self.update_item(item)
+            return self.update_item
         else:
-            sum = 0
-        if not self._fdb_lock.acquire(timeout=20):
-            return
-        if not self.connected:
-            self._fdb_lock.release()
-            return
-        try:
-            self._fdb.execute("INSERT INTO history VALUES (:now, :item, 1, :val, :sum, :val, :val, :val, :power)", {'now': now, 'item': item.id(), 'val': val, 'sum': sum, 'power': power})
-            self._fdb.commit()
-        except Exception as e:
-            logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
-        self._fdb_lock.release()
+            return None
 
     def run(self):
         self.alive = True
@@ -140,31 +140,55 @@ class SQL():
             self.connected = False
             self._fdb_lock.release()
 
-    def parse_item(self, item):
-        if 'history' in item.conf:  # XXX legacy history option remove sometime
-            item.conf['sqlite'] = item.conf['history']
-        if 'sqlite' in item.conf:
-            item.series = functools.partial(self._series, item=item.id())
-            item.db = functools.partial(self._single, item=item.id())
-            if item.conf['sqlite'] == 'init':
-                last = self._fetchone("SELECT val from history WHERE item = '{0}' ORDER BY time DESC LIMIT 1".format(item.id()))
-                if last is not None:
-                    last = last[0]
-                    item.set(last, 'SQLite')
-            return self.update_item
-        else:
-            return None
-
-    def parse_logic(self, logic):
-        if 'xxx' in logic.conf:
-            # self.function(logic['name'])
-            pass
-
-    def _timestamp(self, dt):
-        return time.mktime(dt.timetuple()) * 1000 + int(dt.microsecond / 1000)
+    def update_item(self, item, caller=None, source=None, dest=None):
+        now = self._timestamp(self._sh.now())
+        val = float(item())
+        power = int(bool(val))
+        self._buffer[item].append((now, val, power))
 
     def _datetime(self, ts):
         return datetime.datetime.fromtimestamp(ts / 1000, self._sh.tzinfo())
+
+    def _dump(self):
+        for item in self._buffer:
+            self._buffer_lock.acquire()
+            tuples = self._buffer[item]
+            self._buffer[item] = []
+            self._buffer_lock.release()
+            self.update_item(item)
+            _now = self._timestamp(self._sh.now())
+            try:
+                _insert = self.__dump(item.id(), tuples, _now)
+            except:
+                continue
+            if not self._fdb_lock.acquire(timeout=10):
+                continue
+            try:
+                # time, item, avg, vmin, vmax, power
+                self._fdb.execute("INSERT INTO history VALUES (?,?,?,?,?,?);", _insert)
+                self._fdb.commit()
+            except Exception as e:
+                logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
+            finally:
+                self._fdb_lock.release()
+
+    def __dump(self, item, tuples, end):
+        vsum = 0.0
+        psum = 0.0
+        prev = end
+        if len(tuples) == 1:
+            return (tuples[0][0], item, tuples[0][1], tuples[0][1], tuples[0][1], tuples[0][2])
+        vals = []
+        for _time, val, power in sorted(tuples, reverse=True):
+            vals.append(val)
+            vsum += (prev - _time) * val
+            psum += (prev - _time) * power
+            prev = _time
+        span = end - _time
+        if span != 0:
+            return (_time, item, vsum / span, min(vals), max(vals), psum / span)
+        else:
+            return (_time, item, val, min(vals), max(vals), power)
 
     def _get_timestamp(self, frame='now'):
         try:
@@ -217,65 +241,63 @@ class SQL():
             self._fdb_lock.release()
         return reply
 
-    def _avg(self, tuples, end):
-        sum = 0.0
-        span = 1
+    def _pack(self):
+        insert = []
+        delete = []
+        if not self._fdb_lock.acquire(timeout=2):
+            return
+        try:
+            logger.debug("SQLite: pack database")
+            for entry in self.periods:
+                now = self._timestamp(self._sh.now())
+                prev = {}
+                period, granularity = entry
+                period = int(now - period * 24 * 3600 * 1000)
+                granularity = int(granularity * 3600 * 1000)
+                for row in self._fdb.execute(self._pack_query.format(period, granularity)):
+                    gid, gtime, gavg, gpower, item, vmin, vmax = row
+                    gtime = gtime.split(',')
+                    if len(gtime) == 1:  # ignore
+                        prev[item] = gtime[0]
+                        continue
+                    if item not in prev:
+                        upper = now
+                    else:
+                        upper = prev[item]
+                    # pack !!!
+                    delete = gid
+                    gavg = gavg.split(',')
+                    gpower = gpower.split(',')
+                    _time, _avg, _power = self._pack(gtime, gavg, gpower, upper)
+                    insert = (_time, item, _avg, vmin, vmax, _power)
+                    self._fdb.execute("INSERT INTO history VALUES (?,?,?,?,?,?);", insert)
+                    self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(delete))
+                    self._fdb.commit()
+                    prev[item] = gtime[0]
+            self._fdb.execute("VACUUM;")
+            self._fdb.execute("PRAGMA shrink_memory;")
+        except Exception as e:
+            logger.exception("problem packing sqlite database: {} period: {} type: {}".format(e, period, type(period)))
+            self._fdb.rollback()
+        finally:
+            self._fdb_lock.release()
+
+    def __pack(self, gtime, gavg, gpower, end):
+        asum = 0.0
+        psum = 0.0
         prev = end
-        for time, val in sorted(tuples, reverse=True):
-            sum += (prev - time) * val
-            prev = time
-            span = end - time
+        tuples = []
+        for i, _time in enumerate(gtime):
+            tuples.append((_time, gavg[i], gpower[i]))
+        for _time, _avg, _power in sorted(tuples, reverse=True):
+            asum += (prev - _time) * _avg
+            psum += (prev - _time) * _power
+            prev = _time
+        span = end - _time
         if span != 0:
-            return sum / span
+            return (_time, asum / span, psum / span)
         else:
-            return val
-
-    def _avg_ser(self, tuples, end):
-        prev = end
-        result = []
-        for tpl in tuples:
-            if len(tpl) == 2:
-                times, vals = tpl
-            else:
-                continue
-            tpls = [(int(float(t)), float(v)) for t in times.split(',') for v in vals.split(',')]
-            avg = self._avg(tpls, prev)
-            first = sorted(tpls)[0][0]
-            prev = first
-            result.append((first, round(avg, 4)))
-        return result
-
-    def _diff_ser(self, tuples):
-        result = []
-        prev = None
-        for tpl in tuples:
-            if len(tpl) == 2:
-                times, vals = tpl
-            else:
-                continue
-            if prev is not None:
-                result.append((int(times.split(',')[0]), prev - float(vals.split(',')[0])))  # fetch only the first entry, ingore the rest
-            prev = float(vals.split(',')[0])
-        return result
-
-    def _rate_ser(self, tuples, ratio):
-        result = []
-        prev_val = None
-        prev_time = None
-        ratio *= 1000
-        for tpl in tuples:
-            if len(tpl) == 2:
-                times, vals = tpl
-            else:
-                continue
-            if prev_val is not None:
-                time = int(times.split(',')[0])
-                val = float(vals.split(',')[0])
-                rate = ratio * (prev_val - val) / (prev_time - time)
-                result.append((time, rate))
-            prev_time = int(times.split(',')[0])
-            prev_val = float(vals.split(',')[0])
-        return result
+            return (_time, _avg, _power)
 
     def _series(self, func, start, end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
         if sid is None:
@@ -298,19 +320,13 @@ class SQL():
         reply['update'] = self._sh.now() + datetime.timedelta(seconds=int(step / 1000))
         where += " GROUP by CAST((time / {0}) AS INTEGER)".format(step)
         if func == 'avg':
-            query = "SELECT group_concat(time), group_concat(vavg)" + where + " ORDER BY time DESC"
-        elif func in ('diff-ser', 'rate-ser'):
-            query = "SELECT group_concat(time), group_concat(val)" + where + " ORDER BY time ASC"
-        elif func == 'rate':
-            query = "SELECT group_concat(time), group_concat(val)" + where + " ORDER BY time ASC"
+            query = "SELECT CAST(AVG(time) AS INTEGER), AVG(avg)" + where + " ORDER BY time DESC"
         elif func == 'min':
-            query = "SELECT MIN(time), MIN(vmin)" + where
+            query = "SELECT CAST(AVG(time) AS INTEGER), MIN(vmin)" + where
         elif func == 'max':
-            query = "SELECT MIN(time), MAX(vmax)" + where
-        elif func == 'sum':
-            query = "SELECT MIN(time), SUM(vsum)" + where
+            query = "SELECT CAST(AVG(time) AS INTEGER), MAX(vmax)" + where
         elif func == 'on':
-            query = "SELECT group_concat(time), group_concat(power)" + where + " ORDER BY time DESC"
+            query = "SELECT CAST(AVG(time) AS INTEGER), AVG(power)" + where + " ORDER BY time DESC"
         else:
             raise NotImplementedError
         tuples = self._fetchall(query)
@@ -318,12 +334,6 @@ class SQL():
             if not update:
                 reply['series'] = [(iend, 0)]
             return reply
-        if func in ('avg', 'on'):
-            tuples = self._avg_ser(tuples, iend)  # compute avg for concatenation groups
-        elif func == 'diff':
-            tuples = self._diff_ser(tuples)  # compute diff for concatenation groups
-        elif func == 'rate':
-            tuples = self._rate_ser(tuples, ratio)  # compute diff for concatenation groups
         tuples = [(istart, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
         tuples = sorted(tuples)
         lval = tuples[-1][1]
@@ -343,67 +353,20 @@ class SQL():
             first = prev[0]
         where = " from history WHERE item='{0}' AND time >= {1} AND time < {2}".format(item, first, end)
         if func == 'avg':
-            query = "SELECT time, vavg" + where
+            query = "SELECT AVG(avg)" + where
         elif func == 'min':
             query = "SELECT MIN(vmin)" + where
         elif func == 'max':
             query = "SELECT MAX(vmax)" + where
-        elif func == 'sum':
-            query = "SELECT SUM(vsum)" + where
         elif func == 'on':
-            query = "SELECT time, power" + where
+            query = "SELECT AVG(power)" + where
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return
         tuples = self._fetchall(query)
         if tuples is None:
             return
-        if func in ('avg', 'on'):
-            tuples = [(start, t[1]) if first == t[0] else t for t in tuples]  # replace 'first' time with 'start' time
-            return self._avg(tuples, end)
-        else:
-                return tuples[0][0]
+        return tuples[0][0]
 
-    def _pack(self):
-        now = self._timestamp(self._sh.now())
-        insert = []
-        delete = []
-        if not self._fdb_lock.acquire(timeout=2):
-            return
-        try:
-            logger.debug("SQLite: pack database")
-            for entry in self.periods:
-                prev = {}
-                period, granularity = entry
-                period = int(now - period * 24 * 3600 * 1000)
-                granularity = int(granularity * 3600 * 1000)
-                for row in self._fdb.execute(self._pack_query.format(period, granularity)):
-                    gid, gtime, gval, gvavg, gpower, item, cnt, vsum, vmin, vmax = row
-                    gtime = [int(float(t)) for t in gtime.split(',')]
-                    if len(gtime) == 1:  # ignore
-                        prev[item] = gtime[0]
-                        continue
-                    if item not in prev:
-                        upper = now
-                    else:
-                        upper = prev[item]
-                    # pack !!!
-                    delete = gid
-                    gval = list(map(float, gval.split(',')))
-                    gvavg = list(map(float, gvavg.split(',')))
-                    gpower = list(map(float, gpower.split(',')))
-                    avg = self._avg(list(zip(gtime, gvavg)), upper)
-                    power = self._avg(list(zip(gtime, gpower)), upper)
-                    prev[item] = gtime[0]
-                    # (time, item, cnt, val, vsum, vmin, vmax, vavg, power)
-                    insert = (gtime[0], item, cnt, gval[0], vsum, vmin, vmax, avg, power)
-                    self._fdb.execute("INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?);", insert)
-                    self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(delete))
-                    self._fdb.commit()
-            self._fdb.execute("VACUUM;")
-            self._fdb.execute("PRAGMA shrink_memory;")
-        except Exception as e:
-            logger.exception("problem packing sqlite database: {} period: {} type: {}".format(e, period, type(period)))
-            self._fdb.rollback()
-        finally:
-            self._fdb_lock.release()
+    def _timestamp(self, dt):
+        return int(time.mktime(dt.timetuple())) * 1000 + int(dt.microsecond / 1000)
