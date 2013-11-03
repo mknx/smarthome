@@ -400,7 +400,7 @@ class Scheduler(threading.Thread):
 
     def _sun(self, crontab):
         if not self._sh.sun:  # no sun object created
-            logger.warning('No latitude/longitued specified. You could not use sunrise/sunset as crontab entry.')
+            logger.warning('No latitude/longitude specified. You could not use sunrise/sunset as crontab entry.')
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
         # find min/max times
         tabs = crontab.split('<')
