@@ -131,6 +131,7 @@ class SQL():
 
     def stop(self):
         self.alive = False
+        self._dump()
         self._fdb_lock.acquire()
         try:
             self._fdb.close()
