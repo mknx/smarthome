@@ -372,10 +372,10 @@ class WebSocketHandler(asynchat.async_chat):
                 self.monitor['log'].append(name)
         elif command == 'proto':  # protocol version
             proto = data['ver']
-            if proto != self.proto:
-                logger.warning("Protocol missmatch. Update smarthome(.min).js. Client: {0}".format(self.addr))
-                self.handle_close()
-                return
+            if proto > self.proto:
+                logger.warning("WebSocket: protocol mismatch. Update SmartHome.py")
+            elif proto < self.proto:
+                logger.warning("WebSocket: protocol mismatch. Update your client: {0}".format(self.addr))
             self.json_send({'cmd': 'proto', 'ver': self.proto})
 
     def parse_header(self, data):
