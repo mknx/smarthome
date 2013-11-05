@@ -60,13 +60,14 @@ class DMX():
             return False
         self._lock.acquire()
         try:
-            self._port.write(data)
+            self._port.write(data.encode())
             ret = self._port.read(1)
         except:
             logger.warning("Problem sending data to dmx adapter.")
-            ret = 'F'
-        self._lock.release()
-        if ret == 'G':
+            ret = False
+        finally:
+            self._lock.release()
+        if ret == b'G':
             return True
         else:
             return False
@@ -75,7 +76,7 @@ class DMX():
         if not self._is_connected:
             return False
         self._lock.acquire()
-        self._port.write(chr(126) + data + chr(231))
+        self._port.write((chr(126) + data + chr(231)).encode())
         self._lock.release()
         return True
 
