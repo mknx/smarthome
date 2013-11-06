@@ -74,7 +74,10 @@ class HTTPHandler(lib.connection.Connection):
         for line in data.decode().splitlines():
             if line.startswith('GET'):
                 request = line.split(' ')[1].strip('/')
-                self.parser(self.source, self.dest, urllib.parse.unquote(request))
+                if self.parser(self.source, self.dest, urllib.parse.unquote(request)):
+                    self.send(b'HTTP/1.1 200 OK\r\n\r\n')
+                else:
+                    self.send(b'HTTP/1.1 400 Bad Request\r\n\r\n')
                 break
         self.close()
 
@@ -266,6 +269,7 @@ class Network():
         else:
             logger.error("Destination {}, not in listeners!".format(dest))
             return False
+        return True
 
     def run(self):
         self.alive = True
