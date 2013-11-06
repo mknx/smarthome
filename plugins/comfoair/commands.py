@@ -28,6 +28,8 @@ commands = {
     'KEY_EWTtemp': '00D100',
     'KEY_Vent_Zuluft_Status':'000B00',
     'KEY_Vent_Abluft_Status':'000B00',
+    'KEY_Vent_Abluft_Umdrehungen':'000B00',
+    'KEY_Vent_Zuluft_Umdrehungen':'000B00',
     'KEY_BypassZustand':'000D00',
     'KEY_StundenFilter':'00DD00',
     'KEY_Badschalter':'000300',

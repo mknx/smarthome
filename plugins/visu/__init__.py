@@ -150,8 +150,6 @@ class WebSocket(lib.connection.Server):
                 return
             else:
                 acl = 'ro'
-        if item.id() == 'first.hallway.light':
-            print(item.id(), acl)
         self.visu_items[item.id()] = {'acl': acl, 'item': item}
         return self.update_item
 
