@@ -98,7 +98,7 @@ class Squeezebox(lib.connection.Client):
             cmd = self._resolv_full_cmd(item, 'squeezebox_send').split()
             if not self._check_mac(cmd[0]):
                 return
-            if (item._type == 'bool'):
+            if (type(item()) == 'bool'):
                 # convert to get '0'/'1' instead of 'True'/'False'
                 value = int(item())
             else:

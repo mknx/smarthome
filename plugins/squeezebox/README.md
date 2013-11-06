@@ -1,6 +1,6 @@
 # Requirements
 
-A properly installed and configured Logitech Media Server is required.  
+A properly installed and configured Logitech Media Server is required.
 
 ## Supported Hardware
 
@@ -57,23 +57,23 @@ listen 1
   [[Name]]
     type = str
     visu = yes
-    squeezebox_send = &lt;playerid&gt; name {}   
-    squeezebox_recv = &lt;playerid&gt; name    
+    squeezebox_send = &lt;playerid&gt; name {}
+    squeezebox_recv = &lt;playerid&gt; name
   [[IP]]
     type = str
     visu = yes
-    squeezebox_recv = player ip &lt;playerid&gt;   
+    squeezebox_recv = player ip &lt;playerid&gt;
   [[Signal_Strength]]
     type = num
     visu = yes
-    squeezebox_recv = &lt;playerid&gt; signalstrength    
+    squeezebox_recv = &lt;playerid&gt; signalstrength
 
   [[Power]]
     type = bool
     visu = yes
     squeezebox_send = &lt;playerid&gt; power {}
     squeezebox_recv = &lt;playerid&gt; prefset server power
-    squeezebox_init = &lt;playerid&gt; power    
+    squeezebox_init = &lt;playerid&gt; power
     
   [[Mute]]
     type = bool
@@ -86,7 +86,7 @@ listen 1
     visu = yes
     squeezebox_send = &lt;playerid&gt; mixer volume {}
     squeezebox_recv = &lt;playerid&gt; prefset server volume
-    squeezebox_init = &lt;playerid&gt; mixer volume    
+    squeezebox_init = &lt;playerid&gt; mixer volume
   [[Volume_Up]]
     type = bool
     enforce_updates = true
@@ -174,7 +174,7 @@ listen 1
   [[Playlist_Save]]
     type = str
     visu = yes
-    squeezebox_send = &lt;playerid&gt; playlist save {}   
+    squeezebox_send = &lt;playerid&gt; playlist save {}
   [[Playlist_Load]]
     type = str
     enforce_updates = true
@@ -190,7 +190,7 @@ listen 1
     type = num
     visu = yes
     squeezebox_send = &lt;playerid&gt; playlist repeat {}
-    squeezebox_recv = &lt;playerid&gt; playlist repeat    
+    squeezebox_recv = &lt;playerid&gt; playlist repeat
   [[Repeat_Song]]
     type = bool
     enforce_updates = true
@@ -211,7 +211,7 @@ listen 1
     type = num
     visu = yes
     squeezebox_send = &lt;playerid&gt; playlist shuffle {}
-    squeezebox_recv = &lt;playerid&gt; playlist shuffle    
+    squeezebox_recv = &lt;playerid&gt; playlist shuffle
   [[Shuffle_By_Song]]
     type = bool
     enforce_updates = true
@@ -226,5 +226,5 @@ listen 1
     type = bool
     enforce_updates = true
     visu = yes
-    squeezebox_send = &lt;playerid&gt; playlist shuffle 0 
+    squeezebox_send = &lt;playerid&gt; playlist shuffle 0
 </pre>
