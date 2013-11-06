@@ -204,6 +204,7 @@ class Stream(Base):
         self._frame_size_in = 4096
         self._frame_size_out = 4096
         self.terminator = b'\r\n'
+        self._close_after_send = False
         if sock is not None:
             self.socket = sock
             self._connected()
@@ -247,7 +248,8 @@ class Stream(Base):
                 self.inbuffer = self.inbuffer[cut:]
                 self.found_terminator(data)
 
-    def send(self, data):
+    def send(self, data, close=False):
+        self._close_after_send = close
         if not self.connected:
             return False
         frame_size = self._frame_size_out
@@ -276,6 +278,8 @@ class Stream(Base):
             else:
                 if sent < len(frame):
                     self.outbuffer.append(frame[sent:])
+        if self._close_after_send:
+            self.close()
 
     def close(self):
         if self.connected:

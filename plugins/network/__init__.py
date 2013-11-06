@@ -75,11 +75,10 @@ class HTTPHandler(lib.connection.Stream):
             if line.startswith('GET'):
                 request = line.split(' ')[1].strip('/')
                 if self.parser(self.source, self.dest, urllib.parse.unquote(request)) is not False:
-                    self.send(b'HTTP/1.1 200 OK\r\n\r\n')
+                    self.send(b'HTTP/1.1 200 OK\r\n\r\n', close=True)
                 else:
-                    self.send(b'HTTP/1.1 400 Bad Request\r\n\r\n')
+                    self.send(b'HTTP/1.1 400 Bad Request\r\n\r\n', close=True)
                 break
-#       self.close()
 
 
 class HTTPDispatcher(lib.connection.Server):
