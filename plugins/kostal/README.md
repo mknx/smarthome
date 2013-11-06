@@ -6,7 +6,7 @@ summary: Retrieve data from a KOSTAL inverter module
 
 # Requirements
 
-This plugin is designed to retrieve data from a KOSTAL inverter module (e.g. PICO inverters).
+This plugin is designed to retrieve data from a [KOSTAL](http://www.kostal-solar-electric.com/) inverter module (e.g. PICO inverters).
 
 ## Supported Hardware
 
@@ -18,7 +18,7 @@ Is currently working with the following KOSTA inverter modules:
 
 ## plugin.conf
 
-Please provide a plugin.conf snippet for your plugin with ever option your plugin supports. Optional attributes should be commented out.
+The plugin can be configured like this:
 
 <pre>
 [KOSTAL]
@@ -60,26 +60,49 @@ following list of information can be specified:
 
 ### Example
 
-Please provide an item configuration with every attribute and usefull settings.
+Example configuration which shows the current status and the current, total and
+daily power. Additionally it shows the volts and watts for the phases.
 
 <pre>
 # items/my.conf
-
 [solar]
+    [[status]]
+        type = str
+        kostal = status
     [[current]]
         type = num
-        kostal = 1
+        kostal = power_current
+    [[total]]
+        type = num
+        kostal = power_total
+    [[day]]
+        type = num
+        kostal = power_day
+    [[l1v]]
+        type = num
+        kostal = l1_watt
+    [[l1w]]
+        type = num
+        kostal = l1_watt
+    [[l2v]]
+        type = num
+        kostal = l2_watt
+    [[l2w]]
+        type = num
+        kostal = l2_watt
+    [[l3v]]
+        type = num
+        kostal = l3_watt
+    [[l3w]]
+        type = num
+        kostal = l3_watt
 </pre>
 
 ## logic.conf
-If your plugin support item triggers as well, please describe the attributes like the item attributes.
 
+No logic related stuff implemented.
 
 # Methodes
-If your plugin provides methods for logics. List and describe them here...
 
-## method1(param1, param2)
-This method enables the logic to send param1 and param2 to the device. You could call it with `sh.my.method1('String', 2)`.
+No methods provided currently.
 
-## method2()
-This method does nothing.
