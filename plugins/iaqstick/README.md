@@ -1,11 +1,17 @@
 # Requirements
 
-pyusb
+* pyusb
+* udev rule
 
 install by
 <pre>
 apt-get install python3-setuptools
 easy_install3 pyusb
+</pre>
+
+<pre>
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="03eb", ATTR{idProduct}=="2013", MODE="666"' > /etc/udev/rules.d/99-iaqstick.rules
+udevadm trigger
 </pre>
 
 ## Supported Hardware
