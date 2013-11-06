@@ -193,7 +193,7 @@ class Server(Base):
         pass
 
 
-class Connection(Base):
+class Stream(Base):
 
     def __init__(self, sock=None, address=None, monitor=False):
         Base.__init__(self, monitor=monitor)
@@ -316,10 +316,10 @@ class Connection(Base):
         pass
 
 
-class Client(Connection):
+class Client(Stream):
 
     def __init__(self, host, port, proto='TCP', monitor=False):
-        Connection.__init__(self, monitor=monitor)
+        Stream.__init__(self, monitor=monitor)
         self._host = host
         self._port = port
         self._proto = proto

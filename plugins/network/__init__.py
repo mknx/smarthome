@@ -30,10 +30,10 @@ import lib.connection
 logger = logging.getLogger('')
 
 
-class TCPHandler(lib.connection.Connection):
+class TCPHandler(lib.connection.Stream):
 
     def __init__(self, parser, dest, sock, source):
-        lib.connection.Connection.__init__(self, sock, source)
+        lib.connection.Stream.__init__(self, sock, source)
         self.terminator = b'\n'
         self.parser = parser
         self._lock = threading.Lock()
@@ -60,10 +60,10 @@ class TCPDispatcher(lib.connection.Server):
         TCPHandler(self.parser, self.dest, sock, address)
 
 
-class HTTPHandler(lib.connection.Connection):
+class HTTPHandler(lib.connection.Stream):
 
     def __init__(self, parser, dest, sock, source):
-        lib.connection.Connection.__init__(self, sock, source)
+        lib.connection.Stream.__init__(self, sock, source)
         self.terminator = b"\r\n\r\n"
         self.parser = parser
         self._lock = threading.Lock()
@@ -74,12 +74,12 @@ class HTTPHandler(lib.connection.Connection):
         for line in data.decode().splitlines():
             if line.startswith('GET'):
                 request = line.split(' ')[1].strip('/')
-                if self.parser(self.source, self.dest, urllib.parse.unquote(request)):
+                if self.parser(self.source, self.dest, urllib.parse.unquote(request)) is not False:
                     self.send(b'HTTP/1.1 200 OK\r\n\r\n')
                 else:
                     self.send(b'HTTP/1.1 400 Bad Request\r\n\r\n')
                 break
-        self.close()
+#       self.close()
 
 
 class HTTPDispatcher(lib.connection.Server):

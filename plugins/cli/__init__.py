@@ -26,11 +26,11 @@ import lib.connection
 logger = logging.getLogger('')
 
 
-class CLIHandler(lib.connection.Connection):
+class CLIHandler(lib.connection.Stream):
     terminator = '\n'.encode()
 
     def __init__(self, smarthome, sock, source, updates):
-        lib.connection.Connection.__init__(self, sock, source)
+        lib.connection.Stream.__init__(self, sock, source)
         self.source = source
         self.updates_allowed = updates
         self.sh = smarthome

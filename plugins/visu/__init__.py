@@ -197,10 +197,10 @@ class WebSocket(lib.connection.Server):
                 pass
 
 
-class WebSocketHandler(lib.connection.Connection):
+class WebSocketHandler(lib.connection.Stream):
 
     def __init__(self, smarthome, dispatcher, sock, addr, items, logics):
-        lib.connection.Connection.__init__(self, sock, addr)
+        lib.connection.Stream.__init__(self, sock, addr)
         self.terminator = b"\r\n\r\n"
         self._sh = smarthome
         self._dp = dispatcher
