@@ -41,7 +41,7 @@ class TCPHandler(lib.connection.Connection):
         self.source = source
 
     def found_terminator(self, data):
-        self.parser(self.source, self.dest, data.strip())
+        self.parser(self.source, self.dest, data.decode().strip())
         self.close()
 
 
