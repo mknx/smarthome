@@ -1,10 +1,10 @@
 # Requirements
 
-python-bluez
+bluez
 
 install by
 <pre>
-apt-get install python-bluez
+apt-get install bluez
 </pre>
 
 ## Supported Hardware
