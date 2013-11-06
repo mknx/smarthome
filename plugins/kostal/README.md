@@ -102,7 +102,7 @@ daily power. Additionally it shows the volts and watts for the phases.
 
 No logic related stuff implemented.
 
-# Methodes
+# Methods
 
 No methods provided currently.
 
