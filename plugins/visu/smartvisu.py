@@ -100,10 +100,16 @@ def pages(smarthome, directory):
         else:
             img = ''
         nav_lis += parse_tpl(tpldir + '/navi.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img)])
-        with open("{0}/{1}.html".format(outdir, item.id()), 'w') as f:
-            f.write(r)
+        try:
+            with open("{0}/{1}.html".format(outdir, item.id()), 'w') as f:
+                f.write(r)
+        except Exception as e:
+            logger.warning("Could not write to {0}/{1}.html".format(outdir, item.id()))
     nav = parse_tpl(tpldir + '/navigation.html', [('{{ visu_navis }}', nav_lis)])
-    with open(outdir + '/navigation.html', 'w') as f:
-        f.write(nav)
+    try:
+        with open(outdir + '/navigation.html', 'w') as f:
+            f.write(nav)
+    except Exception as e:
+        logger.warning("Could not write to {0}/navigation.html".format(outdir))
     shutil.copy(tpldir + '/rooms.html', outdir + '/')
     shutil.copy(tpldir + '/index.html', outdir + '/')
