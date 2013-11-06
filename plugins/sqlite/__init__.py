@@ -270,7 +270,7 @@ class SQL():
                     delete = gid
                     gavg = gavg.split(',')
                     gpower = gpower.split(',')
-                    _time, _avg, _power = self._pack(gtime, gavg, gpower, upper)
+                    _time, _avg, _power = self.__pack(gtime, gavg, gpower, upper)
                     insert = (_time, item, _avg, vmin, vmax, _power)
                     self._fdb.execute("INSERT INTO history VALUES (?,?,?,?,?,?);", insert)
                     self._fdb.execute("DELETE FROM history WHERE rowid in ({0});".format(delete))
@@ -287,10 +287,11 @@ class SQL():
     def __pack(self, gtime, gavg, gpower, end):
         asum = 0.0
         psum = 0.0
+        end = int(end)
         prev = end
         tuples = []
         for i, _time in enumerate(gtime):
-            tuples.append((_time, gavg[i], gpower[i]))
+            tuples.append((int(_time), float(gavg[i]), float(gpower[i])))
         for _time, _avg, _power in sorted(tuples, reverse=True):
             asum += (prev - _time) * _avg
             psum += (prev - _time) * _power
