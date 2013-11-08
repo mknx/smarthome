@@ -184,6 +184,7 @@ class Network():
                 return False
             typ, name, value = inp
             proto = dest.split(':')[0].upper()
+            source, __, port = source.partition(':')
             gacl = self.generic_listeners[dest]['acl']
             if typ == 'item':
                 if name not in self.generic_listeners[dest]['items']:
