@@ -6,6 +6,7 @@ for CONF in items/*.conf etc/*.conf; do
             -e '/crontab *=/s/ *| */ | /g' \
             -e '/crontab\|eval *=\|sv_widget\|dmx_ch\|knx_/!s/, */ | /g' \
             -e '/tcp_acl\|udp_acl\|http_acl\|smarttv/!s/, */ | /g' \
+            -e '/watch_item/!s/, */ | /g' \
             -e "/\[\|filename/s/'//g" \
             -e '/sv_widget/s/" *, *"/" | "/g' \
             -e '/sv_widget/s/"//g' \
