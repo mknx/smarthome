@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
-#########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
-#########################################################################
+#
 
 import logging
 import json
@@ -65,12 +65,14 @@ class HUE():
                 elif item._type == 'dict':
                     item.hue_feature = 'all'
                 else:
-                    logger.error("Can't decide for hue feature based on item type. Item {0}".format(item))
-            itemkey = item.hue_feature+'items'
+                    logger.error(
+                        "Can't decide for hue feature based on item type. Item {0}".format(item))
+            itemkey = item.hue_feature + 'items'
             self._lampslock.acquire()
             try:
                 if not item.hue_id in self._lamps:
-                    self._lamps[item.hue_id] = {itemkey: [item], 'state':None, 'lastupdate':0}
+                    self._lamps[item.hue_id] = {
+                        itemkey: [item], 'state': None, 'lastupdate': 0}
                 else:
                     if itemkey in self._lamps[item.hue_id]:
                         logger.debug("Add Lamp {0}".format(item.hue_id))
@@ -78,12 +80,13 @@ class HUE():
                     else:
                         self._lamps[item.hue_id][itemkey] = [item]
                 # if a state is already available, set it
-                currentstate = self._lamps[item.hue_id].get('state',None)
+                currentstate = self._lamps[item.hue_id].get('state', None)
                 if currentstate is not None:
                     if item.hue_feature == 'all':
-                        item(self._lamps[item.hue_id]['state'],caller='HUE')
+                        item(self._lamps[item.hue_id]['state'], caller='HUE')
                     else:
-                        item(self._lamps[item.hue_id]['state'][item.hue_feature],caller='HUE')
+                        item(self._lamps[item.hue_id]['state']
+                             [item.hue_feature], caller='HUE')
             finally:
                 self._lampslock.release()
             return self.update_item
@@ -95,29 +98,32 @@ class HUE():
         if caller != 'HUE':
             logger.info("update item: {0}".format(item.id()))
             if item.hue_feature == 'all':
-                self._set_state(item.hue_id,item())
+                self._set_state(item.hue_id, item())
             elif item.hue_feature == 'on':
-                bri = 254*item()
-                self._set_state(item.hue_id, {"on": item(), "bri": bri, "transitiontime": item.hue_transitiontime})
+                bri = 254 * item()
+                self._set_state(
+                    item.hue_id, {"on": item(), "bri": bri, "transitiontime": item.hue_transitiontime})
                 for item in self._lamps[item.hue_id]['briitems']:
                     item(bri, caller='HUE')
             elif item.hue_feature == 'bri':
                 value = item()
                 if isinstance(value, float):
-                    value = int(value+0.5)
-                on = value>0
-                self._set_state(item.hue_id, {"on": on, "bri": value, "transitiontime": item.hue_transitiontime})
+                    value = int(value + 0.5)
+                on = value > 0
+                self._set_state(
+                    item.hue_id, {"on": on, "bri": value, "transitiontime": item.hue_transitiontime})
                 for item in self._lamps[item.hue_id]['onitems']:
-                    item(on,caller='HUE')
+                    item(on, caller='HUE')
             else:
                 value = item()
                 if isinstance(value, float):
-                    value = int(value+0.5)
-                self._set_state(item.hue_id, {item.hue_feature: value, "transitiontime": item.hue_transitiontime})
+                    value = int(value + 0.5)
+                self._set_state(
+                    item.hue_id, {item.hue_feature: value, "transitiontime": item.hue_transitiontime})
 
     def _request(self, path="", method="GET", data=None):
         con = http.client.HTTPConnection(self._hue_ip)
-        con.request(method, "/api/%s%s" % ( self._hue_user, path ), data)
+        con.request(method, "/api/%s%s" % (self._hue_user, path), data)
         resp = con.getresponse()
         con.close()
 
@@ -126,17 +132,18 @@ class HUE():
             return None
 
         resp = resp.read().decode("utf-8")
-        #logger.debug(resp)
+        # logger.debug(resp)
 
         resp = json.loads(resp)
 
-        #logger.debug(resp)
+        # logger.debug(resp)
 
         if isinstance(resp, list) and resp[0].get("error", None):
             error = resp[0]["error"]
             if error["type"] == 1:
                 description = error["description"]
-                logger.error("Error: {0} (Need to specify correct hue user?)".format(description))
+                logger.error(
+                    "Error: {0} (Need to specify correct hue user?)".format(description))
                 raise Exception("Hue error: {0}".format(description))
         else:
             return resp
@@ -144,22 +151,24 @@ class HUE():
     def _set_state(self, light_id, state):
         try:
             values = self._request("/lights/%s/state" % light_id,
-                "PUT", json.dumps(state))
+                                   "PUT", json.dumps(state))
             # update information database
             for part in values:
                 for status, info in part.items():
                     if status == 'success':
                         for path, val in info.items():
                             parm = path.split('/')[4]
-                            logger.debug("{0} {2}  => {1}".format(path,val, parm))
+                            logger.debug(
+                                "{0} {2}  => {1}".format(path, val, parm))
                             if parm in self._lamps[light_id]['state']:
                                 self._lamps[light_id]['state'][parm] = val
                     else:
                         logger.error("hue: {0}: {1}".format(status, info))
-                        raise Exception("Hue error: {0}: {1}".format(status, info))
+                        raise Exception(
+                            "Hue error: {0}: {1}".format(status, info))
             self._lamps[light_id]['lastupdate'] = time.time()
         except Exception:
-            self._lamps[light_id]['state'] = None # to get an update
+            self._lamps[light_id]['state'] = None  # to get an update
         return self
 
     def _update_lamps(self):
@@ -171,7 +180,7 @@ class HUE():
                 logger.debug("Lamp {0}, State {1}".format(lamp_id, state))
                 self._lampslock.acquire()
                 try:
-                    lamp = self._lamps.get(lamp_id,None)
+                    lamp = self._lamps.get(lamp_id, None)
                     if lamp is not None:
                         tick = time.time()
                         if (tick - lamp['lastupdate'] > 2):
@@ -180,22 +189,25 @@ class HUE():
                             if oldstate is None:
                                 diff = list(state.keys())
                             else:
-                                diff = set(o for o in state if oldstate[o] != state[o])
+                                diff = set(
+                                    o for o in state if oldstate[o] != state[o])
                             # Update the differences
                             for up in diff:
                                 newval = state[up]
-                                logger.info("New value for {0}: {1}".format(up, newval))
-                                for item in lamp.get(up+'items',[]):
+                                logger.info(
+                                    "New value for {0}: {1}".format(up, newval))
+                                for item in lamp.get(up + 'items', []):
                                     item(newval, caller='HUE')
-                            if len(diff)>0:
-                                for item in lamp.get('allitems',[]):
+                            if len(diff) > 0:
+                                for item in lamp.get('allitems', []):
                                         item(state, caller='HUE')
                         lamp['state'] = state
                         lamp['lastupdate'] = tick
                     else:
                         # lamp not used, add it to databse
                         logger.debug("Add lamp {0}".format(lamp_id))
-                        self._lamps[lamp_id] = {'state':state, 'lastupdate':time.time()}
+                        self._lamps[lamp_id] = {'state':
+                                                state, 'lastupdate': time.time()}
                 finally:
                     self._lampslock.release()
         except:
@@ -203,10 +215,11 @@ class HUE():
             pass
 
     def authorizeuser(self):
-        data = json.dumps({"devicetype": "smarthome", "username": self._hue_user})
+        data = json.dumps(
+            {"devicetype": "smarthome", "username": self._hue_user})
 
         con = http.client.HTTPConnection(self._hue_ip)
-        con.request("POST", "/api", data);
+        con.request("POST", "/api", data)
         resp = con.getresponse()
         con.close()
 

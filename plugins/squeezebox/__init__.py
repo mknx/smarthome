@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2013 Robert Budde                        robert@projekt131.de
-#########################################################################
+#
 #  Squeezebox-Plugin for SmartHome.py.  http://mknx.github.com/smarthome/
 #
 #  This plugin is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this plugin. If not, see <http://www.gnu.org/licenses/>.
-#########################################################################
+#
 
 import logging
 import urllib.request
@@ -27,6 +27,7 @@ import lib.connection
 import re
 
 logger = logging.getLogger('Squeezebox')
+
 
 class Squeezebox(lib.connection.Client):
 
@@ -45,20 +46,23 @@ class Squeezebox(lib.connection.Client):
         if '<playerid>' in item.conf[attr]:
             # try to get from parent object
             parent_item = item.return_parent()
-            if (parent_item != None) and ('squeezebox_playerid' in parent_item.conf) and self._check_mac(parent_item.conf['squeezebox_playerid']):
-                item.conf[attr] = item.conf[attr].replace('<playerid>', parent_item.conf['squeezebox_playerid'])
+            if (parent_item is not None) and ('squeezebox_playerid' in parent_item.conf) and self._check_mac(parent_item.conf['squeezebox_playerid']):
+                item.conf[attr] = item.conf[attr].replace(
+                    '<playerid>', parent_item.conf['squeezebox_playerid'])
             else:
-                logger.warning("squeezebox: could not resolve playerid for {0} from parent item {1}".format(item, parent_item))
+                logger.warning(
+                    "squeezebox: could not resolve playerid for {0} from parent item {1}".format(item, parent_item))
                 return None
         return item.conf[attr]
 
     def parse_item(self, item):
         if 'squeezebox_recv' in item.conf:
-            cmd = self._resolv_full_cmd(item,'squeezebox_recv')
-            if (cmd == None):
-                return None 
+            cmd = self._resolv_full_cmd(item, 'squeezebox_recv')
+            if (cmd is None):
+                return None
 
-            logger.debug("squeezebox: {0} receives updates by \"{1}\"".format(item, cmd))
+            logger.debug(
+                "squeezebox: {0} receives updates by \"{1}\"".format(item, cmd))
             if not cmd in self._val:
                 self._val[cmd] = {'items': [item], 'logics': []}
             else:
@@ -66,11 +70,12 @@ class Squeezebox(lib.connection.Client):
                     self._val[cmd]['items'].append(item)
 
             if ('squeezebox_init' in item.conf):
-                cmd = self._resolv_full_cmd(item,'squeezebox_init')
-                if (cmd == None):
-                    return None 
+                cmd = self._resolv_full_cmd(item, 'squeezebox_init')
+                if (cmd is None):
+                    return None
 
-                logger.debug("squeezebox: {0} is initialized by \"{1}\"".format(item, cmd))
+                logger.debug(
+                    "squeezebox: {0} is initialized by \"{1}\"".format(item, cmd))
                 if not cmd in self._val:
                     self._val[cmd] = {'items': [item], 'logics': []}
                 else:
@@ -82,9 +87,10 @@ class Squeezebox(lib.connection.Client):
 
         if 'squeezebox_send' in item.conf:
             cmd = self._resolv_full_cmd(item, 'squeezebox_send')
-            if (cmd == None):
+            if (cmd is None):
                 return None
-            logger.debug("squeezebox: {0} is send to \"{1}\"".format(item, cmd))
+            logger.debug(
+                "squeezebox: {0} is send to \"{1}\"".format(item, cmd))
             return self.update_item
         else:
             return None
@@ -93,7 +99,8 @@ class Squeezebox(lib.connection.Client):
         pass
 
     def update_item(self, item, caller=None, source=None, dest=None):
-        # be careful: as the server echoes ALL comands not using this will result in a loop
+        # be careful: as the server echoes ALL comands not using this will
+        # result in a loop
         if caller != 'LMS':
             cmd = self._resolv_full_cmd(item, 'squeezebox_send').split()
             if not self._check_mac(cmd[0]):
@@ -104,32 +111,37 @@ class Squeezebox(lib.connection.Client):
             else:
                 value = item()
 
-            # special handling for bool-types who need other comands or values to behave intuitively
+            # special handling for bool-types who need other comands or values
+            # to behave intuitively
             if (len(cmd) >= 2) and not item():
                 if (cmd[1] == 'play'):
-                    # if 'play' was set to false, send 'stop' to allow single-item-operation
+                    # if 'play' was set to false, send 'stop' to allow
+                    # single-item-operation
                     cmd[1] = 'stop'
                     value = 1
                 if (cmd[1] == 'playlist') and (cmd[2] in ['shuffle', 'repeat']):
                     # if a boolean item of [...] was set to false, send '0' to disable the option whatsoever
-                    # replace cmd[3], as there are fixed values given and filling in 'value' is pointless
+                    # replace cmd[3], as there are fixed values given and
+                    # filling in 'value' is pointless
                     cmd[3] = '0'
-            self._send(' '.join(urllib.parse.quote(cmd_str.format(value), encoding='iso-8859-1') for cmd_str in cmd))
+            self._send(' '.join(urllib.parse.quote(cmd_str.format(value), encoding='iso-8859-1')
+                       for cmd_str in cmd))
 
     def _send(self, cmd):
         logger.debug("squeezebox: Sending request: {0}".format(cmd))
-        self.send(bytes(cmd + '\r\n','utf-8'))
+        self.send(bytes(cmd + '\r\n', 'utf-8'))
 
     def found_terminator(self, response):
-        #logger.debug("squeezebox: #####################################")
-        #print(type(response))
-        #print(response.decode('iso-8859-1').encode('utf-8').decode('unicode-escape'))
-        #print(urllib.parse.unquote(response.decode('iso-8859-1')))
-        #print(urllib.parse.unquote(response.decode('unicode-escape')))
+        # logger.debug("squeezebox: #####################################")
+        # print(type(response))
+        # print(response.decode('iso-8859-1').encode('utf-8').decode('unicode-escape'))
+        # print(urllib.parse.unquote(response.decode('iso-8859-1')))
+        # print(urllib.parse.unquote(response.decode('unicode-escape')))
         #response = response.decode('iso-8859-1')
-        #print(type(response))
+        # print(type(response))
         #logger.debug("squeezebox: Raw: {0}".format(response))
-        data = [urllib.parse.unquote(data_str) for data_str in response.decode().split()]
+        data = [urllib.parse.unquote(data_str)
+                for data_str in response.decode().split()]
         logger.debug("squeezebox: Got: {0}".format(data))
 
         try:
@@ -139,14 +151,15 @@ class Squeezebox(lib.connection.Client):
                     logger.info("squeezebox: Listen-mode enabled")
                 else:
                     logger.info("squeezebox: Listen-mode disabled")
-    
+
             if self._check_mac(data[0]):
                 if (data[1] == 'play'):
                     self._update_items_with_data([data[0], 'play', '1'])
                     self._update_items_with_data([data[0], 'stop', '0'])
                     self._update_items_with_data([data[0], 'pause', '0'])
                     # play also overrules mute
-                    self._update_items_with_data([data[0], 'prefset server mute', '0'])
+                    self._update_items_with_data(
+                        [data[0], 'prefset server mute', '0'])
                     return
                 elif (data[1] == 'stop'):
                     self._update_items_with_data([data[0], 'play', '0'])
@@ -158,43 +171,54 @@ class Squeezebox(lib.connection.Client):
                     self._send(data[0] + ' mixer muting ?')
                     return
                 elif (data[1] == 'mode'):
-                    self._update_items_with_data([data[0], 'play', str(data[2] == 'play')])
-                    self._update_items_with_data([data[0], 'stop', str(data[2] == 'stop')])
-                    self._update_items_with_data([data[0], 'pause', str(data[2] == 'pause')])
+                    self._update_items_with_data(
+                        [data[0], 'play', str(data[2] == 'play')])
+                    self._update_items_with_data(
+                        [data[0], 'stop', str(data[2] == 'stop')])
+                    self._update_items_with_data(
+                        [data[0], 'pause', str(data[2] == 'pause')])
                     # play also overrules mute
                     if (data[2] == 'play'):
-                        self._update_items_with_data([data[0], 'prefset server mute', '0'])
+                        self._update_items_with_data(
+                            [data[0], 'prefset server mute', '0'])
                     return
                 elif ((((data[1] == 'prefset') and (data[2] == 'server')) or (data[1] == 'mixer'))
                       and (data[-2] == 'volume') and data[-1].startswith('-')):
                     # make sure value is always positive - also if muted!
-                    self._update_items_with_data([data[0], 'prefset server mute', '1'])
+                    self._update_items_with_data(
+                        [data[0], 'prefset server mute', '1'])
                     data[-1] = data[-1][1:]
                 elif (data[1] == 'playlist'):
                     if (data[2] == 'jump') and (len(data) == 4):
-                        self._update_items_with_data([data[0], 'playlist index', data[3]]) 
+                        self._update_items_with_data(
+                            [data[0], 'playlist index', data[3]])
                     elif (data[2] == 'newsong'):
                         if (len(data) >= 4):
-                            self._update_items_with_data([data[0], 'title', data[3]])
+                            self._update_items_with_data(
+                                [data[0], 'title', data[3]])
                         else:
                             self._send(data[0] + ' title ?')
                         if (len(data) >= 5):
-                            self._update_items_with_data([data[0], 'playlist index', data[4]])
+                            self._update_items_with_data(
+                                [data[0], 'playlist index', data[4]])
                         # trigger reading of other song fields
                         for field in ['genre', 'artist', 'album', 'duration']:
                             self._send(data[0] + ' ' + field + ' ?')
                 elif (data[1] in ['genre', 'artist', 'album', 'title']) and (len(data) == 2):
-                    # these fields are returned empty so update fails - append '' to allow update
+                    # these fields are returned empty so update fails - append
+                    # '' to allow update
                     data.append('')
                 elif (data[1] in ['duration']) and (len(data) == 2):
-                    # these fields are returned empty so update fails - append '0' to allow update
+                    # these fields are returned empty so update fails - append
+                    # '0' to allow update
                     data.append('0')
             # finally check for '?'
             if (data[-1] == '?'):
                 return
             self._update_items_with_data(data)
         except Exception as e:
-            logger.error("squeezebox: exception while parsing \'{0}\'".format(data))
+            logger.error(
+                "squeezebox: exception while parsing \'{0}\'".format(data))
             logger.error("squeezebox: exception: {}".format(e))
 
     def _update_items_with_data(self, data):

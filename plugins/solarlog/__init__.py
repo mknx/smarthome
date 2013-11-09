@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
-#########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,10 +17,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
-#########################################################################
+#
 
 import re
-import datetime
 import logging
 
 
@@ -53,7 +52,7 @@ class SolarLog():
     def parse_item(self, item):
         if 'solarlog' in item.conf:
             self._items[item.conf['solarlog']] = item
-       
+
         return None
 
     def parse_logic(self, logic):
@@ -61,10 +60,10 @@ class SolarLog():
 
     def _refresh(self, init=False):
         now = self._sh.now()
-        
+
         if not init:
-            time_start = int(vars(self)['time_start'][now.month-1])
-            time_end = int(vars(self)['time_end'][now.month-1])
+            time_start = int(vars(self)['time_start'][now.month - 1])
+            time_end = int(vars(self)['time_end'][now.month - 1])
 
             # reset all out values at midnight
             if now.hour is 0:
@@ -126,7 +125,7 @@ class SolarLog():
                         self._items[name](0)
                     else:
                         self._items[name](groups[name])
-        
+
         for name in list(vars(self).keys()):
             if name in self._items:
                 self._items[name](vars(self)[name])
@@ -138,11 +137,15 @@ class SolarLog():
         self._read_javascript('min_cur.js')
 
     def _read_javascript(self, filename):
-        re_var = re.compile(r'^var\s+(?P<varname>\w+)\s*=\s*"?(?P<varvalue>[^"]+)"?;?')
-        re_array = re.compile(r'^var\s+(?P<varname>\w+)\s*=\s*new\s*Array\s*\((?P<arrayvalues>.*)\)')
-        re_array_1st_level = re.compile(r'\s*(?P<varname>\w+)\[(?P<idx1>[0-9]+)\]((\s*=\s*(?:new\s*Array)?\((?P<arrayvalues>.*)\))|(\s*=\s*(?P<arraystring>.*)))')
-        re_array_2nd_level = re.compile(r'\s*(?P<varname>\w+)\[(?P<idx1>[0-9]+)\]\s*\[(?P<idx2>[0-9]+)\]\s*=\s*new\s*Array\s*\((?P<arrayvalues>.*)\)')
-        
+        re_var = re.compile(
+            r'^var\s+(?P<varname>\w+)\s*=\s*"?(?P<varvalue>[^"]+)"?;?')
+        re_array = re.compile(
+            r'^var\s+(?P<varname>\w+)\s*=\s*new\s*Array\s*\((?P<arrayvalues>.*)\)')
+        re_array_1st_level = re.compile(
+            r'\s*(?P<varname>\w+)\[(?P<idx1>[0-9]+)\]((\s*=\s*(?:new\s*Array)?\((?P<arrayvalues>.*)\))|(\s*=\s*(?P<arraystring>.*)))')
+        re_array_2nd_level = re.compile(
+            r'\s*(?P<varname>\w+)\[(?P<idx1>[0-9]+)\]\s*\[(?P<idx2>[0-9]+)\]\s*=\s*new\s*Array\s*\((?P<arrayvalues>.*)\)')
+
         f = self._read(filename)
 
         if f:
@@ -160,9 +163,10 @@ class SolarLog():
                         try:
                             vars(self)[name] = [None] * int(value)
                         except:
-                            vars(self)[name] = [x.strip(' "') for x in value.split(',')]
+                            vars(self)[name] = [x.strip(' "')
+                                                for x in value.split(',')]
                     continue
-                
+
                 matches = re_var.match(line)
 
                 if matches:
@@ -181,7 +185,8 @@ class SolarLog():
                         if not values:
                             values = matches.group('arraystring')
                         if ',' in values:
-                            vars(self)[name][idx1] = [x.strip(' "') for x in values.split(',')]
+                            vars(self)[name][idx1] = [x.strip(' "')
+                                                      for x in values.split(',')]
                         else:
                             vars(self)[name][idx1] = values
                     continue
@@ -192,12 +197,13 @@ class SolarLog():
                     name, idx1, idx2, value = matches.groups()
 
                     if name in vars(self):
-                        vars(self)[name][int(idx1)][int(idx2)] = [x.strip(' "') for x in value.split(',')]
+                        vars(self)[name][int(idx1)][int(idx2)] = [x.strip(' "')
+                                                                  for x in value.split(',')]
                     continue
 
     def _read_years(self):
         pattern = r'ye\[yx\+\+\]=.(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{2})'
-        
+
         for x in range(0, self._count_inverter):
             pattern += '\|(?P<out_{0}>[0-9]*)'.format(x)
 
@@ -215,7 +221,7 @@ class SolarLog():
 
     def _read_months(self):
         pattern = r'mo\[mx\+\+\]=.(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{2})'
-        
+
         for x in range(0, self._count_inverter):
             pattern += '\|(?P<out_{0}>[0-9]*)'.format(x)
 
@@ -233,7 +239,7 @@ class SolarLog():
 
     def _read_days(self, history=False):
         pattern = r'da\[dx\+\+\]=.(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{2})'
-        
+
         for x in range(0, self._count_inverter):
             pattern += '\|(?P<out_{0}>[0-9]*);(?P<pac_max_{0}>[0-9]*)'.format(x)
 
@@ -252,22 +258,21 @@ class SolarLog():
                 if matches:
                     logger.debug(matches.groups())
 
-
     def _read_min_day(self, date=None, read_all=False):
         pattern = r'm\[mi\+\+\]=.(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{2})\s(?P<hour>\d{2})\:(?P<minute>\d{2})\:(?P<second>\d{2})'
-        
+
         # TODO: add a pattern that matches sensor boxes
         # ATM only inverters and strings supported
         for x in range(0, self._count_inverter):
             pattern += '\|(?P<pac_{0}>[0-9]*)'.format(x)
 
             for y in range(0, self._count_strings[x]):
-                pattern += ';(?P<pdc_{0}_{1}>[0-9]*)'.format(x,y)
+                pattern += ';(?P<pdc_{0}_{1}>[0-9]*)'.format(x, y)
 
             pattern += ';(?P<out_{0}>[0-9]*)'.format(x)
 
             for y in range(0, self._count_strings[x]):
-                pattern += ';(?P<udc_{0}_{1}>[0-9]*)'.format(x,y)
+                pattern += ';(?P<udc_{0}_{1}>[0-9]*)'.format(x, y)
 
             if len(vars(self)['WRInfo'][x]) > 12:
                 if vars(self)['WRInfo'][x][12] == '1':
@@ -280,7 +285,7 @@ class SolarLog():
             min_day = self._read('min{0}.js'.format(date.strftime('%y%m%d')))
         else:
             min_day = self._read('min_day.js')
-        
+
         groups = []
 
         if min_day:
@@ -298,4 +303,3 @@ class SolarLog():
     def _read(self, filename):
         url = self._host + filename
         return self._sh.tools.fetch_url(url).decode(encoding='latin_1')
-

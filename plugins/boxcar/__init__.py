@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # coding=utf-8
-#########################################################################
+#
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
 # Author    mode@gmx.co.uk
-#########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,24 +18,28 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
-#########################################################################
+#
 
 import logging
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import http.client
 
 # boxcar notifications
 logger = logging.getLogger('Boxcar')
 
+
 class Boxcar():
     _apiurl = 'boxcar.io'
-    _headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+    _headers = {"Content-type":
+                "application/x-www-form-urlencoded", "Accept": "text/plain"}
 
     def __init__(self, smarthome, apikey=None, email=None, url=None):
         self.__set_path(apikey)
         self._email = email
         if url:
-             self._apiurl = url
+            self._apiurl = url
 
     def run(self):
         pass
@@ -43,8 +47,8 @@ class Boxcar():
     def stop(self):
         pass
 
-    def __set_path (self, apikey):
-        self._path = '/devices/providers/'+apikey+'/notifications'
+    def __set_path(self, apikey):
+        self._path = '/devices/providers/' + apikey + '/notifications'
 
     def __call__(self, sender='', message='', link_url=None, icon=None, email=None, apikey=None):
         data = {}
@@ -63,13 +67,17 @@ class Boxcar():
 
         try:
             conn = http.client.HTTPSConnection(self._apiurl)
-            conn.request("POST", self._path, urllib.parse.urlencode(data), self._headers)
+            conn.request("POST", self._path,
+                         urllib.parse.urlencode(data), self._headers)
             response = conn.getresponse()
             if response.status == 200:
-                logger.info("Boxcar: Message %s %s successfully sent - %s %s"%(sender, message,response.status,response.reason))
+                logger.info("Boxcar: Message %s %s successfully sent - %s %s" %
+                            (sender, message, response.status, response.reason))
             else:
-                logger.warning("Boxcar: Could not send message %s %s - %s %s"%(sender, message,response.status,response.reason))
+                logger.warning("Boxcar: Could not send message %s %s - %s %s" %
+                               (sender, message, response.status, response.reason))
             conn.close()
             del(conn)
         except Exception as e:
-            logger.warning("Could not send boxcar notification: {0}. Error: {1}".format(event, e))
+            logger.warning(
+                "Could not send boxcar notification: {0}. Error: {1}".format(message, e))

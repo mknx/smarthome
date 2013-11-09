@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2013 Robert Budde                        robert@projekt131.de
-#########################################################################
+#
 #  This software is based on Stuart Pittaway's "NANODE SMA PV MONITOR"
 #  https://github.com/stuartpittaway/nanodesmapvmonitor
 #
@@ -26,15 +26,15 @@
 #	Share Alike:
 #		If you alter, transform, or build upon this work, you may distribute the resulting work
 #		only under the same or similar license to this one.
-# 
-#DISCLAIMER:
+#
+# DISCLAIMER:
 #	A user of this plugin acknowledges that he or she is receiving this
 #	software on an "as is" basis and the user is not relying on the accuracy
 #	or functionality of the software for any purpose. The user further
 #	acknowledges that any use of this software will be at his own risk
 #	and the copyright owner accepts no responsibility whatsoever arising from
 #	the use or application of the software.
-#########################################################################
+#
 
 import logging
 import time
@@ -81,23 +81,23 @@ FCSTAB = [
     0x6b46, 0x7acf, 0x4854, 0x59dd, 0x2d62, 0x3ceb, 0x0e70, 0x1ff9,
     0xf78f, 0xe606, 0xd49d, 0xc514, 0xb1ab, 0xa022, 0x92b9, 0x8330,
     0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78,
-    ]
+]
 
 # Start-Address, End-Address, ?
 STATUS_READ = (0x00214800, 0x002148FF, [0x00, 0x02, 0x80, 0x58])
 #STATUS_READ = (0x00214800, 0x002148FF, [0x00, 0x02, 0x80, 0x51])
-DCx_P_READ  = (0x00251E00, 0x00251EFF, [0x00, 0x02, 0x80, 0x53])
+DCx_P_READ = (0x00251E00, 0x00251EFF, [0x00, 0x02, 0x80, 0x53])
 E_STAT_READ = (0x00260100, 0x002622FF, [0x00, 0x02, 0x00, 0x54])
-AC_P_READ   = (0x00263F00, 0x00263FFF, [0x00, 0x02, 0x00, 0x51])
+AC_P_READ = (0x00263F00, 0x00263FFF, [0x00, 0x02, 0x00, 0x51])
 ACx_PM_READ = (0x00411E00, 0x004120FF, [0x00, 0x02, 0x00, 0x51])
-RELAY_READ  = (0x00416400, 0x004164FF, [0x00, 0x02, 0x80, 0x58])
+RELAY_READ = (0x00416400, 0x004164FF, [0x00, 0x02, 0x80, 0x58])
 #RELAY_READ  = (0x00416400, 0x004164FF, [0x00, 0x02, 0x80, 0x51])
-OTIME_READ  = (0x00462E00, 0x00462FFF, [0x00, 0x02, 0x00, 0x54])
+OTIME_READ = (0x00462E00, 0x00462FFF, [0x00, 0x02, 0x00, 0x54])
 DCx_UI_READ = (0x00451F00, 0x004521FF, [0x00, 0x02, 0x80, 0x53])
-ACx_P_READ  = (0x00464000, 0x004642FF, [0x00, 0x02, 0x00, 0x51])
+ACx_P_READ = (0x00464000, 0x004642FF, [0x00, 0x02, 0x00, 0x51])
 ACx_UI_READ = (0x00464800, 0x004652FF, [0x00, 0x02, 0x00, 0x51])
 ACx_I2_READ = (0x00465300, 0x004655FF, [0x00, 0x02, 0x00, 0x51])
-FREQ_READ   = (0x00465700, 0x004657FF, [0x00, 0x02, 0x00, 0x51])
+FREQ_READ = (0x00465700, 0x004657FF, [0x00, 0x02, 0x00, 0x51])
 
 AC_MAX2 = (0x00832A00, 0x00832AFF, [0x00, 0x02, 0x00, 0x51])
 
@@ -105,48 +105,49 @@ TYPE_LABEL = (0x00821E00, 0x008220FF, [0x00, 0x02, 0x00, 0x58])
 SW_VERSION = (0x00823400, 0x008234FF, [0x00, 0x02, 0x00, 0x58])
 
 fields = {'STATUS': [0x00214801, 1, STATUS_READ],
-          
+
           'DC_STRING1_P': [0x251e01, 1, DCx_P_READ],
           'DC_STRING2_P': [0x251e02, 1, DCx_P_READ],
-          
+
           'E_TOTAL': [0x260101, 1, E_STAT_READ],
           'E_DAY': [0x262201, 1, E_STAT_READ],
-          
+
           'AC_P_TOTAL': [0x263f01, 1, AC_P_READ],
-          
+
           'AC_PHASE1_P_MAX': [0x00411E01, 1, ACx_PM_READ],
           'AC_PHASE2_P_MAX': [0x00411F01, 1, ACx_PM_READ],
           'AC_PHASE3_P_MAX': [0x00412001, 1, ACx_PM_READ],
-          
+
           'GRID_RELAY': [0x00416401, 1, RELAY_READ],
-          
+
           'OPERATING_TIME': [0x00462E01, 1, OTIME_READ],
           'FEEDING_TIME': [0x00462F01, 1, OTIME_READ],
-          
+
           'DC_STRING1_U': [0x451f01, 100.0, DCx_UI_READ],
           'DC_STRING2_U': [0x451f02, 100.0, DCx_UI_READ],
           'DC_STRING1_I': [0x452101, 1000.0, DCx_UI_READ],
           'DC_STRING2_I': [0x452102, 1000.0, DCx_UI_READ],
-          
+
           'AC_PHASE1_P': [0x00464001, 1, ACx_P_READ],
           'AC_PHASE2_P': [0x00464101, 1, ACx_P_READ],
           'AC_PHASE3_P': [0x00464201, 1, ACx_P_READ],
-          
+
           'AC_PHASE1_U': [0x00464801, 100.0, ACx_UI_READ],
           'AC_PHASE2_U': [0x00464901, 100.0, ACx_UI_READ],
           'AC_PHASE3_U': [0x00464A01, 100.0, ACx_UI_READ],
           'AC_PHASE1_I': [0x00465001, 1000.0, ACx_UI_READ],
           'AC_PHASE2_I': [0x00465101, 1000.0, ACx_UI_READ],
           'AC_PHASE3_I': [0x00465201, 1000.0, ACx_UI_READ],
-          
+
           'AC_PHASE1_I2': [0x00465301, 1000.0, ACx_I2_READ],
           'AC_PHASE2_I2': [0x00465401, 1000.0, ACx_I2_READ],
           'AC_PHASE3_I2': [0x00465501, 1000.0, ACx_I2_READ],
-          
+
           'GRID_FREQUENCY': [0x00465701, 100.0, FREQ_READ],
-}
+          }
 
 logger = logging.getLogger('SMA')
+
 
 class SMA():
 
@@ -160,9 +161,11 @@ class SMA():
         self._inv_last_read_timestamp_utc = 0
         self._inv_serial = 0
         self._own_bt_addr_le = bytearray(BCAST_ADDR)
-        self._inv_bt_addr_le = bytearray.fromhex(self._inv_bt_addr.replace(':',' '))
+        self._inv_bt_addr_le = bytearray.fromhex(
+            self._inv_bt_addr.replace(':', ' '))
         self._inv_bt_addr_le.reverse()
-        self._btsocket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+        self._btsocket = socket.socket(
+            socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
 
     def _update_values(self):
         #logger.warning("sma: signal strength = {}%%".format(self._inv_get_bt_signal_strength()))
@@ -174,14 +177,18 @@ class SMA():
                     field_addr = field[0]
                     if field_addr in self._fields:
                         for item in self._fields[field_addr]['items']:
-                            item(field[2] / self._fields[field_addr]['eval'], 'SMA', self._inv_bt_addr)
+                            item(field[2] / self._fields[field_addr]
+                                 ['eval'], 'SMA', self._inv_bt_addr)
                     timestamp_utc = field[1]
         # update time
         if (timestamp_utc > self._inv_last_read_timestamp_utc):
             self._inv_last_read_timestamp_utc = timestamp_utc
-            self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
-            self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
-            logger.debug("sma: last successful update = {}".format(self._inv_last_read_str))
+            self._inv_last_read_datetime = datetime.fromtimestamp(
+                self._inv_last_read_timestamp_utc, tz.tzlocal())
+            self._inv_last_read_str = self._inv_last_read_datetime.strftime(
+                "%d.%m.%Y %H:%M:%S")
+            logger.debug(
+                "sma: last successful update = {}".format(self._inv_last_read_str))
             if 'LAST_UPDATE' in self._fields:
                 for item in self._fields['LAST_UPDATE']['items']:
                     item(self._inv_last_read_str, 'SMA', self._inv_bt_addr)
@@ -191,7 +198,8 @@ class SMA():
         self._send_count = 0
         try:
             self._btsocket.connect((self._inv_bt_addr, 1))
-            logger.info("sma: via bluetooth connected to {}".format(self._inv_bt_addr))
+            logger.info(
+                "sma: via bluetooth connected to {}".format(self._inv_bt_addr))
             self._inv_connect()
             self._inv_login()
             if 'OWN_ADDRESS' in self._fields:
@@ -204,20 +212,24 @@ class SMA():
                 for item in self._fields['INV_SERIAL']['items']:
                     item(self._inv_serial, 'SMA', self._inv_bt_addr)
         except:
-            logger.error("sma: establishing connection to inverter failed - {}".format(sys.exc_info()))
-        self._sh.scheduler.add('SMA', self._update_values, prio = 5, cycle = self._update_cycle)
+            logger.error(
+                "sma: establishing connection to inverter failed - {}".format(sys.exc_info()))
+        self._sh.scheduler.add('SMA', self._update_values,
+                               prio=5, cycle=self._update_cycle)
 
     def stop(self):
         self.alive = False
         try:
             self._sh.scheduler.remove('SMA')
         except:
-            logger.error("sma: removing sma.update from scheduler failed - {}".format(sys.exc_info()))
+            logger.error(
+                "sma: removing sma.update from scheduler failed - {}".format(sys.exc_info()))
         try:
             self._btsocket.close()
             #self._btsocket = False
         except:
-            logger.error("sma: closing connection to inverter failed - {}".format(sys.exc_info()))
+            logger.error(
+                "sma: closing connection to inverter failed - {}".format(sys.exc_info()))
 
     def parse_item(self, item):
         if 'sma' in item.conf:
@@ -225,9 +237,11 @@ class SMA():
             if field_name in fields:
                 field_addr = fields[field_name][0]
                 field_eval = fields[field_name][1]
-                logger.debug("sma: {0} connected to field {1} ({2:#06x})".format(item, field_name, field_addr))
+                logger.debug("sma: {0} connected to field {1} ({2:#06x})".format(
+                    item, field_name, field_addr))
                 if not field_addr in self._fields:
-                    self._fields[field_addr] = {'items': [item], 'logics': [], 'eval': field_eval}
+                    self._fields[field_addr] = {
+                        'items': [item], 'logics': [], 'eval': field_eval}
                 else:
                     self._fields[field_addr]['items'].append(item)
                 field_read_op = fields[field_name][2]
@@ -235,7 +249,8 @@ class SMA():
                     self._read_ops.append(field_read_op)
             else:
                 field_addr = field_name
-                logger.debug("sma: {0} connected to field {1})".format(item, field_name))
+                logger.debug("sma: {0} connected to field {1})".format(
+                    item, field_name))
                 if not field_addr in self._fields:
                     self._fields[field_addr] = {'items': [item], 'logics': []}
                 else:
@@ -265,7 +280,8 @@ class SMA():
 
             # get remaining bytes
             while (len(msg) < length):
-                # receive at most only precisely the number of bytes that are missing for this msg (allow follow-up msgs))
+                # receive at most only precisely the number of bytes that are
+                # missing for this msg (allow follow-up msgs))
                 msg += self._btsocket.recv(length - len(msg))
 
             # check src and dst addr and check
@@ -278,7 +294,8 @@ class SMA():
 
             #logger.debug("rx: SMANET1 msg: len={} / data=[{}]".format(len(msg), ' '.join(['0x%02x' % b for b in msg])))
         except socket.timeout:
-            logger.warning("sma: rx: timeout exception - could not receive msg within {}s".format(timeout))
+            logger.warning(
+                "sma: rx: timeout exception - could not receive msg within {}s".format(timeout))
             msg = []
         except:
             logger.warning("sma: rx: exception - {}".format(sys.exc_info()))
@@ -286,7 +303,8 @@ class SMA():
         return msg
 
     def _recv_smanet2_msg(self, cmdcodes_expected=[0x0001]):
-        # allow receiving SMANET2 msgs which consist of multiple SMANET1 msgs!!!
+        # allow receiving SMANET2 msgs which consist of multiple SMANET1
+        # msgs!!!
         retries = 10
         smanet2_msg = bytearray()
         while self.alive:
@@ -300,20 +318,22 @@ class SMA():
 
             # get cmdcode - check for last message code (0x0001)
             smanet2_msg += smanet1_msg[18::]
-            cmdcode_recv = int.from_bytes(smanet1_msg[16:18], byteorder='little')
+            cmdcode_recv = int.from_bytes(
+                smanet1_msg[16:18], byteorder='little')
             if (cmdcode_recv in cmdcodes_expected):
                 break
 
         if (smanet2_msg[0:5] != SMANET2_HDR):
             logger.warning("sma: no SMANET2 msg")
-            logger.warning("sma: recv: len={} / data=[{}]".format(len(smanet2_msg), ' '.join(['0x%02x' % b for b in smanet2_msg])))
+            logger.warning(
+                "sma: recv: len={} / data=[{}]".format(len(smanet2_msg), ' '.join(['0x%02x' % b for b in smanet2_msg])))
             return []
 
         # remove escape characters
         i = 0
         while True:
             if (smanet2_msg[i] == 0x7d):
-                smanet2_msg[i+1] ^= 0x20
+                smanet2_msg[i + 1] ^= 0x20
                 del(smanet2_msg[i])
             i += 1
             if (i == len(smanet2_msg)):
@@ -322,7 +342,8 @@ class SMA():
         crc = self._calc_crc16(smanet2_msg[1:-3])
         if (crc != int.from_bytes(smanet2_msg[-3:-1], byteorder='little')):
             logger.warning("sma: crc: crc16 error - {:04x}".format(crc))
-            logger.warning("sma: crc: len={} / data=[{}]".format(len(smanet2_msg), ' '.join(['0x%02x' % b for b in smanet2_msg])))
+            logger.warning(
+                "sma: crc: len={} / data=[{}]".format(len(smanet2_msg), ' '.join(['0x%02x' % b for b in smanet2_msg])))
             return []
         return smanet2_msg
 
@@ -392,21 +413,27 @@ class SMA():
 
         # extract own bluetooth addr
         self._own_bt_addr_le = msg[26:32]
-        logger.info("sma: own bluetooth address: {}".format(':'.join(['%02x' % b for b in self._own_bt_addr_le[::-1]])))
+        logger.info("sma: own bluetooth address: {}".format(
+            ':'.join(['%02x' % b for b in self._own_bt_addr_le[::-1]])))
 
         # first SMA net2 msg
-        retries = 10 
+        retries = 10
         while (retries > 0) and self.alive:
             retries -= 1
             # level1
             cmdcode = 0x0001
             msg = bytearray([0x7E, 0, 0, 0])
-            msg += self._own_bt_addr_le + self._inv_bt_addr_le + cmdcode.to_bytes(2, byteorder='little')
+            msg += self._own_bt_addr_le + self._inv_bt_addr_le + \
+                cmdcode.to_bytes(2, byteorder='little')
             # sma-net2 level
             ctrl = 0xA009
             self._send_count = (self._send_count + 1) & 0x7FFF
-            msg += SMANET2_HDR + ctrl.to_bytes(2, byteorder='little') + BCAST_ADDR + bytes([0x00, 0x00]) + self._inv_bt_addr_le + bytes([0x00] + [0x00] + [0, 0, 0, 0]) + (self._send_count | 0x8000).to_bytes(2, byteorder='little')
-            msg += bytes([0x00, 0x02, 0x00] + [0x00] + [0x00, 0x00, 0x00, 0x00] + [0x00, 0x00, 0x00, 0x00])
+            msg += SMANET2_HDR + ctrl.to_bytes(2, byteorder='little') + BCAST_ADDR + bytes([0x00, 0x00]) + self._inv_bt_addr_le + \
+                bytes([0x00] + [0x00] + [0, 0, 0, 0]) + \
+                (self._send_count | 0x8000).to_bytes(
+                    2, byteorder='little')
+            msg += bytes([0x00, 0x02, 0x00] + [0x00] +
+                         [0x00, 0x00, 0x00, 0x00] + [0x00, 0x00, 0x00, 0x00])
             # send msg to inverter
             self._send_msg(msg)
             # receive msg from inverter
@@ -421,19 +448,25 @@ class SMA():
         # second SMA net2 msg
         cmdcode = 0x0001
         msg = bytearray([0x7E, 0, 0, 0])
-        msg += self._own_bt_addr_le + self._inv_bt_addr_le + cmdcode.to_bytes(2, byteorder='little')
+        msg += self._own_bt_addr_le + self._inv_bt_addr_le + \
+            cmdcode.to_bytes(2, byteorder='little')
         # sma-net2 level
         ctrl = 0xA008
         self._send_count = (self._send_count + 1) & 0x7FFF
-        msg += SMANET2_HDR + ctrl.to_bytes(2, byteorder='little') + BCAST_ADDR + bytes([0x00, 0x03]) + self._inv_bt_addr_le + bytes([0x00] + [0x03] + [0, 0, 0, 0]) + (self._send_count | 0x8000).to_bytes(2, byteorder='little')
+        msg += SMANET2_HDR + ctrl.to_bytes(2, byteorder='little') + BCAST_ADDR + bytes([0x00, 0x03]) + self._inv_bt_addr_le + \
+            bytes([0x00] + [0x03] + [0, 0, 0, 0]) + \
+            (self._send_count | 0x8000).to_bytes(
+                2, byteorder='little')
         msg += bytes([0x0E, 0x01, 0xFD, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
         # send msg
         self._send_msg(msg)
 
     def _inv_login(self):
         timestamp_utc = int(time.time())
-        password_pattern = [0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88]
-        password_pattern[0:len(self._inv_password)] = [((0x88 + ord(char)) & 0xff) for char in self._inv_password]
+        password_pattern = [0x88, 0x88, 0x88, 0x88, 0x88,
+                            0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88]
+        password_pattern[0:len(self._inv_password)] = [((0x88 + ord(char)) & 0xff)
+                                                       for char in self._inv_password]
 
         retries = 5
         while (retries > 0) and self.alive:
@@ -441,12 +474,17 @@ class SMA():
             # level1
             cmdcode = 0x0001
             msg = bytearray([0x7E, 0, 0, 0])
-            msg += self._own_bt_addr_le + self._inv_bt_addr_le + cmdcode.to_bytes(2, byteorder='little')
+            msg += self._own_bt_addr_le + self._inv_bt_addr_le + \
+                cmdcode.to_bytes(2, byteorder='little')
             # sma-net2 level
             ctrl = 0xA00E
             self._send_count = (self._send_count + 1) & 0x7FFF
-            msg += SMANET2_HDR + ctrl.to_bytes(2, byteorder='little') + BCAST_ADDR + bytes([0x00, 0x01]) + self._inv_bt_addr_le + bytes([0x00] + [0x01] + [0, 0, 0, 0]) + (self._send_count | 0x8000).to_bytes(2, byteorder='little')
-            msg += bytes([0x0C, 0x04, 0xFD, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x84, 0x03, 0x00, 0x00])
+            msg += SMANET2_HDR + ctrl.to_bytes(2, byteorder='little') + BCAST_ADDR + bytes([0x00, 0x01]) + self._inv_bt_addr_le + \
+                bytes([0x00] + [0x01] + [0, 0, 0, 0]) + \
+                (self._send_count | 0x8000).to_bytes(
+                    2, byteorder='little')
+            msg += bytes([0x0C, 0x04, 0xFD, 0xFF, 0x07, 0x00,
+                         0x00, 0x00, 0x84, 0x03, 0x00, 0x00])
             msg += timestamp_utc.to_bytes(4, byteorder='little')
             msg += bytes([0x00, 0x00, 0x00, 0x00] + password_pattern)
             # send msg to inverter
@@ -469,7 +507,8 @@ class SMA():
     def _inv_get_bt_signal_strength(self):
         cmdcode = 0x0003
         msg = bytearray([0x7E, 0, 0, 0])
-        msg += self._own_bt_addr_le + self._inv_bt_addr_le + cmdcode.to_bytes(2, byteorder='little')
+        msg += self._own_bt_addr_le + self._inv_bt_addr_le + \
+            cmdcode.to_bytes(2, byteorder='little')
         msg += bytes([0x05, 0x00])
         self._send_msg(msg)
         msg = self._recv_smanet1_msg_with_cmdcode([0x0004])
@@ -481,11 +520,16 @@ class SMA():
         # level1
         cmdcode = 0x0001
         msg = bytearray([0x7E, 0, 0, 0])
-        msg += self._own_bt_addr_le + self._inv_bt_addr_le + cmdcode.to_bytes(2, byteorder='little')
+        msg += self._own_bt_addr_le + self._inv_bt_addr_le + \
+            cmdcode.to_bytes(2, byteorder='little')
         # sma-net2 level
         self._send_count = (self._send_count + 1) & 0x7FFF
-        msg += SMANET2_HDR + bytes([0x09, 0xA0]) + BCAST_ADDR + bytes([0x00, 0x00]) + self._inv_bt_addr_le + bytes([0x00] + [0x00] + [0, 0, 0, 0]) + (self._send_count | 0x8000).to_bytes(2, byteorder='little')
-        msg += bytes(value_set[2]) + value_set[0].to_bytes(4, byteorder='little') + value_set[1].to_bytes(4, byteorder='little')
+        msg += SMANET2_HDR + bytes([0x09, 0xA0]) + BCAST_ADDR + bytes([0x00, 0x00]) + self._inv_bt_addr_le + \
+            bytes([0x00] + [0x00] + [0, 0, 0, 0]) + \
+            (self._send_count | 0x8000).to_bytes(
+                2, byteorder='little')
+        msg += bytes(value_set[2]) + value_set[0].to_bytes(4, byteorder='little') + \
+            value_set[1].to_bytes(4, byteorder='little')
         # send msg to inverter
         self._send_msg(msg)
 
@@ -500,29 +544,35 @@ class SMA():
                 i = 41
                 try:
                     while (i < (len(response) - 11)):
-                        value_code = int.from_bytes(response[i:i + 4], byteorder='little') & 0x00FFFFFF
-                        timestamp_utc = int.from_bytes(response[i + 4:i + 8], byteorder='little')
+                        value_code = int.from_bytes(
+                            response[i:i + 4], byteorder='little') & 0x00FFFFFF
+                        timestamp_utc = int.from_bytes(
+                            response[i + 4:i + 8], byteorder='little')
                         # this only works for nums - fix it!
-                        value = int.from_bytes(response[i + 8:i + 12], byteorder='little')
+                        value = int.from_bytes(
+                            response[i + 8:i + 12], byteorder='little')
                         if (value == 0x80000000) or (value == 0xFFFFFFFF):
                             value = 0
-                        logger.debug("sma: value_code={:#08x} / value={:5d}".format(value_code, value))
+                        logger.debug(
+                            "sma: value_code={:#08x} / value={:5d}".format(value_code, value))
                         data += [[value_code, timestamp_utc, value]]
-    
+
                         if (response[32] == 0x54):
                             i += 16
                         elif (response[32] in [0x51, 0x53]):
                             i += 28
                         elif (response[32] == 0x58):
                             i += 40
-                        #elif ((response[i + 3] == 0x00) or (response[i + 3] == 0x40)):
+                        # elif ((response[i + 3] == 0x00) or (response[i + 3] == 0x40)):
                         #    i += 28
-                        #elif ((response[i + 3] == 0x08) or (response[i + 3] == 0x10)):
+                        # elif ((response[i + 3] == 0x08) or (response[i + 3] == 0x10)):
                         #    i += 40
                         else:
-                            logger.error("sma: rx - can not decode field width from identifier={:#02x}".format(value_set[2][3]))
+                            logger.error(
+                                "sma: rx - can not decode field width from identifier={:#02x}".format(value_set[2][3]))
                             for entry in data:
-                                logger.debug("sma: value_code={:#08x} / timestamp={} / value={:5d}".format(entry[0], entry[1], entry[2]))
+                                logger.debug(
+                                    "sma: value_code={:#08x} / timestamp={} / value={:5d}".format(entry[0], entry[1], entry[2]))
                             data = []
                             break
                 except:
@@ -531,11 +581,7 @@ class SMA():
 
             if (data == []):
                 logger.warning("sma: rx - unknown/malformed response!")
-                logger.warning("sma: rx - len={} data=[{}]\n".format(len(response), ' '.join(['0x%02x' % b for b in response])))
+                logger.warning(
+                    "sma: rx - len={} data=[{}]\n".format(len(response), ' '.join(['0x%02x' % b for b in response])))
 
         return data
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    myplugin = Plugin('SMA')
-    myplugin.run()

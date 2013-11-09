@@ -1,27 +1,25 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2013 Robert Budde                        robert@projekt131.de
-#########################################################################
+#
 #  Vorwerk Kobold VR100-Plugin for SmartHome.py.   http://mknx.github.com/smarthome/
 #
-#DISCLAIMER:
+# DISCLAIMER:
 #	A user of this plugin acknowledges that he or she is receiving this
 #	software on an "as is" basis and the user is not relying on the accuracy
 #	or functionality of the software for any purpose. The user further
 #	acknowledges that any use of this software will be at his own risk
 #	and the copyright owner accepts no responsibility whatsoever arising from
 #	the use or application of the software.
-#########################################################################
+#
 
 import logging
 import socket
 import sys
-from datetime import datetime
-from dateutil import tz
-from time import sleep
 
 logger = logging.getLogger('VR100')
+
 
 class VR100():
 
@@ -49,24 +47,30 @@ class VR100():
         self.alive = True
         if True:
             try:
-                self._btsocket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+                self._btsocket = socket.socket(
+                    socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
                 self._btsocket.connect((self._bt_addr, 1))
-                logger.info("vr100: via bluetooth connected to {}".format(self._bt_addr))
+                logger.info(
+                    "vr100: via bluetooth connected to {}".format(self._bt_addr))
             except:
-                logger.error("vr100: establishing connection to robot failed - {}".format(sys.exc_info()))
+                logger.error(
+                    "vr100: establishing connection to robot failed - {}".format(sys.exc_info()))
                 return
-        self._sh.scheduler.add('VR100', self._update_values, prio = 5, cycle = self._update_cycle)
+        self._sh.scheduler.add('VR100', self._update_values,
+                               prio=5, cycle=self._update_cycle)
 
     def stop(self):
         self.alive = False
         try:
             self._sh.scheduler.remove('VR100')
         except:
-            logger.error("vr100: removing VR100 from scheduler failed - {}".format(sys.exc_info()))
+            logger.error(
+                "vr100: removing VR100 from scheduler failed - {}".format(sys.exc_info()))
         try:
             self._btsocket.close()
         except:
-            logger.error("vr100: closing connection to robot failed - {}".format(sys.exc_info()))
+            logger.error(
+                "vr100: closing connection to robot failed - {}".format(sys.exc_info()))
 
     def parse_item(self, item):
         if 'vr100_cmd' in item.conf:
@@ -80,10 +84,12 @@ class VR100():
             if not query_cmd in self._query_items:
                 self._query_items[query_cmd] = {}
             if not field in self._query_items[query_cmd]:
-                self._query_items[query_cmd][field] = {'items': [], 'logics': []}
+                self._query_items[query_cmd][field] = {
+                    'items': [], 'logics': []}
             if not item in self._query_items[query_cmd][field]['items']:
                 self._query_items[query_cmd][field]['items'].append(item)
-            logger.debug("vr100: {0} will be updated by querying \'{1}\' and extracting \'{2}\'".format(item, query_cmd, field))
+            logger.debug("vr100: {0} will be updated by querying \'{1}\' and extracting \'{2}\'".format(
+                item, query_cmd, field))
         return None
 
     def update_item(self, item, caller=None, source=None, dest=None):
@@ -123,12 +129,7 @@ class VR100():
         try:
             self._btsocket.send(bytes(msg + '\r\n', 'utf-8'))
         except OSError as e:
-            if e.errno == 107: #Der Socket ist nicht verbunden
+            if e.errno == 107:  # Der Socket ist nicht verbunden
                 self.run()
         except:
             logger.warning("vr100: rx: exception - {}".format(sys.exc_info()))
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    myplugin = Plugin('VR100')
-    myplugin.run()

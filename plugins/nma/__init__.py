@@ -3,7 +3,7 @@
 #########################################################################
 # Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -70,6 +70,6 @@ class NMA():
             elif (resp.status == 500):
                 logger.warning("NMA returns: Internal server error. Please contact our support if the problem persists.")
             else:
-                logger.error("NAME returns unknown HTTP status code = {0}".format(p.getcode()))
+                logger.error("NAME returns unknown HTTP status code = {0}".format(resp.status))
         except Exception as e:
             logger.warning("Could not send NMA notification: {0}. Error: {1}".format(event, e))

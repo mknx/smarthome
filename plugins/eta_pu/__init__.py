@@ -3,7 +3,7 @@
 #
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
 #
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,12 +22,15 @@
 import logging
 import base64
 import http.client
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import xml.etree.ElementTree as ET
 
 __ETA_PU__ = 'eta_pu'
 
 logger = logging.getLogger(__ETA_PU__)
+
 
 class ETA_PU():
 
@@ -53,16 +56,18 @@ class ETA_PU():
         else:
             conn = http.client.HTTPConnection(host, timeout=timeout)
         # add headers
-        hdrs = { 'Accept': 'text/plain' }
+        hdrs = {'Accept': 'text/plain'}
         if username and password:
-            hdrs['Authorization'] = 'Basic ' + base64.b64encode(username + ':' + password)
+            hdrs['Authorization'] = 'Basic ' + \
+                base64.b64encode(username + ':' + password)
 
         if 'POST' == req_type:
             hdrs['Content-Type'] = 'application/x-www-form-urlencoded'
-            conn.request(req_type, purl, urllib.parse.urlencode({'@value': value}), hdrs)
+            conn.request(req_type, purl,
+                         urllib.parse.urlencode({'@value': value}), hdrs)
         elif 'PUT' == req_type:
             conn.request(req_type, purl, body=value, headers=hdrs)
-        else: # 'GET' or 'DELETE'
+        else:  # 'GET' or 'DELETE'
             conn.request(req_type, purl, headers=hdrs)
         resp = conn.getresponse()
         conn.close()
@@ -70,7 +75,8 @@ class ETA_PU():
         if resp.status in (http.client.OK, http.client.CREATED):
             return resp.read()
         logger.warning("request failed: {0}: ".format(url))
-        logger.debug("{0} response: {1} {2}".format(req_type, resp.status, resp.reason))
+        logger.debug(
+            "{0} response: {1} {2}".format(req_type, resp.status, resp.reason))
         return None
 
     # build and request an URL
@@ -88,7 +94,7 @@ class ETA_PU():
         logger.info("deleting var_set named {0}: {1}".format(name, rc))
 
     # add an empty uri-set
-    def add_set(self,name):
+    def add_set(self, name):
         rc = 'OK'
         if None is self.request('PUT', '{0}/{1}'.format(self._setpath, name)):
             rc = 'FAILED'
@@ -101,7 +107,7 @@ class ETA_PU():
             rc = 'OK'
             if None is self.request('PUT', path):
                 rc = 'FAILED'
-            logger.info('adding {0}: {1}'.format(path , rc))
+            logger.info('adding {0}: {1}'.format(path, rc))
 
     def run(self):
         # del varset
@@ -111,7 +117,8 @@ class ETA_PU():
         # fill varset
         self.fill_set(self._setname)
         # active updates
-        self._sh.scheduler.add( __ETA_PU__, self.update_status, cycle=self._cycle)
+        self._sh.scheduler.add(
+            __ETA_PU__, self.update_status, cycle=self._cycle)
         self.alive = True
 
     def stop(self):
@@ -123,12 +130,13 @@ class ETA_PU():
         if 'eta_pu_type' not in item.conf:
             return None
         parent_item = item.return_parent()
-        if (parent_item == None) or (False == ('eta_pu_uri' in parent_item.conf)):
-            logger.error("skipping item: found 'eta_pu_type' but parent has no 'eta_pu_uri'")
+        if (parent_item is None) or (False == ('eta_pu_uri' in parent_item.conf)):
+            logger.error(
+                "skipping item: found 'eta_pu_type' but parent has no 'eta_pu_uri'")
             return
         uri = parent_item.conf['eta_pu_uri']
         if uri not in self._uri:
-                self._uri[uri] = []
+            self._uri[uri] = []
         self._uri[uri].append(item)
         return self.update_item
 
@@ -136,7 +144,8 @@ class ETA_PU():
         return None
 
     def update_status(self):
-        url = 'http://' + self._address + ':' + self._port + self._setpath + '/' + self._setname
+        url = 'http://' + self._address + ':' + \
+            self._port + self._setpath + '/' + self._setname
         # read xml response
         xml = self._sh.tools.fetch_url(url, timeout=2)
         root = ET.fromstring(xml)
@@ -145,8 +154,8 @@ class ETA_PU():
             for key in list(self._uri.keys()):
                 try:
                     if key == elem.attrib['uri']:
-			for i in self._uri[key]:
-				pu_type = i.conf['eta_pu_type']
-				i(elem.attrib[pu_type], caller='eta_pu')
+                        for i in self._uri[key]:
+                            pu_type = i.conf['eta_pu_type']
+                            i(elem.attrib[pu_type], caller='eta_pu')
                 except:
-                   pass
+                    pass

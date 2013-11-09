@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
-#########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,12 +17,14 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
-#########################################################################
+#
 
 import sys
 import logging
 import http.client
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import hashlib
 import re
 
@@ -41,10 +43,12 @@ class FritzBoxBase():
         self._sid = 0
 
     def _login(self):
-        params = urllib.parse.urlencode({'getpage': '../html/login_sid.xml', 'sid': self._sid})
-        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+        params = urllib.parse.urlencode(
+            {'getpage': '../html/login_sid.xml', 'sid': self._sid})
+        headers = {"Content-type":
+                   "application/x-www-form-urlencoded", "Accept": "text/plain"}
         con = http.client.HTTPConnection(self._host)
-        con.request("POST", "/cgi-bin/webcm", params, headers);
+        con.request("POST", "/cgi-bin/webcm", params, headers)
         resp = con.getresponse()
         con.close()
         if resp.status != 200:
@@ -55,14 +59,17 @@ class FritzBoxBase():
         logger.debug("sid = {0}".format(sid))
         if sid == '0000000000000000':
             logger.debug("invalid sid, starting challenge/response")
-            challenge = re.search('<Challenge>(.*?)</Challenge>', data).group(1)
-            challenge_resp = (challenge + '-' + self._password).decode('iso-8859-1').encode('utf-16le')
+            challenge = re.search(
+                '<Challenge>(.*?)</Challenge>', data).group(1)
+            challenge_resp = (
+                challenge + '-' + self._password).decode('iso-8859-1').encode('utf-16le')
             m = hashlib.md5()
             m.update(challenge_resp)
             challenge_resp = challenge + '-' + m.hexdigest().lower()
-            params = urllib.parse.urlencode({'login:command/response': challenge_resp, 'getpage': '../html/login_sid.xml'})
+            params = urllib.parse.urlencode(
+                {'login:command/response': challenge_resp, 'getpage': '../html/login_sid.xml'})
             con = http.client.HTTPConnection(self._host)
-            con.request("POST", "/cgi-bin/webcm", params, headers);
+            con.request("POST", "/cgi-bin/webcm", params, headers)
             resp = con.getresponse()
             con.close()
             if resp.status != 200:
@@ -77,9 +84,10 @@ class FritzBoxBase():
         cmd_dict['getpage'] = '../html/login_sid.xml'
         cmd_dict['sid'] = self._sid
         params = urllib.parse.urlencode(cmd_dict)
-        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+        headers = {"Content-type":
+                   "application/x-www-form-urlencoded", "Accept": "text/plain"}
         con = http.client.HTTPConnection(self._host)
-        con.request("POST", "/cgi-bin/webcm", params, headers);
+        con.request("POST", "/cgi-bin/webcm", params, headers)
         resp = con.getresponse()
         con.close()
         if resp.status != 200:
@@ -88,7 +96,8 @@ class FritzBoxBase():
             return resp
 
     def call(self, call_from, call_to):
-        logger.debug("initiate call from {0} to {1}".format(call_from, call_to))
+        logger.debug(
+            "initiate call from {0} to {1}".format(call_from, call_to))
         resp = self.execute({
             'telcfg:settings/UseClickToDial': 1,
             'telcfg:command/Dial': call_to,
@@ -127,11 +136,13 @@ class FritzBox(FritzBoxBase):
                 self.execute(attr)
                 return
             if isinstance(attr, str):
-                match = re.search(r'\s*call\s(?P<from>[^\s]+)\s+(?P<to>[^\s]+)\s*', attr)
+                match = re.search(
+                    r'\s*call\s(?P<from>[^\s]+)\s+(?P<to>[^\s]+)\s*', attr)
                 if match:
                     self.call(match.group('from'), match.group('to'))
                     return
-            logger.debug("fritzbox attribute value {0} on item {1} not recognized".format(attr, item))
+            logger.debug(
+                "fritzbox attribute value {0} on item {1} not recognized".format(attr, item))
 
 
 def main():
@@ -140,7 +151,8 @@ def main():
         return 1
 
     handler = logging.StreamHandler(sys.stdout)
-    frm = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%d.%m.%Y %H:%M:%S")
+    frm = logging.Formatter(
+        "%(asctime)s %(levelname)s: %(message)s", "%d.%m.%Y %H:%M:%S")
     handler.setFormatter(frm)
 
     logger = logging.getLogger()

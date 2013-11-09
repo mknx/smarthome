@@ -3,7 +3,7 @@
 #########################################################################
 #  Copyright 2011-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

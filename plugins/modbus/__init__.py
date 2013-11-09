@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2013 Robert Budde                        robert@projekt131.de
-#########################################################################
-#  Squeezebox-Plugin for SmartHome.py.  http://mknx.github.com/smarthome/
+#
+#  Modbus-Plugin     for SmartHome.py.  http://mknx.github.com/smarthome/
 #
 #  This plugin is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,11 +17,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this plugin. If not, see <http://www.gnu.org/licenses/>.
-#########################################################################
+#
 
 import serial
-import os
-import sys
 import logging
 import struct
 import time
@@ -73,6 +71,7 @@ FCSTABLO = [
 
 logger = logging.getLogger('Modbus')
 
+
 class Modbus():
 
     def __init__(self, smarthome, serialport, slave_address="1", update_cycle="30"):
@@ -81,7 +80,8 @@ class Modbus():
         self._holding_registers = {}
         self._update = {}
         self._serial = serial.Serial(serialport, 9600, timeout=0.8)
-        self._sh.scheduler.add('Modbus', self._update_values, prio=5, cycle=int(update_cycle))
+        self._sh.scheduler.add(
+            'Modbus', self._update_values, prio=5, cycle=int(update_cycle))
 
     def _update_values(self):
         self._read_holding_registers(0xFDFE, 26)
@@ -91,7 +91,7 @@ class Modbus():
         self._read_holding_registers(0x07D1, 125)
         time.sleep(0.2)
         self._read_holding_registers(0x0FA1, 113)
-        
+
         for regaddr in self._update:
             if not (regaddr in self._holding_registers):
                 continue
@@ -101,7 +101,8 @@ class Modbus():
                     if (datatype == 'VT_R4'):
                         value = round(self._decode_vt_r4(regaddr), 1)
                     elif (datatype == 'VT_UI1'):
-                        value = (self._decode_vt_array_ui1(regaddr, 0x0001) == 0x0001)
+                        value = (self._decode_vt_array_ui1(regaddr, 0x0001)
+                                 == 0x0001)
                     elif (datatype == 'VT_ARRAY_UI1') and ('modbus_datamask' in item.conf):
                         mask = int(item.conf['modbus_datamask'], 0)
                         value = self._decode_vt_array_ui1(regaddr, mask)
@@ -114,14 +115,16 @@ class Modbus():
                     elif (datatype == 'VT_DATE'):
                         value = self._decode_vt_date(regaddr)
                     else:
-                        logger.warning("Modbus: DataType unknown: {}".format(datatype))
+                        logger.warning(
+                            "Modbus: DataType unknown: {}".format(datatype))
                         continue
                     item(value, 'Modbus', "Reg {}".format(regaddr))
                 except Exception as e:
-                    logger.error("Modbus: Exception when updating {} {}".format(item, e))
+                    logger.error(
+                        "Modbus: Exception when updating {} {}".format(item, e))
 
     def _decode_vt_r4(self, addr):
-        return struct.unpack('f', bytes([self._holding_registers[addr] & 0xFF, self._holding_registers[addr] >> 8, self._holding_registers[addr+16] & 0xFF, self._holding_registers[addr+16] >> 8]))[0]
+        return struct.unpack('f', bytes([self._holding_registers[addr] & 0xFF, self._holding_registers[addr] >> 8, self._holding_registers[addr + 16] & 0xFF, self._holding_registers[addr + 16] >> 8]))[0]
 
     def _decode_vt_array_ui1(self, addr, mask):
         return (self._holding_registers[addr] & mask)
@@ -129,7 +132,8 @@ class Modbus():
     def _decode_vt_bstr(self, addr):
         bstr = bytearray()
         for i in range(8):
-            bstr += bytes([self._holding_registers[addr+i*16] & 0xFF, self._holding_registers[addr+i*16] >> 8])
+            bstr += bytes([self._holding_registers[addr + i * 16] &
+                          0xFF, self._holding_registers[addr + i * 16] >> 8])
         return bstr.decode('cp850')
 
     def _decode_vt_time(self, addr):
@@ -138,7 +142,7 @@ class Modbus():
     def _decode_vt_date(self, addr):
 #        return datetime.datetime((self._holding_registers[addr+5*16] & 0xFF) + 1900, (self._holding_registers[addr+4*16] & 0xFF) + 1, (self._holding_registers[addr+3*16] & 0xFF),
 #                                  (self._holding_registers[addr+2*16] & 0xFF), (self._holding_registers[addr+1*16] & 0xFF), (self._holding_registers[addr] & 0xFF))
-        return datetime.datetime.utcfromtimestamp((self._holding_registers[1+(12*16)] << 16) + self._holding_registers[1+(11*16)])
+        return datetime.datetime.utcfromtimestamp((self._holding_registers[1 + (12 * 16)] << 16) + self._holding_registers[1 + (11 * 16)])
 
     def run(self):
         self.alive = True
@@ -156,7 +160,8 @@ class Modbus():
     def parse_item(self, item):
         if ('modbus_regaddr' in item.conf) and ('modbus_datatype' in item.conf):
             modbus_regaddr = int(item.conf['modbus_regaddr'])
-            logger.debug("modbus: {0} connected to register {1:#04x} with datatype {2}".format(item, modbus_regaddr, item.conf['modbus_datatype']))
+            logger.debug("modbus: {0} connected to register {1:#04x} with datatype {2}".format(
+                item, modbus_regaddr, item.conf['modbus_datatype']))
             if not modbus_regaddr in self._update:
                 self._update[modbus_regaddr] = {'items': [item], 'logics': []}
             else:
@@ -189,18 +194,17 @@ class Modbus():
                 return msg
 
     def _read_holding_registers(self, start_address, quantity):
-        msg = bytes([self.slave_address, 0x03]) + start_address.to_bytes(2, byteorder='big') + quantity.to_bytes(2, byteorder='big')
+        msg = bytes([self.slave_address, 0x03]) + start_address.to_bytes(2,
+                                                                         byteorder='big') + quantity.to_bytes(2, byteorder='big')
         self._send(msg)
         response = self._receive()
         if response is None:
-            logger.warning("Modbus: no response when reading holding registers")
+            logger.warning(
+                "Modbus: no response when reading holding registers")
         elif (response[2] != (2 * quantity)):
-            logger.warning("Modbus: wrong response length when reading holding registers")
+            logger.warning(
+                "Modbus: wrong response length when reading holding registers")
         else:
             for i in range(0, 2 * quantity - 2, 2):
-                self._holding_registers[start_address + (i * 8)] = int.from_bytes(response[3 + i:5 + i], byteorder='big')
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    modbus = Plugin('Modbus')
-    modbus.run()
+                self._holding_registers[
+                    start_address + (i * 8)] = int.from_bytes(response[3 + i:5 + i], byteorder='big')
