@@ -14,7 +14,7 @@ This plugin has no requirements or dependencies.
 <pre>
 [comfoAir]
 	class_name = comfoAir
-	class_path = plugins.comfoAir
+	class_path = plugins.comfoair
 	serialport = /dev/ttyUSB0
 	#update_time = 300 #default=300
 
