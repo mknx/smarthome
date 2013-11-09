@@ -283,7 +283,7 @@ def en24(value):
 
 
 def de24(payload):
-    return payload.rstrip(b'0').decode('iso-8859-1')
+    return payload.rstrip(b'\x00').decode('iso-8859-1')
 
 
 def en232(value):
