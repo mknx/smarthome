@@ -33,7 +33,7 @@ plugin.conf
   * `tcp`: by default the plugin doesn't accept incoming TCP connections. You have to set this attribute to 'yes' to accept them.
   * `tcp_acl`: with this attribute you could specify a list or a single IP address to allow TCP updates from. By default it accepts every incoming request.
   * `udp`: by default the plugin doesn't accept incoming UDP connections. You have to set this attribute to 'yes' to accept them.
-  * `udp_acl`: with this attribute you could specify a list or a single IP address to allow UDP updates fyyrom. By default it accepts every incoming request.
+  * `udp_acl`: with this attribute you could specify a list or a single IP address to allow UDP updates from. By default it accepts every incoming request.
   * `http`: port to listen for HTTP GET request
   * `http_acl`: with this attribute you could specify a list or a single IP address to allow HTTP updates from. By default it accepts every incoming request.
 
