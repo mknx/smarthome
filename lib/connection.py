@@ -204,6 +204,8 @@ class Stream(Base):
         self._frame_size_in = 4096
         self._frame_size_out = 4096
         self.terminator = b'\r\n'
+        self._balance_open = False
+        self._balance_close = False
         self._close_after_send = False
         if sock is not None:
             self.socket = sock
@@ -229,8 +231,16 @@ class Stream(Base):
         while True:
             terminator = self.terminator
             buffer_len = len(self.inbuffer)
-            if not terminator:  # just collect
-                break
+            if not terminator:
+                if not self._balance_open:
+                    break
+                index = self._is_balanced()
+                if index:
+                    data = self.inbuffer[:index]
+                    self.inbuffer = self.inbuffer[index:]
+                    self.found_balance(data)
+                else:
+                    break
             elif isinstance(terminator, int):
                 if buffer_len < terminator:
                     break
@@ -248,18 +258,20 @@ class Stream(Base):
                 self.inbuffer = self.inbuffer[cut:]
                 self.found_terminator(data)
 
-    def send(self, data, close=False):
-        self._close_after_send = close
-        if not self.connected:
-            return False
-        frame_size = self._frame_size_out
-        if len(data) > frame_size:
-            for i in range(0, len(data), frame_size):
-                self.outbuffer.appendleft(data[i:i + frame_size])
-        else:
-            self.outbuffer.appendleft(data)
-        self._poller.trigger(self.socket.fileno())
-        return True
+    def _is_balanced(self):
+        stack = []
+        for index, char in enumerate(self.inbuffer):
+            if char == self._balance_open:
+                stack.append(char)
+            elif char == self._balance_close:
+                stack.append(char)
+                if stack.count(self._balance_open) < stack.count(self._balance_close):
+                    logger.warning("{}: unbalanced input!".format(self._name))
+                    logger.close()
+                    return False
+                if stack.count(self._balance_open) == stack.count(self._balance_close):
+                    return index + 1
+        return False
 
     def _out(self):
         while self.outbuffer and self.connected:
@@ -280,6 +292,10 @@ class Stream(Base):
                     self.outbuffer.append(frame[sent:])
         if self._close_after_send:
             self.close()
+
+    def balance(self, bopen, bclose):
+        self._balance_open = ord(bopen)
+        self._balance_close = ord(bclose)
 
     def close(self):
         if self.connected:
@@ -310,14 +326,30 @@ class Stream(Base):
         self.inbuffer = bytearray()
         self.outbuffer.clear()
 
+    def found_terminator(self, data):
+        pass
+
+    def found_balance(self, data):
+        pass
+
     def handle_close(self):
         pass
 
     def handle_connect(self):
         pass
 
-    def found_terminator(self, data):
-        pass
+    def send(self, data, close=False):
+        self._close_after_send = close
+        if not self.connected:
+            return False
+        frame_size = self._frame_size_out
+        if len(data) > frame_size:
+            for i in range(0, len(data), frame_size):
+                self.outbuffer.appendleft(data[i:i + frame_size])
+        else:
+            self.outbuffer.appendleft(data)
+        self._poller.trigger(self.socket.fileno())
+        return True
 
 
 class Client(Stream):
