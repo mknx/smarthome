@@ -63,7 +63,8 @@ class xbmc(lib.connection.Client):
             port = 9090
         host = item.conf['xbmc_host']
         lib.connection.Client.__init__(self, host, port, monitor=True)
-        self.terminator = b'}'
+        self.terminator = 0
+        self.balance(b'{', b'}')
         self._sh = smarthome
         self._id = 1
         self._rid = None
@@ -122,11 +123,7 @@ class xbmc(lib.connection.Client):
         if key in self._items:
             self._items[key](value, 'XBMC')
 
-    def found_terminator(self, data):
-        data.extend(b'}')
-        if data.count(b'{') != data.count(b'}'):
-            self.inbuffer = data[:-1]
-            return
+    def found_balance(self, data):
         event = json.loads(data.decode())
         #logger.debug("XBMC receiving: {0}".format(event))
         if 'id' in event:
