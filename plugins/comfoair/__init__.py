@@ -21,7 +21,7 @@
 import logging
 import serial
 import threading
-import commands
+from . import commands
 import re
 import sys
 
@@ -94,7 +94,7 @@ class comfoAir():
                 logger.info(
                     "ComfoAir __connectSerial(): Communication with ComfoAir established")
             return True
-        except (serial.SerialException, ValueError), e:
+        except (serial.SerialException, ValueError) as e:
             logger.error("ComfoAir __connectSerial(): " + e.message)
             return False
 
@@ -384,7 +384,7 @@ class comfoAir():
 
             return answer
 
-        except ValueError, exception:
+        except ValueError as exception:
             logger.error("ComfoAir __command_send():" + exception.message)
         finally:
             self._lock.release()
