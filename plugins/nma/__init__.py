@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2011 KNX-User-Forum e.V.           http://knx-user-forum.de/
 #########################################################################
 #  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #

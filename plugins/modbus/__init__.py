@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#
-# Copyright 2013 Robert Budde                        robert@projekt131.de
-#
-#  Modbus-Plugin     for SmartHome.py.  http://mknx.github.com/smarthome/
+#########################################################################
+#  Copyright 2013 Robert Budde                       robert@projekt131.de
+#########################################################################
+#  Modbus plugin for SmartHome.py.       http://mknx.github.io/smarthome/
 #
 #  This plugin is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this plugin. If not, see <http://www.gnu.org/licenses/>.
-#
+#########################################################################
 
 import serial
 import logging
@@ -79,9 +79,8 @@ class Modbus():
         self.slave_address = int(slave_address)
         self._holding_registers = {}
         self._update = {}
-        self._serial = serial.Serial(serialport, 9600, timeout=0.8)
-        self._sh.scheduler.add(
-            'Modbus', self._update_values, prio=5, cycle=int(update_cycle))
+        self._serial = serial.Serial(serialport, 9600, timeout=2)
+        self._sh.scheduler.add('Modbus', self._update_values, prio=5, cycle=int(update_cycle))
 
     def _update_values(self):
         self._read_holding_registers(0xFDFE, 26)
@@ -194,8 +193,7 @@ class Modbus():
                 return msg
 
     def _read_holding_registers(self, start_address, quantity):
-        msg = bytes([self.slave_address, 0x03]) + start_address.to_bytes(2,
-                                                                         byteorder='big') + quantity.to_bytes(2, byteorder='big')
+        msg = bytes([self.slave_address, 0x03]) + start_address.to_bytes(2, byteorder='big') + quantity.to_bytes(2, byteorder='big')
         self._send(msg)
         response = self._receive()
         if response is None:
