@@ -77,14 +77,19 @@ class IMAP():
             return
         uids = data[0].split()
         for uid in uids:
-            rsp, data = imap.uid('fetch', uid, '(RFC822)')
-            if rsp != 'OK':
-                logger.warning("IMAP: Could not fetch mail")
+            try:
+                rsp, data = imap.uid('fetch', uid, '(RFC822)')
+                if rsp != 'OK':
+                    logger.warning("IMAP: Could not fetch mail")
+                    continue
+                mail = email.message_from_bytes(data[0][1])
+                to = email.utils.parseaddr(mail['To'])[1]
+                fo = email.utils.parseaddr(mail['From'])[1]
+                sub, encoding = email.header.decode_header(mail['Subject'])[0]
+                sub = sub.decode()
+            except Exception as e:
+                logger.exception("IMAP: problem parsing message {}: {}".format(uid, e))
                 continue
-            mail = email.message_from_string(data[0][1].decode())
-            to = email.utils.parseaddr(mail['To'])[1]
-            fo = email.utils.parseaddr(mail['From'])[1]
-            sub = mail['Subject']
             if mail['Subject'] in self._mail_sub:
                 logic = self._mail_sub[mail['Subject']]
             elif to in self._mail_to:
