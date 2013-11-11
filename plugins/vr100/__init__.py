@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
+#########################################################################
+#  Copyright 2013 Robert Budde                       robert@projekt131.de
+#########################################################################
+#  VR100/Neato plugin for SmartHome.py. http://mknx.github.com/smarthome/
 #
-# Copyright 2013 Robert Budde                        robert@projekt131.de
+#  This plugin is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#  Vorwerk Kobold VR100-Plugin for SmartHome.py.   http://mknx.github.com/smarthome/
+#  This plugin is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-# DISCLAIMER:
-#	A user of this plugin acknowledges that he or she is receiving this
-#	software on an "as is" basis and the user is not relying on the accuracy
-#	or functionality of the software for any purpose. The user further
-#	acknowledges that any use of this software will be at his own risk
-#	and the copyright owner accepts no responsibility whatsoever arising from
-#	the use or application of the software.
-#
+#  You should have received a copy of the GNU General Public License
+#  along with this plugin. If not, see <http://www.gnu.org/licenses/>.
+#########################################################################
 
 import logging
 import socket

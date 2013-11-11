@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#
-# Copyright 2013 Robert Budde                        robert@projekt131.de
-#
+#########################################################################
+#  Copyright 2013 Robert Budde                       robert@projekt131.de
+#########################################################################
 #  This software is based on Stuart Pittaway's "NANODE SMA PV MONITOR"
 #  https://github.com/stuartpittaway/nanodesmapvmonitor
 #
@@ -34,7 +34,7 @@
 #	acknowledges that any use of this software will be at his own risk
 #	and the copyright owner accepts no responsibility whatsoever arising from
 #	the use or application of the software.
-#
+#########################################################################
 
 import logging
 import time
