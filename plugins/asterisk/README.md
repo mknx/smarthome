@@ -9,9 +9,9 @@ changed: 2011-08-08T20:58:06+0200
 
 Requirements
 ============
-A running asterisk daemon with a configured Asterisk Manager Interface (AMI) is necessary. 
-In manager.config its required to enable at least: 
-<code>read = system,call,user,cdr</code> and `write = system,call,orginate`.
+A running asterisk daemon with a configured Asterisk Manager Interface (AMI) is necessary.
+In manager.config its required to enable at least:
+<code>read = system,call,user,cdr</code> and `write = system,call,orginate`
 In misc/asterisk some configuration files from the authors asterisk are available to learn from.
 
 Configuration
@@ -67,10 +67,10 @@ Calling the '2222' from sip client or making a call from it, <code>office.fon</c
 
 It is possible to specify the `ast_userevent` keyword to every logic in logic.conf.
 <pre>
-['logic1']
+[logic1]
     ast_userevent = Call
 
-['logic2']
+[logic2]
     ast_userevent = Action
 </pre>
 
@@ -99,9 +99,3 @@ mailbox_count(mailbox, context='default')
 
 ## hangup(device)
 `sh.ast.hangup('30')` would close all connections from or to the device '30'.
-
-# Log
-
-This plugin provides a logfile `sh.ast.log`. It can be shown in the Visu by:
-`<ul data-log="Asterisk-Incoming" data-max="5" data-filter="true" data-role="listview" data-inset="true"></ul>`.
-

@@ -45,10 +45,10 @@ With this attribute you could specify one or more DMX channels.
 
 # Example
 <pre>
-['living_room']
-    [['dimlight']]
+[living_room]
+    [[dimlight]]
         type = num
-        dmx_ch = 10,11
+        dmx_ch = 10 | 11
 </pre>
 
 Now you could simply use:
@@ -61,4 +61,3 @@ send(channel, value)
 --------------------
 This function sends the value to the dmx channel. The value could be 0 to 255.
 <pre>sh.dmx.send(12, 255)</pre>
-

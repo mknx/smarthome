@@ -22,7 +22,7 @@ plugin.conf
     # ip = 0.0.0.0
     # port = 2727
     tcp = yes
-    tcp_acl= 127.0.0.1, 192.168.0.34
+    tcp_acl= 127.0.0.1 | 192.168.0.34
     # udp = no
     # udp_acl= *
 </pre>
@@ -44,8 +44,8 @@ items.conf
 ### nw
 If this attribute is set to 'yes' you could update this item with the generic listener (TCP and/or UDP).
 <pre>
-['test']
-    [['item1']]
+[test]
+    [[item1]]
         type = string
         nw = yes
 </pre>
@@ -57,13 +57,13 @@ This attribute is valid for TCP and UDP and overrides the generic tcp_acl/udp_ac
 ### nw_udp_listen/nw_tcp_listen
 You could specify the `nw_udp_listen` and `nw_tcp_listen` attribute to an item to create a dedicated listener. The argument could be a port or ip:port.
 <pre>
-['test']
-    [['item1']]
+[test]
+    [[item1]]
         type = string
         # bind to 0.0.0.0:7777 (every IP address)
         nw_tcp_listen = 7777
 
-    [['item2']]
+    [[item2]]
         type = string
         # bind to 0.0.0.0:7777 and 127.0.0.1:8888
         nw_udp_listen = 127.0.0.1:8888
@@ -112,4 +112,3 @@ Functions
 udp(host, port, data)
 ---------------------
 <code>sh.nw.udp('192.168.0.5', 9999, 'turn it on')</code> would send 'turn it on' to 192.168.0.5 port 9999. Simple, isn't it?
-

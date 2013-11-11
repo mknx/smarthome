@@ -95,15 +95,15 @@ Specify one or more group addresses to allow reading the item value.
 
 # Example
 <pre>
-['living_room']
-    [['light']]
+[living_room]
+    [[light]]
         type = bool
         knx_dpt = 1
         knx_send = 1/1/3
-        knx_listen = 1/1/4, 1/1/5
+        knx_listen = 1/1/4 | 1/1/5
         knx_init = 1/1/4
 
-    [['temperature']]
+    [[temperature]]
         type = num
         knx_dpt = 9
         knx_send = 1/1/6
@@ -116,13 +116,13 @@ logic.conf
 ----------
 You could specify the `knx_listen` and `knx_reply` attribute to every logic in your logic.conf. The argument could be a single group address and dpt or a list of them.
 <pre>
-['logic1']
+[logic1]
     knx_dpt = 9
     knx_listen = 1/1/7
 
-['logic2']
+[logic2]
     knx_dpt = 9
-    knx_reply = 1/1/8, 1/1/8
+    knx_reply = 1/1/8 | 1/1/8
 </pre>
 If there is a packet directed to the according group address, SmartHome.py would trigger the logic and will pass the payload (via the trigger object) to the logic.
 
