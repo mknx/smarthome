@@ -86,12 +86,12 @@ class IMAP():
                 to = email.utils.parseaddr(mail['To'])[1]
                 fo = email.utils.parseaddr(mail['From'])[1]
                 sub, encoding = email.header.decode_header(mail['Subject'])[0]
-                sub = sub.decode()
+                subject = sub.decode()
             except Exception as e:
                 logger.exception("IMAP: problem parsing message {}: {}".format(uid, e))
                 continue
-            if mail['Subject'] in self._mail_sub:
-                logic = self._mail_sub[mail['Subject']]
+            if subject in self._mail_sub:
+                logic = self._mail_sub[subject]
             elif to in self._mail_to:
                 logic = self._mail_to[to]
             elif self._mail:
@@ -103,11 +103,11 @@ class IMAP():
                 rsp, data = imap.uid('copy', uid, 'Trash')
                 if rsp == 'OK':
                     typ, data = imap.uid('store', uid, '+FLAGS', '(\Deleted)')
-                    logger.debug("Moving mail to trash. {0} => {1}: {2}".format(fo, to, sub))
+                    logger.debug("Moving mail to trash. {0} => {1}: {2}".format(fo, to, subject))
                 else:
-                    logger.warning("Could not move mail to trash. {0} => {1}: {2}".format(fo, to, sub))
+                    logger.warning("Could not move mail to trash. {0} => {1}: {2}".format(fo, to, subject))
             else:
-                logger.info("Ignoring mail. {0} => {1}: {2}".format(fo, to, sub))
+                logger.info("Ignoring mail. {0} => {1}: {2}".format(fo, to, subject))
         imap.close()
         imap.logout()
 
