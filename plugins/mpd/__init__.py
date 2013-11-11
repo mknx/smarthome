@@ -167,7 +167,7 @@ class mpd(lib.connection.Client):
         self._reply_lock.acquire()
         self.send((command + '\n').encode())
         if wait:
-            self._reply_lock.wait(1)
+            self._reply_lock.wait(2)
         self._reply_lock.release()
         reply = self._reply
         self._reply = {}
