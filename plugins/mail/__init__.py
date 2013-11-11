@@ -81,7 +81,7 @@ class IMAP():
             if rsp != 'OK':
                 logger.warning("IMAP: Could not fetch mail")
                 continue
-            mail = email.message_from_string(data[0][1])
+            mail = email.message_from_string(data[0][1].decode())
             to = email.utils.parseaddr(mail['To'])[1]
             fo = email.utils.parseaddr(mail['From'])[1]
             sub = mail['Subject']
