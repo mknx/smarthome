@@ -220,8 +220,8 @@ class Stream(Base):
         max_size = self._frame_size_in
         try:
             data = self.socket.recv(max_size)
-        except Exception as e:
-            logger.exception("{}: {}".format(self._name, e))
+        except Exception as e:  # noqa
+#           logger.warning("{}: {}".format(self._name, e))
             self.close()
             return
         if data == b'':
