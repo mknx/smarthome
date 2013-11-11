@@ -90,10 +90,12 @@ class Kostal():
             table = re.findall(r'<td>([^<>]*)</td>', data, re.M | re.I | re.S)
             for kostal_key in self._key2td:
                 value = table[self._key2td[kostal_key]].strip()
-                logger.debug('set {0} = {1}'.format(kostal_key, value))
-                self._values[kostal_key] = value
+                if 'x x x' not in value:
+                    logger.debug('set {0} = {1}'.format(kostal_key, value))
+                    self._values[kostal_key] = value
             for item_cfg in self._items:
-                item_cfg[0](self._values[item_cfg[1]], 'Kostal')
+                if item_cfg[1] in self._values:
+                    item_cfg[0](self._values[item_cfg[1]], 'Kostal')
         except Exception as e:
             logger.error(
                 'could not retrieve data from {0}: {1}'.format(self.ip, e))
