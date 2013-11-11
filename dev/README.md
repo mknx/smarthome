@@ -52,11 +52,11 @@ Have a look at the following tools to test your code:
    * Test your code: `pep8 -qq --statistics yourcode.py`
 
 #### autopep8
-   * `pip install autopep8`
+   * `pip-3.2 install autopep8`
    * `autopep8 yourcode.py -i`
 
 #### flake8
-   * `pip install flake8`
+   * `pip-3.2 install flake8`
    * `flake8 yourcode.py`
 
 I'm using it as a vim plugin. It checks the code every time I save the file. Most usefull!
