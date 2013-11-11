@@ -4,9 +4,8 @@
 for CONF in items/*.conf etc/*.conf; do
     sed -i.bak \
             -e '/crontab *=/s/ *| */ | /g' \
-            -e '/crontab\|eval *=\|sv_widget\|dmx_ch\|knx_/!s/, */ | /g' \
-            -e '/tcp_acl\|udp_acl\|http_acl\|smarttv/!s/, */ | /g' \
-            -e '/watch_item/!s/, */ | /g' \
+            -e '/dmx_ch\|knx_\|watch_item/s/, */ | /g' \
+            -e '/tcp_acl\|udp_acl\|http_acl\|smarttv/s/, */ | /g' \
             -e "/\[\|filename/s/'//g" \
             -e '/sv_widget/s/" *, *"/" | "/g' \
             -e '/sv_widget/s/"//g' \
