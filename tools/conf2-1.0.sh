@@ -25,3 +25,9 @@ for CONF in items/*.conf etc/*.conf; do
         echo "# $SCRIPT - marker to run conversion script only once" >> $CONF
     fi
 done
+
+for CONF in scenes/*; do
+    if [ "${CONF##*.}" != "conf" ]; then
+        mv $CONF $CONF.conf
+    fi
+done

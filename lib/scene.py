@@ -36,7 +36,7 @@ class Scenes():
             return
         for item in smarthome.return_items():
             if item._type == 'scene':
-                scene_file = self._scenes_dir + item.id()
+                scene_file = "{}{}.conf".format(self._scenes_dir, item.id())
                 try:
                     with open(scene_file, 'r') as f:
                         reader = csv.reader(f, delimiter=' ')
