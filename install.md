@@ -20,16 +20,15 @@ System
 
 Python
 ------
-Python 2.6 and 2.7 is recommended. 3.x could have problems.
+Python 3.2 is recommended. 2.x is not supported any more.
+`$ sudo apt-get install python3 python3-dev python3-setuptools`
 
-The base system needs two modules: `# apt-get install python-configobj python-dateutil`
-
-Calculating of sunset/sunrise in triggers,requires installation of **pyephem** as well.
+Calculating of sunset/sunrise in triggers,requires installation of **ephem** as well.
 
 <pre>
 <code>
-# apt-get install python-pip python-dev
-# pip install pyephem
+$ sudo easy_install3 pip
+$ sudo pip-3.2 install ephem
 </code>
 </pre>
 
@@ -46,7 +45,7 @@ A dedicated user for smarthome.py can be created:
 ## Stable Release
 
 ### Download
-At [https://github.com/mknx/smarthome/tags](https://github.com/mknx/smarthome/tags) the latest stable version is availabe.
+At [https://github.com/mknx/smarthome/releases](https://github.com/mknx/smarthome/releases) you find the last release.
 
 ### Installation of the latest release
 
@@ -89,14 +88,6 @@ $ git pull
 </code>
 </pre>
 
-If `smarthome.js` has been chaged, it should be copied:
-
-<pre>
-<code>
-$ cp /usr/local/smarthome/exampleis/visu/js/smarthome.* /var/www/smarthome/js/*
-</code>
-</pre>
-
 # Structure
 Structure of the smarthome.py directory, e.g. <code>/usr/local/smarthome/</code>:
 
@@ -108,7 +99,10 @@ Structure of the smarthome.py directory, e.g. <code>/usr/local/smarthome/</code>
  * lib/: contains the core libraries of SmartHome.py
  * logics/: should contain the logic scripts
  * plugins/: contains the available plugins
+ * scenes/: scene files
  * tools/: contains little programms helping to maintain SmartHome.py
+ * var/cache/: contains cached item values
+ * var/db/: contains the SQLite3 Database
  * var/log/: contains the logfiles
  * var/rrd/: contains the Round Robin Databases
 
@@ -122,9 +116,15 @@ Every [plugin](/smarthome/plugins/) has it's own installation section.
 Running SmartHome.py
 ====================
 Arguments for running SmartHome.py (`/usr/local/smarthome/bin/smarthome.py`):
-
-* `--start` or 'None'
-* `--stop`
-* `--debug` or `-d`: set the log level to debug
-* `--no-daemon` or `-n`: run as foreground process, setting the loglevel to debug
-* `--help` or `-h`: to show the options
+<code>
+  -h, --help         show this help message and exit
+  -v, --verbose      verbose (debug output) logging to the logfile
+  -d, --debug        stay in the foreground with verbose output
+  -i, --interactive  open an interactive shell with tab completion and with
+                     verbose logging to the logfile
+  -l, --logics       reload all logics
+  -s, --stop         stop SmartHome.py
+  -q, --quiet        reduce logging to the logfile
+  -V, --version      show SmartHome.py version
+  --start            start SmartHome.py and detach from console (default)
+</code>
