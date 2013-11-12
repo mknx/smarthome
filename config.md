@@ -267,7 +267,7 @@ Eval keywords to use with the eval_trigger:
 
 
 ### Item Functions
-Every item provides provides item functions.
+Every item provides the following methods:
 
 #### id()
 Returns the item id (path).
