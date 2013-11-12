@@ -109,8 +109,7 @@ Adding the specified file, directory or URL to the playlist.
 
 # Example item.conf
 <pre>
-sh cat /tmp/mpd.conf]2;ssh cat /tmp/mpd.confliving]
-    type = bool
+[living]
     [[mpd]]
         type = str
         mpd_host = 127.0.0.1

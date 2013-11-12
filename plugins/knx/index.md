@@ -2,8 +2,6 @@
 title: KNX Plugin
 layout: default
 summary: Plugin to communicate with the KNX bus.
-created: 2011-04-07T21:18:27+0200
-changed: 2011-04-07T21:18:27+0200
 ---
 
 Requirements
@@ -16,11 +14,13 @@ I'm using the vanilla eibd from Martins repository.
 <pre>$ sudo add-apt-repository ppa:mkoegler/bcusdk
 $ sudo apt-get install eibd-clients eibd-server libeibclient-dev</pre>
 
+
 Configuration
 =============
 
 plugin.conf
 -----------
+
 <pre>
 [knx]
    class_name = KNX
@@ -43,33 +43,41 @@ items.conf
 
 ### knx_dpt
 This attribute is mandatory. If you don't provide one the item will be ignored.
-Right know the following datapoint types are supported:
+The DPT has to match the type of the item!
 
-* 1 = 1.x: type must be bool
-* 2 = 2.x: type must be foo
-* 3 = 3.x: type must be foo
-* 4002 = 4.002: type must be str
-* 5 = 5.x: type must be num
-* 5001 = 5.001: type must be num
-* 6 = 6.x: type must be num
-* 7 = 7.x: type must be num
-* 8 = 8.x: type must be num
-* 9 = 9.x: type must be num
-* 10 = 10.x: type must be foo # datetime.time
-* 11 = 11.x: type must be foo # datetime.date
-* 12 = 12.x: type must be num
-* 13 = 13.x: type must be num
-* 14 = 14.x: type must be num
-* 16000 = 16.000: type must be str
-* 16001 = 16.001: type must be str
-* 17 = 17.x: type must be num
-* 20 = 20.x: type must be num
-* 24 = 24.x: type must be str
+The following datapoint types are supported:
+
+| DPT | Data | Type | Values |
+|--------|------|------------|--------|
+| 1 | 1 bit | bool | True &#124; False |
+| 2 | 2 bit | list | [0, 0] - [1, 1] |
+| 3 | 4 bit | list | [0, 0] - [1, 7] |
+| 4.002 | 8 bit | str | 1 character (8859_1) e.g. 'c'|
+| 5 | 8 bit | num | 0 - 255 |
+| 5.001 | 8 bit | num | 0 - 100 |
+| 6 | 8 bit | num | -128 - 127 |
+| 7 | 2 byte | num | 0 - 65535 |
+| 8 | 2 byte | num | -32768 - 32767 |
+| 9 | 2 byte | num | -671088,64 - 670760,96 |
+| 10 | 3 byte | foo | datetime.time |
+| 11 | 3 byte | foo | datetime.date |
+| 12 | 4 byte | num | 0 - 4294967295 |
+| 13 | 4 byte | num | -2147483648 - 2147483647 |
+| 14 | 4 byte | num | 4-Octet Float Value IEEE 754 |
+| 16 | 14 byte | str | 14 characters (ASCII) |
+| 16.001 | 14 byte | str | 14 characters (8859_1) |
+| 17 | 8 bit | num | Scene: 0 - 63 |
+| 20 | 8 bit | num | HVAC: 0 - 255 |
+| 24 | var | str | ulimited string (8859_1) |
+| 232 | 3 byte | list | RGB: [0, 0, 0] - [255, 255, 255] |
 
 If you are missing one, open a bug report or drop me a message in the knx user forum.
 
 ### knx_send
-You could specify one or more group addresses to send updates to.
+You could specify one or more group addresses to send updates to. Item update will only be sent if the item is not changed via KNX.
+
+### knx_status
+Similar to knx_send but will send updates even for changes vie KNX if the knx_status GA differs from the destination GA.
 
 ### knx_listen
 You could specify one or more group addresses to monitor for changes.
@@ -87,15 +95,15 @@ Specify one or more group addresses to allow reading the item value.
 
 # Example
 <pre>
-['living_room']
-    [['light']]
+[living_room]
+    [[light]]
         type = bool
         knx_dpt = 1
         knx_send = 1/1/3
-        knx_listen = 1/1/4, 1/1/5
+        knx_listen = 1/1/4 | 1/1/5
         knx_init = 1/1/4
 
-    [['temperature']]
+    [[temperature]]
         type = num
         knx_dpt = 9
         knx_send = 1/1/6
@@ -108,13 +116,13 @@ logic.conf
 ----------
 You could specify the `knx_listen` and `knx_reply` attribute to every logic in your logic.conf. The argument could be a single group address and dpt or a list of them.
 <pre>
-['logic1']
+[logic1]
     knx_dpt = 9
     knx_listen = 1/1/7
 
-['logic2']
+[logic2]
     knx_dpt = 9
-    knx_reply = 1/1/8, 1/1/8
+    knx_reply = 1/1/8 | 1/1/8
 </pre>
 If there is a packet directed to the according group address, SmartHome.py would trigger the logic and will pass the payload (via the trigger object) to the logic.
 

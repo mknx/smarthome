@@ -32,7 +32,7 @@ This plugins is looking by default for the owserver on 127.0.0.1 port 4304. You 
 
 Advanced options in plugin.conf. Please be careful.
 
-* 'cycle' = timeperiod between two sensor request. Default 300 seconds. If you decrease the cycle to much you could destabilise the bus, because of the increased power consumption.
+* 'cycle' = timeperiod between two sensor cycles. Default 300 seconds. If you decrease the cycle to much you could destabilise the bus, because of the increased power consumption.
 * 'io_wait' = timeperiod between two requests of 1-wire I/O chip. Default 5 seconds.
 * 'button_wait' = timeperiod between two requests of ibutton-busmaster. Default 0.5 seconds.
  

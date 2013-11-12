@@ -30,11 +30,13 @@ Usage
 
 Telnet to the configured IP adress and port. 
 <code>help</code>list an set of available commands:
-<pre>ls: list the first level items
-cl: clear smarthome in memory log
+<pre>
+cl: clean (memory) log
+ls: list the first level items
 ls item: list item and every child item (with values)
 la: list all items (with values)
 lo: list all logics and next execution time
+lt: list current thread names
 update item = value: update the specified item with the specified value
 up: alias for update
 tr logic: trigger logic
@@ -42,8 +44,7 @@ rl logic: reload logic
 rr logic: reload and run logic
 quit: quit the session
 q: alias for quit
-exit: alias for quit
-x: alias for quit</pre>
+</pre>
 
 Example:
-<code>up office.light = On</code> update an item.
+<code>up office.light = On</code> to update an item.
