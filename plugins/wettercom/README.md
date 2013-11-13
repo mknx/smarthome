@@ -314,11 +314,11 @@ This logic will parse the weather data and put it in the example items.conf
 above. Use etc/logic.conf for cyclic call (900s or so, requests are limited
 at 10000 / month)
 
-# Methodes
+# Methods
 
 ## search(location)
 Uses wetter.com to search for your city_code. method will return an
-empty dictionary if no match is found. If more than one math is found,
+empty dictionary if no match is found. If more than one match is found,
 the dictionary will contain at most 20 matches, best match first
 
 ## forecast(city_code)
