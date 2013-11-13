@@ -1,9 +1,4 @@
----
-title: rrdtool Plugin
-summary: Plugin to build round robin databases and create graphs
-uid: rrdplugin
-layout: default
----
+# RRDTool
 
 Requirements
 ============

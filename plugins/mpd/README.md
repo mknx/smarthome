@@ -1,9 +1,4 @@
----
-title: MPD Plugin
-summary: A Plugin to communicate with the Music Player Daemon
-uid: index
-layout: default
----
+# MPD
 
 Requirements
 ============

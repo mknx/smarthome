@@ -1,8 +1,4 @@
----
-title: 1-Wire Plugin
-layout: default
-summary: Plugin to monitor sensor information on a 1-Wire bus
----
+# 1-Wire
 
 Requirements
 ============

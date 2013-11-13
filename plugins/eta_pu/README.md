@@ -1,4 +1,7 @@
+# ETA Pellet Unit PU
+
 # Requirements
+
 ## Supported Hardware
 
 * ETA Pellet Unit PU (http://www.eta.at) with remote access enabled

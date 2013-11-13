@@ -1,8 +1,5 @@
----
-title: ComfoAir
-layout: default
-summary: Plugin to control a Zehnder ComfoAir (based on wiregate-plugin from SWISS)
----
+# ComfoAir
+
 # Requirements
 
 This plugin has no requirements or dependencies.

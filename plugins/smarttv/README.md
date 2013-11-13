@@ -1,11 +1,4 @@
----
-title: SmartTV Plugin
-summary: A plugin to send remote commands to a SmartTV.
-uid: index
-layout: default
-created: 2013-05-15T20:58:06+0200
-changed: 2013-05-15T20:58:06+0200
----
+# SmartTV
 
 # Requirements
 This plugin has no requirements or dependencies.

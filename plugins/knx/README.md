@@ -1,8 +1,4 @@
----
-title: KNX Plugin
-layout: default
-summary: Plugin to communicate with the KNX bus.
----
+# KNX
 
 Requirements
 ============

@@ -1,10 +1,4 @@
----
-title: Network Plugin
-summary: A Network Plugin to send and receive TCP/UDP and basic HTTP Messages and trigger logics.
-layout: default
-created: 2011-06-08T20:58:06+0200
-changed: 2011-06-08T20:58:06+0200
----
+# Network
 
 Requirements
 ============

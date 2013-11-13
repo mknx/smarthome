@@ -1,3 +1,5 @@
+# iAQ Stick
+
 # Requirements
 
 * pyusb

@@ -1,10 +1,4 @@
----
-title: Visu Plugin
-summary: WebSocket interface for an jQuery mobile user interface.
-layout: default
-created: 2011-04-12T19:41:03+0200
-changed: 2012-04-12T19:41:03+0200
----
+# Visualisation
 
 This plugin provides an javascript interface for the JQuery mobile framework (shipping with 1.1.1 and jQuery 1.7.1). It has been tested with Chrome (18.0.1025.151), Firefox (11.0), Safari (5.1.5) and mobile Safari (iOS 5.1).
 Right now the WebSocket interface of SmartHome.py only supports nonencrypted connections. Please use a internal network or VPN to connect to the service.

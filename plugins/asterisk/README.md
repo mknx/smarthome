@@ -1,11 +1,4 @@
----
-title: Asterisk Plugin
-layout: default
-summary: A UDP Plugin to send and receive UDP Messages and trigger logics.
-created: 2011-08-08T20:58:06+0200
-changed: 2011-08-08T20:58:06+0200
----
-
+# Asterisk
 
 Requirements
 ============

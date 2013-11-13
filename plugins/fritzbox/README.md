@@ -1,11 +1,4 @@
----
-title: FritzBox Plugin
-summary: A plugin to send commands to a FritzBox.
-uid: index
-layout: default
-created: 2013-05-15T20:58:06+0200
-changed: 2013-05-15T20:58:06+0200
----
+# FritzBox
 
 # Requirements
 This plugin has no requirements or dependencies.

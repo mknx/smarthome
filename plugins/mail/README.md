@@ -1,11 +1,4 @@
----
-title: Mail Plugin
-summary: A Mail Plugin to send and receive email with IMAP/S and SMTP/S.
-uid: index
-layout: default
-created: 2011-06-08T20:58:06+0200
-changed: 2011-06-08T20:58:06+0200
----
+# Mail
 
 Requirements
 ============

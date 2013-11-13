@@ -1,9 +1,4 @@
----
-title: SQLite Plugin
-summary: Plugin to use SQLite to store the item history.
-uid: SQLite
-layout: default
----
+# SQLite
 
 Configuration
 =============
