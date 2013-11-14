@@ -11,6 +11,7 @@ if [ $# -eq 0 ]; then
 fi
 
 git checkout master
+git merge develop -X theirs
 
 TAG="$1"
 if [ "$1" = '-r' ]; then
