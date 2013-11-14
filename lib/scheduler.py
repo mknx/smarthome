@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,11 +19,12 @@
 #  along with SmartHome.py.  If not, see <http://www.gnu.org/licenses/>.
 ##########################################################################
 
+import gc  # noqa
 import logging
 import time
 import datetime
+import calendar
 import sys
-import Queue
 import traceback
 import threading
 import os  # noqa
@@ -38,21 +39,54 @@ from dateutil.tz import tzutc
 logger = logging.getLogger('')
 
 
+class PriorityQueue:
+
+    def __init__(self):
+        self.queue = []
+        self.lock = threading.Lock()
+
+    def insert(self, priority, data):
+        self.lock.acquire()
+        lo = 0
+        hi = len(self.queue)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if priority < self.queue[mid][0]:
+                hi = mid
+            else:
+                lo = mid + 1
+        self.queue.insert(lo, (priority, data))
+        self.lock.release()
+
+    def get(self):
+        self.lock.acquire()
+        try:
+            return self.queue.pop(0)
+        except IndexError:
+            raise
+        finally:
+            self.lock.release()
+
+    def qsize(self):
+        return len(self.queue)
+
+
 class Scheduler(threading.Thread):
 
     _workers = []
     _worker_num = 5
-    _worker_max = 30
+    _worker_max = 20
     _worker_delta = 60  # wait 60 seconds before adding another worker thread
     _scheduler = {}
-    _runq = Queue.PriorityQueue()
-    _triggerq = Queue.PriorityQueue()
+    _runq = PriorityQueue()
+    _triggerq = PriorityQueue()
 
     def __init__(self, smarthome):
         threading.Thread.__init__(self, name='Scheduler')
         logger.info('Init Scheduler')
         self._sh = smarthome
         self._lock = threading.Lock()
+        self._runc = threading.Condition()
 
     def run(self):
         self.alive = True
@@ -71,26 +105,32 @@ class Scheduler(threading.Thread):
                         tn = {}
                         for t in threading.enumerate():
                             tn[t.name] = tn.get(t.name, 0) + 1
-                        logger.info('Threads: ' + ', '.join("{0}: {1}".format(k, v) for (k, v) in tn.items()))
+                        logger.info('Threads: ' + ', '.join("{0}: {1}".format(k, v) for (k, v) in list(tn.items())))
                         self._add_worker()
             while self._triggerq.qsize() > 0:
                 try:
-                    dt, prio, name, obj, by, source, dest, value = self._triggerq.get()
-                except Exception, e:
+                    (dt, prio), (name, obj, by, source, dest, value) = self._triggerq.get()
+                except Exception as e:
                     logger.warning("Trigger queue exception: {0}".format(e))
                     break
 
                 if dt < now:  # run it
-                    self._runq.put((prio, name, obj, by, source, dest, value))
+                    self._runc.acquire()
+                    self._runq.insert(prio, (name, obj, by, source, dest, value))
+                    self._runc.notify()
+                    self._runc.release()
                 else:  # put last entry back and break while loop
-                    self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
+                    self._triggerq.insert((dt, prio), (name, obj, by, source, dest, value))
                     break
             self._lock.acquire()
             for name in self._scheduler:
                 task = self._scheduler[name]
                 if task['next'] is not None:
                     if task['next'] < now:
-                        self._runq.put((task['prio'], name, task['obj'], 'Scheduler', None, None, task['value']))
+                        self._runc.acquire()
+                        self._runq.insert(task['prio'], (name, task['obj'], 'Scheduler', None, None, task['value']))
+                        self._runc.notify()
+                        self._runc.release()
                         task['next'] = None
                     else:
                         continue
@@ -102,7 +142,7 @@ class Scheduler(threading.Thread):
                     else:
                         self._next_time(name)
             self._lock.release()
-            time.sleep(0.2)
+            time.sleep(0.5)
 
     def stop(self):
         self.alive = False
@@ -119,8 +159,11 @@ class Scheduler(threading.Thread):
                 logger.debug("Logic '{0}' deactivated. Ignoring trigger from {1} {2}".format(name, by, source))
                 return
         if dt is None:
-            logger.debug(u"Triggering {0} - by: {1} source: {2} dest: {3} value: {4}".format(name, by, source, dest, unicode(value)[:40]))
-            self._runq.put((prio, name, obj, by, source, dest, value))
+            logger.debug("Triggering {0} - by: {1} source: {2} dest: {3} value: {4}".format(name, by, source, dest, str(value)[:40]))
+            self._runc.acquire()
+            self._runq.insert(prio, (name, obj, by, source, dest, value))
+            self._runc.notify()
+            self._runc.release()
         else:
             if not isinstance(dt, datetime.datetime):
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
@@ -128,8 +171,8 @@ class Scheduler(threading.Thread):
             if dt.tzinfo is None:
                 logger.warning("Trigger: Not a valid timezone aware datetime for {0}. Ignoring.".format(name))
                 return
-            logger.debug(u"Triggering {0} - by: {1} source: {2} dest: {3} value: {4} at: {5}".format(name, by, source, dest, unicode(value)[:40], dt))
-            self._triggerq.put((dt, prio, name, obj, by, source, dest, value))
+            logger.debug("Triggering {0} - by: {1} source: {2} dest: {3} value: {4} at: {5}".format(name, by, source, dest, str(value)[:40], dt))
+            self._triggerq.insert((dt, prio), (name, obj, by, source, dest, value))
 
     def remove(self, name):
         self._lock.acquire()
@@ -141,41 +184,55 @@ class Scheduler(threading.Thread):
         if name in self._scheduler:
             return self._scheduler[name]['next']
 
-    def add(self, name, obj, prio=3, cron=None, cycle=None, value=None, offset=None):
+    def add(self, name, obj, prio=3, cron=None, cycle=None, value=None, offset=None, next=None):
         self._lock.acquire()
         if isinstance(cron, str):
+            cron = [cron, ]
+        if isinstance(cron, list):
             _cron = {}
-            for entry in cron.split('|'):
-                desc, sep, value = entry.partition('=')
+            for entry in cron:
+                desc, __, _value = entry.partition('=')
                 desc = desc.strip()
-                if value != '':
-                    value = value.strip()
+                if _value == '':
+                    _value = None
                 else:
-                    value = None
-                _cron[desc] = value
-            cron = _cron
-            if 'init' in cron and offset is None:
-                offset = 4
-        if isinstance(cycle, str):
-            cycle, sep, value = cycle.partition('=')
+                    _value = _value.strip()
+                if desc.startswith('init'):
+                    offset = 5  # default init offset
+                    desc, op, seconds = desc.partition('+')
+                    if op:
+                        offset += int(seconds)
+                    else:
+                        desc, op, seconds = desc.partition('-')
+                        if op:
+                            offset -= int(seconds)
+                    value = _value
+                    next = self._sh.now() + datetime.timedelta(seconds=offset)
+                else:
+                    _cron[desc] = _value
+            if _cron == {}:
+                cron = None
+            else:
+                cron = _cron
+        if isinstance(cycle, int):
+            cycle = {cycle: None}
+        elif isinstance(cycle, str):
+            cycle, __, _value = cycle.partition('=')
             try:
                 cycle = int(cycle.strip())
             except Exception:
                 logger.warning("Scheduler: invalid cycle entry for {0} {1}".format(name, cycle))
                 return
-            if value != '':
-                value = value.strip()
+            if _value != '':
+                _value = _value.strip()
             else:
-                value = None
-            cycle = {cycle: value}
-            if offset is None:
-                offset = random.randint(6, 12)  # spread cycle jobs
-        elif isinstance(cycle, int):
-            cycle = {cycle: None}
-            if offset is None:
-                offset = random.randint(6, 12)  # spread cycle jobs
-        self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': None, 'active': True}
-        self._next_time(name, offset)
+                _value = None
+            cycle = {cycle: _value}
+        if cycle is not None and offset is None:  # spread cycle jobs
+                offset = random.randint(10, 15)
+        self._scheduler[name] = {'prio': prio, 'obj': obj, 'cron': cron, 'cycle': cycle, 'value': value, 'next': next, 'active': True}
+        if next is None:
+            self._next_time(name, offset)
         self._lock.release()
 
     def change(self, name, **kwargs):
@@ -211,23 +268,12 @@ class Scheduler(threading.Thread):
         now = self._sh.now()
         now = now.replace(microsecond=0)
         if job['cycle'] is not None:
-            cycle = job['cycle'].keys()[0]
+            cycle = list(job['cycle'].keys())[0]
             value = job['cycle'][cycle]
             if offset is None:
                 offset = cycle
-            next_time = now + dateutil.relativedelta.relativedelta(seconds=offset)
+            next_time = now + datetime.timedelta(seconds=offset)
         if job['cron'] is not None:
-            if 'init' in job['cron']:
-                value = job['cron']['init']
-                del self._scheduler[name]['cron']['init']
-                if self._scheduler[name]['cron'] == {}:
-                    self._scheduler[name]['cron'] = None
-                if offset is None:
-                    self._scheduler[name]['next'] = now
-                else:
-                    self._scheduler[name]['next'] = now + dateutil.relativedelta.relativedelta(seconds=offset)
-                self._scheduler[name]['value'] = value
-                return
             for entry in job['cron']:
                 ct = self._crontab(entry)
                 if next_time is not None:
@@ -239,7 +285,7 @@ class Scheduler(threading.Thread):
                     value = job['cron'][entry]
         self._scheduler[name]['next'] = next_time
         self._scheduler[name]['value'] = value
-        if name != 'sh.con':
+        if name not in ['Connections', 'series', 'SQLite dump']:
             logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):
@@ -253,19 +299,21 @@ class Scheduler(threading.Thread):
         self._workers.append(t)
         if len(self._workers) > self._worker_num:
             logger.info("Adding worker thread. Total: {0}".format(len(self._workers)))
-            tn = []
+            tn = {}
             for t in threading.enumerate():
-                tn.append(t.name)
-            tn = ', '.join(tn)
-            logger.info("Current Threads: {0}".format(tn))
+                tn[t.name] = tn.get(t.name, 0) + 1
+            logger.info('Threads: ' + ', '.join("{0}: {1}".format(k, v) for (k, v) in list(tn.items())))
 
     def _worker(self):
         while self.alive:
+            self._runc.acquire()
+            self._runc.wait(timeout=1)
             try:
-                prio, name, obj, by, source, dest, value = self._runq.get(timeout=0.5)
-                self._runq.task_done()
-            except Queue.Empty:
+                prio, (name, obj, by, source, dest, value) = self._runq.get()
+            except IndexError:
                 continue
+            finally:
+                self._runc.release()
             self._task(name, obj, by, source, dest, value)
 
     def _task(self, name, obj, by, source, dest, value):
@@ -280,73 +328,79 @@ class Scheduler(threading.Thread):
             except SystemExit:
                 # ignore exit() call from logic.
                 pass
-            except Exception, e:
+            except Exception as e:
                 tb = sys.exc_info()[2]
                 tb = traceback.extract_tb(tb)[-1]
-                logger.warning("Logic: {0}, File: {1}, Line: {2}, Method: {3}, Exception: {4}".format(name, tb[0], tb[1], tb[2], e))
+                logger.exception("Logic: {0}, File: {1}, Line: {2}, Method: {3}, Exception: {4}".format(name, tb[0], tb[1], tb[2], e))
         elif obj.__class__.__name__ == 'Item':
             try:
                 if value is not None:
                     obj(value, caller="Scheduler")
-            except Exception, e:
-                logger.warning("Item {0} exception: {1}".format(name, e))
+            except Exception as e:
+                logger.exception("Item {0} exception: {1}".format(name, e))
         else:  # method
             try:
                 if value is None:
                     obj()
                 else:
                     obj(**value)
-            except Exception, e:
-                logger.warning("Method {0} exception: {1}".format(name, e))
-
+            except Exception as e:
+                logger.exception("Method {0} exception: {1}".format(name, e))
         threading.current_thread().name = 'idle'
 
     def _crontab(self, crontab):
-        # process sunrise/sunset
-        for entry in crontab.split('<'):
-            if entry.startswith('sun'):
-                return self._sun(crontab)
+        try:
+            # process sunrise/sunset
+            for entry in crontab.split('<'):
+                if entry.startswith('sun'):
+                    return self._sun(crontab)
+            next_event = self._parse_month(crontab, offset=0)  # this month
+            if not next_event:
+                next_event = self._parse_month(crontab, offset=1)  # next month
+            return next_event
+        except:
+            logger.error("Error parsing crontab: {}".format(crontab))
+            return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
 
+    def _parse_month(self, crontab, offset=0):
+        now = self._sh.now()
         minute, hour, day, wday = crontab.split(' ')
         # evaluate the crontab strings
         minute_range = self._range(minute, 00, 59)
         hour_range = self._range(hour, 00, 23)
-        # FIXME fix day range for days > 28
+        mdays = calendar.monthrange(now.year, now.month + offset)[1]
         if wday == '*' and day == '*':
             day_range = self._day_range('0, 1, 2, 3, 4, 5, 6')
         elif wday != '*' and day == '*':
             day_range = self._day_range(wday)
         elif wday != '*' and day != '*':
             day_range = self._day_range(wday)
-            day_range = day_range + self._range(day, 01, 28)
+            day_range = day_range + self._range(day, 0o1, mdays)
         else:
-            day_range = self._range(day, 01, 28)
-
+            day_range = self._range(day, 0o1, mdays)
         # combine the differnt ranges
         event_range = sorted([str(day) + '-' + str(hour) + '-' + str(minute) for minute in minute_range for hour in hour_range for day in day_range])
-
-        # find the next event
-        now = self._sh.now()
-        now_str = now.strftime("%d-%H-%M")
-        next_event = self._next(lambda event: event > now_str, event_range)
-
-        if next_event:  # found an event after today
-            next_time = now
-        else:  # skip to next month
+        if offset:  # next month
             next_event = event_range[0]
             next_time = now + dateutil.relativedelta.relativedelta(months=+1)
+        else:  # this month
+            now_str = now.strftime("%d-%H-%M")
+            next_event = self._next(lambda event: event > now_str, event_range)
+            if not next_event:
+                return False
+            next_time = now
         day, hour, minute = next_event.split('-')
-        next_time = next_time.replace(day=int(day), hour=int(hour), minute=int(minute), second=0, microsecond=0)
-        return next_time
+        return next_time.replace(day=int(day), hour=int(hour), minute=int(minute), second=0, microsecond=0)
 
     def _next(self, f, seq):
         for item in seq:
             if f(item):
                 return item
+        return False
 
     def _sun(self, crontab):
-        if not hasattr(self._sh, 'sun'):  # no sun object created
-            logger.warning('No latitude/longitued specified. You could not use sunrise/sunset as crontab entry.')
+        if not self._sh.sun:  # no sun object created
+            logger.warning('No latitude/longitude specified. You could not use sunrise/sunset as crontab entry.')
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
         # find min/max times
         tabs = crontab.split('<')
@@ -372,7 +426,7 @@ class Scheduler(threading.Thread):
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
 
         doff = 0  # degree offset
-        moff = None  # minute offset
+        moff = 0  # minute offset
         tmp, op, offs = cron.rpartition('+')
         if op:
             if offs.endswith('m'):
@@ -388,15 +442,12 @@ class Scheduler(threading.Thread):
                     doff = -float(offs)
 
         if cron.startswith('sunrise'):
-            next_time = self._sh.sun.rise(doff)
+            next_time = self._sh.sun.rise(doff, moff)
         elif cron.startswith('sunset'):
-            next_time = self._sh.sun.set(doff)
+            next_time = self._sh.sun.set(doff, moff)
         else:
             logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
-
-        if moff is not None:
-            next_time += dateutil.relativedelta.relativedelta(minutes=moff)
 
         if smin is not None:
             h, sep, m = smin.partition(':')
@@ -422,12 +473,15 @@ class Scheduler(threading.Thread):
         result = []
         item_range = []
         if entry == '*':
-            item_range = range(low, high + 1)
+            item_range = list(range(low, high + 1))
         else:
             for item in entry.split(','):
-                item_range.append(int(item))
+                item = int(item)
+                if item > high:  # entry above range
+                    item = high  # truncate value to highest possible
+                item_range.append(item)
         for entry in item_range:
-            result.append('%0*d' % (2, entry))
+            result.append('{:02d}'.format(entry))
         return result
 
     def _day_range(self, days):

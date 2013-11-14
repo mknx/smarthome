@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2013 Marcus Popp                              marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -28,9 +28,10 @@ logger = logging.getLogger('')
 
 def parse_tpl(template, replace):
     try:
-        with open(template, 'r') as f:
+        with open(template, 'r', encoding='utf-8') as f:
             tpl = f.read()
-    except IOError, e:
+            tpl = tpl.lstrip('\ufeff')  # remove BOM
+    except Exception as e:
         logger.error("Could not read template file '{0}': {1}".format(template, e))
         return ''
     for s, r in replace:
@@ -74,18 +75,23 @@ def pages(smarthome, directory):
         try:
             if os.path.isdir(dp):
                 shutil.rmtree(dp)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not delete directory {0}: {1}".format(dp, e))
+    # create output directory
+    try:
+        os.mkdir(outdir)
+    except:
+        pass
     # remove old dynamic files
     if not os.path.isdir(outdir):
-        logger.warning("Could not find directory: {0}".format(outdir))
+        logger.warning("Could not find/create directory: {0}".format(outdir))
         return
     for fn in os.listdir(outdir):
         fp = os.path.join(outdir, fn)
         try:
             if os.path.isfile(fp):
                 os.unlink(fp)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not delete file {0}: {1}".format(fp, e))
     for item in smarthome.find_items('sv_page'):
         r = room(smarthome, item, tpldir)
@@ -94,10 +100,16 @@ def pages(smarthome, directory):
         else:
             img = ''
         nav_lis += parse_tpl(tpldir + '/navi.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img)])
-        with open("{0}/{1}.html".format(outdir, item.id()), 'w') as f:
-            f.write(r)
+        try:
+            with open("{0}/{1}.html".format(outdir, item.id()), 'w') as f:
+                f.write(r)
+        except Exception as e:
+            logger.warning("Could not write to {0}/{1}.html".format(outdir, item.id()))
     nav = parse_tpl(tpldir + '/navigation.html', [('{{ visu_navis }}', nav_lis)])
-    with open(outdir + '/navigation.html', 'w') as f:
-        f.write(nav)
+    try:
+        with open(outdir + '/navigation.html', 'w') as f:
+            f.write(nav)
+    except Exception as e:
+        logger.warning("Could not write to {0}/navigation.html".format(outdir))
     shutil.copy(tpldir + '/rooms.html', outdir + '/')
     shutil.copy(tpldir + '/index.html', outdir + '/')

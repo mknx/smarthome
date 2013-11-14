@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,51 +17,78 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
-##########################################################################
+#########################################################################
 
-import signal
+#####################################################################
+# Check Python Version
+#####################################################################
 import sys
+if sys.hexversion < 0x03020000:
+    print("Sorry your python interpreter ({0}.{1}) is too old. Please update to 3.2 or newer.".format(sys.version_info[0], sys.version_info[1]))
+    exit()
+
+#####################################################################
+# Import Python Core Modules
+#####################################################################
+import argparse
+import datetime
+import gc
+import locale
+import logging
+import logging.handlers
 import os
+import re
+import signal
 import subprocess
 import threading
 import time
-import logging
-import logging.handlers
-import asyncore
-import types
-import datetime
-import locale
 import traceback
-import gc
-import re
 
-from configobj import ConfigObj
+#####################################################################
+# Base
+#####################################################################
+logger = logging.getLogger('')
+BASE = '/'.join(os.path.realpath(__file__).split('/')[:-2])
+sys.path.append(BASE)
+sys.path.append(BASE + '/lib/3rd')
+
+#####################################################################
+# Import 3rd Party Modules
+#####################################################################
 from dateutil.tz import gettz
 
-BASE = '/'.join(os.path.realpath(__file__).split('/')[:-2])
-PID_FILE = BASE + '/var/run/smarthome.pid'
-sys.path.append(BASE)
-
+#####################################################################
+# Import SmartHome.py Modules
+#####################################################################
+import lib.config
+import lib.connection
+import lib.daemon
 import lib.item
-import lib.scheduler
+import lib.log
 import lib.logic
 import lib.plugin
+import lib.scene
+import lib.scheduler
 import lib.tools
 import lib.orb
-import lib.log
-import lib.scene
 
+#####################################################################
+# Globals
+#####################################################################
+MODE = 'default'
+LOGLEVEL = logging.INFO
 VERSION = '0.9'
+TZ = gettz('UTC')
 try:
     os.chdir(BASE)
-    VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty=+'], stderr=subprocess.STDOUT).strip('\n')
-except Exception, e:
+    VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty=+'], stderr=subprocess.STDOUT).decode().strip('\n')
+except Exception as e:
     pass
 
-TZ = gettz('UTC')
 
-logger = logging.getLogger('SmartHome.py')
-
+#####################################################################
+# Classes
+#####################################################################
 
 class LogHandler(logging.StreamHandler):
     def __init__(self, log):
@@ -76,179 +103,351 @@ class LogHandler(logging.StreamHandler):
 class SmartHome():
     base_dir = BASE
     _plugin_conf = BASE + '/etc/plugin.conf'
+    _env_dir = BASE + '/lib/env/'
+    _env_logic_conf = _env_dir + 'logic_conf'
     _items_dir = BASE + '/items/'
     _logic_conf = BASE + '/etc/logic.conf'
+    _logic_dir = BASE + '/logics/'
     _cache_dir = BASE + '/var/cache/'
     _logfile = BASE + '/var/log/smarthome.log'
     _log_buffer = 50
-    socket_map = {}
-    connections = {}
     __logs = {}
     __event_listeners = {}
     __all_listeners = []
     _plugins = []
     __items = []
-    _sub_items = []
+    __children = []
     __item_dict = {}
     _utctz = TZ
 
     def __init__(self, smarthome_conf=BASE + '/etc/smarthome.conf'):
-        self.version = VERSION
         global TZ
-        threading.currentThread().name = 'SmartHome.py'
-        self._connections = []
+        threading.currentThread().name = 'Main'
         self.alive = True
-        if DAEMON:  # fork
-            pid = os.fork()  # fork first child
-            if pid == 0:
-                os.setsid()
-                pid = os.fork()  # fork second child
-                if pid == 0:
-                    os.chdir('/')
-                    os.umask(022)
-                else:
-                    os._exit(0)  # exit parent
-            else:
-                os._exit(0)  # exit parent
+        self.version = VERSION
+        self.connections = []
 
-            # close files
-            for fd in range(0, 1024):
-                try:
-                    os.close(fd)
-                except OSError:
-                    pass
+        #############################################################
+        # logfile write test
+        #############################################################
+        os.umask(0o002)
+        try:
+            with open(self._logfile, 'a') as f:
+                f.write("Init SmartHome.py {0}\n".format(VERSION))
+        except IOError as e:
+            print("Error creating logfile {}: {}".format(self._logfile, e))
 
-            # redirect I/O
-            os.open(os.devnull, os.O_RDWR)  # input
-            os.dup2(0, 1)  # output
-            os.dup2(0, 2)  # error
+        #############################################################
+        # Fork
+        #############################################################
+        if MODE == 'default':
+            lib.daemon.daemonize()
 
-        # signal handler
-        signal.signal(signal.SIGHUP, self.restart_logics)
+        #############################################################
+        # Signal Handling
+        #############################################################
+        signal.signal(signal.SIGHUP, self.reload_logics)
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGTERM, self.stop)
 
-        # init logging
+        #############################################################
+        # Check Time
+        #############################################################
+        while datetime.date.today().isoformat() < '2013-10-24':  # XXX update date
+            time.sleep(5)
+            logger.info("Waiting for datetime update")
+
+        #############################################################
+        # Logging
+        #############################################################
         _logdate = "%Y-%m-%d %H:%M:%S"
-        _logformat = "%(asctime)s %(threadName)-12s %(levelname)-8s %(message)s"
-        if LOGLEVEL == 'debug':
+        _logformat = "%(asctime)s %(levelname)-8s %(threadName)-12s %(message)s"
+        if LOGLEVEL == logging.DEBUG:
             _logdate = None
-            _logformat = "%(asctime)s %(threadName)-12s %(levelname)-8s %(message)s -- %(filename)s:%(funcName)s:%(lineno)d"
-            _loglevel = logging.DEBUG
-        elif LOGLEVEL == 'info':
-            _loglevel = logging.INFO
-        elif LOGLEVEL == 'warning':
-            _loglevel = logging.WARNING
-        elif LOGLEVEL == 'error':
-            _loglevel = logging.ERROR
-        else:
-            _loglevel = logging.INFO
+            _logformat = "%(asctime)s %(levelname)-8s %(threadName)-12s %(message)s -- %(filename)s:%(funcName)s:%(lineno)d"
+        logging.basicConfig(level=LOGLEVEL, format=_logformat, datefmt=_logdate)
+        if MODE == 'interactive':  # remove default stream handler
+            logger.removeHandler(logger.handlers[0])
+        # adding logfile
+        try:
+            formatter = logging.Formatter(_logformat, _logdate)
+            log_file = logging.handlers.TimedRotatingFileHandler(self._logfile, when='midnight', backupCount=7)
+            log_file.setLevel(LOGLEVEL)
+            log_file.setFormatter(formatter)
+            if LOGLEVEL == logging.DEBUG:  # clean log
+                log_file.doRollover()
+            _logdate = None
+            logging.getLogger('').addHandler(log_file)
+        except IOError as e:
+            print("Error creating logfile {}: {}".format(self._logfile, e))
 
-        logging.basicConfig(level=_loglevel, format=_logformat, datefmt=_logdate)
+        #############################################################
+        # Catching Exceptions
+        #############################################################
+        sys.excepthook = self._excepthook
 
-        formatter = logging.Formatter(_logformat, _logdate)
-        log_file = logging.handlers.TimedRotatingFileHandler(self._logfile, when='midnight', backupCount=7)
-        log_file.setLevel(_loglevel)
-        log_file.setFormatter(formatter)
-        logging.getLogger('').addHandler(log_file)
+        #############################################################
+        # Reading smarthome.conf
+        #############################################################
+        try:
+            config = lib.config.parse(smarthome_conf)
+            for attr in config:
+                if not isinstance(config[attr], dict):  # ignore sub items
+                    vars(self)['_' + attr] = config[attr]
+            del(config)  # clean up
+        except Exception as e:
+            logger.warning("Problem reading smarthome.conf: {0}".format(e))
 
-        self.log = lib.log.Log(self, 'SmartHome.py', '<li><p style="font-weight:bold;">{1}</p><p>{3}</p><p class="ui-li-aside">{0:%a %H:%M:%S}<br />{2}</p></li>', maxlen=self._log_buffer)
+        #############################################################
+        # Setting debug level and adding memory handler
+        #############################################################
+        if hasattr(self, '_loglevel'):
+            try:
+                logging.getLogger('').setLevel(vars(logging)[self._loglevel.upper()])
+            except:
+                pass
+        self.log = lib.log.Log(self, 'env.core.log', ['time', 'thread', 'level', 'message'], maxlen=self._log_buffer)
         log_mem = LogHandler(self.log)
         log_mem.setLevel(logging.WARNING)
         log_mem.setFormatter(formatter)
         logging.getLogger('').addHandler(log_mem)
-        sys.excepthook = self._excepthook
 
-        # write pid file
-        try:
-            fd = open(PID_FILE, 'w+')
-            fd.write("%s\n" % os.getpid())
-            fd.close()
-        except:
-            logger.critical("Could not write to pid file: %s" % PID_FILE)
-            logger.critical("Exit")
-            os._exit(0)
-
-        # Init Smarthome
-        try:
-            config = ConfigObj(smarthome_conf)
-            for attr in config:
-                if not isinstance(config[attr], dict):  # ignore sub items
-                    vars(self)['_' + attr] = config[attr]
-        except Exception, e:
-            logger.warning("Problem reading smarthome.conf: {0}".format(e))
-
-        # set tz to local tz
+        #############################################################
+        # Setting (local) tz
+        #############################################################
+        self.tz = 'UTC'
+        os.environ['TZ'] = self.tz
         if hasattr(self, '_tz'):
-            os.environ['TZ'] = self._tz
-            self.tz = self._tz
-            self._tzinfo = gettz(self._tz)
-            TZ = self._tzinfo
-        else:
-            self.tz = 'UTC'
-            os.environ['TZ'] = self.tz
-            self._tzinfo = self._utctz
+            tzinfo = gettz(self._tz)
+            if tzinfo is not None:
+                TZ = tzinfo
+                self.tz = self._tz
+                os.environ['TZ'] = self.tz
+            else:
+                logger.warning("Problem parsing timezone: {}. Using UTC.".format(self._tz))
+            del(self._tz, tzinfo)
+        self._tzinfo = TZ
 
         logger.info("Start SmartHome.py {0}".format(VERSION))
         logger.debug("Python {0}".format(sys.version.split()[0]))
-        # Tools
+
+        #############################################################
+        # Link Tools
+        #############################################################
         self.tools = lib.tools.Tools()
-        # init sun
+
+        #############################################################
+        # Link Sun and Moon
+        #############################################################
         if hasattr(self, '_lon') and hasattr(self, '_lat'):
             if not hasattr(self, '_elev'):
                 self._elev = None
             self.sun = lib.orb.Orb('sun', self._lon, self._lat, self._elev)
             self.moon = lib.orb.Orb('moon', self._lon, self._lat, self._elev)
         else:
-            logger.info('No latitude/longitude specified => you could not use the sun and moon object.')
+            logger.warning('No latitude/longitude specified => you could not use the sun and moon object.')
+            self.sun = None
+            self.moon = None
 
+    #################################################################
+    # Process Methods
+    #################################################################
+
+    def start(self):
+        threading.currentThread().name = 'Main'
+
+        #############################################################
+        # Start Scheduler
+        #############################################################
         self.scheduler = lib.scheduler.Scheduler(self)
         self.trigger = self.scheduler.trigger
         self.scheduler.start()
+
+        #############################################################
+        # Init Connections
+        #############################################################
+        self.connections = lib.connection.Connections()
+
+        #############################################################
+        # Init Plugins
+        #############################################################
         logger.info("Init Plugins")
         self._plugins = lib.plugin.Plugins(self, configfile=self._plugin_conf)
+
+        #############################################################
+        # Init Items
+        #############################################################
         logger.info("Init Items")
+        item_conf = {}
+        for item_file in sorted(os.listdir(self._env_dir)):
+            if item_file.endswith('.conf'):
+                try:
+                    item_conf = lib.config.parse(self._env_dir + item_file, item_conf)
+                except Exception as e:
+                    logger.exception("Problem reading {0}: {1}".format(item_file, e))
         for item_file in sorted(os.listdir(self._items_dir)):
             if item_file.endswith('.conf'):
                 try:
-                    item_conf = ConfigObj(self._items_dir + item_file)
-                except Exception, e:
-                    logger.warning("Problem reading {0}: {1}".format(item_file, e))
+                    item_conf = lib.config.parse(self._items_dir + item_file, item_conf)
+                except Exception as e:
+                    logger.exception("Problem reading {0}: {1}".format(item_file, e))
                     continue
-                for entry in item_conf:
-                    if isinstance(item_conf[entry], dict):
-                        path = entry
-                        sub_item = self.return_item(path)
-                        if sub_item is None:  # new item
-                            sub_item = lib.item.Item(self, self, path, item_conf[path])
-                            vars(self)[path] = sub_item
-                            self.add_item(path, sub_item)
-                            self._sub_items.append(sub_item)
-                        else:  # existing item
-                            sub_item.parse(self, self, path, item_conf[path])
+        for attr, value in item_conf.items():
+            if isinstance(value, dict):
+                child_path = attr
+                try:
+                    child = lib.item.Item(self, self, child_path, value)
+                except Exception as e:
+                    logger.error("Item {}: problem creating: ()".format(child_path, e))
+                else:
+                    vars(self)[attr] = child
+                    self.add_item(child_path, child)
+                    self.__children.append(child)
+        del(item_conf)  # clean up
         for item in self.return_items():
-            item.init_prerun()
+            item._init_prerun()
         for item in self.return_items():
-            item.init_run()
-        if self._connections != []:
-            self.scheduler.add('sh.con', self._connection_monitor, cycle=10, offset=0)
+            item._init_run()
+
+        #############################################################
+        # Start Connections
+        #############################################################
+        self.scheduler.add('Connections', self.connections.check, cycle=10, offset=0)
+
+        #############################################################
+        # Start Plugins
+        #############################################################
         self._plugins.start()
-        self._logics = lib.logic.Logics(self, configfile=self._logic_conf)
+
+        #############################################################
+        # Init Logics
+        #############################################################
+        self._logics = lib.logic.Logics(self, self._logic_conf, self._env_logic_conf)
+
+        #############################################################
+        # Init Scenes
+        #############################################################
         lib.scene.Scenes(self)
 
-        # garbage collection
-        self.scheduler.add('sh.gc', self._garbage_collection, prio=8, cron="init | 4 2 * *", offset=0)
+        #############################################################
+        # Execute Maintenance Method
+        #############################################################
+        self.scheduler.add('sh.gc', self._maintenance, prio=8, cron=['init', '4 2 * *'], offset=0)
 
+        #############################################################
+        # Main Loop
+        #############################################################
         while self.alive:
-            if self.socket_map != {}:
-                asyncore.loop(timeout=1, count=1, map=self.socket_map)
-            else:
-                time.sleep(2)
+            try:
+                self.connections.poll()
+            except Exception as e:
+                logger.exception("Connection polling failed: {}".format(e))
 
+    def stop(self, signum=None, frame=None):
+        self.alive = False
+        logger.info("Number of Threads: {0}".format(threading.activeCount()))
+        for item in self.__items:
+            self.__item_dict[item]._fading = False
+        try:
+            self.scheduler.stop()
+        except:
+            pass
+        try:
+            self._plugins.stop()
+        except:
+            pass
+        try:
+            self.connections.close()
+        except:
+            pass
+        for thread in threading.enumerate():
+            try:
+                thread.join(1)
+            except:
+                pass
+        if threading.active_count() > 1:
+            for thread in threading.enumerate():
+                logger.info("Thread: {}, still alive".format(thread.name))
+        else:
+            logger.info("SmartHome.py stopped")
+        logging.shutdown()
+        exit()
+
+    #################################################################
+    # Item Methods
+    #################################################################
     def __iter__(self):
-        for item in self._sub_items:
-            yield item
+        for child in self.__children:
+            yield child
 
+    def add_item(self, path, item):
+        if path not in self.__items:
+            self.__items.append(path)
+        self.__item_dict[path] = item
+
+    def return_item(self, string):
+        if string in self.__items:
+            return self.__item_dict[string]
+
+    def return_items(self):
+        for item in self.__items:
+            yield self.__item_dict[item]
+
+    def match_items(self, regex):
+        regex, __, attr = regex.partition(':')
+        regex = regex.replace('.', '\.').replace('*', '.*') + '$'
+        regex = re.compile(regex)
+        if attr != '':
+            return [self.__item_dict[item] for item in self.__items if regex.match(item) and attr in self.__item_dict[item].conf]
+        else:
+            return [self.__item_dict[item] for item in self.__items if regex.match(item)]
+
+    def find_items(self, conf):
+        for item in self.__items:
+            if conf in self.__item_dict[item].conf:
+                yield self.__item_dict[item]
+
+    def find_children(self, parent, conf):
+        children = []
+        for item in parent:
+            if conf in item.conf:
+                children.append(item)
+            children += self.find_children(item, conf)
+        return children
+
+    #################################################################
+    # Plugin Methods
+    #################################################################
+    def return_plugins(self):
+        for plugin in self._plugins:
+            yield plugin
+
+    #################################################################
+    # Logic Methods
+    #################################################################
+    def reload_logics(self, signum=None, frame=None):
+        for logic in self._logics:
+            self._logics[logic].generate_bytecode()
+
+    def return_logic(self, name):
+        return self._logics[name]
+
+    def return_logics(self):
+        for logic in self._logics:
+            yield logic
+
+    #################################################################
+    # Log Methods
+    #################################################################
+    def add_log(self, name, log):
+        self.__logs[name] = log
+
+    def return_logs(self):
+        return self.__logs
+
+    #################################################################
+    # Event Methods
+    #################################################################
     def add_event_listener(self, events, method):
         for event in events:
             if event in self.__event_listeners:
@@ -265,89 +464,9 @@ class SmartHome():
         else:
             return []
 
-    def add_log(self, name, log):
-        self.__logs[name] = log
-
-    def return_logs(self):
-        return self.__logs
-
-    def add_item(self, path, item):
-        if path not in self.__items:
-            self.__items.append(path)
-        self.__item_dict[path] = item
-
-    def return_item(self, string):
-        if string in self.__items:
-            return self.__item_dict[string]
-
-    def return_items(self):
-        for item in self.__items:
-            yield self.__item_dict[item]
-
-    def match_items(self, regex):
-        regex = regex.replace('.', '\.').replace('*', '.*') + '$'
-        regex = re.compile(regex)
-        return [self.__item_dict[item] for item in self.__items if regex.match(item)]
-
-    def find_items(self, conf):
-        for item in self.__items:
-            if conf in self.__item_dict[item].conf:
-                yield self.__item_dict[item]
-
-    def find_children(self, parent, conf):
-        children = []
-        for item in parent:
-            if conf in item.conf:
-                children.append(item)
-            children += self.find_children(item, conf)
-        return children
-
-    def return_logic(self, name):
-        return self._logics[name]
-
-    def return_logics(self):
-        for logic in self._logics:
-            yield logic
-
-    def return_plugins(self):
-        for plugin in self._plugins:
-            yield plugin
-
-    def stop(self, signum=None, frame=None):
-        self.alive = False
-        logger.info("Number of Threads: {0}".format(threading.activeCount()))
-        try:
-            asyncore.close_all(self.socket_map)
-        except:
-            pass
-        try:
-            self.scheduler.stop()
-        except:
-            pass
-        try:
-            self._plugins.stop()
-        except:
-            pass
-        time.sleep(0.5)
-        if threading.active_count() > 1:
-            for thread in threading.enumerate():
-                logger.info("Thread: %s, still alive" % thread.name)
-        try:
-            os.remove(PID_FILE)
-        except OSError, e:
-            logger.critical("Could not remove pid file: {0} - {1}".format(PID_FILE, e))
-        logger.info("SmartHome.py stopped")
-        logging.shutdown()
-        exit()
-
-    def _garbage_collection(self):
-        c = gc.collect()
-        logger.debug("Garbage collector: collected {0} objects.".format(c))
-
-    def restart_logics(self, signum=None, frame=None):
-        pass
-        #self.logics.restart()
-
+    #################################################################
+    # Time Methods
+    #################################################################
     def now(self):
         # tz aware 'localtime'
         return datetime.datetime.now(self._tzinfo)
@@ -362,6 +481,22 @@ class SmartHome():
     def utcinfo(self):
         return self._utctz
 
+    #################################################################
+    # Helper Methods
+    #################################################################
+    def _maintenance(self):
+        self._garbage_collection()
+        references = sum(self._object_refcount().values())
+        logger.debug("Object references: {}".format(references))
+
+    def _excepthook(self, typ, value, tb):
+        mytb = "".join(traceback.format_tb(tb))
+        logger.error("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
+
+    def _garbage_collection(self):
+        c = gc.collect()
+        logger.debug("Garbage collector: collected {0} objects.".format(c))
+
     def string2bool(self, string):
         if isinstance(string, bool):
             return string
@@ -372,122 +507,100 @@ class SmartHome():
         else:
             return None
 
-    def _excepthook(self, typ, value, tb):
-        mytb = "".join(traceback.format_tb(tb))
-        logger.critical("Unhandled exception: {1}\n{0}\n{2}".format(typ, value, mytb))
-
     def object_refcount(self):
-        objects = {}
-        for module in sys.modules.values():
-            for sym in dir(module):
-                obj = getattr(module, sym)
-                if isinstance(obj, types.ClassType):
-                    objects[obj] = sys.getrefcount(obj)
-        objects = map(lambda x: (x[1], x[0]), objects.items())
+        objects = self._object_refcount()
+        objects = [(x[1], x[0]) for x in list(objects.items())]
         objects.sort(reverse=True)
         return objects
 
-    def monitor_connection(self, obj):
-        if hasattr(obj, 'is_connected') and hasattr(obj, 'connect'):
-            self._connections.append(obj)
-
-    def _connection_monitor(self):
-        for connection in self._connections:
-            if not connection.is_connected:
-                connection.connect()
-
-#############################################################################
+    def _object_refcount(self):
+        objects = {}
+        for module in list(sys.modules.values()):
+            for sym in dir(module):
+                obj = getattr(module, sym)
+                if isinstance(obj, type):
+                    objects[obj] = sys.getrefcount(obj)
+        return objects
 
 
-def read_pid():
-    try:
-        with open(PID_FILE, 'r') as fd:
-            pid = fd.read().strip()
-            if pid == '':
-                pid = False
-            else:
-                pid = int(pid)
-    except IOError:
-        pid = False
-    return pid
+#####################################################################
+# Private Methods
+#####################################################################
 
-
-def stop_sh():
-    pid = read_pid()
-    if pid:
-        for i in range(4):
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except OSError:
-                os._exit(0)
-            time.sleep(0.7)
-
-        # FIXME shutdown doesn't work all the time :-(
-        try:
-            os.kill(pid, signal.SIGKILL)
-            print("Hard kill SmartHome.py")
-        except OSError:
-            os._exit(0)
-
-
-def logic_update():
-    pid = read_pid()
+def reload_logics():
+    pid = lib.daemon.get_pid(__file__)
     if pid:
         os.kill(pid, signal.SIGHUP)
 
 
-def usage():
-    #print('Usage: smarthome.py [--start] [--no-daemon] [-n] [--stop] [--restart] [-r]')
-    print('Usage: smarthome.py [--start] [--no-daemon|-n] [--stop] [--debug|-d]')
-
+#####################################################################
+# Main
+#####################################################################
 
 if __name__ == '__main__':
-    LOGLEVEL = 'info'
-    DAEMON = True
-
     if locale.getdefaultlocale() == (None, None):
         locale.setlocale(locale.LC_ALL, 'C')
     else:
         locale.setlocale(locale.LC_ALL, '')
 
-    if '--stop' in sys.argv[1:]:
-        stop_sh()
-        exit(0)
+    # argument handling
+    argparser = argparse.ArgumentParser()
+    arggroup = argparser.add_mutually_exclusive_group()
+    arggroup.add_argument('-v', '--verbose', help='verbose (debug output) logging to the logfile', action='store_true')
+    arggroup.add_argument('-d', '--debug', help='stay in the foreground with verbose output', action='store_true')
+    arggroup.add_argument('-i', '--interactive', help='open an interactive shell with tab completion and with verbose logging to the logfile', action='store_true')
+    arggroup.add_argument('-l', '--logics', help='reload all logics', action='store_true')
+    arggroup.add_argument('-s', '--stop', help='stop SmartHome.py', action='store_true')
+    arggroup.add_argument('-q', '--quiet', help='reduce logging to the logfile', action='store_true')
+    arggroup.add_argument('-V', '--version', help='show SmartHome.py version', action='store_true')
+    arggroup.add_argument('--start', help='start SmartHome.py and detach from console (default)', default=True, action='store_true')
+    args = argparser.parse_args()
 
-    for arg in sys.argv[1:]:
-        if arg == '--start':
-            pass
-        #elif arg == '--logic-update' or arg == '-u':
-        #    logic_update()
-        #    exit(0)
-        elif arg == '--no-daemon' or arg == '-n':
-            DAEMON = False
-            LOGLEVEL = 'debug'
-        elif arg == '--debug' or arg == '-d':
-            LOGLEVEL = 'debug'
-        elif arg == '--restart' or arg == '-r':
-            stop_sh()
-        elif arg == '--help' or arg == '-h':
-            usage()
-            exit(0)
-        else:
-            print("Unkown argument: %s" % arg)
-            usage()
-            exit(0)
-
-    pid = read_pid()  # check if there is a PID_FILE
-    if pid:
+    if args.interactive:
+        LOGLEVEL = logging.DEBUG
+        MODE = 'interactive'
+        import code
+        import rlcompleter  # noqa
+        import readline
+        import atexit
+        # history file
+        histfile = os.path.join(os.environ['HOME'], '.history.python')
         try:
-            os.getpgid(pid)  # check if the process is running
-        except OSError:
-            try:
-                os.remove(PID_FILE)
-            except OSError, e:
-                print("Could not remove pid file: {0} - {1}".format(PID_FILE, e))
+            readline.read_history_file(histfile)
+        except IOError:
+            pass
+        atexit.register(readline.write_history_file, histfile)
+        readline.parse_and_bind("tab: complete")
+        sh = SmartHome()
+        _sh_thread = threading.Thread(target=sh.start)
+        _sh_thread.start()
+        shell = code.InteractiveConsole(locals())
+        shell.interact()
+        exit(0)
+    elif args.logics:
+        reload_logics()
+        exit(0)
+    elif args.version:
+        print("SmartHome.py {0}".format(VERSION))
+        exit(0)
+    elif args.stop:
+        lib.daemon.kill(__file__)
+        exit(0)
+    elif args.debug:
+        LOGLEVEL = logging.DEBUG
+        MODE = 'debug'
+    elif args.quiet:
+        LOGLEVEL = logging.WARNING
+    elif args.verbose:
+        LOGLEVEL = logging.DEBUG
 
-    pid = read_pid()
+    # check for pid file
+    pid = lib.daemon.get_pid(__file__)
     if pid:
-        print("SmartHome.py already running with pid {0}".format(pid))
-        print("Run 'smarthome.py --stop' to stop it.")
+        print("SmartHome.py already running with pid {}".format(pid))
+        print("Run 'smarthome.py -s' to stop it.")
         exit()
+
+    # Starting SmartHome.py
     sh = SmartHome()
+    sh.start()

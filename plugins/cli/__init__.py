@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012-2013 Marcus Popp
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,38 +20,29 @@
 #########################################################################
 
 import logging
-import asynchat
-import asyncore
-import socket
 import threading
+import lib.connection
 
 logger = logging.getLogger('')
 
 
-class CLIHandler(asynchat.async_chat):
-    terminator = '\n'
+class CLIHandler(lib.connection.Stream):
+    terminator = '\n'.encode()
 
     def __init__(self, smarthome, sock, source, updates):
-        asynchat.async_chat.__init__(self, sock=sock, map=smarthome.socket_map)
+        lib.connection.Stream.__init__(self, sock, source)
         self.source = source
         self.updates_allowed = updates
         self.sh = smarthome
-        self._lock = threading.Lock()
-        self.buffer = ''
-        self.push("SmartHome.py v%s\n" % self.sh.version)
+        self.push("SmartHome.py v{0}\n".format(self.sh.version))
+        self.push("Enter 'help' for a list of available commands.\n")
         self.push("> ")
 
-    def collect_incoming_data(self, data):
-        self.buffer += data
+    def push(self, data):
+        self.send(data.encode())
 
-    def initiate_send(self):
-        self._lock.acquire()
-        asynchat.async_chat.initiate_send(self)
-        self._lock.release()
-
-    def found_terminator(self):
-        cmd = self.buffer.strip()
-        self.buffer = ''
+    def found_terminator(self, data):
+        cmd = data.decode().strip()
         if cmd.startswith('ls'):
             self.push("Items:\n======\n")
             self.ls(cmd.lstrip('ls').strip())
@@ -59,6 +50,10 @@ class CLIHandler(asynchat.async_chat):
             self.la()
         elif cmd == 'lo':
             self.lo()
+        elif cmd == 'll':
+            self.lo()
+        elif cmd == 'lt':
+            self.lt()
         elif cmd == 'cl':
             self.cl()
         elif cmd.startswith('update ') or cmd.startswith('up '):
@@ -88,19 +83,19 @@ class CLIHandler(asynchat.async_chat):
             item = self.sh.return_item(path)
             if hasattr(item, 'id'):
                 if item._type:
-                    self.push(u"{0} = {1}\n".format(item.id(), item()))
+                    self.push("{0} = {1}\n".format(item.id(), item()))
                 else:
-                    self.push("%s\n" % (item.id()))
+                    self.push("{}\n".format(item.id()))
                 for child in item:
                     self.ls(child.id())
             else:
-                self.push("Could not find path: %s\n" % (path))
+                self.push("Could not find path: {}\n".format(path))
 
     def la(self):
         self.push("Items:\n======\n")
         for item in self.sh.return_items():
             if item._type:
-                self.push(u"{0} = {1}\n".format(item.id(), item()))
+                self.push("{0} = {1}\n".format(item.id(), item()))
             else:
                 self.push("{0}\n".format(item.id()))
 
@@ -155,9 +150,15 @@ class CLIHandler(asynchat.async_chat):
         for logic in self.sh.return_logics():
             nt = self.sh.scheduler.return_next(logic)
             if nt is not None:
-                self.push("{0} (scheduled for {1})\n".format(logic, nt.strftime('%Y-%m-%d %H:%M:%S')))
+                self.push("{0} (scheduled for {1})\n".format(logic, nt.strftime('%Y-%m-%d %H:%M:%S%z')))
             else:
                 self.push("{0}\n".format(logic))
+
+    def lt(self):
+        # list all threads with names
+        self.push("{0} Threads:\n".format(threading.activeCount()))
+        for t in threading.enumerate():
+            self.push("{0}\n".format(t.name))
 
     def usage(self):
         self.push('cl: clean (memory) log\n')
@@ -165,6 +166,7 @@ class CLIHandler(asynchat.async_chat):
         self.push('ls item: list item and every child item (with values)\n')
         self.push('la: list all items (with values)\n')
         self.push('lo: list all logics and next execution time\n')
+        self.push('lt: list current thread names\n')
         self.push('update item = value: update the specified item with the specified value\n')
         self.push('up: alias for update\n')
         self.push('tr logic: trigger logic\n')
@@ -174,34 +176,23 @@ class CLIHandler(asynchat.async_chat):
         self.push('q: alias for quit\n')
 
 
-class CLI(asyncore.dispatcher):
+class CLI(lib.connection.Server):
 
     def __init__(self, smarthome, update='False', ip='127.0.0.1', port=2323):
-        asyncore.dispatcher.__init__(self, map=smarthome.socket_map)
+        lib.connection.Server.__init__(self, ip, port)
         self.sh = smarthome
         self.updates_allowed = smarthome.string2bool(update)
-        try:
-            self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.set_reuse_addr()
-            self.bind((ip, int(port)))
-            self.listen(5)
-        except Exception:
-            logger.error("Could not bind socket on %s:%s" % (ip, port))
 
-    def handle_accept(self):
-        pair = self.accept()
-        if pair is not None:
-            sock, (ip, port) = pair
-            logger.debug('Incoming connection from %s:%s' % (ip, port))
-            CLIHandler(self.sh, sock, ip, self.updates_allowed)
+    def handle_connection(self):
+        sock, address = self.accept()
+        if sock is None:
+            return
+        logger.debug("{}: incoming connection from {} to {}".format(self._name, address, self.address))
+        CLIHandler(self.sh, sock, address, self.updates_allowed)
 
     def run(self):
         self.alive = True
 
     def stop(self):
         self.alive = False
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    myplugin = CLI('smarthome-dummy')
-    myplugin.run()
+        self.close()

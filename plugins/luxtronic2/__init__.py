@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
-#########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
-#########################################################################
+#
 
 import sys
 import logging
@@ -25,7 +25,6 @@ import socket
 import threading
 import struct
 import time
-import datetime
 
 logger = logging.getLogger('')
 
@@ -72,15 +71,17 @@ class LuxBase():
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._sock.settimeout(2)
             self._sock.connect((self.host, self.port))
-        except Exception, e:
+        except Exception as e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
-                logger.error('Luxtronic2: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
+                logger.error(
+                    'Luxtronic2: could not connect to {0}:{1}: {2}'.format(self.host, self.port, e))
                 self._connection_attempts = self._connection_errorlog
             return
         finally:
             self._lock.release()
-        logger.info('Luxtronic2: connected to {0}:{1}'.format(self.host, self.port))
+        logger.info(
+            'Luxtronic2: connected to {0}:{1}'.format(self.host, self.port))
         self.is_connected = True
         self._connection_attempts = 0
 
@@ -97,7 +98,7 @@ class LuxBase():
             raise luxex("no connection to luxtronic.")
         try:
             self._sock.send(request)
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             self.close()
             raise luxex("error sending request: {0}".format(e))
@@ -106,7 +107,7 @@ class LuxBase():
         except socket.timeout:
             self._lock.release()
             raise luxex("error receiving answer: timeout")
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             self.close()
             raise luxex("error receiving answer: {0}".format(e))
@@ -118,14 +119,14 @@ class LuxBase():
         except socket.timeout:
             self._lock.release()
             raise luxex("error receiving payload: timeout")
-        except Exception, e:
+        except Exception as e:
             self._lock.release()
             self.close()
             raise luxex("error receifing payload: {0}".format(e))
 
     def set_param(self, param, value):
         param = int(param)
-        old = self._params[param] if param < len(self._params) else 0
+#       old = self._params[param] if param < len(self._params) else 0
         payload = struct.pack('!iii', 3002, int(param), int(value))
         self._lock.acquire()
         answer = self._request(payload, 8)
@@ -135,12 +136,14 @@ class LuxBase():
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
         fields = ['cmd', 'param']
-        answer = dict(zip(fields, answer))
+        answer = dict(list(zip(fields, answer)))
         if answer['cmd'] == 3002 and answer['param'] == param:
-            logger.debug("Luxtronic2: value {0} for parameter {1} stored".format(value, param))
+            logger.debug(
+                "Luxtronic2: value {0} for parameter {1} stored".format(value, param))
             return True
         else:
-            logger.warning("Luxtronic2: value {0} for parameter {1} not stored".format(value, param))
+            logger.warning(
+                "Luxtronic2: value {0} for parameter {1} not stored".format(value, param))
             return False
 
     def refresh_parameters(self):
@@ -153,7 +156,7 @@ class LuxBase():
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
         fields = ['cmd', 'len']
-        answer = dict(zip(fields, answer))
+        answer = dict(list(zip(fields, answer)))
         if answer['cmd'] == 3003:
             params = []
             for i in range(0, answer['len']):
@@ -179,7 +182,7 @@ class LuxBase():
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!ii', answer)
         fields = ['cmd', 'len']
-        answer = dict(zip(fields, answer))
+        answer = dict(list(zip(fields, answer)))
         if answer['cmd'] == 3005:
             attrs = []
             for i in range(0, answer['len']):
@@ -199,13 +202,13 @@ class LuxBase():
         request = struct.pack('!ii', 3004, 0)
         self._lock.acquire()
         answer = self._request(request, 12)
-        if len(answer) !=12:
+        if len(answer) != 12:
             self._lock.release()
             self.close()
             raise luxex("error receiving answer: no data")
         answer = struct.unpack('!iii', answer)
         fields = ['cmd', 'state', 'len']
-        answer = dict(zip(fields, answer))
+        answer = dict(list(zip(fields, answer)))
         if answer['cmd'] == 3004:
             calcs = []
             for i in range(0, answer['len']):
@@ -221,13 +224,14 @@ class LuxBase():
             logger.warning("Luxtronic2: failed to retrieve calculated")
             return 0
 
+
 class Luxtronic2(LuxBase):
     _parameter = {}
     _attribute = {}
     _calculated = {}
     _decoded = {}
     alive = True
-    
+
     def __init__(self, smarthome, host, port=8888, cycle=300):
         LuxBase.__init__(self, host, port)
         self._sh = smarthome
@@ -260,7 +264,7 @@ class Luxtronic2(LuxBase):
         if len(self._calculated) > 0 or len(self._decoded) > 0:
             self.refresh_calculated()
             for c in self._calculated:
-                val = self.get_caclulated(c)
+                val = self.get_calculated(c)
                 if val:
                     self._calculated[c](val, 'Luxtronic2')
             for d in self._decoded:
@@ -272,31 +276,55 @@ class Luxtronic2(LuxBase):
 
     def _decode(self, identifier, value):
         if identifier == 119:
-            if value == 0: return 'Heizbetrieb'
-            if value == 1: return 'Keine Anforderung'
-            if value == 2: return 'Netz- Einschaltverzoegerung'
-            if value == 3: return 'SSP Zeit'
-            if value == 4: return 'Sperrzeit'
-            if value == 5: return 'Brauchwasser'
-            if value == 6: return 'Estrich Programm'
-            if value == 7: return 'Abtauen'
-            if value == 8: return 'Pumpenvorlauf'
-            if value == 9: return 'Thermische Desinfektion'
-            if value == 10: return 'Kuehlbetrieb'
-            if value == 12: return 'Schwimmbad'
-            if value == 13: return 'Heizen Ext.'
-            if value == 14: return 'Brauchwasser Ext.'
-            if value == 16: return 'Durchflussueberwachung'
-            if value == 17: return 'ZWE Betrieb'
+            if value == 0:
+                return 'Heizbetrieb'
+            if value == 1:
+                return 'Keine Anforderung'
+            if value == 2:
+                return 'Netz- Einschaltverzoegerung'
+            if value == 3:
+                return 'SSP Zeit'
+            if value == 4:
+                return 'Sperrzeit'
+            if value == 5:
+                return 'Brauchwasser'
+            if value == 6:
+                return 'Estrich Programm'
+            if value == 7:
+                return 'Abtauen'
+            if value == 8:
+                return 'Pumpenvorlauf'
+            if value == 9:
+                return 'Thermische Desinfektion'
+            if value == 10:
+                return 'Kuehlbetrieb'
+            if value == 12:
+                return 'Schwimmbad'
+            if value == 13:
+                return 'Heizen Ext.'
+            if value == 14:
+                return 'Brauchwasser Ext.'
+            if value == 16:
+                return 'Durchflussueberwachung'
+            if value == 17:
+                return 'ZWE Betrieb'
             return '???'
-        if identifier == 10: return float(value)/10
-        if identifier == 11: return float(value)/10
-        if identifier == 12: return float(value)/10
-        if identifier == 15: return float(value)/10
-        if identifier == 19: return float(value)/10
-        if identifier == 20: return float(value)/10
-        if identifier == 151: return float(value)/10
-        if identifier == 152: return float(value)/10
+        if identifier == 10:
+            return float(value) / 10
+        if identifier == 11:
+            return float(value) / 10
+        if identifier == 12:
+            return float(value) / 10
+        if identifier == 15:
+            return float(value) / 10
+        if identifier == 19:
+            return float(value) / 10
+        if identifier == 20:
+            return float(value) / 10
+        if identifier == 151:
+            return float(value) / 10
+        if identifier == 152:
+            return float(value) / 10
         return value
 
     def parse_item(self, item):
@@ -320,7 +348,8 @@ class Luxtronic2(LuxBase):
 
     def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'Luxtronic2':
-           self.set_param(item.conf['lux2_p'], item()) 
+            self.set_param(item.conf['lux2_p'], item())
+
 
 def main():
     try:
@@ -333,19 +362,19 @@ def main():
         lux.refresh_attributes()
         lux.refresh_calculated()
         cycletime = time.time() - start
-        print "{0} Parameters:".format(lux.get_parameter_count())
+        print("{0} Parameters:".format(lux.get_parameter_count()))
         for i in range(0, lux.get_parameter_count()):
-            print "  {0} = {1}".format(i + 1, lux.get_parameter(i))
-        print "{0} Attributes:".format(lux.get_attribute_count())
+            print("  {0} = {1}".format(i + 1, lux.get_parameter(i)))
+        print("{0} Attributes:".format(lux.get_attribute_count()))
         for i in range(0, lux.get_attribute_count()):
-            print "  {0} = {1}".format(i + 1, lux.get_attribute(i))
-        print "{0} Calculated:".format(lux.get_calculated_count())
+            print("  {0} = {1}".format(i + 1, lux.get_attribute(i)))
+        print("{0} Calculated:".format(lux.get_calculated_count()))
         for i in range(0, lux.get_calculated_count()):
-            print "  {0} = {1}".format(i + 1, lux.get_calculated(i))
-        print "cycle takes {0} seconds".format(cycletime)
+            print("  {0} = {1}".format(i + 1, lux.get_calculated(i)))
+        print("cycle takes {0} seconds".format(cycletime))
 
-    except Exception, e:
-        print "[EXCEPTION] error main: {0}".format(e)
+    except Exception as e:
+        print("[EXCEPTION] error main: {0}".format(e))
         return 1
     finally:
         if lux:

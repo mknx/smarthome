@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2013 Marcus Popp                              marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 
 import logging
 import datetime
-import urllib2
 
 import dateutil.tz
 import dateutil.rrule
@@ -33,6 +32,7 @@ logger = logging.getLogger('')
 class iCal():
     DAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
     FREQ = ("YEARLY", "MONTHLY", "WEEKLY", "DAILY", "HOURLY", "MINUTELY", "SECONDLY")
+    PROPERTIES = ("SUMMARY", "DESCRIPTION", "LOCATION", "CATEGORIES")
 
     def __init__(self, smarthome):
         self._sh = smarthome
@@ -53,21 +53,16 @@ class iCal():
         pass
 
     def __call__(self, ics, delta=1, offset=0):
-        if ics.startswith('http://'):
-            try:
-                f = urllib2.urlopen(ics, timeout=2)
-                ical = f.read()
-                f.fp._sock.recv = None
-                f.close()
-            except Exception, e:
-                logger.error('Could not open ics file {0}: {1}'.format(ics, e))
+        if ics.startswith('http'):
+            ical = self._sh.tools.fetch_url(ics)
+            if ical is False:
                 return {}
+            ical = ical.decode()
         else:
             try:
-                f = open(ics, 'r')
-                ical = f.read()
-                f.close()
-            except IOError, e:
+                with open(ics, 'r') as f:
+                    ical = f.read()
+            except IOError as e:
                 logger.error('Could not open ics file {0}: {1}'.format(ics, e))
                 return {}
         now = self._sh.now()
@@ -76,35 +71,45 @@ class iCal():
         start = now.replace(hour=23, minute=59, second=59, microsecond=0) + datetime.timedelta(days=offset)
         end = start + datetime.timedelta(days=delta)
         events = self._parse_ical(ical, ics)
-        ret = {}
+        revents = {}
         for event in events:
             event = events[event]
+            e_start = event['DTSTART']
+            e_end = event['DTEND']
             if 'RRULE' in event:
-                for dt in event['RRULE'].between(start, end):
-                    if dt not in event['EXDATES']:
-                        time = dt.time()
-                        date = dt.date()
-                        if date not in ret:
-                            ret[date] = [[time, event['SUMMARY']]]
+                e_duration = e_end - e_start
+                for e_rstart in event['RRULE'].between(start, end, inc=True):
+                    if e_rstart not in event['EXDATES']:
+                        date = e_rstart.date()
+                        revent = {'Start': e_rstart, 'End': e_rstart + e_duration}
+                        for prop in self.PROPERTIES:
+                            if prop in event:
+                                revent[prop.capitalize()] = event[prop]
+                        if date not in revents:
+                            revents[date] = [revent]
                         else:
-                            ret[date].append([time, event['SUMMARY']])
+                            revents[date].append(revent)
             else:
-                dt = event['DTSTART']
-                if dt > start and dt < end:
-                    time = dt.time()
-                    date = dt.date()
-                    if date not in ret:
-                        ret[date] = [[time, event['SUMMARY']]]
+                if (e_start > start and e_start < end) or (e_start < start and e_end > start):
+                    date = e_start.date()
+                    revent = {'Start': e_start, 'End': e_end}
+                    for prop in self.PROPERTIES:
+                        if prop in event:
+                            revent[prop.capitalize()] = event[prop]
+                    if date not in revents:
+                        revents[date] = [revent]
                     else:
-                        ret[date].append([time, event['SUMMARY']])
-        return ret
+                        revents[date].append(revent)
+        return revents
 
     def _parse_date(self, val, dtzinfo, par=''):
         if par.startswith('TZID='):
             tmp, par, timezone = par.partition('=')
         if 'T' in val:  # ISO datetime
-            val, sep, off = val.partition('Z')
-            dt = datetime.datetime.strptime(val, "%Y%m%dT%H%M%S")
+            if 'Z' in val:
+                dt = datetime.datetime.strptime(val, "%Y%m%dT%H%M%SZ%z")
+            else:
+                dt = datetime.datetime.strptime(val, "%Y%m%dT%H%M%S")
         else:  # date
             y = int(val[0:4])
             m = int(val[4:6])
@@ -143,24 +148,27 @@ class iCal():
                         continue
                 else:
                     events[event['UID']] = event
-            else:
+                del(event)
+            elif 'event' in locals():
                 key, sep, val = line.partition(':')
                 key, sep, par = key.partition(';')
                 key = key.upper()
                 if key == 'TZID':
                     tzinfo = dateutil.tz.gettz(val)
                 elif key in ['UID', 'SUMMARY', 'SEQUENCE', 'RRULE']:
-                    event[key] = val
+                    event[key] = val  # noqa
                 elif key in ['DTSTART', 'DTEND', 'EXDATE', 'RECURRENCE-ID']:
                     try:
                         date = self._parse_date(val, tzinfo, par)
-                    except Exception, e:
+                    except Exception as e:
                         logger.warning("Problem parsing: {0}: {1}".format(ics, e))
                         continue
                     if key == 'EXDATE':
-                        event['EXDATES'].append(date)
+                        event['EXDATES'].append(date)  # noqa
                     else:
-                        event[key] = date
+                        event[key] = date  # noqa
+                else:
+                    event[key] = val  # noqa
         return events
 
     def _parse_rrule(self, event, tzinfo):
@@ -195,7 +203,7 @@ class iCal():
         if 'UNTIL' in rrule:
             try:
                 rrule['UNTIL'] = self._parse_date(rrule['UNTIL'], tzinfo)
-            except Exception, e:
+            except Exception as e:
                 logger.warning("Problem parsing UNTIL: {1} --- {0} ".format(event, e))
                 return
         for par in rrule:

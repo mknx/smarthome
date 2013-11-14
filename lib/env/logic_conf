@@ -1,0 +1,13 @@
+
+[env_init]
+    filename = init.py
+    crontab = init
+
+[env_stat]
+    filename = stat.py
+    cycle = 300
+
+[env_loc]
+    filename = location.py
+    crontab = init | sunrise+1m | sunset+1m | sunrise-5 | sunset-7
+    cycle = 1800

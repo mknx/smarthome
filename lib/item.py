@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
@@ -19,136 +19,295 @@
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
+import datetime
 import logging
+import os
+import pickle
 import threading
-import cPickle
 
 logger = logging.getLogger('')
 
 
+#####################################################################
+# Cast Methods
+#####################################################################
+
+def _cast_str(value):
+    if isinstance(value, str):
+        return value
+    else:
+        raise ValueError
+
+
+def _cast_list(value):
+    if isinstance(value, list):
+        return value
+    else:
+        raise ValueError
+
+
+def _cast_dict(value):
+    if isinstance(value, dict):
+        return value
+    else:
+        raise ValueError
+
+
+def _cast_foo(value):
+    return value
+
+
+def _cast_bool(value):
+    if type(value) in [bool, int, float]:
+        if value in [False, 0]:
+            return False
+        elif value in [True, 1]:
+            return True
+        else:
+            raise ValueError
+    elif type(value) in [str, str]:
+        if value.lower() in ['0', 'false', 'no', 'off']:
+            return False
+        elif value.lower() in ['1', 'true', 'yes', 'on']:
+            return True
+        else:
+            raise ValueError
+    else:
+        raise TypeError
+
+
+def _cast_scene(value):
+    return int(value)
+
+
+def _cast_num(value):
+    if isinstance(value, float):
+        return value
+    try:
+        return int(value)
+    except:
+        pass
+    try:
+        return float(value)
+    except:
+        pass
+    raise ValueError
+
+
+#####################################################################
+# Cache Methods
+#####################################################################
+def _cache_read(filename, tz):
+    ts = os.path.getmtime(filename)
+    dt = datetime.datetime.fromtimestamp(ts, tz)
+    value = None
+    with open(filename, 'rb') as f:
+        value = pickle.load(f)
+    return (dt, value)
+
+
+def _cache_write(filename, value):
+    try:
+        with open(filename, 'wb') as f:
+            pickle.dump(value, f)
+    except IOError:
+        logger.warning("Could not write to {}".format(filename))
+
+
+#####################################################################
+# Fade Method
+#####################################################################
+def _fadejob(item, dest, step, delta):
+    if item._fading:
+        return
+    else:
+        item._fading = True
+    if item._value < dest:
+        while (item._value + step) < dest and item._fading:
+            item(item._value + step, 'fader')
+            item._lock.acquire()
+            item._lock.wait(delta)
+            item._lock.release()
+    else:
+        while (item._value - step) > dest and item._fading:
+            item(item._value - step, 'fader')
+            item._lock.acquire()
+            item._lock.wait(delta)
+            item._lock.release()
+    if item._fading:
+        item._fading = False
+        item(dest, 'Fader')
+
+
+#####################################################################
+# Item Class
+#####################################################################
+
+
 class Item():
-    _defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None, 'scene': ''}
+    __defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None, 'scene': 0}
 
     def __init__(self, smarthome, parent, path, config):
-        # basic attributes
-        self._path = path
-        self._name = path
-        self._value = None
-        self._type = None
-        # public attributes
+        self._autotimer = False
+        self._cache = False
+        self.cast = _cast_bool
+        self.__changed_by = 'Init:None'
+        self.__children = []
         self.conf = {}
-        self._last_change = smarthome.now()
-        self._prev_change = self._last_change
-        self._changed_by = 'Init'
-        # special attributes
+        self._crontab = None
+        self._cycle = None
+        self._enforce_updates = False
+        self._eval = None
+        self._eval_trigger = False
+        self._fading = False
+        self._items_to_trigger = []
+        self.__last_change = smarthome.now()
+        self.__last_update = smarthome.now()
+        self._lock = threading.Condition()
+        self.__logics_to_trigger = []
+        self._name = path
+        self.__prev_change = smarthome.now()
+        self.__methods_to_trigger = []
+        self.__parent = parent
+        self._path = path
         self._sh = smarthome
+        self._threshold = False
+        self._type = None
+        self._value = None
         if hasattr(smarthome, '_item_change_log'):
             self._change_logger = logger.info
         else:
             self._change_logger = logger.debug
-        self._lock = threading.Condition()
-        self._cache = False
-        self._crontab = None
-        self._cycle = None
-        self._eval = False
-        self._threshold = False
-        self._enforce_updates = False
-        self._parent = parent
-        self._sub_items = []
-        self._methods_to_trigger = []
-        self._logics_to_trigger = []
-        self._items_to_trigger = []
-        self.__fade = False
-        self.parse(smarthome, parent, path, config)
-
-    def parse(self, smarthome, parent, path, config):
-        # parse config
-        for attr in config:
-            if isinstance(config[attr], dict):  # sub item
-                sub_path = self._path + '.' + attr
-                sub_item = smarthome.return_item(sub_path)
-                if sub_item is None:  # new item
-                    sub_item = Item(smarthome, self, sub_path, config[attr])
-                    vars(self)[attr] = sub_item
-                    smarthome.add_item(sub_path, sub_item)
-                    self._sub_items.append(sub_item)
-                else:  # existing item
-                    sub_item.parse(smarthome, self, sub_path, config[attr])
-            else:  # attribute
-                if attr == 'type':
-                    self._type = config[attr]
-                elif attr == 'value':
-                    self._value = config[attr]
-                elif attr == 'name':
-                    self._name = config[attr]
-                elif attr == 'cache':
-                    self._cache = self._return_bool(config[attr])
-                elif attr == 'enforce_updates':
-                    self._enforce_updates = self._return_bool(config[attr])
+        #############################################################
+        # Item Attributes
+        #############################################################
+        for attr, value in config.items():
+            if not isinstance(value, dict):
+                if attr in ['cycle', 'eval', 'name', 'type', 'value']:
+                    setattr(self, '_' + attr, value)
+                elif attr in ['cache', 'enforce_updates']:  # cast to bool
+                    try:
+                        setattr(self, '_' + attr, _cast_bool(value))
+                    except:
+                        logger.warning("Item '{0}': problem parsing '{1}'.".format(self._path, attr))
+                        continue
+                elif attr in ['crontab', 'eval_trigger']:  # cast to list
+                    if isinstance(value, str):
+                        value = [value, ]
+                    setattr(self, '_' + attr, value)
+                elif attr == 'autotimer':
+                    time, __, value = value.partition('=')
+                    if value is not None:
+                        self._autotimer = time, value
                 elif attr == 'threshold':
-                    self._threshold = config[attr]
-                elif attr == 'eval':
-                    self._eval = config[attr]
-                elif attr == 'eval_trigger':
-                    if isinstance(config[attr], str):
-                        self.conf[attr] = [config[attr], ]
-                    else:
-                        self.conf[attr] = config[attr]
-                elif attr == 'cycle':
-                    self._cycle = config[attr]
-                elif attr == 'crontab':
-                    if isinstance(config[attr], list):
-                        self._crontab = ','.join(config[attr])
-                    else:
-                        self._crontab = config[attr]
+                    low, __, high = value.rpartition(':')
+                    if not low:
+                        low = high
+                    self._threshold = True
+                    self.__th_crossed = False
+                    self.__th_low = float(low)
+                    self.__th_high = float(high)
+                    logger.debug("Item {}: set threshold => low: {} high: {}}".format(self._path, self.__th_low, self.__th_high))
                 else:
-                    self.conf[attr] = config[attr]
-        if self._type is not None:
-            if self._type not in self._defaults:
-                logger.warning(u"Item {0}: type '{1}' unknown. Please use one of: {2}.".format(path, self._type, ', '.join(self._defaults.keys())))
-                return
-            if self._value is None:
-                self._value = self._defaults[self._type]
-            else:
+                    self.conf[attr] = value
+        #############################################################
+        # Child Items
+        #############################################################
+        for attr, value in config.items():
+            if isinstance(value, dict):
+                child_path = self._path + '.' + attr
                 try:
-                    self._value = getattr(self, '_return_' + self._type)(self._value)
-                except:
-                    logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Ignoring!".format(path, self._value, self._type))
-                    return
-        else:
-            #logger.debug("Item '{0}': No type specified.".format(self._path))
-            return
+                    child = Item(smarthome, self, child_path, value)
+                except Exception as e:
+                    logger.error("Item {}: problem creating: ()".format(child_path, e))
+                else:
+                    vars(self)[attr] = child
+                    smarthome.add_item(child_path, child)
+                    self.__children.append(child)
+        #############################################################
+        # Cache
+        #############################################################
         if self._cache:
-            self._value = self._db_read()
-        if self._threshold:
-            low, sep, high = self._threshold.rpartition(':')
-            if not low:
-                low = high
-            self._th_low = float(low)
-            self._th_high = float(high)
-            logger.debug("Item '{0}': set threshold => low: {1} high: {2}".format(self._path, self._th_low, self._th_high))
-            self._th = False
+            self._cache = self._sh._cache_dir + self._path
+            try:
+                self.__last_change, self._value = _cache_read(self._cache, self._sh._tzinfo)
+                self.__last_update = self.__last_change
+                self.__changed_by = 'Cache:None'
+            except Exception as e:
+                logger.warning("Item {}: problem reading cache: {}".format(self._path, e))
+        #############################################################
+        # Type
+        #############################################################
+        if self._type is None:
+            logger.debug("Item {}: no type specified.".format(self._path))
+            return
+        if self._type not in self.__defaults:
+            logger.error("Item {}: type '{}' unknown. Please use one of: {}.".format(self._path, self._type, ', '.join(list(self.__defaults.keys()))))
+            raise AttributeError
+        self.cast = globals()['_cast_' + self._type]
+        #############################################################
+        # Value
+        #############################################################
+        if self._value is None:
+            self._value = self.__defaults[self._type]
+        try:
+            self._value = self.cast(self._value)
+        except:
+            logger.error("Item {}: value {} does not match type {}.".format(self._path, self._value, self._type))
+            raise
+        self.__prev_value = self._value
+        #############################################################
+        # Crontab/Cycle
+        #############################################################
         if self._crontab is not None or self._cycle is not None:
-            self._sh.scheduler.add(self.id(), self, cron=self._crontab, cycle=self._cycle)
+            self._sh.scheduler.add(self._path, self, cron=self._crontab, cycle=self._cycle)
+        #############################################################
+        # Plugins
+        #############################################################
         for plugin in self._sh.return_plugins():
             if hasattr(plugin, 'parse_item'):
                 update = plugin.parse_item(self)
                 if update:
-                    self.add_trigger_method(update)
+                    self.add_method_trigger(update)
 
-    def add_trigger_method(self, method):
-        self._methods_to_trigger.append(method)
+    def __call__(self, value=None, caller='Logic', source=None, dest=None):
+        if value is None or self._type is None:
+            return self._value
+        if self._eval:
+            args = {'value': value, 'caller': caller, 'source': source, 'dest': dest}
+            self._sh.trigger(name=self._path + '-eval', obj=self.__run_eval, value=args, by=caller, source=source, dest=dest)
+        else:
+            self.__update(value, caller, source, dest)
 
-    def init_prerun(self):
-        if 'eval_trigger' in self.conf:
-            triggers = []
-            for trigger in self.conf['eval_trigger']:
-                triggers += self._sh.match_items(trigger)
-            for item in triggers:
+    def __iter__(self):
+        for child in self.__children:
+            yield child
+
+    def __setitem__(self, item, value):
+        vars(self)[item] = value
+
+    def __getitem__(self, item):
+        return vars(self)[item]
+
+    def __bool__(self):
+        return self._value
+
+    def __str__(self):
+        return self._name
+
+    def __repr__(self):
+        return "Item: {}".format(self._path)
+
+    def _init_prerun(self):
+        if self._eval_trigger:
+            _items = []
+            for trigger in self._eval_trigger:
+                _items.extend(self._sh.match_items(trigger))
+            for item in _items:
                 if item != self:  # prevent loop
-                    item._items_to_trigger.append(self)
+                        item._items_to_trigger.append(self)
             if self._eval:
-                items = map(lambda x: 'sh.' + x.id() + '()', triggers)
+                items = ['sh.' + x.id() + '()' for x in _items]
                 if self._eval == 'and':
                     self._eval = ' and '.join(items)
                 elif self._eval == 'or':
@@ -158,233 +317,168 @@ class Item():
                 elif self._eval == 'avg':
                     self._eval = '({0})/{1}'.format(' + '.join(items), len(items))
 
-    def init_run(self):
-        if 'eval_trigger' in self.conf:
+    def _init_run(self):
+        if self._eval_trigger:
             if self._eval:
-                self._sh.trigger(name=self._path, obj=self._run_eval, by='Init')
-            del(self.conf['eval_trigger'])
+                self._sh.trigger(name=self._path, obj=self.__run_eval, by='Init', value={'caller': 'Init'})
 
-    def last_change(self):
-        return self._last_change
-
-    def prev_change(self):
-        return self._prev_change
-
-    def changed_by(self):
-        return self._changed_by
-
-    def age(self):
-        delta = self._sh.now() - self._last_change
-        return delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
-
-    def _run_eval(self, value=None, caller='Eval', source=None, dest=None):
+    def __run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
             sh = self._sh  # noqa
-            value = eval(self._eval)
-            self._update(value, caller, source)
+            try:
+                value = eval(self._eval)
+            except Exception as e:
+                logger.warning("Item {}: problem evaluating {}: {}".format(self._path, self._eval, e))
+            else:
+                if value is None:
+                    logger.info("Item {}: evaluating {} returns None".format(self._path, self._eval))
+                else:
+                    self.__update(value, caller, source, dest)
 
-    def __del__(self):
-        # dummy for garbage collection
-        logger.warning("Deleting Item: {0}".format(self._path))
+    def __trigger_logics(self):
+        for logic in self.__logics_to_trigger:
+            logic.trigger('Item', self._path, self._value)
 
-    def __call__(self, value=None, caller='Logic', source=None, dest=None):
-        if value is None or self._type is None:
-            return self._value
+    def __update(self, value, caller='Logic', source=None, dest=None):
         try:
-            value = getattr(self, '_return_' + self._type)(value)
+            value = self.cast(value)
         except:
             try:
-                logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4}".format(self._path, value, self._type, caller, source))
+                logger.warning("Item {}: value {} does not match type {}. Via {} {}".format(self._path, value, self._type, caller, source))
             except:
                 pass
             return
-        if self._eval:
-            args = {'value': value, 'caller': caller, 'source': source, 'dest': dest}
-            self._sh.trigger(name=self._path + '-eval', obj=self._run_eval, value=args, by=caller, source=source, dest=dest)
-        else:
-            self._update(value, caller, source, dest)
-
-    def _update(self, value=None, caller='Logic', source=None, dest=None):
-        try:
-            value = getattr(self, '_return_' + self._type)(value)
-        except:
-            logger.error(u"Item '{0}': value ({1}) does not match type ({2}). Via {3} {4} => {5}".format(self._path, value, self._type, caller, source, dest))
-            return
         self._lock.acquire()
-        if value != self._value or self._enforce_updates:  # value change
-            #logger.debug("update item: %s" % self._path)
-            if caller != "fade":
-                self.__fade = False
-                self._lock.notify_all()
-                self._change_logger(u"{0} = {1} via {2} {3}".format(self._path, value, caller, source))
+        _changed = False
+        if value != self._value:
+            _changed = True
+            self.__prev_value = self._value
             self._value = value
-            delta = self._sh.now() - self._last_change
-            self._prev_change = delta.seconds + delta.days * 24 * 3600  # FIXME change to timedelta.total_seconds()
-            self._last_change = self._sh.now()
-            self._changed_by = "{0}:{1}".format(caller, source)
-            self._lock.release()
-            for update_plugin in self._methods_to_trigger:
+            self.__prev_change = self.__last_change
+            self.__last_change = self._sh.now()
+            self.__changed_by = "{0}:{1}".format(caller, source)
+            if caller != "fader":
+                self._fading = False
+                self._lock.notify_all()
+                self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
+        self._lock.release()
+        if _changed or self._enforce_updates:
+            self.__last_update = self._sh.now()
+            for method in self.__methods_to_trigger:
                 try:
-                    update_plugin(self, caller, source, dest)
-                except Exception, e:
-                    logger.error("Problem running {0}: {1}".format(update_plugin, e))
-            if self._threshold and self._logics_to_trigger:
-                if self._th and self._value <= self._th_low:  # cross lower bound
-                    self._th = False
-                    self._trigger_logics()
-                elif not self._th and self._value >= self._th_high:  # cross upper bound
-                    self._th = True
-                    self._trigger_logics()
-            elif self._logics_to_trigger:
-                self._trigger_logics()
+                    method(self, caller, source, dest)
+                except Exception as e:
+                    logger.exception("Item {}: problem running {}: {}".format(self._path, method, e))
+            if self._threshold and self.__logics_to_trigger:
+                if self.__th_crossed and self._value <= self.__th_low:  # cross lower bound
+                    self.__th_crossed = False
+                    self.__trigger_logics()
+                elif not self.__th_crossed and self._value >= self.__th_high:  # cross upper bound
+                    self.__th_crossed = True
+                    self.__trigger_logics()
+            elif self.__logics_to_trigger:
+                self.__trigger_logics()
             for item in self._items_to_trigger:
                 args = {'value': value, 'source': self._path}
-                self._sh.trigger(name=item.id(), obj=item._run_eval, value=args, by=caller, source=source, dest=dest)
-            if self._cache and not self.__fade:
-                self._db_update(value)
+                self._sh.trigger(name=item.id(), obj=item.__run_eval, value=args, by=caller, source=source, dest=dest)
+        if _changed and self._cache and not self._fading:
+            try:
+                _cache_write(self._cache, value)
+            except Exception as e:
+                logger.warning("Item: {}: could update cache {}".format(self._path, e))
+        if self._autotimer and caller != 'Autotimer' and not self._fading:
+            _time, _value = self._autotimer
+            self.timer(_time, _value, True)
+
+    def add_logic_trigger(self, logic):
+        self.__logics_to_trigger.append(logic)
+
+    def add_method_trigger(self, method):
+        self.__methods_to_trigger.append(method)
+
+    def age(self):
+        delta = self._sh.now() - self.__last_change
+        return delta.total_seconds()
+
+    def autotimer(self, time=None, value=None):
+        if time is not None and value is not None:
+            self._autotimer = time, value
         else:
-            self._lock.release()
+            self._autotimer = False
 
-    def __iter__(self):
-        for item in self._sub_items:
-            yield item
+    def changed_by(self):
+        return self.__changed_by
 
-    def return_children(self):
-        for item in self._sub_items:
-            yield item
-
-    def return_parent(self):
-        return self._parent
-
-    def __setitem__(self, item, value):
-        vars(self)[item] = value
-
-    def __getitem__(self, item):
-        return vars(self)[item]
-
-    def _db_read(self):
-        try:
-            with open(self._sh._cache_dir + self._path, 'r') as f:
-                return cPickle.load(f)
-        except IOError:
-            logger.info("Could not read {0}{1}".format(self._sh._cache_dir, self._path))
-            try:
-                return getattr(self, '_return_' + self._type)(0)
-            except:
-                return False
-        except EOFError:
-            logger.info("{0}{1} is empty".format(self._sh._cache_dir, self._path))
-            try:
-                return getattr(self, '_return_' + self._type)(0)
-            except:
-                return False
-
-    def _db_update(self, value):
-        try:
-            with open(self._sh._cache_dir + self._path, 'w') as f:
-                cPickle.dump(value, f)
-        except IOError:
-            logger.warning("Could not write to {0}{1}".format(self._sh._cache_dir, self._path))
-
-    # don't compare value, compare object: if you want to compare value, do check item()
-    #def __cmp__(self, compare):
-    #    return cmp(self._value, compare)
+    def fade(self, dest, step=1, delta=1):
+        dest = float(dest)
+        self._sh.trigger(self._path, _fadejob, value={'item': self, 'dest': dest, 'step': step, 'delta': delta})
 
     def id(self):
         return self._path
 
-    def __nonzero__(self):
-        return self._value
+    def last_change(self):
+        return self.__last_change
 
-    def __str__(self):
-        return self._name
+    def last_update(self):
+        return self.__last_update
 
-    def __repr__(self):
-        return "Item: {0}".format(self._value)
+    def prev_age(self):
+        delta = self.__last_change - self.__prev_change
+        return delta.total_seconds()
 
-    def add_logic_trigger(self, logic):
-        self._logics_to_trigger.append(logic)
+    def prev_change(self):
+        return self.__prev_change
 
-    def _trigger_logics(self):
-        for logic in self._logics_to_trigger:
-            logic.trigger('Item', self._path, self._value)
+    def prev_value(self):
+        return self.__prev_value
 
-    def _return_str(self, value):
-        if isinstance(value, basestring):
-            return value
-        else:
-            raise ValueError
+    def return_children(self):
+        for child in self.__children:
+            yield child
 
-    def _return_list(self, value):
-        if isinstance(value, list):
-            return value
-        else:
-            raise ValueError
+    def return_parent(self):
+        return self.__parent
 
-    def _return_dict(self, value):
-        if isinstance(value, dict):
-            return value
-        else:
-            raise ValueError
-
-    def _return_foo(self, value):
-        return value
-
-    def _return_bool(self, value):
-        if type(value) in [bool, int, long, float]:
-            if value in [False, 0]:
-                return False
-            elif value in [True, 1]:
-                return True
-            else:
-                raise ValueError
-        elif type(value) in [str, unicode]:
-            if value.lower() in ['0', 'false', 'no', 'off']:
-                return False
-            elif value.lower() in ['1', 'true', 'yes', 'on']:
-                return True
-            else:
-                raise ValueError
-        else:
-            raise TypeError
-
-    def _return_scene(self, value):
-        return int(value)
-
-    def _return_num(self, value):
-        if isinstance(value, float):
-            return value
+    def set(self, value, caller='Logic', source=None, dest=None):
         try:
-            return int(value)
+            value = self.cast(value)
         except:
-            pass
-        try:
-            return float(value)
-        except:
-            pass
-        raise ValueError
-
-    def fade(self, dest, step=1, delta=1):
-        dest = float(dest)
-        self._sh.trigger('fade', self._fadejob, value={'dest': dest, 'step': step, 'delta': delta})
-
-    def _fadejob(self, dest, step, delta):
-        if self.__fade:
+            try:
+                logger.warning("Item {}: value {} does not match type {}. Via {} {}".format(self._path, value, self._type, caller, source))
+            except:
+                pass
             return
+        self._lock.acquire()
+        self._value = value
+        self.__prev_change = self.__last_change
+        self.__last_change = self._sh.now()
+        self.__changed_by = "{0}:{1}".format(caller, None)
+        self._lock.release()
+        self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
+
+    def timer(self, time, value, auto=False):
+        try:
+            if isinstance(time, str):
+                time = time.strip()
+                if time.endswith('m'):
+                    time = int(time.strip('m')) * 60
+                else:
+                    time = int(time)
+            if isinstance(value, str):
+                value = value.strip()
+            if auto:
+                caller = 'Autotimer'
+                self._autotimer = time, value
+            else:
+                caller = 'Timer'
+            next = self._sh.now() + datetime.timedelta(seconds=time)
+        except Exception as e:
+            logger.warning("Item {}: timer ({}, {}) problem: {}".format(self._path, time, value, e))
         else:
-            self.__fade = True
-        if self._value < dest:
-            while (self._value + step) < dest and self.__fade:
-                self(self._value + step, 'fade')
-                self._lock.acquire()
-                self._lock.wait(delta)
-                self._lock.release()
-        else:
-            while (self._value - step) > dest and self.__fade:
-                self(self._value - step, 'fade')
-                self._lock.acquire()
-                self._lock.wait(delta)
-                self._lock.release()
-        if self.__fade:
-            self.__fade = False
-            self(dest)
+            self._sh.scheduler.add(self.id() + '-Timer', self.__call__, value={'value': value, 'caller': caller}, next=next)
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+    i = Item('sh', 'parent', 'path1', {'type': 'str', 'child1': {'type': 'bool'}, 'value': 'tqwer'})
+    i = Item('sh', 'parent', 'path', {'type': 'str', 'value': 'tqwer'})
+    i('test2')

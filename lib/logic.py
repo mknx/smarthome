@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,29 +21,28 @@
 
 import logging
 import os
-import configobj
+
+import lib.config
 
 logger = logging.getLogger('')
 
 
 class Logics():
 
-    def __init__(self, smarthome, configfile):
+    def __init__(self, smarthome, userlogicconf, envlogicconf):
         logger.info('Start Logics')
         self._sh = smarthome
         self._workers = []
         self._logics = {}
         self._bytecode = {}
         self.alive = True
-        logger.debug("reading logics from %s" % configfile)
-        try:
-            self._config = configobj.ConfigObj(configfile, file_error=True)
-        except Exception, e:
-            logger.critical(e)
-            return
-        for name in self._config:
-            logger.debug("Logic: %s" % name)
-            logic = Logic(self._sh, name, self._config[name])
+        _config = {}
+        _config.update(self._read_logics(envlogicconf, smarthome._env_dir))
+        _config.update(self._read_logics(userlogicconf, smarthome._logic_dir))
+
+        for name in _config:
+            logger.debug("Logic: {}".format(name))
+            logic = Logic(self._sh, name, _config[name])
             if hasattr(logic, 'bytecode'):
                 self._logics[name] = logic
                 self._sh.scheduler.add(name, logic, logic.prio, logic.crontab, logic.cycle)
@@ -57,11 +56,21 @@ class Logics():
             if hasattr(logic, 'watch_item'):
                 if isinstance(logic.watch_item, str):
                     logic.watch_item = [logic.watch_item]
-                items = []
                 for entry in logic.watch_item:
-                    items += self._sh.match_items(entry)
-                for item in items:
-                    item.add_logic_trigger(logic)
+                    for item in self._sh.match_items(entry):
+                        item.add_logic_trigger(logic)
+
+    def _read_logics(self, filename, directory):
+        logger.debug("Reading Logics from {}".format(filename))
+        try:
+            config = lib.config.parse(filename)
+            for name in config:
+                if 'filename' in config[name]:
+                    config[name]['filename'] = directory + config[name]['filename']
+        except Exception as e:
+            logger.critical(e)
+            config = {}
+        return config
 
     def __iter__(self):
         for logic in self._logics:
@@ -86,11 +95,11 @@ class Logic():
             vars(self)[attribute] = attributes[attribute]
         self.generate_bytecode()
         self.prio = int(self.prio)
-        if self.crontab is not None:
-            if isinstance(self.crontab, list):
-                self.crontab = ','.join(self.crontab)  # rejoin crontab entry to a string
 
     def id(self):
+        return self.name
+
+    def __str__(self):
         return self.name
 
     def __call__(self, caller='Logic', source=None, value=None, dest=None, dt=None):
@@ -101,13 +110,14 @@ class Logic():
 
     def generate_bytecode(self):
         if hasattr(self, 'filename'):
-            filename = self._sh.base_dir + '/logics/' + self.filename
-            if not os.access(filename, os.R_OK):
-                logger.warning("%s: Could not access logic file (%s) => ignoring." % (self.name, self.filename))
+            if not os.access(self.filename, os.R_OK):
+                logger.warning("{}: Could not access logic file ({}) => ignoring.".format(self.name, self.filename))
                 return
             try:
-                self.bytecode = compile(open(filename).read(), self.filename, 'exec')
-            except Exception, e:
-                logger.warning("Exception: %s" % e)
+                code = open(self.filename).read()
+                code = code.lstrip('\ufeff')  # remove BOM
+                self.bytecode = compile(code, self.filename, 'exec')
+            except Exception as e:
+                logger.exception("Exception: {}".format(e))
         else:
-            logger.warning("%s: No filename specified => ignoring." % self.name)
+            logger.warning("{}: No filename specified => ignoring.".format(self.name))

@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+#
 # Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
-#########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,12 +17,10 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py.  If not, see <http://www.gnu.org/licenses/>.
-#########################################################################
+#
 
 import logging
 import socket
-import threading
-import struct
 import time
 import base64
 
@@ -30,7 +28,9 @@ from uuid import getnode as getmac
 
 logger = logging.getLogger('')
 
+
 class SmartTV():
+
     def __init__(self, smarthome, host, port=55000, tvid=1):
         self._sh = smarthome
         self._host = host
@@ -42,8 +42,9 @@ class SmartTV():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((self._host, int(self._port)))
             logger.debug("Connected to {0}:{1}".format(self._host, self._port))
-        except Exception, e:
-            logger.warning("Could not connect to %s:%s, to send key: %s." % (self._host, self._port, key))
+        except Exception:
+            logger.warning("Could not connect to %s:%s, to send key: %s." %
+                           (self._host, self._port, key))
             return
 
         src = s.getsockname()[0]            # ip of remote
@@ -53,21 +54,24 @@ class SmartTV():
         app = 'python'                      # iphone..iapp.samsung
         tv = 'UE32ES6300'                   # iphone.UE32ES6300.iapp.samsung
 
-        logger.debug("src = {0}, mac = {1}, remote = {2}, dst = {3}, app = {4}, tv = {5}".format(src, mac, remote, dst, app, tv))
+        logger.debug("src = {0}, mac = {1}, remote = {2}, dst = {3}, app = {4}, tv = {5}".format(
+            src, mac, remote, dst, app, tv))
 
         msg = chr(0x64) + chr(0x00) +\
-              chr(len(base64.b64encode(src)))    + chr(0x00) + base64.b64encode(src) +\
-              chr(len(base64.b64encode(mac)))    + chr(0x00) + base64.b64encode(mac) +\
-              chr(len(base64.b64encode(remote))) + chr(0x00) + base64.b64encode(remote)
+            chr(len(base64.b64encode(src))) + chr(0x00) + base64.b64encode(src) +\
+            chr(len(base64.b64encode(mac))) + chr(0x00) + base64.b64encode(mac) +\
+            chr(len(base64.b64encode(remote))) + \
+            chr(0x00) + base64.b64encode(remote)
         pkt = chr(0x00) +\
-              chr(len(app)) + chr(0x00) + app +\
-              chr(len(msg)) + chr(0x00) + msg
+            chr(len(app)) + chr(0x00) + app +\
+            chr(len(msg)) + chr(0x00) + msg
         s.send(pkt)
         msg = chr(0x00) + chr(0x00) + chr(0x00) +\
-              chr(len(base64.b64encode(key))) + chr(0x00) + base64.b64encode(key)
+            chr(len(base64.b64encode(key))) + \
+            chr(0x00) + base64.b64encode(key)
         pkt = chr(0x00) +\
-              chr(len(tv))  + chr(0x00) + tv +\
-              chr(len(msg)) + chr(0x00) + msg
+            chr(len(tv)) + chr(0x00) + tv +\
+            chr(len(msg)) + chr(0x00) + msg
         s.send(pkt)
         s.close()
         logger.debug("Send {0} to Smart TV".format(key))
@@ -83,7 +87,8 @@ class SmartTV():
             return None
 
         if 'smarttv' in item.conf:
-            logger.debug("Smart TV Item {0} with value {1} for TV ID {2} found!".format(item, item.conf['smarttv'], tvid))
+            logger.debug("Smart TV Item {0} with value {1} for TV ID {2} found!".format(
+                item, item.conf['smarttv'], tvid))
             return self.update_item
         else:
             return None
@@ -107,10 +112,10 @@ class SmartTV():
 
     def run(self):
         self.alive = True
-     
+
     def stop(self):
         self.alive = False
-    
+
     def _int_to_words(self, int_val, word_size, num_words):
         max_int = 2 ** (num_words * word_size) - 1
 

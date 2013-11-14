@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 Marcus Popp                               marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -25,12 +25,12 @@ import time
 
 logger = logging.getLogger('')
 
-import lib.my_asynchat
+import lib.connection
 
 
 class MPD():
 
-    def __init__(self, smarthome, cycle=1):
+    def __init__(self, smarthome, cycle=2):
         self._sh = smarthome
         self._mpds = []
         self._cycle = float(cycle)
@@ -48,14 +48,14 @@ class MPD():
     def stop(self):
         self.alive = False
         for d in self._mpds:
-            d.handle_close()
+            d.close()
 
     def parse_item(self, item):
         if 'mpd_host' in item.conf:
             self._mpds.append(mpd(self._sh, item))
 
 
-class mpd(lib.my_asynchat.AsynChat):
+class mpd(lib.connection.Client):
 
     _listen_keys = ['state', 'volume', 'repeat', 'random', 'single', 'time', 'total', 'percent', 'play', 'pause', 'stop', 'song', 'playlistlength', 'nextsongid']
     _current_keys = {'title': 'Title', 'name': 'Name', 'album': 'Album', 'artist': 'Artist', 'albumartist': 'AlbumArtist', 'track': 'Track', 'disc': 'Disc', 'file': 'file'}
@@ -67,15 +67,14 @@ class mpd(lib.my_asynchat.AsynChat):
         else:
             port = 6600
         host = item.conf['mpd_host']
-        lib.my_asynchat.AsynChat.__init__(self, smarthome, host, port)
-        self.terminator = '\n'
-        self.parse_data = self.handshake
+        lib.connection.Client.__init__(self, host, port, monitor=True)
         self._sh = smarthome
-        smarthome.monitor_connection(self)
         self._cmd_lock = threading.Lock()
         self._reply_lock = threading.Condition()
         self._reply = {}
         self._items = {}
+        self.terminator = b'\n'
+        self.found_terminator = self.handshake
         for child in self._sh.find_children(item, 'mpd_listen'):
             listen_to = child.conf['mpd_listen']
             if listen_to in self._listen_keys:
@@ -85,15 +84,15 @@ class mpd(lib.my_asynchat.AsynChat):
         for child in self._sh.find_children(item, 'mpd_send'):
             send_to = child.conf['mpd_send']
             if send_to in self._bool_keys:
-                child.add_trigger_method(self._send_bool)
+                child.add_method_trigger(self._send_bool)
             elif send_to == 'volume':
-                child.add_trigger_method(self._send_volume)
+                child.add_method_trigger(self._send_volume)
             elif send_to == 'value':
-                child.add_trigger_method(self._send_value)
+                child.add_method_trigger(self._send_value)
             else:
-                child.add_trigger_method(self._send_command)
+                child.add_method_trigger(self._send_command)
         for child in self._sh.find_children(item, 'mpd_file'):
-            child.add_trigger_method(self._play_file)
+            child.add_method_trigger(self._play_file)
         # adding item methods
         item.command = self.command
         item.play_file = self.play_file
@@ -131,6 +130,7 @@ class mpd(lib.my_asynchat.AsynChat):
             content = self._sh.tools.fetch_url(url, timeout=4)
             if content is False:
                 return play
+            content = content.decode()
             if ext == 'pls':
                 for line in content.splitlines():
                     if line.startswith('File'):
@@ -165,7 +165,7 @@ class mpd(lib.my_asynchat.AsynChat):
         self._cmd_lock.acquire()
         self._reply = {}
         self._reply_lock.acquire()
-        self.push(command.encode('utf-8') + '\n')
+        self.send((command + '\n').encode())
         if wait:
             self._reply_lock.wait(1)
         self._reply_lock.release()
@@ -185,7 +185,7 @@ class mpd(lib.my_asynchat.AsynChat):
         if 'time' in status:
             status['time'], sep, status['total'] = status['time'].partition(':')
             if 'percent' in self._items:
-                if status['total'] != u'0':
+                if status['total'] != '0':
                     status['percent'] = int(int(status['time']) / (int(status['total']) / 100.0))
                 else:
                     status['percent'] = 0
@@ -196,24 +196,21 @@ class mpd(lib.my_asynchat.AsynChat):
         for attr in self._items:
             if attr in status:
                 try:
-                    self._items[attr](unicode(status[attr]), 'MPD')
+                    self._items[attr](str(status[attr]), 'MPD')
                 except Exception as e:
-                    logger.warning(u"Error processing attr '{0}' value '{1}'".format(attr, unicode(status[attr])))
+                    logger.warning("Error processing attr '{0}' value '{1}'".format(attr, str(status[attr])))
                     logger.warning("Exception: {0}".format(e))
 
     def handle_connect(self):
-        self.parse_data = self.handshake
+        self.found_terminator = self.handshake
 
     def handshake(self, data):
+        data = data.decode()
         if data.startswith('OK MPD'):
-            self.parse_data = self.parse_reply
-
-    def found_terminator(self):
-        data = self.buffer
-        self.buffer = ''
-        self.parse_data(data)
+            self.found_terminator = self.parse_reply
 
     def parse_reply(self, data):
+        data = data.decode()
         if data.startswith('OK'):
             self._reply_lock.acquire()
             self._reply_lock.notify()
@@ -222,4 +219,4 @@ class mpd(lib.my_asynchat.AsynChat):
             logger.warning(data)
         else:
             key, sep, value = data.partition(': ')
-            self._reply[key] = value.decode('utf-8')
+            self._reply[key] = value

@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012-2013 KNX-User-Forum e.V.       http://knx-user-forum.de/
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@
 #########################################################################
 
 import logging
-import urllib
-import urllib2
-import base64
-import xml.etree.cElementTree
+import urllib.request
+import urllib.parse
+import urllib.error
+import xml.etree.ElementTree
 
 logger = logging.getLogger('')
 
@@ -63,28 +63,24 @@ class Snom():
     def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'HTTP':
             uri = "https://{0}/dummy.htm".format(item.conf['snom_host'])
+            req = "{0}?settings=save&store_settings=save&{1}={2}".format(uri, item.conf['snom_key'], urllib.parse.quote(str(item())))
             try:
-                req = urllib2.Request("{0}?settings=save&store_settings=save&{1}={2}".format(uri, item.conf['snom_key'], urllib.quote(str(item()))))
-                req.add_header('Authorization', 'Basic ' + base64.b64encode(self._username + ':' + self._password))
-                u = urllib2.urlopen(req, timeout=2)
-                u.fp._sock.recv = None
-                u.close()
-                del(u, req)
-            except Exception, e:
-                logger.warning("Error updating Snom Phone ({0}): {1}".format(item.conf['snom_host'], e))
+                self._sh.tools.fetch_url(req, self._username, self._password)
+            except Exception as e:
+                logger.exception("Error updating Snom Phone ({0}): {1}".format(item.conf['snom_host'], e))
 
     def phonebook_add(self, name, number):
         if self._phonebook is None:
             logger.warning("Snom: No Phonebook specified")
             return
-        root = xml.etree.cElementTree.Element('SnomIPPhoneDirectory')
+        root = xml.etree.ElementTree.Element('SnomIPPhoneDirectory')
         root.text = "\n"
-        tree = xml.etree.cElementTree.ElementTree(root)
+        tree = xml.etree.ElementTree.ElementTree(root)
         try:
             root = tree.parse(self._phonebook)
-        except IOError, e:
+        except IOError as e:
             logger.warning("Could not read {0}: {1}".format(self._phonebook, e))
-        except Exception, e:
+        except Exception as e:
             logger.warning("Problem reading {0}: {1}".format(self._phonebook, e))
             return
         found = False
@@ -96,10 +92,10 @@ class Snom():
                 found = True
         if not found:
             # add new element
-            new = xml.etree.cElementTree.SubElement(tree.getroot(), 'DirectoryEntry')
+            new = xml.etree.ElementTree.SubElement(tree.getroot(), 'DirectoryEntry')
             new.tail = "\n"
-            xml.etree.cElementTree.SubElement(new, 'Name').text = name
-            xml.etree.cElementTree.SubElement(new, 'Telephone').text = number
+            xml.etree.ElementTree.SubElement(new, 'Name').text = name
+            xml.etree.ElementTree.SubElement(new, 'Telephone').text = number
             # sort
             data = []
             for entry in tree.findall('DirectoryEntry'):
@@ -109,5 +105,5 @@ class Snom():
             root[:] = [item[-1] for item in data]
         try:
             tree.write(self._phonebook, encoding="UTF-8", xml_declaration=True)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Problem writing {0}: {1}".format(self._phonebook, e))

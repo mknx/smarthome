@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2012-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,12 +19,13 @@
 #  along with SmartHome.py.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
+import base64
+import datetime
+import http.client
 import logging
 import math
-import datetime
-import urllib2
 import subprocess
-import base64
+import time
 
 logger = logging.getLogger('')
 
@@ -48,20 +49,49 @@ class Tools():
         log = math.log((rf + 0.01) / 100)  # + 0.01 to 'cast' float
         return round((241.2 * log + 4222.03716 * t / (241.2 + t)) / (17.5043 - log - 17.5043 * t / (241.2 + t)), 2)
 
+    def dt2js(self, dt):
+        return time.mktime(dt.timetuple()) * 1000 + int(dt.microsecond / 1000)
+
+    def dt2ts(self, dt):
+        return time.mktime(dt.timetuple())
+
+    def fetch_url(self, url, username=None, password=None, timeout=2):
+        headers = {'Accept': 'text/plain'}
+        plain = True
+        if url.startswith('https'):
+            plain = False
+        lurl = url.split('/')
+        host = lurl[2]
+        purl = '/' + '/'.join(lurl[3:])
+        if plain:
+            conn = http.client.HTTPConnection(host, timeout=timeout)
+        else:
+            conn = http.client.HTTPSConnection(host, timeout=timeout)
+        if username and password:
+            headers['Authorization'] = ('Basic '.encode() + base64.b64encode((username + ':' + password).encode()))
+        try:
+            conn.request("GET", purl, headers=headers)
+        except Exception as e:
+            logger.warning("Problem fetching {0}: {1}".format(url, e))
+            conn.close()
+            return False
+        resp = conn.getresponse()
+        if resp.status == 200:
+            content = resp.read()
+        else:
+            logger.warning("Problem fetching {0}: {1} {2}".format(url, resp.status, resp.reason))
+            content = False
+        conn.close()
+        return content
+
+    def rel2abs(self, t, rf):
+        t += 273.15
+        if rf > 1:
+            rf /= 100
+        sat = 611.0 * math.exp(-2.5e6 * 18.0160 / 8.31432E3 * (1.0 / t - 1.0 / 273.16))
+        mix = 18.0160 / 28.9660 * rf * sat / (100000 - rf * sat)
+        rhov = 100000 / (287.0 * (1 - mix) + 462.0 * mix) / t
+        return mix * rhov * 1000
+
     def runtime(self):
         return datetime.datetime.now() - self._start
-
-    def fetch_url(self, uri, username=None, password=None, timeout=2):
-        try:
-            r = urllib2.Request(uri)
-            if username and password:
-                r.add_header('Authorization', 'Basic ' + base64.b64encode(username + ':' + password))
-            u = urllib2.urlopen(r, timeout=timeout)
-            data = u.read()
-            u.fp._sock.recv = None
-            u.close()
-            del(r, u)
-            return data
-        except Exception, e:
-            logger.warning("Problem fetching {0}: {1}".format(uri, e))
-            return False

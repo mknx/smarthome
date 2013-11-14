@@ -1,10 +1,82 @@
 In Developement
 ===============
+   * ComfoAir Plugin
    * Denon Plugin
-   * Hue Plugin
-   * eBus Plugin
-   * Squeezebox Plugin
-   * DLMS Plugin
+   * Fritzbox refactoring
+   * Modbus Plugin
+
+# 1.0
+## With Contributions from:
+   * Daniel (mode)
+   * Jan N. Klug
+   * Lars Bernau (lbernau)
+   * Marcus (mannmawg)
+   * Mark Hönisch
+   * Matthias Lemke
+   * Mike Pieper
+   * Mirko Hirsch
+   * mptei
+   * Niko Will
+   * Oliver Hinckel
+   * Robert Budde
+   * xtcommerce
+
+## New Plugins
+   * Artnet
+   * Boxcar
+   * DLMS
+   * easymeter
+   * eBusd
+   * ecmd
+   * eta_pu
+   * Hue
+   * iaqstick
+   * Kostal
+   * NetIO230B
+   * NMA
+   * SMA
+   * Squeezebox
+   * vr100
+   * wettercom
+
+## Base Features
+   * sh.match_items, eval_trigger and watch_item: supports item attribute matches by ':attribute' e.b. '*:my' every item with the attribute my.
+   * item.timer and autotimer
+        age() = Alter des aktuellen Wertes, also seit der letzten Änderung in Sekunden
+        prev_age() = Alter des vorherigen Wertes, also seit der vorletzten Änderung in Sekunden
+        last_change() = Zeitpunkt der letzten Änderung des Wertes als datetime
+        prev_change() = Zeitpunkt der vorletzten Änderung des Wertes als datetime
+        last_update() = Zeitpunkt der letzten Aktualisierung des Wertes (includiert Änderungen) als datetime
+        prev_value()
+
+        Weiterhin gibt es zwei neue Zeit-Methoden in tools:
+        sh.tools.dt2ts(dt) konvertiert ein datetime in ein Unix Timestamp
+        sh.tools.dt2js(dt) konvertiert ein datetime in ein JavaScript Timestamp (Sekunden & Millisekunden)
+   * tools.rel2abs()
+   * sh.py -V, -i adding history to interactive mode 
+
+## Plugin Features
+   * Asterisk: `ast_db` attribute to control Asterisk database entries
+   * KNX: new knx_status attribute
+   * SQLite: sqlite = init
+    sqlite: allowing to set database path via plugin.conf
+   *  cli plugin: adding lt to list 
+   * RRDTool: rrd = init, db
+   * Network Plugin: nw_udp_send
+        nw_upd_send = host:port # sendet den Item Wert an den Host/Port
+        nw_udp_send = host:port=irgendeintext # sendet 'irgendeintext' an den Host/Port
+        nw_udp_send = host:port=commando:itemvalue # sendet 'commando:itemwert' an den Host/Port
+
+    * Visu Plugin: acl, visu_acl
+
+## Changes:
+   * Python 3.2 migration
+   * Visu: visu => visu_acl = rw & plugin acl
+   * predifined items env.core env.system used by smartVISU
+   * SQLite: speed improvements
+   * 1-Wire: adding DS18S20 support 
+   * new config parser: |
+   * improving logic response time
 
 
 # 0.9
@@ -15,7 +87,7 @@ In Developement
    * Niko Will
 
 ## New Plugins
-r   * Fritzbox Plugin
+   * Fritzbox Plugin
    * Luxtronic2 Plugin
    * MPD Plugin
    * Samsung Smart TV Plugin

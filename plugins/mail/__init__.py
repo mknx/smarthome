@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -60,29 +60,38 @@ class IMAP():
     def _cycle(self):
         try:
             imap = self._connect()
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not connect to {0}: {1}".format(self._host, e))
             return
         rsp, data = imap.select()
         if rsp != 'OK':
             logger.warning("IMAP: Could not select mailbox")
+            imap.close()
+            imap.logout()
             return
         rsp, data = imap.uid('search', None, "ALL")
         if rsp != 'OK':
             logger.warning("IMAP: Could not search mailbox")
+            imap.close()
+            imap.logout()
             return
         uids = data[0].split()
         for uid in uids:
-            rsp, data = imap.uid('fetch', uid, '(RFC822)')
-            if rsp != 'OK':
-                logger.warning("IMAP: Could not fetch mail")
-                return
-            mail = email.message_from_string(data[0][1])
-            to = email.utils.parseaddr(mail['To'])[1]
-            fo = email.utils.parseaddr(mail['From'])[1]
-            sub = mail['Subject']
-            if mail['Subject'] in self._mail_sub:
-                logic = self._mail_sub[mail['Subject']]
+            try:
+                rsp, data = imap.uid('fetch', uid, '(RFC822)')
+                if rsp != 'OK':
+                    logger.warning("IMAP: Could not fetch mail")
+                    continue
+                mail = email.message_from_bytes(data[0][1])
+                to = email.utils.parseaddr(mail['To'])[1]
+                fo = email.utils.parseaddr(mail['From'])[1]
+                sub, encoding = email.header.decode_header(mail['Subject'])[0]
+                subject = sub.decode()
+            except Exception as e:
+                logger.exception("IMAP: problem parsing message {}: {}".format(uid, e))
+                continue
+            if subject in self._mail_sub:
+                logic = self._mail_sub[subject]
             elif to in self._mail_to:
                 logic = self._mail_to[to]
             elif self._mail:
@@ -90,13 +99,15 @@ class IMAP():
             else:
                 logic = False
             if logic:
-                logic.trigger('IMAP', fo, mail)
+                logic.trigger('IMAP', fo, mail, dest=to)
                 rsp, data = imap.uid('copy', uid, 'Trash')
                 if rsp == 'OK':
                     typ, data = imap.uid('store', uid, '+FLAGS', '(\Deleted)')
-                    logger.debug("Moving mail to trash. {0} => {1}: {2}".format(fo, to, sub))
+                    logger.debug("Moving mail to trash. {0} => {1}: {2}".format(fo, to, subject))
+                else:
+                    logger.warning("Could not move mail to trash. {0} => {1}: {2}".format(fo, to, subject))
             else:
-                logger.info("Ignoring mail. {0} => {1}: {2}".format(fo, to, sub))
+                logger.info("Ignoring mail. {0} => {1}: {2}".format(fo, to, subject))
         imap.close()
         imap.logout()
 
@@ -135,18 +146,26 @@ class SMTP():
     def __call__(self, to, sub, msg):
         try:
             smtp = self._connect()
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not connect to {0}: {1}".format(self._host, e))
             return
-        msg = MIMEText(msg.encode('utf-8'), 'plain', 'utf-8')
-        msg['Subject'] = Header(sub, 'utf-8')
-        msg['From'] = self._from
-        msg['Date'] = email.utils.formatdate()
-        msg['To'] = to
-        msg['Message-ID'] = email.utils.make_msgid('SmartHome.py')
-        to = [x.strip() for x in to.split(',')]
-        smtp.sendmail(self._from, to, msg.as_string())
-        smtp.quit()
+        try:
+            msg = MIMEText(msg, 'plain', 'utf-8')
+            msg['Subject'] = Header(sub, 'utf-8')
+            msg['From'] = self._from
+            msg['Date'] = email.utils.formatdate()
+            msg['To'] = to
+            msg['Message-ID'] = email.utils.make_msgid('SmartHome.py')
+            to = [x.strip() for x in to.split(',')]
+            smtp.sendmail(self._from, to, msg.as_string())
+        except Exception as e:
+            logger.warning("Could not send message {} to {}: {}".format(sub, to, e))
+        finally:
+            try:
+                smtp.quit()
+                del(smtp)
+            except:
+                pass
 
     def _connect(self):
         smtp = smtplib.SMTP(self._host, self._port)

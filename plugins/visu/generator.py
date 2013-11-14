@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2012 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -114,7 +114,7 @@ def return_html(smarthome, item):
                     rrd = []
                     for path in item.conf['visu_opt']:
                         vitem = smarthome.return_item(path)
-                        if vitem != None:
+                        if vitem is not None:
                             if 'rrd' in vitem.conf:
                                 rrd.append("{0}='label': '{1}'".format(vitem.id(), vitem))
                     rrd = "|".join(rrd)

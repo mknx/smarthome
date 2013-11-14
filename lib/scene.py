@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013-2013 Marcus Popp                          marcus@popp.mx
 #########################################################################
-#  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
+#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
 #  SmartHome.py is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ class Scenes():
             return
         for item in smarthome.return_items():
             if item._type == 'scene':
-                scene_file = self._scenes_dir + item.id()
+                scene_file = "{}{}.conf".format(self._scenes_dir, item.id())
                 try:
                     with open(scene_file, 'r') as f:
                         reader = csv.reader(f, delimiter=' ')
@@ -54,10 +54,10 @@ class Scenes():
                                     self._scenes[item.id()][row[0]] = [[ditem, row[2]]]
                             else:
                                 self._scenes[item.id()] = {row[0]: [[ditem, row[2]]]}
-                except Exception, e:
+                except Exception as e:
                     logger.warning("Problem reading scene file {0}: {1}".format(scene_file, e))
                     continue
-                item.add_trigger_method(self._trigger)
+                item.add_method_trigger(self._trigger)
 
     def _trigger(self, item, caller, source, dest):
         if not item.id() in self._scenes:

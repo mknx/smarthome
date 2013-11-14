@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
@@ -21,7 +21,8 @@
 
 import logging
 import threading
-import configobj
+
+import lib.config
 
 logger = logging.getLogger('')
 
@@ -32,28 +33,29 @@ class Plugins():
 
     def __init__(self, smarthome, configfile):
         try:
-            _conf = configobj.ConfigObj(configfile, file_error=True)
-        except IOError, e:
+            _conf = lib.config.parse(configfile)
+        except IOError as e:
             logger.critical(e)
             return
 
         for plugin in _conf:
             args = ''
-            logger.debug("Plugin: %s" % plugin)
+            logger.debug("Plugin: {0}".format(plugin))
             for arg in _conf[plugin]:
                 if arg != 'class_name' and arg != 'class_path':
                     value = _conf[plugin][arg]
                     if isinstance(value, str):
-                        value = "'%s'" % value
-                    args = args + ", %s=%s" % (arg, value)
+                        value = "'{0}'".format(value)
+                    args = args + ", {0}={1}".format(arg, value)
             classname = _conf[plugin]['class_name']
             classpath = _conf[plugin]['class_path']
             try:
                 plugin_thread = Plugin(smarthome, plugin, classname, classpath, args)
                 self._threads.append(plugin_thread)
                 self._plugins.append(plugin_thread.plugin)
-            except Exception, e:
-                logger.warning("Plugin {0} exception: {1}".format(plugin, e))
+            except Exception as e:
+                logger.exception("Plugin {0} exception: {1}".format(plugin, e))
+        del(_conf)  # clean up
 
     def __iter__(self):
         for plugin in self._plugins:
@@ -74,8 +76,8 @@ class Plugin(threading.Thread):
 
     def __init__(self, smarthome, name, classname, classpath, args):
         threading.Thread.__init__(self, name=name)
-        exec "import %s" % classpath
-        exec "self.plugin = %s.%s(smarthome%s)" % (classpath, classname, args)
+        exec("import {0}".format(classpath))
+        exec("self.plugin = {0}.{1}(smarthome{2})".format(classpath, classname, args))
         setattr(smarthome, self.name, self.plugin)
 
     def run(self):
