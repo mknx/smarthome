@@ -65,6 +65,23 @@ You could specify the `nw_udp_listen` and `nw_tcp_listen` attribute to an item t
 If you send a TCP/UDP packet to the port, the corrosponding item will be set to the TCP/UDP payload.
 <code>$ echo teststring | nc -u 127.0.0.1 8888</code> would set the value of item2 to 'teststring'.
 
+### nw_udp_send
+This attribute allows you to specify a host and port to send item updates to.
+<pre>
+[test]
+    [[item1]]
+        type = string
+        nw_udp_send = 11.11.11.11:7777  # sends an UDP packet with the item value as payload
+
+    [[item2]]
+        type = string
+        nw_udp_send = 11.11.11.11:7777=special data  # sends an UDP packet with 'special data' as payload
+
+    [[item3]]
+        type = string
+        nw_udp_send = 11.11.11.11:7777=command: itemvalue  # sends an UDP packet with 'command: ' and the current item value as payload
+</pre>
+
 logic.conf
 ----------
 You could use the same network attributes as in items.conf to trigger logics.

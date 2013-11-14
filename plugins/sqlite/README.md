@@ -9,7 +9,10 @@ plugin.conf
 [sql]
     class_name = SQL
     class_path = plugins.sqlite
+#   path = None
 </pre>
+
+The path attribute allows you to specify the of the SQLite database.
 
 items.conf
 --------------
