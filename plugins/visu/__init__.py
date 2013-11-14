@@ -154,7 +154,7 @@ class WebSocket(lib.connection.Server):
         return self.update_item
 
     def parse_logic(self, logic):
-        if hasattr(logic, 'visu'):
+        if hasattr(logic, 'visu_acl'):
             self.visu_logics[logic.name] = logic
 
     def update_item(self, item, caller=None, source=None, dest=None):
