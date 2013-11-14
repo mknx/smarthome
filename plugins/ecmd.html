@@ -1,0 +1,191 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ECMD &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">ECMD</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#ecmd1wire-addr">ecmd1wire_addr</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="ecmd">
+<h1>ECMD<a class="headerlink" href="#ecmd" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>The ECMD plugin connects to an AVR microcontroller board with ethersex
+firmware via network. The ECMD protocoll provides access to attached
+1wire temperature sensors DS1820.</p>
+<div class="section" id="supported-hardware">
+<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>8-bit AVR microcontroller boards with network support, like NetIO
+(Pollin), Etherrape (lochraster.org), etc.</li>
+<li>1-wire temperature and other sensors</li>
+</ul>
+<p>* - DS1820 (Temperatursensor) * - DS18B20 (Temperatursensor) * -
+DS1822 (Temperatursensor) * - DS2502 (EEPROM) * - DS2450 (4 Kanal ADC)</p>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<p>You can specify the host ip of your ethersex device.</p>
+<pre>
+[ecmd]
+    class_name = ECMD
+    class_path = plugins.ecmd
+    host = 10.10.10.10
+#   port = 2701
+</pre><p>This plugin needs an host attribute and you could specify a port
+attribute which differs from the default &#8216;1010&#8217;.</p>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>The item needs to define the 1-wire address of the sensor.</p>
+<div class="section" id="ecmd1wire-addr">
+<h4>ecmd1wire_addr<a class="headerlink" href="#ecmd1wire-addr" title="Permalink to this headline">¶</a></h4>
+<p>ecmd1wire_addr = 10f01929020800dc type = num</p>
+</div>
+<div class="section" id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
+<p>Please provide an item configuration with every attribute and usefull
+settings.</p>
+<pre>
+# items/my.conf
+
+[someroom]
+    [[temperature]]
+        name = Raumtemperatur
+        ecmd1wire_addr = 10f01929020800dc
+        type = num
+        sqlite = yes
+        history = yes
+        visu = yes
+        sv_widget = "{{ basic.float('item', 'item', '°') }}" , "{{ plot.period('item-plot', 'item') }}"
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

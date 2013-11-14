@@ -1,0 +1,66 @@
+=================
+Notify My Android
+=================
+
+Requirements
+============
+
+NMA API-KEY
+
+get it from http://www.notifymyandroid.com/ for free
+
+Configuration
+=============
+
+plugin.conf
+-----------
+
+.. raw:: html
+
+   <pre>
+   [nma]
+       class_name = NMA
+       class_path = plugins.nma
+   #    apikey = <your-api-key>
+   </pre>
+
+Description of the attributes:
+
+-  **apikey**: set api-key globally so you do not have to set it in the
+   function calls
+
+Functions
+=========
+
+Because there is only one function you could access it directly by the
+object.
+
+.. raw:: html
+
+   <pre>
+   sh.nma('Intrusion', 'Living room window broken!')
+   </pre>
+
+This function takes several arguments:
+
+-  **event**: Event (up to 1000 chars)
+-  **description**: Text describing the event in detail (up to 1000
+   chars)
+-  **priority**: Ranging from -2 (Very low) to 2 (Emergency) - not used
+   by now!
+-  **url**: URL to be send with the notification (up to 2000 chars)
+-  **apikey**: API-KEY used for this request - not necessary if global
+   'apikey' is set
+-  **application**: Name of the application (default: 'SmartHome')
+
+Examples
+========
+
+.. raw:: html
+
+   <pre>
+   sh.nma('Intrusion', 'Living room window broken', 2, 'http://yourvisu.com/')
+   sh.nma('Tumbler', 'finished', apikey='<your-api-key>')
+   </pre>
+
+

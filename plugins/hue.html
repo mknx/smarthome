@@ -1,0 +1,250 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Phillips HUE &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Phillips HUE</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a><ul>
+<li><a class="reference internal" href="#hue-user">hue_user</a></li>
+<li><a class="reference internal" href="#hue-ip">hue_ip</a></li>
+<li><a class="reference internal" href="#hue-port">hue_port</a></li>
+<li><a class="reference internal" href="#cycle">cycle</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#hue-id">hue_id</a></li>
+<li><a class="reference internal" href="#hue-feature">hue_feature</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#methodes">Methodes</a><ul>
+<li><a class="reference internal" href="#authorizeuser">authorizeuser()</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="phillips-hue">
+<h1>Phillips HUE<a class="headerlink" href="#phillips-hue" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>Needs httplib</p>
+<div class="section" id="supported-hardware">
+<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
+<p>Philips hue bridge</p>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<p>Typical configuration</p>
+<pre>
+[HUE]
+   class_name = HUE
+   class_path = plugins.hue
+   hue_user = 38f625a739562a8bd261ab9c7f5e62c8
+</pre><div class="section" id="hue-user">
+<h4>hue_user<a class="headerlink" href="#hue-user" title="Permalink to this headline">¶</a></h4>
+<p>A user name for the hue bridge. Usually this is a hash value of 32
+hexadecimal digits.</p>
+<p>If the user/hash is not yet authorized, you can use
+sh.hue.authorizeuser() (via interactive shell or via logic) to authorize
+it. The link button must be pressed before.</p>
+</div>
+<div class="section" id="hue-ip">
+<h4>hue_ip<a class="headerlink" href="#hue-ip" title="Permalink to this headline">¶</a></h4>
+<p>IP or host name of the hue bridge. Per default this is &#8220;Philips-hue&#8221;, so
+that you normally don&#8217;t have to specify a value here.</p>
+</div>
+<div class="section" id="hue-port">
+<h4>hue_port<a class="headerlink" href="#hue-port" title="Permalink to this headline">¶</a></h4>
+<p>Port number of the hue bridge. Default 80. Normally there is no need to
+change that.</p>
+</div>
+<div class="section" id="cycle">
+<h4>cycle<a class="headerlink" href="#cycle" title="Permalink to this headline">¶</a></h4>
+<p>Cycle in seconds to how often update the state of the lights in
+smarthome.</p>
+<p>Note: The hue bridge has no notification feature. Therefore changes can
+only be detected via polling.</p>
+</div>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="hue-id">
+<h4>hue_id<a class="headerlink" href="#hue-id" title="Permalink to this headline">¶</a></h4>
+<p>Specify the lamp id. Via this parameter the hue connection is
+established.</p>
+<p>The feature which is to be controlled is determined via the type of the
+item.</p>
+<p>type = bool - controls feature &#8216;on&#8217; (switching lamp on/off)</p>
+<p>type = num - controls feature &#8216;bri&#8217; (brightness)</p>
+<p>type = dict - controls all features</p>
+</div>
+<div class="section" id="hue-feature">
+<h4>hue_feature<a class="headerlink" href="#hue-feature" title="Permalink to this headline">¶</a></h4>
+<p>Determines which feature to control. If this parameter is given, exactly
+that feature is controlled. You have to choose the item type
+accordingly.</p>
+<p>hue_feature = hue - controls the hue. Type must be num</p>
+<p>hue_feature = effect - controls the effect. Type must be str.</p>
+<p>Special: hue_feature = all - controls all settings via dict.</p>
+</div>
+<div class="section" id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
+<pre>
+# items/my.conf
+
+[someroom]
+    [[mydevice]]
+        type = bool
+        hue_id = 1
+    [[[level]]]
+        type = num
+        hue_id = 1
+    [[[effect]]]
+        type = str
+        hue_id = 1
+        hue_feature = effect
+    [[[all]]]
+        type = dict
+        hue_id = 1
+        hue_feature = all
+</pre><p>Hint: on and bri are currently coupled, like a KNX dimmer.</p>
+</div>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>No logic attributes.</p>
+</div>
+</div>
+<div class="section" id="methodes">
+<h2>Methodes<a class="headerlink" href="#methodes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="authorizeuser">
+<h3>authorizeuser()<a class="headerlink" href="#authorizeuser" title="Permalink to this headline">¶</a></h3>
+<p>Authorizes the user configured by hue_user config property. You have to
+press the link button.</p>
+<pre>
+sh.hue.authorizeuser()
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

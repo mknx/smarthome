@@ -1,0 +1,153 @@
+=======
+SmartTV
+=======
+
+Requirements
+============
+
+This plugin has no requirements or dependencies.
+
+Configuration
+=============
+
+plugin.conf
+-----------
+
+.. raw:: html
+
+   <pre>
+   [smarttv]
+       class_name = SmartTV
+       class_path = plugins.smarttv
+       host = 192.168.0.45
+   #    port = 55000
+   #    tvid = 1
+   </pre>
+
+Attributes
+~~~~~~~~~~
+
+-  ``host``: specifies the ip address of your SmartTV device.
+-  ``port``: if you want to use a nonstandard port.
+-  ``tvid``: if you have more than one SmartTV device, you can identify
+   them with the tvid in the item configuration.
+
+items.conf
+----------
+
+smarttv
+~~~~~~~
+
+There are two possibilities to use this attribute. \* Define it on a
+string item and set it to ``true``: With this configuration, every
+string you set to this item will be send to the SmartTV device. \*
+Define it on a boolean item and set it to a key value: With this
+configuration, the specified key value is sent whenever you set the item
+to ``true`` (if the item is only for sending a specific command to the
+tv then you should consider using the ``enforce_updates`` attribute,
+too). It is even possible to define several keys separeted with a comma.
+
+smarttv\_id
+~~~~~~~~~~~
+
+With this attribute you can define to which smarttv device you want to
+send the specified command. If there is only one device configured you
+can avoid setting this attribute.
+
+.. raw:: html
+
+   <pre>
+   [tv]
+       type = str
+       smarttv = true
+       smarttv_id = 1
+       enforce_updates = true
+
+       [[mute]]
+           type = bool
+           smarttv = KEY_MUTE
+           smarttv_id = 1
+           enforce_updates = true
+
+       [[KIKA]]
+           name = KIKATV
+           type = bool
+           visu = yes
+           smarttv = KEY_1, KEY_0, KEY_6, KEY_ENTER
+           smarttv_id = 2
+           enforce_updates = true
+           knx_dpt = 1
+           knx_listen = 0/0/7
+   </pre>
+
+Key Values
+~~~~~~~~~~
+
+And here is a list of possible key values. It depends on your device if
+all of them are supported.
+
+KEY\_MENU KEY\_UP KEY\_DOWN KEY\_LEFT KEY\_RIGHT KEY\_3 KEY\_VOLUP
+KEY\_4 KEY\_5 KEY\_6 KEY\_VOLDOWN KEY\_7 KEY\_8 KEY\_9 KEY\_MUTE
+KEY\_CHDOWN KEY\_0 KEY\_CHUP KEY\_PRECH KEY\_GREEN KEY\_YELLOW KEY\_CYAN
+KEY\_ADDDEL KEY\_SOURCE KEY\_INFO KEY\_PIP\_ONOFF KEY\_PIP\_SWAP
+KEY\_PLUS100 KEY\_CAPTION KEY\_PMODE KEY\_TTX\_MIX KEY\_TV
+KEY\_PICTURE\_SIZE KEY\_AD KEY\_PIP\_SIZE KEY\_MAGIC\_CHANNEL
+KEY\_PIP\_SCAN KEY\_PIP\_CHUP KEY\_PIP\_CHDOWN KEY\_DEVICE\_CONNECT
+KEY\_HELP KEY\_ANTENA KEY\_CONVERGENCE KEY\_11 KEY\_12
+KEY\_AUTO\_PROGRAM KEY\_FACTORY KEY\_3SPEED KEY\_RSURF KEY\_ASPECT
+KEY\_TOPMENU KEY\_GAME KEY\_QUICK\_REPLAY KEY\_STILL\_PICTURE KEY\_DTV
+KEY\_FAVCH KEY\_REWIND KEY\_STOP KEY\_PLAY KEY\_FF KEY\_REC KEY\_PAUSE
+KEY\_TOOLS KEY\_INSTANT\_REPLAY KEY\_LINK KEY\_FF\_ KEY\_GUIDE
+KEY\_REWIND\_ KEY\_ANGLE KEY\_RESERVED1 KEY\_ZOOM1 KEY\_PROGRAM
+KEY\_BOOKMARK KEY\_DISC\_MENU KEY\_PRINT KEY\_RETURN KEY\_SUB\_TITLE
+KEY\_CLEAR KEY\_VCHIP KEY\_REPEAT KEY\_DOOR KEY\_OPEN KEY\_WHEEL\_LEFT
+KEY\_POWER KEY\_SLEEP KEY\_2 KEY\_DMA KEY\_TURBO KEY\_1 KEY\_FM\_RADIO
+KEY\_DVR\_MENU KEY\_MTS KEY\_PCMODE KEY\_TTX\_SUBFACE KEY\_CH\_LIST
+KEY\_RED KEY\_DNIe KEY\_SRS KEY\_CONVERT\_AUDIO\_MAINSUB KEY\_MDC
+KEY\_SEFFECT KEY\_DVR KEY\_DTV\_SIGNAL KEY\_LIVE KEY\_PERPECT\_FOCUS
+KEY\_HOME KEY\_ESAVING KEY\_WHEEL\_RIGHT KEY\_CONTENTS KEY\_VCR\_MODE
+KEY\_CATV\_MODE KEY\_DSS\_MODE KEY\_TV\_MODE KEY\_DVD\_MODE
+KEY\_STB\_MODE KEY\_CALLER\_ID KEY\_SCALE KEY\_ZOOM\_MOVE
+KEY\_CLOCK\_DISPLAY KEY\_AV1 KEY\_SVIDEO1 KEY\_COMPONENT1
+KEY\_SETUP\_CLOCK\_TIMER KEY\_COMPONENT2 KEY\_MAGIC\_BRIGHT KEY\_DVI
+KEY\_HDMI KEY\_W\_LINK KEY\_DTV\_LINK KEY\_APP\_LIST KEY\_BACK\_MHP
+KEY\_ALT\_MHP KEY\_DNSe KEY\_RSS KEY\_ENTERTAINMENT KEY\_ID\_INPUT
+KEY\_ID\_SETUP KEY\_ANYNET KEY\_POWEROFF KEY\_POWERON KEY\_ANYVIEW
+KEY\_MS KEY\_MORE KEY\_PANNEL\_POWER KEY\_PANNEL\_CHUP
+KEY\_PANNEL\_CHDOWN KEY\_PANNEL\_VOLUP KEY\_PANNEL\_VOLDOW
+KEY\_PANNEL\_ENTER KEY\_PANNEL\_MENU KEY\_PANNEL\_SOURCE KEY\_AV2
+KEY\_AV3 KEY\_SVIDEO2 KEY\_SVIDEO3 KEY\_ZOOM2 KEY\_PANORAMA KEY\_4\_3
+KEY\_16\_9 KEY\_DYNAMIC KEY\_STANDARD KEY\_MOVIE1 KEY\_CUSTOM
+KEY\_AUTO\_ARC\_RESET KEY\_AUTO\_ARC\_LNA\_ON KEY\_AUTO\_ARC\_LNA\_OFF
+KEY\_AUTO\_ARC\_ANYNET\_MODE\_OK KEY\_AUTO\_ARC\_ANYNET\_AUTO\_START
+KEY\_AUTO\_FORMAT KEY\_DNET KEY\_HDMI1 KEY\_AUTO\_ARC\_CAPTION\_ON
+KEY\_AUTO\_ARC\_CAPTION\_OFF KEY\_AUTO\_ARC\_PIP\_DOUBLE
+KEY\_AUTO\_ARC\_PIP\_LARGE KEY\_AUTO\_ARC\_PIP\_SMALL
+KEY\_AUTO\_ARC\_PIP\_WIDE KEY\_AUTO\_ARC\_PIP\_LEFT\_TOP
+KEY\_AUTO\_ARC\_PIP\_RIGHT\_TOP KEY\_AUTO\_ARC\_PIP\_LEFT\_BOTTOM
+KEY\_AUTO\_ARC\_PIP\_RIGHT\_BOTTOM KEY\_AUTO\_ARC\_PIP\_CH\_CHANGE
+KEY\_AUTO\_ARC\_AUTOCOLOR\_SUCCESS KEY\_AUTO\_ARC\_AUTOCOLOR\_FAIL
+KEY\_AUTO\_ARC\_C\_FORCE\_AGING KEY\_AUTO\_ARC\_USBJACK\_INSPECT
+KEY\_AUTO\_ARC\_JACK\_IDENT KEY\_NINE\_SEPERATE KEY\_ZOOM\_IN
+KEY\_ZOOM\_OUT KEY\_MIC KEY\_HDMI2 KEY\_HDMI3
+KEY\_AUTO\_ARC\_CAPTION\_KOR KEY\_AUTO\_ARC\_CAPTION\_ENG
+KEY\_AUTO\_ARC\_PIP\_SOURCE\_CHANGE KEY\_HDMI4
+KEY\_AUTO\_ARC\_ANTENNA\_AIR KEY\_AUTO\_ARC\_ANTENNA\_CABLE
+KEY\_AUTO\_ARC\_ANTENNA\_SATELLITE KEY\_EXT1 KEY\_EXT2 KEY\_EXT3
+KEY\_EXT4 KEY\_EXT5 KEY\_EXT6 KEY\_EXT7 KEY\_EXT8 KEY\_EXT9 KEY\_EXT10
+KEY\_EXT11 KEY\_EXT12 KEY\_EXT13 KEY\_EXT14 KEY\_EXT15 KEY\_EXT16
+KEY\_EXT17 KEY\_EXT18 KEY\_EXT19 KEY\_EXT20 KEY\_EXT21 KEY\_EXT22
+KEY\_EXT23 KEY\_EXT24 KEY\_EXT25 KEY\_EXT26 KEY\_EXT27 KEY\_EXT28
+KEY\_EXT29 KEY\_EXT30 KEY\_EXT31 KEY\_EXT32 KEY\_EXT33 KEY\_EXT34
+KEY\_EXT35 KEY\_EXT36 KEY\_EXT37 KEY\_EXT38 KEY\_EXT39 KEY\_EXT40
+KEY\_EXT41
+
+logic.conf
+----------
+
+Currently there is no logic configuration for this plugin.
+
+Functions
+=========
+
+Currently there are no functions offered from this plugin.

@@ -1,0 +1,195 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DWD &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">DWD</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#current-location">current(Location)</a></li>
+<li><a class="reference internal" href="#forecast-area-location">forecast(Area, Location)</a></li>
+<li><a class="reference internal" href="#pollen-area">pollen(Area)</a></li>
+<li><a class="reference internal" href="#uvi-location">uvi(Location)</a></li>
+<li><a class="reference internal" href="#warnings-issuer-locationcode">warnings(Issuer, LocationCode)</a></li>
+<li><a class="reference internal" href="#ftp-quit">ftp_quit()</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="dwd">
+<h1>DWD<a class="headerlink" href="#dwd" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>This plugin needs an FTP account from the Deutscher Wetterdienst. You
+could get it, free of charge,
+<a class="reference external" href="http://kunden.dwd.de/gdsRegistration/gdsRegistrationStart.do">here</a>.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[dwd]
+   class_name = DWD
+   class_path = plugins.dwd
+   username = ****
+   password = ****
+</pre><p>You only need to specify your username and password.</p>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>There are no dwd specific item options.</p>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>I&#8217;m sorry but this plugin return a <em>lot</em> of information. See the Wiki
+for a item configuration and two logics using this plugin. (DWD
+Logic)[<a class="reference external" href="https://github.com/mknx/smarthome/wiki/DWD">https://github.com/mknx/smarthome/wiki/DWD</a>)</p>
+<div class="section" id="current-location">
+<h3>current(Location)<a class="headerlink" href="#current-location" title="Permalink to this headline">¶</a></h3>
+<p>Have a look at one file in the
+<tt class="docutils literal"><span class="pre">gds/specials/observations/tables/germany</span></tt> directory for the available
+locations. This function returns a dictonary with the values for the
+availabe information.</p>
+</div>
+<div class="section" id="forecast-area-location">
+<h3>forecast(Area, Location)<a class="headerlink" href="#forecast-area-location" title="Permalink to this headline">¶</a></h3>
+<p>See the <tt class="docutils literal"><span class="pre">gds/specials/forecasts/tables/germany/</span></tt> for the available
+areas (e.g. Deutschland, Mitte, Nordost ...) and locations.</p>
+</div>
+<div class="section" id="pollen-area">
+<h3>pollen(Area)<a class="headerlink" href="#pollen-area" title="Permalink to this headline">¶</a></h3>
+<p>See <tt class="docutils literal"><span class="pre">gds/specials/warnings/FG/s_b31fg.xml</span></tt> for available areas.</p>
+</div>
+<div class="section" id="uvi-location">
+<h3>uvi(Location)<a class="headerlink" href="#uvi-location" title="Permalink to this headline">¶</a></h3>
+<p>See <tt class="docutils literal"><span class="pre">gds/specials/warnings/FG/sb31fg.xml</span></tt> for available locations.</p>
+</div>
+<div class="section" id="warnings-issuer-locationcode">
+<h3>warnings(Issuer, LocationCode)<a class="headerlink" href="#warnings-issuer-locationcode" title="Permalink to this headline">¶</a></h3>
+<p>See <tt class="docutils literal"><span class="pre">/gds/specials/warnings/legend_warnings.pdf</span></tt> for possible issuers
+and Locations.</p>
+</div>
+<div class="section" id="ftp-quit">
+<h3>ftp_quit()<a class="headerlink" href="#ftp-quit" title="Permalink to this headline">¶</a></h3>
+<p>This function should be called after all dwd request are finished.</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

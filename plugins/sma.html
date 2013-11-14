@@ -1,0 +1,253 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SMA &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">SMA</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#ac-power">AC_POWER</a></li>
+<li><a class="reference internal" href="#day-yield">DAY_YIELD</a></li>
+<li><a class="reference internal" href="#total-yield">TOTAL_YIELD</a></li>
+<li><a class="reference internal" href="#inv-serial">INV_SERIAL</a></li>
+<li><a class="reference internal" href="#inv-address">INV_ADDRESS</a></li>
+<li><a class="reference internal" href="#last-update">LAST_UPDATE</a></li>
+<li><a class="reference internal" href="#dc-power-string">DC_POWER_STRING</a></li>
+<li><a class="reference internal" href="#dc-voltage-string">DC_VOLTAGE_STRING</a></li>
+<li><a class="reference internal" href="#dc-current-string">DC_CURRENT_STRING</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="sma">
+<h1>SMA<a class="headerlink" href="#sma" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>bluez</p>
+<p>install by</p>
+<pre>
+apt-get install bluez
+</pre><div class="section" id="supported-hardware">
+<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
+<p>Tested with: * SMA SunnyBoy 5000TL-21</p>
+<p>Should work with other SMA inverters as well - please let me know!</p>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[sma]
+    class_name = SMA
+    class_path = plugins.sma
+    bt_addr = 00:80:25:21:7F:58
+#    password = 0000
+#    update_cycle = 60
+</pre><p>Description of the attributes:</p>
+<ul class="simple">
+<li><strong>bt_addr</strong>: MAC-address of the inverter (find out with &#8216;hcitool
+scan&#8217;)</li>
+<li><strong>password</strong>: password for accessing the inverter in user-mode
+(default 0000)</li>
+<li><strong>update_cycle</strong>: interval in seconds how often the data is read
+from the inverter (default 60)</li>
+</ul>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="ac-power">
+<h4>AC_POWER<a class="headerlink" href="#ac-power" title="Permalink to this headline">¶</a></h4>
+<p>Current power feed to the grid (W)</p>
+</div>
+<div class="section" id="day-yield">
+<h4>DAY_YIELD<a class="headerlink" href="#day-yield" title="Permalink to this headline">¶</a></h4>
+<p>Todays yield (Wh)</p>
+</div>
+<div class="section" id="total-yield">
+<h4>TOTAL_YIELD<a class="headerlink" href="#total-yield" title="Permalink to this headline">¶</a></h4>
+<p>Total yield of the inverter (Wh)</p>
+</div>
+<div class="section" id="inv-serial">
+<h4>INV_SERIAL<a class="headerlink" href="#inv-serial" title="Permalink to this headline">¶</a></h4>
+<p>Serial number of the inverter</p>
+</div>
+<div class="section" id="inv-address">
+<h4>INV_ADDRESS<a class="headerlink" href="#inv-address" title="Permalink to this headline">¶</a></h4>
+<p>MAC-address of the inverter</p>
+</div>
+<div class="section" id="last-update">
+<h4>LAST_UPDATE<a class="headerlink" href="#last-update" title="Permalink to this headline">¶</a></h4>
+<p>String represensting date/time of last successful read operation</p>
+</div>
+<div class="section" id="dc-power-string">
+<h4>DC_POWER_STRING<a class="headerlink" href="#dc-power-string" title="Permalink to this headline">¶</a></h4>
+<p>DC power supplied by string (W)</p>
+</div>
+<div class="section" id="dc-voltage-string">
+<h4>DC_VOLTAGE_STRING<a class="headerlink" href="#dc-voltage-string" title="Permalink to this headline">¶</a></h4>
+<p>DC voltage supplied by string (V)</p>
+</div>
+<div class="section" id="dc-current-string">
+<h4>DC_CURRENT_STRING<a class="headerlink" href="#dc-current-string" title="Permalink to this headline">¶</a></h4>
+<p>DC current supplied by string (A)</p>
+<pre>
+[Wechselrichter]
+  [[Einspeiseleistung]]
+    type = num
+    sma = "AC_POWER"
+  [[Tagesertrag]]
+    type = num
+    sma = "DAY_YIELD"
+  [[Gesamtertrag]]
+    type = num
+    sma = "TOTAL_YIELD"
+  [[Seriennummer]]
+    type = num
+    sma = "INV_SERIAL"
+  [[MAC_Adresse]]
+    type = str
+    sma = "INV_ADDRESS"
+  [[Letzte_Aktualisierung]]
+    type = str
+    sma = "LAST_UPDATE"
+  [[DC_Leistung_String1]]
+    type = num
+    sma = "DC_POWER_STRING1"
+  [[DC_Leistung_String2]]
+    type = num
+    sma = "DC_POWER_STRING2"
+  [[DC_Spannung_String1]]
+    type = num
+    sma = "DC_VOLTAGE_STRING1"
+  [[DC_Spannung_String2]]
+    type = num
+    sma = "DC_VOLTAGE_STRING2"
+  [[DC_Strom_String1]]
+    type = num
+    sma = "DC_CURRENT_STRING1"
+  [[DC_Strom_String2]]
+    type = num
+    sma = "DC_CURRENT_STRING2"
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

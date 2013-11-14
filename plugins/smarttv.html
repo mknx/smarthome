@@ -1,0 +1,274 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SmartTV &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">SmartTV</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#id1">smarttv</a></li>
+<li><a class="reference internal" href="#smarttv-id">smarttv_id</a></li>
+<li><a class="reference internal" href="#key-values">Key Values</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="smarttv">
+<h1>SmartTV<a class="headerlink" href="#smarttv" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>This plugin has no requirements or dependencies.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[smarttv]
+    class_name = SmartTV
+    class_path = plugins.smarttv
+    host = 192.168.0.45
+#    port = 55000
+#    tvid = 1
+</pre><div class="section" id="attributes">
+<h4>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">host</span></tt>: specifies the ip address of your SmartTV device.</li>
+<li><tt class="docutils literal"><span class="pre">port</span></tt>: if you want to use a nonstandard port.</li>
+<li><tt class="docutils literal"><span class="pre">tvid</span></tt>: if you have more than one SmartTV device, you can identify
+them with the tvid in the item configuration.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h4>smarttv<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>There are two possibilities to use this attribute. * Define it on a
+string item and set it to <tt class="docutils literal"><span class="pre">true</span></tt>: With this configuration, every
+string you set to this item will be send to the SmartTV device. *
+Define it on a boolean item and set it to a key value: With this
+configuration, the specified key value is sent whenever you set the item
+to <tt class="docutils literal"><span class="pre">true</span></tt> (if the item is only for sending a specific command to the
+tv then you should consider using the <tt class="docutils literal"><span class="pre">enforce_updates</span></tt> attribute,
+too). It is even possible to define several keys separeted with a comma.</p>
+</div>
+<div class="section" id="smarttv-id">
+<h4>smarttv_id<a class="headerlink" href="#smarttv-id" title="Permalink to this headline">¶</a></h4>
+<p>With this attribute you can define to which smarttv device you want to
+send the specified command. If there is only one device configured you
+can avoid setting this attribute.</p>
+<pre>
+[tv]
+    type = str
+    smarttv = true
+    smarttv_id = 1
+    enforce_updates = true
+
+    [[mute]]
+        type = bool
+        smarttv = KEY_MUTE
+        smarttv_id = 1
+        enforce_updates = true
+
+    [[KIKA]]
+        name = KIKATV
+        type = bool
+        visu = yes
+        smarttv = KEY_1, KEY_0, KEY_6, KEY_ENTER
+        smarttv_id = 2
+        enforce_updates = true
+        knx_dpt = 1
+        knx_listen = 0/0/7
+</pre></div>
+<div class="section" id="key-values">
+<h4>Key Values<a class="headerlink" href="#key-values" title="Permalink to this headline">¶</a></h4>
+<p>And here is a list of possible key values. It depends on your device if
+all of them are supported.</p>
+<p>KEY_MENU KEY_UP KEY_DOWN KEY_LEFT KEY_RIGHT KEY_3 KEY_VOLUP
+KEY_4 KEY_5 KEY_6 KEY_VOLDOWN KEY_7 KEY_8 KEY_9 KEY_MUTE
+KEY_CHDOWN KEY_0 KEY_CHUP KEY_PRECH KEY_GREEN KEY_YELLOW KEY_CYAN
+KEY_ADDDEL KEY_SOURCE KEY_INFO KEY_PIP_ONOFF KEY_PIP_SWAP
+KEY_PLUS100 KEY_CAPTION KEY_PMODE KEY_TTX_MIX KEY_TV
+KEY_PICTURE_SIZE KEY_AD KEY_PIP_SIZE KEY_MAGIC_CHANNEL
+KEY_PIP_SCAN KEY_PIP_CHUP KEY_PIP_CHDOWN KEY_DEVICE_CONNECT
+KEY_HELP KEY_ANTENA KEY_CONVERGENCE KEY_11 KEY_12
+KEY_AUTO_PROGRAM KEY_FACTORY KEY_3SPEED KEY_RSURF KEY_ASPECT
+KEY_TOPMENU KEY_GAME KEY_QUICK_REPLAY KEY_STILL_PICTURE KEY_DTV
+KEY_FAVCH KEY_REWIND KEY_STOP KEY_PLAY KEY_FF KEY_REC KEY_PAUSE
+KEY_TOOLS KEY_INSTANT_REPLAY KEY_LINK KEY_FF_ KEY_GUIDE
+KEY_REWIND_ KEY_ANGLE KEY_RESERVED1 KEY_ZOOM1 KEY_PROGRAM
+KEY_BOOKMARK KEY_DISC_MENU KEY_PRINT KEY_RETURN KEY_SUB_TITLE
+KEY_CLEAR KEY_VCHIP KEY_REPEAT KEY_DOOR KEY_OPEN KEY_WHEEL_LEFT
+KEY_POWER KEY_SLEEP KEY_2 KEY_DMA KEY_TURBO KEY_1 KEY_FM_RADIO
+KEY_DVR_MENU KEY_MTS KEY_PCMODE KEY_TTX_SUBFACE KEY_CH_LIST
+KEY_RED KEY_DNIe KEY_SRS KEY_CONVERT_AUDIO_MAINSUB KEY_MDC
+KEY_SEFFECT KEY_DVR KEY_DTV_SIGNAL KEY_LIVE KEY_PERPECT_FOCUS
+KEY_HOME KEY_ESAVING KEY_WHEEL_RIGHT KEY_CONTENTS KEY_VCR_MODE
+KEY_CATV_MODE KEY_DSS_MODE KEY_TV_MODE KEY_DVD_MODE
+KEY_STB_MODE KEY_CALLER_ID KEY_SCALE KEY_ZOOM_MOVE
+KEY_CLOCK_DISPLAY KEY_AV1 KEY_SVIDEO1 KEY_COMPONENT1
+KEY_SETUP_CLOCK_TIMER KEY_COMPONENT2 KEY_MAGIC_BRIGHT KEY_DVI
+KEY_HDMI KEY_W_LINK KEY_DTV_LINK KEY_APP_LIST KEY_BACK_MHP
+KEY_ALT_MHP KEY_DNSe KEY_RSS KEY_ENTERTAINMENT KEY_ID_INPUT
+KEY_ID_SETUP KEY_ANYNET KEY_POWEROFF KEY_POWERON KEY_ANYVIEW
+KEY_MS KEY_MORE KEY_PANNEL_POWER KEY_PANNEL_CHUP
+KEY_PANNEL_CHDOWN KEY_PANNEL_VOLUP KEY_PANNEL_VOLDOW
+KEY_PANNEL_ENTER KEY_PANNEL_MENU KEY_PANNEL_SOURCE KEY_AV2
+KEY_AV3 KEY_SVIDEO2 KEY_SVIDEO3 KEY_ZOOM2 KEY_PANORAMA KEY_4_3
+KEY_16_9 KEY_DYNAMIC KEY_STANDARD KEY_MOVIE1 KEY_CUSTOM
+KEY_AUTO_ARC_RESET KEY_AUTO_ARC_LNA_ON KEY_AUTO_ARC_LNA_OFF
+KEY_AUTO_ARC_ANYNET_MODE_OK KEY_AUTO_ARC_ANYNET_AUTO_START
+KEY_AUTO_FORMAT KEY_DNET KEY_HDMI1 KEY_AUTO_ARC_CAPTION_ON
+KEY_AUTO_ARC_CAPTION_OFF KEY_AUTO_ARC_PIP_DOUBLE
+KEY_AUTO_ARC_PIP_LARGE KEY_AUTO_ARC_PIP_SMALL
+KEY_AUTO_ARC_PIP_WIDE KEY_AUTO_ARC_PIP_LEFT_TOP
+KEY_AUTO_ARC_PIP_RIGHT_TOP KEY_AUTO_ARC_PIP_LEFT_BOTTOM
+KEY_AUTO_ARC_PIP_RIGHT_BOTTOM KEY_AUTO_ARC_PIP_CH_CHANGE
+KEY_AUTO_ARC_AUTOCOLOR_SUCCESS KEY_AUTO_ARC_AUTOCOLOR_FAIL
+KEY_AUTO_ARC_C_FORCE_AGING KEY_AUTO_ARC_USBJACK_INSPECT
+KEY_AUTO_ARC_JACK_IDENT KEY_NINE_SEPERATE KEY_ZOOM_IN
+KEY_ZOOM_OUT KEY_MIC KEY_HDMI2 KEY_HDMI3
+KEY_AUTO_ARC_CAPTION_KOR KEY_AUTO_ARC_CAPTION_ENG
+KEY_AUTO_ARC_PIP_SOURCE_CHANGE KEY_HDMI4
+KEY_AUTO_ARC_ANTENNA_AIR KEY_AUTO_ARC_ANTENNA_CABLE
+KEY_AUTO_ARC_ANTENNA_SATELLITE KEY_EXT1 KEY_EXT2 KEY_EXT3
+KEY_EXT4 KEY_EXT5 KEY_EXT6 KEY_EXT7 KEY_EXT8 KEY_EXT9 KEY_EXT10
+KEY_EXT11 KEY_EXT12 KEY_EXT13 KEY_EXT14 KEY_EXT15 KEY_EXT16
+KEY_EXT17 KEY_EXT18 KEY_EXT19 KEY_EXT20 KEY_EXT21 KEY_EXT22
+KEY_EXT23 KEY_EXT24 KEY_EXT25 KEY_EXT26 KEY_EXT27 KEY_EXT28
+KEY_EXT29 KEY_EXT30 KEY_EXT31 KEY_EXT32 KEY_EXT33 KEY_EXT34
+KEY_EXT35 KEY_EXT36 KEY_EXT37 KEY_EXT38 KEY_EXT39 KEY_EXT40
+KEY_EXT41</p>
+</div>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>Currently there is no logic configuration for this plugin.</p>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>Currently there are no functions offered from this plugin.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

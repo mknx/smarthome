@@ -1,0 +1,478 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuration &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="#">Config</a></li>
+                <li><a href="logic.html">Logics</a></li>
+                <li><a href="plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Configuration</a><ul>
+<li><a class="reference internal" href="#etc-smarthome-conf-optional">etc/smarthome.conf [optional]</a><ul>
+<li><a class="reference internal" href="#sample-configuration">Sample Configuration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#etc-logic-conf-mandatory">etc/logic.conf [mandatory]</a><ul>
+<li><a class="reference internal" href="#watch-item">watch_item</a></li>
+<li><a class="reference internal" href="#cycle">cycle</a></li>
+<li><a class="reference internal" href="#crontab">crontab</a></li>
+<li><a class="reference internal" href="#prio">prio</a></li>
+<li><a class="reference internal" href="#other-attributes">Other attributes</a></li>
+<li><a class="reference internal" href="#sample-logic-conf">Sample logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#etc-plugin-conf-mandatory">etc/plugin.conf (mandatory)</a><ul>
+<li><a class="reference internal" href="#id1">Configuration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#items-conf-optional">items/*.conf (optional)</a><ul>
+<li><a class="reference internal" href="#item-attributes">Item Attributes</a><ul>
+<li><a class="reference internal" href="#scenes">Scenes</a></li>
+<li><a class="reference internal" href="#eval">eval</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#item-functions">Item Functions</a><ul>
+<li><a class="reference internal" href="#id">id()</a></li>
+<li><a class="reference internal" href="#return-parent">return_parent()</a></li>
+<li><a class="reference internal" href="#return-children">return_children()</a></li>
+<li><a class="reference internal" href="#age">age()</a></li>
+<li><a class="reference internal" href="#prev-age">prev_age()</a></li>
+<li><a class="reference internal" href="#last-change">last_change()</a></li>
+<li><a class="reference internal" href="#prev-change">prev_change()</a></li>
+<li><a class="reference internal" href="#last-update">last_update()</a></li>
+<li><a class="reference internal" href="#changed-by">changed_by()</a></li>
+<li><a class="reference internal" href="#fade">fade()</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>The configuration of SmartHome.py is split up in four areas:</p>
+<ul class="simple">
+<li>Basic Configuration: etc/smarthome.conf</li>
+<li>Logic Configuration: etc/logic.conf</li>
+<li>Plugin Configuration: etc/plugin.conf</li>
+<li>Item Configuration: items/*.conf</li>
+</ul>
+<div class="section" id="etc-smarthome-conf-optional">
+<h2>etc/smarthome.conf [optional]<a class="headerlink" href="#etc-smarthome-conf-optional" title="Permalink to this headline">¶</a></h2>
+<p>Following attributes are supportet in smarthome.conf:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">lat</span></tt>, <tt class="docutils literal"><span class="pre">lon</span></tt>, <tt class="docutils literal"><span class="pre">elev</span></tt>: geographic coordinates of your home
+(latitude, longitude, elevation). lat and lon are neccesary for
+sunrise/sunset calculation, dealing with the position of the sun.</li>
+<li><tt class="docutils literal"><span class="pre">tz</span></tt>: used timezone</li>
+</ul>
+<div class="section" id="sample-configuration">
+<h3>Sample Configuration<a class="headerlink" href="#sample-configuration" title="Permalink to this headline">¶</a></h3>
+<pre># /usr/local/smarthome/etc/smarthome.conf
+
+lat = 51.1633
+lon = 10.4476
+elev = 500
+
+tz = 'Europe/Berlin'
+</pre></div>
+</div>
+<div class="section" id="etc-logic-conf-mandatory">
+<h2>etc/logic.conf [mandatory]<a class="headerlink" href="#etc-logic-conf-mandatory" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to use a blank file (touch logic.conf) for the first
+steps.</p>
+<p>Logic items within SmartHome.py are simple python scripts, which are
+placed in /usr/local/smarthome/logics/. See the <a class="reference external" href="/smarthome/logic">logic
+introduction</a> for howto write logics.</p>
+<p>An example of a very simple logic.conf:</p>
+<pre># /usr/local/smarthome/etc/logic.conf
+[MyLogic]
+    filename = logic.py
+    crontab = init</pre><p>SmartHome.py would look in /usr/local/smarthome/logics/ for the file
+logic.py. The logic would be started - once - when the system starts.</p>
+<p>Following attributes are supportet controll the behavior of the logics:</p>
+<div class="section" id="watch-item">
+<h3>watch_item<a class="headerlink" href="#watch-item" title="Permalink to this headline">¶</a></h3>
+<p>The comma-separated list of items will be monitored for changes.</p>
+<pre>watch_item = house.door, terrace.door</pre><p>Every change of these two items triggers (run) the logic.
+Or you could a regular expression:</p>
+<pre>watch_item = *.door</pre></div>
+<div class="section" id="cycle">
+<h3>cycle<a class="headerlink" href="#cycle" title="Permalink to this headline">¶</a></h3>
+<p>Defines the time interval for repeating the logic (in seconds).</p>
+<pre>cycle = 60</pre><p>Special use:</p>
+<pre>cycle = 15 = 42</pre><p>Calls the logic with trigger[&#8216;value&#8217;] # == &#8216;42&#8217;</p>
+</div>
+<div class="section" id="crontab">
+<h3>crontab<a class="headerlink" href="#crontab" title="Permalink to this headline">¶</a></h3>
+<p>like unix crontab with following options:</p>
+<p>crontab = init Run the logic during the start of SmartHome.py.</p>
+<p>crontab = minute hour day wday</p>
+<ul class="simple">
+<li>minute: single value from 0 to 59, or comma separated list, or *
+(every minute)</li>
+<li>hour: single value from 0 to 23, or comma separated list, or *
+(every hour)</li>
+<li>day: single value from 0 to 28, or comma separated list, or * (every
+day) Please note: dont use days greater than 28 in the moment.</li>
+<li>wday: weekday, single value from 0 to 6 (0 = Monday), or comma
+separated list, or * (every day)</li>
+</ul>
+<p>crontab = sunrise Runs the logic at every sunrise. Use <tt class="docutils literal"><span class="pre">sunset</span></tt> to run
+at sunset. For sunset / sonrise You could provide:</p>
+<ul>
+<li><p class="first">an horizon offset in degrees e.g. crontab = sunset-6 You have to
+specify your latitude/longitued in smarthome.conf.</p>
+</li>
+<li><p class="first">an offset in minutes specified by a &#8216;m&#8217; e.g. crontab = sunset-10m</p>
+</li>
+<li><p class="first">a boundry for the execution</p>
+<pre>crontab = 17:00&lt;sunset  # sunset, but not bevor 17:00 (locale time)
+crontab = sunset&lt;20:00  # sunset, but not after 20:00 (locale time)
+crontab = 17:00&lt;sunset&lt;20:00  # sunset, beetween 17:00 and 20:00</pre></li>
+</ul>
+<p>crontab = 15 * * * = 50 Calls the logic with trigger[&#8216;value&#8217;] # == 50</p>
+<p>Combine several options with &#8216;|&#8217;:</p>
+<pre>crontab = init = 'start' | sunrise-2 | 0 5 * *</pre></div>
+<div class="section" id="prio">
+<h3>prio<a class="headerlink" href="#prio" title="Permalink to this headline">¶</a></h3>
+<p>Priority of the logic used by the internal scheduling table. By default
+every logic has the the priority of &#8216;3&#8217;. You could assign [0-10] as a
+value. You could change it to &#8216;1&#8217; to prefer or to &#8216;4&#8217; to penalise the
+logic in comparison to other logics.</p>
+</div>
+<div class="section" id="other-attributes">
+<h3>Other attributes<a class="headerlink" href="#other-attributes" title="Permalink to this headline">¶</a></h3>
+<p>Other attributes could be accessed from the the logic with
+self.attribute_name.</p>
+</div>
+<div class="section" id="sample-logic-conf">
+<h3>Sample logic.conf<a class="headerlink" href="#sample-logic-conf" title="Permalink to this headline">¶</a></h3>
+<pre># /usr/local/smarthome/etc/logic.conf
+[Time]
+    filename = time.py
+    cyle = 60
+
+[DoorBell]
+    filename = bell.py
+    watch_item = dorr.bell # monitor for changes
+
+[Blind Living]
+    filename = blind.py
+    crontab = 10,25,40,55 * * * # run every 15 minutes
+    # cycle = 900 # could be used instead
+    sunshine = no # accessed by self.sunshine
+
+[BlindKitchen]
+    filename = blind.py  # you could run the same logic file several times
+    crontab = 10,25,40,55 * * * # run every 15 minutes
+    sunshine = yes
+</pre></div>
+</div>
+<div class="section" id="etc-plugin-conf-mandatory">
+<h2>etc/plugin.conf (mandatory)<a class="headerlink" href="#etc-plugin-conf-mandatory" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to use a blank file (touch plugin.conf) for the first
+steps.</p>
+<p>Plugins extend the core functionality of SmartHome.py. You could access
+these plugins from every logic script. For example there is a plugin for
+the prowl notification service to send small push messages to your
+iPhone/iPad. Plugins are placed in /usr/local/smarthome/plugins/.</p>
+<div class="section" id="id1">
+<h3>Configuration<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Plugins are configured in the plugin.conf file. A simple plugin.conf:</p>
+<pre># /usr/local/smarthome/etc/plugin.conf
+[notify] # object instance name e.g. sh.notify
+    class_name = Prowl # class name of the python class
+    class_path = plugins.prowl # path to the plugin
+    apikey = abc123abc123 # attribute for the plugin e.g. secret key for prowl
+</pre><p>The object name, class name and class path must be provided. The other
+attributes depend on the individual plugin. See the corrosponding plugin
+page for more information.</p>
+<p>The example above would generate the following statement
+<tt class="docutils literal"><span class="pre">sh.notify</span> <span class="pre">=</span> <span class="pre">plugins.prowl.Prowl(apikey='abc123abc123')</span></tt>. From now on
+there is the object <tt class="docutils literal"><span class="pre">sh.notify</span></tt> and you could access the function of
+this object with <tt class="docutils literal"><span class="pre">sh.notify.function()</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="items-conf-optional">
+<h2>items/*.conf (optional)<a class="headerlink" href="#items-conf-optional" title="Permalink to this headline">¶</a></h2>
+<p>Items could be specified in one or several conf files placed in the
+<tt class="docutils literal"><span class="pre">items</span></tt> directory of SmartHome.py Valid characters for the item name
+are: a-z, A-Z and &#8216;_&#8217;!</p>
+<p>A simple item configuration:</p>
+<pre># /usr/local/smarthome/items/living.conf
+[living_room_temp]
+    type = num
+</pre><p>Use nested items to build a tree representing your enviroment.</p>
+<pre># /usr/local/smarthome/items/living.conf
+[living_room]
+    [[temperature]]
+        type = num
+
+    [[tv]]
+        type = bool
+
+        [[[channel]]]
+            type = num
+</pre><div class="section" id="item-attributes">
+<h3>Item Attributes<a class="headerlink" href="#item-attributes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">type</span></tt>: for storing values and/or triggering actions you have to
+specify this attribute. (If you do not specify this attribute the
+item is only usefull for structuring your item tree). Supported
+types:</li>
+<li>bool: boolean type (on, 1, True or off, 0, False). True or False are
+internally used. Use e.g. <tt class="docutils literal"><span class="pre">if</span> <span class="pre">sh.item():</span> <span class="pre">...</span></tt>.</li>
+<li>num: any number (integer or float).</li>
+<li>str: regular string or unicode string.</li>
+<li>list: list/array of values. Usefull e.g. for some KNX dpts.</li>
+<li>dict: python dictionary for generic purposes.</li>
+<li>foo: pecial purposes. No validation is done.</li>
+<li>scene: special keyword to support scenes</li>
+<li><tt class="docutils literal"><span class="pre">value</span></tt>: initial value of that item.</li>
+<li><tt class="docutils literal"><span class="pre">name</span></tt>: name which would be the str representation of the item
+(optional).</li>
+<li><tt class="docutils literal"><span class="pre">cache</span></tt>: if set to On, the value of the item will be cached in a
+local file (in /usr/local/smarthome/var/cache/).</li>
+<li><tt class="docutils literal"><span class="pre">enforce_updates</span></tt>: If set to On, every call of the item will
+trigger depending logics and item evaluations.</li>
+<li><tt class="docutils literal"><span class="pre">threshold</span></tt>: specify values to trigger depending logics only if the
+value transit the threshold. low:high to set a value for the lower
+and upper threshold, e.g. 21.4:25.0 which triggers the logic if the
+value exceeds 25.0 or fall below 21.4. Or simply a single value.</li>
+<li><tt class="docutils literal"><span class="pre">eval</span></tt> and <tt class="docutils literal"><span class="pre">eval_trigger</span></tt>: see next section for a description of
+these attributes.</li>
+<li><tt class="docutils literal"><span class="pre">crontab</span></tt> and <tt class="docutils literal"><span class="pre">cycle</span></tt>: see logic.conf for possible options to set
+the value of an item at the specified times / cycles.</li>
+</ul>
+<div class="section" id="scenes">
+<h4>Scenes<a class="headerlink" href="#scenes" title="Permalink to this headline">¶</a></h4>
+<p>For using scenes a config file into the scenes directory for every
+&#8216;scene item&#8217; is neccessary. The scene config file consists of space
+separated lines with the ItemValue ItemPath|LogicName Value.</p>
+<pre># items/example.conf
+[example]
+    type = scene
+[otheritem]
+    type = num
+</pre>
+
+<pre># scenes/example.conf
+0 otheritem 2
+1 otheritem 20
+1 LogicName run
+2 otheritem 55
+3 LogicName stop
+</pre></div>
+<div class="section" id="eval">
+<h4>eval<a class="headerlink" href="#eval" title="Permalink to this headline">¶</a></h4>
+<p>This attribute is usefull for small evaluations and corrections. The
+input value is accesible with <tt class="docutils literal"><span class="pre">value</span></tt>.</p>
+<pre>
+# items/level.conf
+[level]
+    type = num
+    eval = value * 2 - 1  # if you call sh.level(3) sh.level will be evaluated and set to 5
+</pre><p>Trigger the evaluation of an item with <tt class="docutils literal"><span class="pre">eval_trigger</span></tt>:</p>
+<pre>
+# items/room.conf
+[room]
+    [[temp]]
+        type = num
+    [[hum]]
+        type = num
+    [[dew]]
+        type = num
+        eval = sh.tools.dewpoint(sh.room.temp(), sh.room.hum())
+        eval_trigger = room.temp, room.hum  # every change of temp or hum would trigger the evaluation of dew.
+</pre><p>Eval keywords to use with the eval_trigger:</p>
+<ul class="simple">
+<li>sum: compute the sum of all specified eval_trigger items.</li>
+<li>avg: compute the average of all specified eval_trigger items.</li>
+<li>and: set the item to True if all of the specified eval_trigger items
+are True.</li>
+<li>or: set the item to True if one of the specified eval_trigger items
+is True.</li>
+</ul>
+<pre>
+# items/rooms.conf
+[room_a]
+    [[temp]]
+        type = num
+    [[presence]]
+        type = bool
+[room_b]
+    [[temp]]
+        type = num
+    [[presence]]
+        type = bool
+[rooms]
+    [[temp]]
+        type = num
+        name = average temperature
+        eval = avg
+        eval_trigger = room_a.temp, room_b.temp
+    [[presence]]
+        type = bool
+        name = movement in on the rooms
+        eval = or
+        eval_trigger = room_a.presence, room_b.presence
+</pre></div>
+</div>
+<div class="section" id="item-functions">
+<h3>Item Functions<a class="headerlink" href="#item-functions" title="Permalink to this headline">¶</a></h3>
+<p>Every item provides the following methods:</p>
+<div class="section" id="id">
+<h4>id()<a class="headerlink" href="#id" title="Permalink to this headline">¶</a></h4>
+<p>Returns the item id (path).</p>
+</div>
+<div class="section" id="return-parent">
+<h4>return_parent()<a class="headerlink" href="#return-parent" title="Permalink to this headline">¶</a></h4>
+<p>Returns the parent item. <tt class="docutils literal"><span class="pre">sh.item.return_parent()</span></tt></p>
+</div>
+<div class="section" id="return-children">
+<h4>return_children()<a class="headerlink" href="#return-children" title="Permalink to this headline">¶</a></h4>
+<p>Returns the children of an item.
+<tt class="docutils literal"><span class="pre">for</span> <span class="pre">child</span> <span class="pre">in</span> <span class="pre">sh.item.return_children():</span> <span class="pre">...</span></tt></p>
+</div>
+<div class="section" id="age">
+<h4>age()<a class="headerlink" href="#age" title="Permalink to this headline">¶</a></h4>
+<p>Returns the age of the current item value as seconds.</p>
+</div>
+<div class="section" id="prev-age">
+<h4>prev_age()<a class="headerlink" href="#prev-age" title="Permalink to this headline">¶</a></h4>
+<p>Returns the previous age of the item value as seconds.</p>
+</div>
+<div class="section" id="last-change">
+<h4>last_change()<a class="headerlink" href="#last-change" title="Permalink to this headline">¶</a></h4>
+<p>Returns an datetime object with the time of the last change.</p>
+</div>
+<div class="section" id="prev-change">
+<h4>prev_change()<a class="headerlink" href="#prev-change" title="Permalink to this headline">¶</a></h4>
+<p>Returns an datetime object with the time of the next to last change.</p>
+</div>
+<div class="section" id="last-update">
+<h4>last_update()<a class="headerlink" href="#last-update" title="Permalink to this headline">¶</a></h4>
+<p>Returns an datetime object with the time of the last update.</p>
+</div>
+<div class="section" id="changed-by">
+<h4>changed_by()<a class="headerlink" href="#changed-by" title="Permalink to this headline">¶</a></h4>
+<p>Returns the caller of the latest update.</p>
+</div>
+<div class="section" id="fade">
+<h4>fade()<a class="headerlink" href="#fade" title="Permalink to this headline">¶</a></h4>
+<p>Fades the item to a specified value with the defined stepping (int or
+float) and timedelta (int or float in seconds). e.g.
+sh.living.light.fade(100, 1, 2.5) will in- or decrement the living room
+light to 100 by a stepping of &#8216;1&#8217; and a timedelta of &#8216;2.5&#8217; seconds.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

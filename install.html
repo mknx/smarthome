@@ -1,0 +1,262 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="#">Install</a></li>
+                <li><a href="config.html">Config</a></li>
+                <li><a href="logic.html">Logics</a></li>
+                <li><a href="plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#system">System</a></li>
+<li><a class="reference internal" href="#python">Python</a><ul>
+<li><a class="reference internal" href="#user">User</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id1">Installation</a><ul>
+<li><a class="reference internal" href="#stable-release">Stable Release</a><ul>
+<li><a class="reference internal" href="#download">Download</a></li>
+<li><a class="reference internal" href="#installation-of-the-latest-release">Installation of the latest release</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#developement">Developement</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#structure">Structure</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#plugins">Plugins</a></li>
+<li><a class="reference internal" href="#running-smarthome-py">Running SmartHome.py</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="system">
+<h3>System<a class="headerlink" href="#system" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>OS: Any Linux or Unix System should be fine. SmartHome.py is tested
+on Ubuntu 12.04 (amd64) and on an appliance with an outdated debian.
+So the specific installation commands may differ from this guide.</li>
+<li>NTP: A running NTP daemon is recommended:
+<tt class="docutils literal"><span class="pre">#</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">openntpd</span></tt></li>
+</ul>
+</div>
+<div class="section" id="python">
+<h3>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h3>
+<p>Python 3.2 is recommended. 2.x is not supported any more.
+<tt class="docutils literal"><span class="pre">$</span> <span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">python3</span> <span class="pre">python3-dev</span> <span class="pre">python3-setuptools</span></tt></p>
+<p>Calculating of sunset/sunrise in triggers,requires installation of
+<strong>ephem</strong> as well.</p>
+<pre>
+<code>
+$ sudo easy_install3 pip
+$ sudo pip-3.2 install ephem
+</code>
+</pre><div class="section" id="user">
+<h4>User<a class="headerlink" href="#user" title="Permalink to this headline">¶</a></h4>
+<p>A dedicated user for SmartHome.py could be created with:</p>
+<pre>
+<code>
+$ sudo adduser smarthome
+</code>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>Installation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="stable-release">
+<h3>Stable Release<a class="headerlink" href="#stable-release" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="download">
+<h4>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h4>
+<p>At
+<a class="reference external" href="https://github.com/mknx/smarthome/releases">https://github.com/mknx/smarthome/releases</a>
+you find the latest release.</p>
+</div>
+<div class="section" id="installation-of-the-latest-release">
+<h4>Installation of the latest release<a class="headerlink" href="#installation-of-the-latest-release" title="Permalink to this headline">¶</a></h4>
+<pre>
+<code>
+$ cd /usr/local
+$ sudo tar --owner=smarthome xvzf path-to-tgz/smarthome-X.X.tgz
+</code>
+</pre><p>Everything is extracted to /usr/local/smarthome/. It is possible to use
+another path.</p>
+</div>
+</div>
+<div class="section" id="developement">
+<h3>Developement<a class="headerlink" href="#developement" title="Permalink to this headline">¶</a></h3>
+<p>To install the recent developer version of SmartHome.py for user <strong>smarthome</strong>:</p>
+<pre>
+<code>
+$ sudo mkdir -p /usr/local/smarthome/
+$ sudo chown -R smarthome /usr/local/smarthome/
+$ cd /usr/local
+$ git clone git://github.com/mknx/smarthome.git
+</code>
+</pre><p>To get the latest updates:</p>
+<pre>
+<code>
+$ cd /usr/local/smarthome
+$ git pull
+</code>
+</pre></div>
+</div>
+<div class="section" id="structure">
+<h2>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h2>
+<p>Structure of the smarthome.py directory, e.g. /usr/local/smarthome/:</p>
+<ul class="simple">
+<li>bin/: contains smarthome.py</li>
+<li>dev/ development files</li>
+<li>etc/: should contain the basic configuration files (smarthome.conf,
+plugin.conf, logic.conf)</li>
+<li>examples/: contains some example files for the configaration and the
+visu plugin</li>
+<li>items/: should contain one or more item configuration files.</li>
+<li>lib/: contains the core libraries of SmartHome.py</li>
+<li>logics/: should contain the logic scripts</li>
+<li>plugins/: contains the available plugins</li>
+<li>scenes/: scene files</li>
+<li>tools/: contains little programms helping to maintain SmartHome.py</li>
+<li>var/cache/: contains cached item values</li>
+<li>var/db/: contains the SQLite3 Database</li>
+<li>var/log/: contains the logfiles</li>
+<li>var/rrd/: contains the Round Robin Databases</li>
+</ul>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="config.html">There is a dedicated page for the configuration.</a></p>
+</div>
+<div class="section" id="plugins">
+<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
+<p>Every <a class="reference external" href="plugin.html">plugin</a> has it&#8217;s own installation section.</p>
+</div>
+<div class="section" id="running-smarthome-py">
+<h2>Running SmartHome.py<a class="headerlink" href="#running-smarthome-py" title="Permalink to this headline">¶</a></h2>
+<p>Arguments for running SmartHome.py</p>
+<pre>
+<code>
+$ /usr/local/smarthome/bin/smarthome.py -h
+--help show this help message and exit
+-v, --verbose verbose (debug output) logging to the logfile
+-d, --debug stay in the foreground with verbose output
+-i, --interactive open an interactive shell with tab completion and with verbose logging to the logfile
+-l, --logics reload all logics
+-s, --stop stop SmartHome.py
+-q, --quiet reduce logging to the logfile
+-V, --version show SmartHome.py version
+--start start SmartHome.py and detach from console (default)
+</code>
+</pre></div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

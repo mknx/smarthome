@@ -1,0 +1,219 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ETA Pellet Unit PU &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">ETA Pellet Unit PU</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+<li><a class="reference internal" href="#todo">ToDo</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="eta-pellet-unit-pu">
+<h1>ETA Pellet Unit PU<a class="headerlink" href="#eta-pellet-unit-pu" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="supported-hardware">
+<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>ETA Pellet Unit PU (<a class="reference external" href="http://www.eta.at">http://www.eta.at</a>) with remote access enabled</li>
+</ul>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+
+[eta_pu]
+    class_name = ETA_PU
+    class_path = plugins.eta_pu
+    address = 192.168.179.15
+    port = 8080
+    setpath = '/user/vars'
+    setname = 'smarthome'
+
+</pre><p>Description of the attributes:</p>
+<ul class="simple">
+<li><strong>address</strong>: ip address of the ETA pellet unit</li>
+<li><strong>port</strong>: port of the ETA webserver (usally 8080)</li>
+<li><strong>setpath</strong>: path to the presaved sets of CAN-bus-uri</li>
+<li><strong>setname</strong>: the name of the set, used by this plugin</li>
+</ul>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>There ist one item type in this plugin. Every item has subitems for
+particular information of the requested uri. The uri represents the
+CAN-bus-id in the pellet unit. Every CAN-bus-id request replies the
+following data: E.g.:</p>
+<pre>
+<value uri="/user/var/112/10021/0/0/12162" strValue="26" unit="°C" decPlaces="0" scaleFactor="10" advTextOffset="0">262</value>
+</pre><p>The subitem represents one field of the data line. A number (&#8220;26&#8221;) plus
+unit (&#8220;°C&#8221;) consists of two subitems for the same CAN-Bus-id (uri).</p>
+<ul class="simple">
+<li><strong>eta_pu_uri</strong>: Contains the CAN-bus-id. The pellet unit shows all
+ids with discription by requesting <a class="reference external" href="http://ip/user/menu">http://ip/user/menu</a></li>
+<li><strong>eta_pu_type</strong>: Represents the field of the data line. Must be one
+of: strValue, unit, decPlaces, scaleFactor, advTextOffset</li>
+</ul>
+<div class="section" id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
+<pre>
+# items/eta_pu.conf
+[eta_unit]
+    [[boiler_state]]
+       eta_pu_uri = 112/10021/0/0/12000
+       type = str
+       [[[strValue]]]
+           eta_pu_type = strValue
+           type = str
+    [[emission_temperature]]
+       eta_pu_uri = 112/10021/0/0/12162
+       type = str
+       [[[Value]]]
+           eta_pu_type = strValue
+           type = num
+       [[[unit]]]
+           eta_pu_type = unit
+           type = str
+
+</pre></div>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>t.b.d.</p>
+</div>
+<div class="section" id="todo">
+<h3>ToDo<a class="headerlink" href="#todo" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>reading errors (number of errors and text)</li>
+<li>setting of parameters</li>
+<li>reading the raw file of an uri</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

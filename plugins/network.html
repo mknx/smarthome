@@ -1,0 +1,266 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Network &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Network</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#nw">nw</a></li>
+<li><a class="reference internal" href="#nw-acl">nw_acl</a></li>
+<li><a class="reference internal" href="#nw-udp-listen-nw-tcp-listen">nw_udp_listen/nw_tcp_listen</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#udp-host-port-data">udp(host, port, data)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="network">
+<h1>Network<a class="headerlink" href="#network" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>This plugin has no requirements or dependencies.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[nw]
+    class_name = Network
+    class_path = plugins.network
+    # ip = 0.0.0.0
+    # port = 2727
+    tcp = yes
+    tcp_acl= 127.0.0.1 | 192.168.0.34
+    # udp = no
+    # udp_acl= *
+</pre><div class="section" id="attributes">
+<h4>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">ip</span></tt>: specifies the listening IP address. By default it listens on
+all addresses.</li>
+<li><tt class="docutils literal"><span class="pre">port</span></tt>: specifies the listening port for generic incoming TCP and
+UDP connections. By default it listens on 2727.</li>
+<li><tt class="docutils literal"><span class="pre">tcp</span></tt>: by default the plugin doesn&#8217;t accept incoming TCP
+connections. You have to set this attribute to &#8216;yes&#8217; to accept them.</li>
+<li><tt class="docutils literal"><span class="pre">tcp_acl</span></tt>: with this attribute you could specify a list or a single
+IP address to allow TCP updates from. By default it accepts every
+incoming request.</li>
+<li><tt class="docutils literal"><span class="pre">udp</span></tt>: by default the plugin doesn&#8217;t accept incoming UDP
+connections. You have to set this attribute to &#8216;yes&#8217; to accept them.</li>
+<li><tt class="docutils literal"><span class="pre">udp_acl</span></tt>: with this attribute you could specify a list or a single
+IP address to allow UDP updates from. By default it accepts every
+incoming request.</li>
+<li><tt class="docutils literal"><span class="pre">http</span></tt>: port to listen for HTTP GET request</li>
+<li><tt class="docutils literal"><span class="pre">http_acl</span></tt>: with this attribute you could specify a list or a
+single IP address to allow HTTP updates from. By default it accepts
+every incoming request.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="nw">
+<h4>nw<a class="headerlink" href="#nw" title="Permalink to this headline">¶</a></h4>
+<p>If this attribute is set to &#8216;yes&#8217; you could update this item with the
+generic listener (TCP and/or UDP).</p>
+<pre>
+[test]
+    [[item1]]
+        type = string
+        nw = yes
+</pre></div>
+<div class="section" id="nw-acl">
+<h4>nw_acl<a class="headerlink" href="#nw-acl" title="Permalink to this headline">¶</a></h4>
+<p>Like the generic tcp_acl/udp_acl a list or single IP address to limit
+updates from. This attribute is valid for TCP and UDP and overrides the
+generic tcp_acl/udp_acl.</p>
+</div>
+<div class="section" id="nw-udp-listen-nw-tcp-listen">
+<h4>nw_udp_listen/nw_tcp_listen<a class="headerlink" href="#nw-udp-listen-nw-tcp-listen" title="Permalink to this headline">¶</a></h4>
+<p>You could specify the <tt class="docutils literal"><span class="pre">nw_udp_listen</span></tt> and <tt class="docutils literal"><span class="pre">nw_tcp_listen</span></tt> attribute
+to an item to create a dedicated listener. The argument could be a port
+or ip:port.</p>
+<pre>
+[test]
+    [[item1]]
+        type = string
+        # bind to 0.0.0.0:7777 (every IP address)
+        nw_tcp_listen = 7777
+
+    [[item2]]
+        type = string
+        # bind to 0.0.0.0:7777 and 127.0.0.1:8888
+        nw_udp_listen = 127.0.0.1:8888
+</pre><p>If you send a TCP/UDP packet to the port, the corrosponding item will be
+set to the TCP/UDP payload. $ echo teststring | nc -u 127.0.0.1 8888
+would set the value of item2 to &#8216;teststring&#8217;.</p>
+</div>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>You could use the same network attributes as in items.conf to trigger
+logics.</p>
+<p>In the context of the KNX plugin the trigger dictionary consists of the
+following elements:</p>
+<ul class="simple">
+<li>trigger[&#8216;by&#8217;] protocol (tcp, udp, http)</li>
+<li>trigger[&#8216;source&#8217;] IP adress of the sender</li>
+<li>trigger[&#8216;value&#8217;] payload</li>
+</ul>
+</div>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>The generic listener accepts a simple message format: <tt class="docutils literal"><span class="pre">key|id|value</span></tt>.
+Currently are three different keys supported:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">item|item.path|value</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">logic|logic_name|value</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">log|loglevel|message</span></tt> # loglevel coud be info, warning or error</li>
+</ul>
+<pre>
+# send a udp message to set the item 'network.incoming' to '123'
+$ echo "item|network.incoming|123" | nc -uw 1 XX.XX.XX.XX 2727`
+
+# send a tcp message to trigger the logic 'say' with 'hello'
+$ echo "logic|say|hello" | nc -w 1 XX.XX.XX.XX 2727`
+
+# send a udp message to add an log entry with loglevel 'warning' and the message 'lost internet connection'
+$ echo "log|warning|lost internet connection" | nc -uw 1 XX.XX.XX.XX 2727`
+
+# http request to set the item 'network.incoming' to '123'
+$ wget "http://XX.XX.XX.XX:8090/item|network.incoming|123"
+</pre></div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="udp-host-port-data">
+<h3>udp(host, port, data)<a class="headerlink" href="#udp-host-port-data" title="Permalink to this headline">¶</a></h3>
+<p>sh.nw.udp(&#8216;192.168.0.5&#8217;, 9999, &#8216;turn it on&#8217;) would send &#8216;turn it on&#8217; to
+192.168.0.5 port 9999. Simple, isn&#8217;t it?</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

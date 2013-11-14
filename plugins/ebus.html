@@ -1,0 +1,188 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eBus &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">eBus</a><ul>
+<li><a class="reference internal" href="#requirements-description">Requirements/Description</a></li>
+<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="ebus">
+<h1>eBus<a class="headerlink" href="#ebus" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements-description">
+<h2>Requirements/Description<a class="headerlink" href="#requirements-description" title="Permalink to this headline">¶</a></h2>
+<p>Description: Connects to ebusd
+<a class="reference external" href="http://cometvisu.de/wiki/index.php?title=Ebusd">http://cometvisu.de/wiki/index.php?title=Ebusd</a> wich is communicating
+with eBus heatings. Requirements: running ebusd in network (note: ebusd
+also requires an ebus-interface)</p>
+</div>
+<div class="section" id="supported-hardware">
+<h2>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h2>
+<p>I.e. Vaillant, Wolf, Kromschroeder or other eBus-heatings</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[ebus]
+    class_name = eBus
+    class_path = plugins.ebus
+    host = localhost  # ip of ebusd
+    port = 8888       # port of ebusd
+    cycle = 240       # cycle of each item
+</pre></div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>Items need parameter &#8220;ebus_cmd&#8221; and &#8220;ebus_type&#8221;.
+ebus_cmd is the command you use for telnet-connection to ebusd.
+ebus_type can be &#8220;get&#8221; or &#8220;set&#8221;. ####ebus_set Items are read/write.
+All &#8220;set&#8221;-items will be read cyclic too! ####ebus_get Items will only
+be readable, i.e. sensors.</p>
+<pre>
+[ebus]
+  [[hk_pumpe_perc]]
+    type = num
+    knx_dpt = 5
+    knx_send = 8/6/110
+    knx_reply = 8/6/110
+    ebus_cmd = "cir2 heat_pump_curr"
+    ebus_type = "get"
+    comment = akt. PWM-Wert Heizkreizpumpe
+
+  [[ernergie_summe]]
+    type = num
+    knx_dpt = 12
+    knx_send = 8/6/22
+    knx_reply = 8/6/22
+    ebus_cmd = "mv yield_sum"
+    ebus_type = "get"
+    comment = Energieertrag
+
+  [[speicherladung]]
+    type = bool
+    knx_dpt = 1
+    knx_listen = 8/7/1
+    ebus_cmd = "short hw_load"
+    ebus_type = "set"
+    comment = Quick - WW Speicherladung
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

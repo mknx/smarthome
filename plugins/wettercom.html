@@ -1,0 +1,471 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wetter.com &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">wetter.com</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a><ul>
+<li><a class="reference internal" href="#id1">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#methods">Methods</a><ul>
+<li><a class="reference internal" href="#search-location">search(location)</a></li>
+<li><a class="reference internal" href="#forecast-city-code">forecast(city_code)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="wetter-com">
+<h1>wetter.com<a class="headerlink" href="#wetter-com" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>wetter.com account with project, recommended: 3 days, all data
+transmitted</p>
+<div class="section" id="supported-hardware">
+<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
+<p>none</p>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[wettercom]
+    class_name = wettercom
+    class_path = plugins.wettercom
+    apikey = <enter your api code here>
+    project = <enter your project name here>
+</pre><p>add your project on wetter.com and paste API-key and project name in
+plugin.conf</p>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>none</p>
+<div class="section" id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
+<pre>
+# items/wetter.conf
+[wetter]
+    [[vorhersage]]
+        [[[heute]]]
+            [[[[frueh]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                    [[[[[[[text]]]]]]]
+                        type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+            [[[[mittag]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+             [[[[spaet]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+             [[[[nacht]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+        [[[morgen]]]
+            [[[[frueh]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+            [[[[mittag]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+             [[[[spaet]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+             [[[[nacht]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+        [[[uebermorgen]]]
+            [[[[frueh]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+            [[[[mittag]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+             [[[[spaet]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+             [[[[nacht]]]]
+                [[[[[temperatur]]]]]
+                    [[[[[[max]]]]]]
+                        type = num
+                    [[[[[[min]]]]]]
+                        type = num
+                [[[[[text]]]]]
+                    type = str
+                [[[[[code]]]]]
+                    type = num
+                [[[[[wind]]]]]
+                    [[[[[[geschwindigkeit]]]]]]
+                        type = num
+                    [[[[[[richtung]]]]]]
+                        type = num
+                        [[[[[[[text]]]]]]]
+                            type = str
+                [[[[[niederschlag]]]]]
+                    type = num
+
+</pre><p>This structure will be filled by the example logic file (see below)</p>
+</div>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>none</p>
+<div class="section" id="id1">
+<h4>Example<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<pre>
+#!/usr/bin/env python
+# parse weather data
+
+forecast = sh.wettercom.forecast('DE0003318')
+
+d0 = sh.now().date()
+d1 = (sh.now() + dateutil.relativedelta.relativedelta(days=1)).date()
+d2 = (sh.now() + dateutil.relativedelta.relativedelta(days=2)).date()
+
+items = { d0: sh.wetter.vorhersage.heute, d1: sh.wetter.vorhersage.morgen, d2: sh.wetter.vorhersage.uebermorgen}
+for date in forecast:
+    if date.date() in items:
+        base = items[date.date()]
+        if date.hour == 5:
+            frame = base.frueh
+        elif date.hour == 11:
+            frame = base.mittag
+        elif date.hour == 23:
+            frame = base.nacht
+        else:  # hour == 18
+            frame = base.spaet
+        frame.temperatur.min(forecast[date][0])
+        frame.temperatur.max(forecast[date][1])
+        frame.text(forecast[date][2])
+        frame.niederschlag(forecast[date][3])
+        frame.wind.geschwindigkeit(forecast[date][4])
+        frame.wind.richtung(forecast[date][5])
+        frame.wind.richtung.text(forecast[date][6])
+        frame.code(forecast[date][7])
+
+logger.info(forecast)
+
+</pre><p>This logic will parse the weather data and put it in the example
+items.conf above. Use etc/logic.conf for cyclic call (900s or so,
+requests are limited at 10000 / month)</p>
+</div>
+</div>
+</div>
+<div class="section" id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="search-location">
+<h3>search(location)<a class="headerlink" href="#search-location" title="Permalink to this headline">¶</a></h3>
+<p>Uses wetter.com to search for your city_code. method will return an
+empty dictionary if no match is found. If more than one match is found,
+the dictionary will contain at most 20 matches, best match first</p>
+</div>
+<div class="section" id="forecast-city-code">
+<h3>forecast(city_code)<a class="headerlink" href="#forecast-city-code" title="Permalink to this headline">¶</a></h3>
+<p>Returns forecast data for your city_code (use search or wetter.com
+website to find it). Forecast data is returned as dictionary for each
+date/time (usually three days at four times). Values are min.
+temperature, max. temperature, weather condition text, condensation
+probability, wind speed, wind direction in degree, wind direction text,
+weather condition code (can be used to select appropriate icon)</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

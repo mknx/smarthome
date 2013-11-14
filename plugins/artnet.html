@@ -1,0 +1,197 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Artnet &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Artnet</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a></li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a><ul>
+<li><a class="reference internal" href="#send-a-list-of-values-starting-at-channel">2) Send a list of values starting at channel</a></li>
+<li><a class="reference internal" href="#send-a-list-of-values">3) Send a list of values</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="artnet">
+<h1>Artnet<a class="headerlink" href="#artnet" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>You need a device understanding Artnet. I suggest to use the software
+OLA <a class="reference external" href="http://www.opendmx.net/index.php/Open_Lighting_Architecture">http://www.opendmx.net/index.php/Open_Lighting_Architecture</a> to
+translate the ArtNet packets into DMX Signals. OLA supports most USB -&gt;
+DMX Adapters available at the moment.</p>
+<div class="section" id="supported-hardware">
+<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Hardware supported by OLA. See Link above.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[dmx1]
+    class_name = ArtNet
+    class_path = plugins.artnet
+    artnet_subnet = 0
+    artnet_net = 0
+    artnet_universe = 0
+    ip = 192.168.1.123
+    port = 6454
+</pre></div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>Not needed yet.</p>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>Notice: First DMX channel is 1! Not 0!</p>
+<p>To send DMX Data to the universe set in plugin.conf you have 3
+possibilities: ###1) Send single value</p>
+<pre>sh.dmx1(<DMX_CHAN>, <DMX_VALUE>)</pre><p>Sets DMX_CHAN to value DMX_VALUE.</p>
+<p>Example:</p>
+<pre>sh.dmx1(12,255)</pre><p>If channels 1-11 are already set, they will not change. If channels 1-11
+are not set till now, the will be set to value 0. This is needed because
+on a DMX bus you can not set just one specific channel. You have to
+begin at first channel setting your values.</p>
+<div class="section" id="send-a-list-of-values-starting-at-channel">
+<h4>2) Send a list of values starting at channel<a class="headerlink" href="#send-a-list-of-values-starting-at-channel" title="Permalink to this headline">¶</a></h4>
+<pre>sh.dmx1(<DMX_CHAN>, <DMX_VALUE_LIST>)</pre><p>Sends to DMX Bus starting at</p>
+<p>Example:</p>
+<pre>sh.dmx1(10,[0,33,44,55,99])</pre><p>If channels 1-9 are already set, they will not change. If channels 1-9
+are not set till now, the will be set to value 0. This is needed because
+on a DMX bus you can not set just one specific channel. You have to
+begin at first channel setting your values. Values in square brackets
+will be written to channel (10-14)</p>
+</div>
+<div class="section" id="send-a-list-of-values">
+<h4>3) Send a list of values<a class="headerlink" href="#send-a-list-of-values" title="Permalink to this headline">¶</a></h4>
+<pre>sh.dmx1(<DMX_VALUE_LIST>)</pre><p>Sends to DMX Bus starting at channel 1 Nearly the same as 2) but without
+starting channel.</p>
+<p>Example:</p>
+<pre>sh.dmx1([0,33,44,55,99])</pre><p>Values in Square brackets will be written to channel (1-5)</p>
+</div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

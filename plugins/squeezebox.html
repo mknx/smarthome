@@ -1,0 +1,357 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Squeezebox &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Squeezebox</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="squeezebox">
+<h1>Squeezebox<a class="headerlink" href="#squeezebox" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>A properly installed and configured Logitech Media Server is required.</p>
+<div class="section" id="supported-hardware">
+<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
+<p>Tested with: * Logitech Squeezebox Radio</p>
+<p>Should work with other Squeezebox players as well - please let me know!</p>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[squeezebox]
+    class_name = Squeezebox
+    class_path = plugins.squeezebox
+#    host = &lt;server&gt;
+#    port = &lt;port&gt;
+</pre><p>Description of the attributes:</p>
+<ul class="simple">
+<li><strong>host</strong>: IP or hostname of the Logitech Media Server if not local</li>
+<li><strong>port</strong>: Port number of the Logitech Media Server if not 9090</li>
+</ul>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>You can use all commands available by the telnet-interface.</p>
+<p>For a explanation of all available commands see
+<a class="reference external" href="http:/">http:/</a>/&lt;server&gt;:9000/html/docs/cli-api.html</p>
+<p>Up to four identifier strings are used: * <strong>squeezebox_playerid</strong>:
+used in the parent item to allow using &lt;playerid&gt; placeholder in the
+children * <strong>squeezebox_send</strong>: used to set the item *
+<strong>squeezebox_recv</strong>: used to get notifications when running *
+<strong>squeezebox_init</strong>: used to query the item at start-up</p>
+<p>Fields: * <strong>&lt;playerid&gt;</strong>: gets replaced by the player-id set in the
+parent item * <strong>{}</strong>: the value of the item is written to this
+placeholder (don&#8217;t use if a fixed/no value is required)</p>
+<p>You should verify all your commands manually by using the
+telnet-interface on port 9090.</p>
+<pre>
+telnet &lt;server&gt;:&lt;port&gt;
+listen 1
+&lt;playerid&gt; name ?
+...
+</pre>
+
+<pre>
+[Squeezebox]
+  squeezebox_playerid = your-players-ID-in-here
+
+  [[Name]]
+    type = str
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; name {}
+    squeezebox_recv = &lt;playerid&gt; name
+  [[IP]]
+    type = str
+    visu = yes
+    squeezebox_recv = player ip &lt;playerid&gt;
+  [[Signal_Strength]]
+    type = num
+    visu = yes
+    squeezebox_recv = &lt;playerid&gt; signalstrength
+
+  [[Power]]
+    type = bool
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; power {}
+    squeezebox_recv = &lt;playerid&gt; prefset server power
+    squeezebox_init = &lt;playerid&gt; power
+
+  [[Mute]]
+    type = bool
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; mixer muting {}
+    squeezebox_recv = &lt;playerid&gt; prefset server mute
+    squeezebox_init = &lt;playerid&gt; mixer muting
+  [[Volume]]
+    type = num
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; mixer volume {}
+    squeezebox_recv = &lt;playerid&gt; prefset server volume
+    squeezebox_init = &lt;playerid&gt; mixer volume
+  [[Volume_Up]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; button volup
+  [[Volume_Down]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; button voldown
+
+  [[Play]]
+    type = bool
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; play
+    squeezebox_recv = &lt;playerid&gt; play
+    squeezebox_init = &lt;playerid&gt; mode
+  [[Stop]]
+    type = bool
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; stop
+    squeezebox_recv = &lt;playerid&gt; stop
+    squeezebox_init = &lt;playerid&gt; mode
+  [[Pause]]
+    type = bool
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; pause {}
+    squeezebox_recv = &lt;playerid&gt; pause
+    squeezebox_init = &lt;playerid&gt; mode
+
+  [[Current_Title]]
+    type = str
+    visu = yes
+    squeezebox_recv = &lt;playerid&gt; playlist newsong
+    squeezebox_init = &lt;playerid&gt; current_title
+
+  [[Genre]]
+    type = str
+    visu = yes
+    squeezebox_recv = &lt;playerid&gt; genre
+  [[Artist]]
+    type = str
+    visu = yes
+    squeezebox_recv = &lt;playerid&gt; artist
+  [[Album]]
+    type = str
+    visu = yes
+    squeezebox_recv = &lt;playerid&gt; album
+  [[Title]]
+    type = str
+    visu = yes
+    squeezebox_recv = &lt;playerid&gt; title
+  [[Duration]]
+    type = num
+    visu = yes
+    squeezebox_recv = &lt;playerid&gt; duration
+
+  [[Time]]
+    type = num
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; time {}
+    squeezebox_recv = &lt;playerid&gt; time
+
+  [[Playlist_Index]]
+    type = num
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist index {}
+    squeezebox_recv = &lt;playerid&gt; playlist index
+  [[Playlist_Forward]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist index +1
+  [[Playlist_Backward]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist index -1
+
+  [[Playlist_Name]]
+    type = str
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist name {}
+    squeezebox_recv = &lt;playerid&gt; playlist name
+  [[Playlist_Save]]
+    type = str
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist save {}
+  [[Playlist_Load]]
+    type = str
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist load {}
+  [[Playlist_Load_Internetradio]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist load file:///home/robert/playlists/Internetradio.m3u
+
+  [[Repeat]]
+    type = num
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist repeat {}
+    squeezebox_recv = &lt;playerid&gt; playlist repeat
+  [[Repeat_Song]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist repeat 1
+  [[Repeat_Playlist]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist repeat 2
+  [[Repeat_None]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist repeat 0
+
+  [[Shuffle]]
+    type = num
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist shuffle {}
+    squeezebox_recv = &lt;playerid&gt; playlist shuffle
+  [[Shuffle_By_Song]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist shuffle 1
+  [[Shuffle_By_Album]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist shuffle 2
+  [[Shuffle_None]]
+    type = bool
+    enforce_updates = true
+    visu = yes
+    squeezebox_send = &lt;playerid&gt; playlist shuffle 0
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

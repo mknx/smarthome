@@ -1,0 +1,254 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Russound &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Russound</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#rus-path">rus_path</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="russound">
+<h1>Russound<a class="headerlink" href="#russound" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>This plugin needs a Russound audio device in the network to communicate
+with. The communication protocol for the ethernet port has to be set to
+RIO.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[russound]
+   class_name = Russound
+   class_path = plugins.russound
+   host = 192.168.1.123
+#   port = 9621
+</pre><p>This plugin talks by default with the Russound audio device with the
+given host ip on the default port 9621. If you have changed the default
+port you have to change it here as well.</p>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="rus-path">
+<h4>rus_path<a class="headerlink" href="#rus-path" title="Permalink to this headline">¶</a></h4>
+<p>This attribute is mandatory. If you don&#8217;t provide one the item will be
+ignored. The value must be given with the following format c.z.p where c
+is the number of the controller, z is the number of the zone and p is
+the system parameter of the Russound audio device like volume or treble.
+Right know the following russound parameter types are supported:</p>
+<ul class="simple">
+<li>status = zone On/Off: type must be bool</li>
+<li>volume = volume of the zone: type must be num [0..50]</li>
+<li>bass = bass of the zone: type must be num [-10..10]</li>
+<li>treble = treble of the zone: type must be num [-10..10]</li>
+<li>balance = balance of the zone: type must be num [-10..10]</li>
+<li>turnonvolume = volume on zone on: type must be num [0..50]</li>
+<li>currentsource = number of the source: type must be num</li>
+<li>mute = mute the zone volume: type must be bool</li>
+<li>loudness = loudness of the zone: type must be bool</li>
+<li>partymode = party mode setting of the zone: type must be string
+[ON/OFF/MASTER]</li>
+<li>donotdisturb = do not disturb setting of the zone: type must be
+string</li>
+<li>name = name of the zone (readonly)</li>
+</ul>
+<p>For all parameters with specified ranges (volume, turnonvolume, bass,
+treble, balance) all values out of range are ignored and the minimum or
+maximum value will be taken. So if you set balance to 15 the plugin will
+send 10 to the Russound audio device.</p>
+<p>Besides the above parameters there are so called key codes. This are
+special values send like from a remote control which effects the current
+state of the Russound audio device itself or maybe a connected device if
+the Russound audio device can communicate with it. Look in the manual of
+your Russound which key codes are possible. If you specify a parameter
+not on the above list it will be interpreted as key code and send to the
+russound audio device as a &#8220;KeyRelease&#8221; event. This way you can e.g.
+define rus_path=1.5.channelup which will send the key code &#8220;channelup&#8221;
+to the russound. In case of the internal radio tuner this will change
+the current channel.</p>
+<p>For such key codes it will be best to define the item with the aditional
+attribute enforce_updates=true so that the value of the item is not
+important. That means you can e.g. use a KNX push device that sends a
+ONE on every push to a group address and smarthome.py listens for that
+address. With this on every push the channelup key code is sent.</p>
+</div>
+</div>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<pre>
+['dg']
+        [['bedroom']]
+                [[['audio']]]
+                        type=bool
+                        rus_path=1.1.status
+                        knx_dpt=1
+                        knx_send=12/1/0
+                        knx_listen=12/1/0
+
+                        [[[['volume']]]]
+                                type=num
+                                rus_path=1.1.volume
+                                knx_dpt=5
+                                knx_send=12/1/1
+                                knx_listen=12/1/1
+                        [[[['bass']]]]
+                                type=num
+                                rus_path=1.1.bass
+                                knx_dpt=6
+                                knx_send=12/1/2
+                                knx_listen=12/1/2
+                        [[[['treble']]]]
+                                type=num
+                                rus_path=1.1.treble
+                        [[[['balance']]]]
+                                type=num
+                                rus_path=1.1.balance
+                        [[[['turnonvolume']]]]
+                                type=num
+                                rus_path=1.1.turnonvolume
+                        [[[['source']]]]
+                                type=num
+                                rus_path=1.1.currentsource
+                        [[[['mute']]]]
+                                type=bool
+                                rus_path=1.1.mute
+                        [[[['channelup']]]]
+                                type=bool
+                                rus_path=1.1.channelup
+                                knx_dpt=1
+                                knx_listen=12/1/9
+                                enforce_updates=true
+                        [[[['loudness']]]]
+                                type=bool
+                                rus_path=1.1.loudness
+                        [[[['partymode']]]]
+                                type=str
+                                rus_path=1.1.partymode
+                        [[[['donotdisturb']]]]
+                                type=str
+                                rus_path=1.1.donotdisturb
+</pre></div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

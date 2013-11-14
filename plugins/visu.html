@@ -1,0 +1,240 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Visualisation &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Visualisation</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a></li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#smartvisu">smartVISU</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="visualisation">
+<h1>Visualisation<a class="headerlink" href="#visualisation" title="Permalink to this headline">¶</a></h1>
+<p>This plugin provides an WebSocket interface for the smartVISU
+visualisation framework. Right now the WebSocket interface only supports
+unencrypted connections. Please use a internal network or VPN to connect
+to the service.</p>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>None.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[visu]
+    class_name = WebSocket
+    class_path = plugins.visu
+#   ip='0.0.0.0'
+#   port=2424
+#   acl = ro
+#   smartvisu_dir = False
+</pre><p>This plugins listens by default on every IP address of the host on the
+TCP port 2424. It provides read only access to every item. By changing
+the <tt class="docutils literal"><span class="pre">acl</span></tt> attribute to <tt class="docutils literal"><span class="pre">rw</span></tt> or <tt class="docutils literal"><span class="pre">no</span></tt> you could modify this default
+The <tt class="docutils literal"><span class="pre">smartvisu_dir</span></tt> attribute is described in the smartVISU section.</p>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>Simply set the visu_acl attribute to something to allow read/write
+access to the item.</p>
+<pre>
+[example]
+    [[toggle]]
+        value = True
+        type = bool
+        visu_acl = rw
+</pre></div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>You could specify the <tt class="docutils literal"><span class="pre">visu_acl</span></tt> attribute to every logic in your
+logic.conf. This way you could trigger the logic via the interface.</p>
+<pre>
+[dialog]
+    filename = 'dialog.py'
+    visu_acl = true
+</pre></div>
+</div>
+<div class="section" id="smartvisu">
+<h2>smartVISU<a class="headerlink" href="#smartvisu" title="Permalink to this headline">¶</a></h2>
+<p>You could generate pages for the
+<a class="reference external" href="http://code.google.com/p/smartvisu/">smartVISU</a> visualisation if you
+specify the <tt class="docutils literal"><span class="pre">smartvisu_dir</span></tt> which should be set to the root directory
+of your smartVISU installation. In the examples directory you could find
+a configuration with every supported element.
+<tt class="docutils literal"><span class="pre">examples/items/smartvisu.conf</span></tt></p>
+<p>The attribute keywords are:</p>
+<ul class="simple">
+<li>sv_page: to generate a page for this item. You have to specify
+<tt class="docutils literal"><span class="pre">sv_page</span> <span class="pre">=</span> <span class="pre">room</span></tt> to activate it. Every widget beneath this item
+will be included in the page.</li>
+<li>sv_img: with this attribute you could assign an icon or picture for
+a page or widget.</li>
+<li>sv_widget: This has to be a double quoted encapsulated string with
+the smartVISU widget. You could define multiple widgets by separating
+them by a comma. See the example below:</li>
+</ul>
+<pre>
+[second]
+    [[sleeping]]
+        name = Sleeping Room
+        sv_page = room
+        sv_img = scene_sleeping.png
+        [[[light]]]
+            name = Light
+            type = bool
+            visu = yes
+            sv_widget = "&#123;&#123; device.dimmer('second.sleeping.light', 'Light', 'second.sleeping.light', 'second.sleeping.light.level') &#125;&#125;"
+            knx_dpt = 1
+            knx_listen = 3/2/12
+            knx_send = 3/2/12
+            [[[[level]]]]
+                type = num
+                visu = yes
+                knx_dpt = 5
+                knx_listen = 3/2/14
+                knx_send = 3/2/14
+</pre><p>But instead of giving the widget distinct options you could use <tt class="docutils literal"><span class="pre">item</span></tt>
+as a keyword. The page generator will replace it with the current path.
+This way you could easily copy widget calls and don&#8217;t type the item path
+every time.</p>
+<pre>
+[second]
+    [[sleeping]]
+        name = Sleeping Room
+        sv_page = room
+        sv_img = scene_sleeping.png
+        [[[light]]]
+            name = Light
+            type = bool
+            visu = yes
+            sv_widget = "&#123;&#123; device.dimmer('item', 'item.name', 'item', 'item.level') &#125;&#125;"
+            knx_dpt = 1
+            knx_listen = 3/2/12
+            knx_send = 3/2/12
+            [[[[level]]]]
+                type = num
+                visu = yes
+                knx_dpt = 5
+                knx_listen = 3/2/14
+                knx_send = 3/2/14
+</pre></div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

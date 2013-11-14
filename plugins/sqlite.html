@@ -1,0 +1,186 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SQLite &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">SQLite</a><ul>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#sh-item-db-function-start-end-now">sh.item.db(function, start, end=&#8217;now&#8217;)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="sqlite">
+<h1>SQLite<a class="headerlink" href="#sqlite" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[sql]
+    class_name = SQL
+    class_path = plugins.sqlite
+</pre></div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>For num and bool items, you could set the attribute: <tt class="docutils literal"><span class="pre">sqlite</span></tt>. By this
+you enable logging of the item values. If you set this attribute to
+<tt class="docutils literal"><span class="pre">init</span></tt>, SmartHome.py tries to set the item to the last know value
+(like cache = yes).</p>
+<pre>
+[outside]
+    name = Outside
+    [[temperature]]
+        name = Temperatur
+        type = num
+        sqlite = yes
+</pre></div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>This plugin adds one item method to every item which has sqlite enabled.</p>
+<div class="section" id="sh-item-db-function-start-end-now">
+<h3>sh.item.db(function, start, end=&#8217;now&#8217;)<a class="headerlink" href="#sh-item-db-function-start-end-now" title="Permalink to this headline">¶</a></h3>
+<p>This method returns you an value for the specified function and
+timeframe.</p>
+<p>Supported functions are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">avg</span></tt>: for the average value</li>
+<li><tt class="docutils literal"><span class="pre">max</span></tt>: for the maximum value</li>
+<li><tt class="docutils literal"><span class="pre">min</span></tt>: for the minimum value</li>
+<li><tt class="docutils literal"><span class="pre">sum</span></tt>: for the value sum</li>
+</ul>
+<p>For the timeframe you have to specify a start point and a optional end
+point. By default it ends &#8216;now&#8217;. The time point could be specified with
+<tt class="docutils literal"><span class="pre">&lt;number&gt;&lt;interval&gt;</span></tt>, where interval could be:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">i</span></tt>: minute</li>
+<li><tt class="docutils literal"><span class="pre">h</span></tt>: hour</li>
+<li><tt class="docutils literal"><span class="pre">d</span></tt>: day</li>
+<li><tt class="docutils literal"><span class="pre">w</span></tt>: week</li>
+<li><tt class="docutils literal"><span class="pre">m</span></tt>: month</li>
+<li><tt class="docutils literal"><span class="pre">y</span></tt>: year</li>
+</ul>
+<p>e.g.</p>
+<pre>
+sh.outside.temperature.db('min', '1d')  # returns the minimum temperature within the last day
+sh.outside.temperature.db('avg', '2w', '1w')  # returns the average temperature of the week before last week
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

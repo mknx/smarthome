@@ -1,0 +1,224 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Luxtronic2 &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Luxtronic2</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#lux2">lux2</a></li>
+<li><a class="reference internal" href="#lux2-p">lux2_p</a></li>
+<li><a class="reference internal" href="#lux2-a">lux2_a</a></li>
+<li><a class="reference internal" href="#lux2-c">lux2_c</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="luxtronic2">
+<h1>Luxtronic2<a class="headerlink" href="#luxtronic2" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>This plugin has no requirements or dependencies.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[luxtronic2]
+    class_name = Luxtronic2
+    class_path = plugins.luxtronic2
+    host = 192.168.0.123
+    # port = 8888
+</pre><div class="section" id="attributes">
+<h4>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">host</span></tt>: specifies the hostname of your heating server.</li>
+<li><tt class="docutils literal"><span class="pre">port</span></tt>: if you want to use a nonstandard port.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<p>Each heating controlled with a Luxtronic 2.0 controller has different
+things which can controlled or different information which can be
+received. The reason for that is that every heating system can have
+special modules installed or mounted to the system itself. To have the
+most generic way to read state informations or change values this plugin
+is based on the index values of the ouput from your heating. There are
+three main sections: * &#8216;parameter&#8217;: all parameters which are needed to
+control the heating (parameters can be changed with this plugin, so be
+careful with them). Attention: because the protocol is not well
+documented, not every parameter and its function is knwon. *
+&#8216;attribute&#8217;: I&#8217;m not sure what they are for. In the Java Applet on the
+webserver of the heating itself it is used as visibility and it seems
+that these are only boolean flags, maybe to control which parameter is
+realy needed. * &#8216;calculated&#8217;: returns calculated information. For
+example the current state or the time the heating was running until now.</p>
+<p>For all of the following items.conf attributes you have to define the
+right index for the output from your heating.</p>
+<div class="section" id="lux2">
+<h4>lux2<a class="headerlink" href="#lux2" title="Permalink to this headline">¶</a></h4>
+<p>Special post processed values from the calculated section for the most
+important information (read-only).</p>
+<p>Processed indexes are: 119: current state of the heating as string 10,
+11, 12, 15, 19, 20, 151, 152: original float values encoded as integer
+so they&#8217;re just divided by ten.</p>
+</div>
+<div class="section" id="lux2-p">
+<h4>lux2_p<a class="headerlink" href="#lux2-p" title="Permalink to this headline">¶</a></h4>
+<p>Defines a mapping to a parameter (remember, parameters are read- and
+writeable). All parameter are integer (numbers).</p>
+</div>
+<div class="section" id="lux2-a">
+<h4>lux2_a<a class="headerlink" href="#lux2-a" title="Permalink to this headline">¶</a></h4>
+<p>Defines a mapping to a attribute (read-only). All attribute values are
+bytes (numbers).</p>
+</div>
+<div class="section" id="lux2-c">
+<h4>lux2_c<a class="headerlink" href="#lux2-c" title="Permalink to this headline">¶</a></h4>
+<p>Defines a mapping to a calculated value (read-only). All calculated
+values are integer (numbers).</p>
+<pre>
+[heating]
+    [[temp_outside]]
+        type = num
+        lux2 = 10
+    [[state_numeric]]
+        type = num
+        lux2_c = 119
+    [[state]]
+        type = str
+        lux2 = 119
+</pre></div>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>Currently there is no logic configuration for this plugin.</p>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>Currently there are no functions offered from this plugin.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

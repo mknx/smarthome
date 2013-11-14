@@ -1,0 +1,220 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>XBMC &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">XBMC</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#xbmc-host">xbmc_host</a></li>
+<li><a class="reference internal" href="#xbmc-port">xbmc_port</a></li>
+<li><a class="reference internal" href="#xbmc-listen">xbmc_listen</a></li>
+<li><a class="reference internal" href="#xbmc-send">xbmc_send</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="xbmc">
+<h1>XBMC<a class="headerlink" href="#xbmc" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>You only need one or more XBMC (12 a.k.a. Frodo or above) with
+System-Settings-Service &#8220;Allow programs on other systems to control
+XBMC&#8221; enabled.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[xbmc]
+    class_name = XBMC
+    class_path = plugins.xbmc
+</pre></div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[living]
+    [[xbmc]]
+        type = str
+        xbmc_host = xbmc.home
+        # xbmc_port = 9090
+        xbmc_listen = state
+        [[[title]]]
+            type = str
+            xbmc_listen = title
+        [[[media]]]
+            type = str
+            xbmc_listen = media
+        [[[volume]]]
+            type = num
+            xbmc_listen = volume
+            xbmc_send = volume
+        [[[mute]]]
+            type = bool
+            xbmc_listen = mute
+            xbmc_send = mute
+</pre><div class="section" id="xbmc-host">
+<h4>xbmc_host<a class="headerlink" href="#xbmc-host" title="Permalink to this headline">¶</a></h4>
+<p>This attribute is mandatory. You have to provide the IP address or host
+name of the XBMC system.</p>
+</div>
+<div class="section" id="xbmc-port">
+<h4>xbmc_port<a class="headerlink" href="#xbmc-port" title="Permalink to this headline">¶</a></h4>
+<p>You could specify a port to connect to. By default port 9090 is used.</p>
+</div>
+<div class="section" id="xbmc-listen">
+<h4>xbmc_listen<a class="headerlink" href="#xbmc-listen" title="Permalink to this headline">¶</a></h4>
+<p>You could assign the following values to <tt class="docutils literal"><span class="pre">xbmc_listen</span></tt>:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">volume</span></tt> a numeric value (0 -100)</li>
+<li><tt class="docutils literal"><span class="pre">mute</span></tt> a bool flag</li>
+<li><tt class="docutils literal"><span class="pre">title</span></tt> a string with the name of the movie, song or picture</li>
+<li><tt class="docutils literal"><span class="pre">media</span></tt> a string with the current media type (Video, Audio,
+Picture)</li>
+<li><tt class="docutils literal"><span class="pre">state</span></tt> current state as string (Menu, Playing, Pause)</li>
+</ul>
+</div>
+<div class="section" id="xbmc-send">
+<h4>xbmc_send<a class="headerlink" href="#xbmc-send" title="Permalink to this headline">¶</a></h4>
+<p>The following <tt class="docutils literal"><span class="pre">xbmc_send</span></tt> attributes could be defined to send changes
+to the system:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">volume</span></tt> a numeric value (0 -100)</li>
+<li><tt class="docutils literal"><span class="pre">mute</span></tt> a bool flag</li>
+</ul>
+</div>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>This plugin provides the function to send notification messages to xbmc.
+<tt class="docutils literal"><span class="pre">notify_all(title,</span> <span class="pre">message,</span> <span class="pre">picture)</span></tt> to send the notification to all
+xbmc systems and extends the item with the notify method. The picture
+attribute is optional.</p>
+<pre>
+sh.xbmc.notify_all('Phone', 'Sister in law calling', 'http://smarthome.local/img/phone.png')
+# or for a dedicated xbmc
+sh.living.xbmc.notify('Door', 'Ding Dong')
+</pre></div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

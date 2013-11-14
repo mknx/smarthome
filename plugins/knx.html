@@ -1,0 +1,415 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>KNX &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">KNX</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li><a class="reference internal" href="#installing-eibd">Installing eibd</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#knx-dpt">knx_dpt</a></li>
+<li><a class="reference internal" href="#knx-send">knx_send</a></li>
+<li><a class="reference internal" href="#knx-status">knx_status</a></li>
+<li><a class="reference internal" href="#knx-listen">knx_listen</a></li>
+<li><a class="reference internal" href="#knx-init">knx_init</a></li>
+<li><a class="reference internal" href="#knx-cache">knx_cache</a></li>
+<li><a class="reference internal" href="#knx-reply">knx_reply</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example">Example</a><ul>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#encode-data-dpt">encode(data, dpt)</a></li>
+<li><a class="reference internal" href="#groupwrite-ga-data-dpt">groupwrite(ga, data, dpt)</a></li>
+<li><a class="reference internal" href="#groupread-ga-cache-false">groupread(ga, cache=False)</a></li>
+<li><a class="reference internal" href="#send-time-time-ga-date-ga">send_time(time_ga, date_ga)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="knx">
+<h1>KNX<a class="headerlink" href="#knx" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>This plugin needs a running eibd.</p>
+<div class="section" id="installing-eibd">
+<h3>Installing eibd<a class="headerlink" href="#installing-eibd" title="Permalink to this headline">¶</a></h3>
+<p>I&#8217;m using the vanilla eibd from Martins repository.</p>
+<pre>$ sudo add-apt-repository ppa:mkoegler/bcusdk
+$ sudo apt-get install eibd-clients eibd-server libeibclient-dev</pre></div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[knx]
+   class_name = KNX
+   class_path = plugins.knx
+#   host = 127.0.0.1
+#   port = 6720
+   send_time = 600 # update date/time every 600 seconds, default none
+   time_ga = 1/1/1 # default none
+   date_ga = 1/1/2 # default none
+#   busmonitor = False
+</pre><p>This plugins is looking by default for the eibd on 127.0.0.1 port 6720.
+You could change this in your plugin.conf. If you specify a
+<tt class="docutils literal"><span class="pre">send_time</span></tt> intervall and a <tt class="docutils literal"><span class="pre">time_ga</span></tt> and/or <tt class="docutils literal"><span class="pre">date_ga</span></tt> the plugin
+sends the time/date every cycle seconds on the bus.</p>
+<p>If you set <tt class="docutils literal"><span class="pre">busmonitor</span></tt> to True, every KNX packet will be logged.</p>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="knx-dpt">
+<h4>knx_dpt<a class="headerlink" href="#knx-dpt" title="Permalink to this headline">¶</a></h4>
+<p>This attribute is mandatory. If you don&#8217;t provide one the item will be
+ignored. The DPT has to match the type of the item!</p>
+<p>The following datapoint types are supported:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="17%" />
+<col width="13%" />
+<col width="54%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">DPT</th>
+<th class="head">Data</th>
+<th class="head">Type</th>
+<th class="head">Values</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>1 bit</td>
+<td>bool</td>
+<td>True | False</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>2 bit</td>
+<td>list</td>
+<td>[0, 0] - [1, 1]</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>4 bit</td>
+<td>list</td>
+<td>[0, 0] - [1, 7]</td>
+</tr>
+<tr class="row-odd"><td>4.002</td>
+<td>8 bit</td>
+<td>str</td>
+<td>1 character (8859_1) e.g. &#8216;c&#8217;</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>8 bit</td>
+<td>num</td>
+<td>0 - 255</td>
+</tr>
+<tr class="row-odd"><td>5.001</td>
+<td>8 bit</td>
+<td>num</td>
+<td>0 - 100</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>8 bit</td>
+<td>num</td>
+<td>-128 - 127</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>2 byte</td>
+<td>num</td>
+<td>0 - 65535</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>2 byte</td>
+<td>num</td>
+<td>-32768 - 32767</td>
+</tr>
+<tr class="row-odd"><td>9</td>
+<td>2 byte</td>
+<td>num</td>
+<td>-671088,64 - 670760,96</td>
+</tr>
+<tr class="row-even"><td>10</td>
+<td>3 byte</td>
+<td>foo</td>
+<td>datetime.time</td>
+</tr>
+<tr class="row-odd"><td>11</td>
+<td>3 byte</td>
+<td>foo</td>
+<td>datetime.date</td>
+</tr>
+<tr class="row-even"><td>12</td>
+<td>4 byte</td>
+<td>num</td>
+<td>0 - 4294967295</td>
+</tr>
+<tr class="row-odd"><td>13</td>
+<td>4 byte</td>
+<td>num</td>
+<td>-2147483648 - 2147483647</td>
+</tr>
+<tr class="row-even"><td>14</td>
+<td>4 byte</td>
+<td>num</td>
+<td>4-Octet Float Value IEEE 754</td>
+</tr>
+<tr class="row-odd"><td>16</td>
+<td>14 byte</td>
+<td>str</td>
+<td>14 characters (ASCII)</td>
+</tr>
+<tr class="row-even"><td>16.001</td>
+<td>14 byte</td>
+<td>str</td>
+<td>14 characters (8859_1)</td>
+</tr>
+<tr class="row-odd"><td>17</td>
+<td>8 bit</td>
+<td>num</td>
+<td>Scene: 0 - 63</td>
+</tr>
+<tr class="row-even"><td>20</td>
+<td>8 bit</td>
+<td>num</td>
+<td>HVAC: 0 - 255</td>
+</tr>
+<tr class="row-odd"><td>24</td>
+<td>var</td>
+<td>str</td>
+<td>ulimited string (8859_1)</td>
+</tr>
+<tr class="row-even"><td>232</td>
+<td>3 byte</td>
+<td>list</td>
+<td>RGB: [0, 0, 0] - [255, 255, 255]</td>
+</tr>
+</tbody>
+</table>
+<p>If you are missing one, open a bug report or drop me a message in the
+knx user forum.</p>
+</div>
+<div class="section" id="knx-send">
+<h4>knx_send<a class="headerlink" href="#knx-send" title="Permalink to this headline">¶</a></h4>
+<p>You could specify one or more group addresses to send updates to. Item
+update will only be sent if the item is not changed via KNX.</p>
+</div>
+<div class="section" id="knx-status">
+<h4>knx_status<a class="headerlink" href="#knx-status" title="Permalink to this headline">¶</a></h4>
+<p>Similar to knx_send but will send updates even for changes vie KNX if
+the knx_status GA differs from the destination GA.</p>
+</div>
+<div class="section" id="knx-listen">
+<h4>knx_listen<a class="headerlink" href="#knx-listen" title="Permalink to this headline">¶</a></h4>
+<p>You could specify one or more group addresses to monitor for changes.</p>
+</div>
+<div class="section" id="knx-init">
+<h4>knx_init<a class="headerlink" href="#knx-init" title="Permalink to this headline">¶</a></h4>
+<p>If you set this attribute, SmartHome.py sends a read request to
+specified group address at startup and set the value of the item to the
+response. It implies &#8216;knx_listen&#8217;.</p>
+</div>
+<div class="section" id="knx-cache">
+<h4>knx_cache<a class="headerlink" href="#knx-cache" title="Permalink to this headline">¶</a></h4>
+<p>If you set this attribute, SmartHome.py tries to read the cached value
+for the group address. If it fails it sends a read request to specified
+group address at startup and set the value of the item to the response.
+It implies &#8216;knx_listen&#8217;.</p>
+</div>
+<div class="section" id="knx-reply">
+<h4>knx_reply<a class="headerlink" href="#knx-reply" title="Permalink to this headline">¶</a></h4>
+<p>Specify one or more group addresses to allow reading the item value.</p>
+</div>
+</div>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<pre>
+[living_room]
+    [[light]]
+        type = bool
+        knx_dpt = 1
+        knx_send = 1/1/3
+        knx_listen = 1/1/4 | 1/1/5
+        knx_init = 1/1/4
+
+    [[temperature]]
+        type = num
+        knx_dpt = 9
+        knx_send = 1/1/6
+        knx_reply = 1/1/6
+        ow_id = 28.BBBBB20000 # see 1-Wire plugin
+        ow_sensor = temperature # see 1-Wire plugin
+</pre><div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>You could specify the <tt class="docutils literal"><span class="pre">knx_listen</span></tt> and <tt class="docutils literal"><span class="pre">knx_reply</span></tt> attribute to
+every logic in your logic.conf. The argument could be a single group
+address and dpt or a list of them.</p>
+<pre>
+[logic1]
+    knx_dpt = 9
+    knx_listen = 1/1/7
+
+[logic2]
+    knx_dpt = 9
+    knx_reply = 1/1/8 | 1/1/8
+</pre><p>If there is a packet directed to the according group address,
+SmartHome.py would trigger the logic and will pass the payload (via the
+trigger object) to the logic.</p>
+<p>In the context of the KNX plugin the trigger dictionary consists of the
+following elements:</p>
+<ul class="simple">
+<li>trigger[&#8216;by&#8217;] protocol (&#8216;KNX&#8217;)</li>
+<li>trigger[&#8216;source&#8217;] PA (physical adress of the KNX packet source)</li>
+<li>trigger[&#8216;value&#8217;] payload</li>
+</ul>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="encode-data-dpt">
+<h3>encode(data, dpt)<a class="headerlink" href="#encode-data-dpt" title="Permalink to this headline">¶</a></h3>
+<p>This function encodes your data according to the specified datapoint.</p>
+<pre>data = sh.knx.encode(data, 9)</pre></div>
+<div class="section" id="groupwrite-ga-data-dpt">
+<h3>groupwrite(ga, data, dpt)<a class="headerlink" href="#groupwrite-ga-data-dpt" title="Permalink to this headline">¶</a></h3>
+<p>With this function you could send the data to the specified group
+address.</p>
+<pre>sh.knx.groupwrite('1/1/10', 10.3, '9')</pre></div>
+<div class="section" id="groupread-ga-cache-false">
+<h3>groupread(ga, cache=False)<a class="headerlink" href="#groupread-ga-cache-false" title="Permalink to this headline">¶</a></h3>
+<p>This function triggers a read request on the specified group address. It
+doesn&#8217;t return the received value!</p>
+</div>
+<div class="section" id="send-time-time-ga-date-ga">
+<h3>send_time(time_ga, date_ga)<a class="headerlink" href="#send-time-time-ga-date-ga" title="Permalink to this headline">¶</a></h3>
+<p>This funcion send the current time and or date to the specified group
+address.</p>
+<pre>sh.knx.send_time('1/1/1', '1/1/2') # send the time to 1/1/1 and the date to 1/1/2
+sh.knx.send_time('1/1/1') # only send the time to 1/1/1
+sh.knx.send_time(data_ga='1/1/2') # only send the date to 1/1/2
+</pre><p>Hint: instead of this function you could use the plugin attribute
+&#8216;send_time&#8217; as described above.</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

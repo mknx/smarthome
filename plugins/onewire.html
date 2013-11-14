@@ -1,0 +1,290 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1-Wire &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">1-Wire</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#name">name</a></li>
+<li><a class="reference internal" href="#type">type</a></li>
+<li><a class="reference internal" href="#ow-addr">ow_addr</a></li>
+<li><a class="reference internal" href="#ow-sensor">ow_sensor</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#ibutton-hook-ibutton-item">ibutton_hook(ibutton, item)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="wire">
+<h1>1-Wire<a class="headerlink" href="#wire" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>This plugin needs an running owserver from owfs. I have tested
+owfs-2.7p34 and owfs-2.8p15.</p>
+<p>Hint: to run the owserver as non root. You have to add a udev rule for
+the usb busmasters.</p>
+<pre># /etc/udev/rules.d/80-smarthome.rules
+SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTR{idVendor}=="04fa", ATTR{idProduct}=="2490",GROUP="smarthome",MODE="0660"
+</pre><p>Hint2: You can also use a running owserver on another host.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plugin-conf">
+<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
+<pre>
+[ow]
+    class_name = OneWire
+    class_path = plugins.onewire
+#    host = 127.0.0.1
+#    port = 4304
+</pre><p>This plugins is looking by default for the owserver on 127.0.0.1 port
+4304. You could change this in your plugin.conf.</p>
+<p>Advanced options in plugin.conf. Please be careful.</p>
+<ul class="simple">
+<li>&#8216;cycle&#8217; = timeperiod between two sensor cycles. Default 300 seconds.
+If you decrease the cycle to much you could destabilise the bus,
+because of the increased power consumption.</li>
+<li>&#8216;io_wait&#8217; = timeperiod between two requests of 1-wire I/O chip.
+Default 5 seconds.</li>
+<li>&#8216;button_wait&#8217; = timeperiod between two requests of
+ibutton-busmaster. Default 0.5 seconds.</li>
+</ul>
+</div>
+<div class="section" id="items-conf">
+<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="name">
+<h4>name<a class="headerlink" href="#name" title="Permalink to this headline">¶</a></h4>
+<p>This is a name for the defined sensor information.</p>
+</div>
+<div class="section" id="type">
+<h4>type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h4>
+<p>This is the type of the sensor data. Currently &#8216;num&#8217; and &#8216;bool&#8217; are
+supported.</p>
+</div>
+<div class="section" id="ow-addr">
+<h4>ow_addr<a class="headerlink" href="#ow-addr" title="Permalink to this headline">¶</a></h4>
+<p>&#8216;ow_addr&#8217; defines the 1wire adress of the sensor (formerly &#8216;ow_id&#8217;).
+If &#8216;ow_addr&#8217; is specified, the 1wire plugin monitors this sensor.</p>
+</div>
+<div class="section" id="ow-sensor">
+<h4>ow_sensor<a class="headerlink" href="#ow-sensor" title="Permalink to this headline">¶</a></h4>
+<p>&#8216;ow_sensor&#8217; defines the particular data of the sensor. Currently are
+supported:</p>
+<ul class="simple">
+<li>&#8216;T&#8217; - temperature - could be T, T9, T10, T11, T12 (depends on
+accuracy, but more accuracy needs more time!)</li>
+<li>&#8216;H&#8217; - humidity</li>
+<li>&#8216;L&#8217; - light intensity (lux)</li>
+<li>&#8216;V&#8217; - voltage</li>
+<li>&#8216;Ix&#8217; - input - could be IA or IB (depends on the choosen input)</li>
+<li>&#8216;Ox&#8217; - output - could be OA or OB (depends on the choosen output)</li>
+<li>&#8216;VDD&#8217; - voltage of sensor powering (most DS2438 based sensors)</li>
+</ul>
+<p>for ibuttons:</p>
+<ul class="simple">
+<li>&#8216;BM&#8217; - ibutton master</li>
+<li>&#8216;B&#8217; - ibutton</li>
+</ul>
+<p>If an ibutton master (&#8216;BM&#8217;) is specified, the 1-wire plugin will monitor
+this bus with a higher frequency for changes. The ibutton sensor (&#8216;B&#8217;)
+returns &#8216;true&#8217;, if the ibutton is present or &#8216;false&#8217;, if not. If I/O
+sensors (2406) are specified they will be monitored within a shorter
+timeframe.</p>
+<p>Currently the following 1wire devices are tested by users:</p>
+<ul class="simple">
+<li>DS9490 busmaster</li>
+<li>DS18B20 (temperature)</li>
+<li>Elabnet BMS v1.3 (MS-THS-13)</li>
+<li>Elabnet BMS v2.11 (MS-THS-21) (incl. additional lightsensor modul)</li>
+<li>Elabnet AMS v2.11 (MS-THS-21) (additional &#8216;+ DS2406 dual I/O + DS2438
+0-10V&#8217; are untested)</li>
+<li>DATANAB DS2438 (rugged temp/hum)</li>
+<li>D2PC (dual I/O DS2406)</li>
+</ul>
+<pre>
+[test-1wire]
+    [[bm-ibutton]]
+        name = ibutton busmaster to identify ibutton buses
+        type = bool
+        ow_addr = 81.75172D000000
+        ow_sensor = BM
+    [[ib-guest]]
+        name = ibutton guest
+        type = bool
+        ow_addr = 01.787D58130000
+        ow_sensor = B
+    [[temp_outside]]
+        name = temperature outside
+        type = num
+        ow_addr = 28.8DEAAA030000
+        # could be T, T9, T10, T11, T12
+        ow_sensor = T
+    [[lux_outside]]
+        name = lux / lightintensity outside
+        type = num
+        ow_addr = 26.8DD76B010000
+        ow_sensor = L
+    [[humidity_outside]]
+        name = humidity outside
+        type = num
+        ow_addr = 26.8DD76B010000
+        ow_sensor = H
+    [[input_water_leak]]
+        name = input water leak detection
+        type = bool
+        ow_addr = 3A.C6CC07000000
+        # could be IA, IB
+        ow_sensor = IA
+    [[output_led1]]
+        name = output led1 keys
+        type = bool
+        ow_addr = 3A.C6CC07000000
+        # could be OA, OB
+        ow_sensor = OB
+    [[voltage_sensor]]
+        name = voltage of the sensor input (0-10V)
+        type = num
+        ow_addr = 26.A9D76B010000
+        ow_sensor = V
+</pre></div>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ibutton-hook-ibutton-item">
+<h3>ibutton_hook(ibutton, item)<a class="headerlink" href="#ibutton-hook-ibutton-item" title="Permalink to this headline">¶</a></h3>
+<p>This is a special function which is called if an unknown ibutton is
+attached to the bus. If the unknown ibutton is already seen, the id will
+be cached and the function is not called again. The cache will be reset
+every ten minutes. The function must take two arguments. The first will
+be the id of the ibutton and the second is the item of the ibutton
+busmaster (e.g. <tt class="docutils literal"><span class="pre">sh.home.key_hanger</span></tt>).</p>
+<p>To use it you have to assign a (useful) function. For this you could do
+something like this:</p>
+<pre># my startup.py logic which is called at startup with crontab = init
+def intruder_alert(ibutton_id, item):
+    sh.notify("iButton-Alert","Someone uses an unknown iButton ({0}) at {1}".format(ibutton_id, item))
+    # sh.take_picuture()
+    # ...
+
+sh.ow.ibutton_hook = intruder_alert</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

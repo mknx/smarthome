@@ -1,0 +1,357 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Logics &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="config.html">Config</a></li>
+                <li><a href="#">Logics</a></li>
+                <li><a href="plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Logics</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#basic-structure">Basic Structure</a></li>
+<li><a class="reference internal" href="#available-objects-methods">Available Objects/Methods</a><ul>
+<li><a class="reference internal" href="#logic">logic</a><ul>
+<li><a class="reference internal" href="#logic-trigger">logic.trigger()</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#trigger">trigger</a></li>
+<li><a class="reference internal" href="#logger-and-sh-log">logger and sh.log</a></li>
+<li><a class="reference internal" href="#sh-now-and-sh-utcnow">sh.now and sh.utcnow</a></li>
+<li><a class="reference internal" href="#sh-sun">sh.sun</a></li>
+<li><a class="reference internal" href="#sh-moon">sh.moon</a></li>
+<li><a class="reference internal" href="#sh-item-methods">sh item methods</a><ul>
+<li><a class="reference internal" href="#sh-return-item-path">sh.return_item(path)</a></li>
+<li><a class="reference internal" href="#sh-return-items">sh.return_items()</a></li>
+<li><a class="reference internal" href="#sh-match-items-regexpath">sh.match_items(regexpath)</a></li>
+<li><a class="reference internal" href="#sh-find-items-configattribute">sh.find_items(configattribute)</a></li>
+<li><a class="reference internal" href="#find-children-parentitem-configattribute">find_children(parentitem, configattribute):</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sh-scheduler">sh.scheduler</a><ul>
+<li><a class="reference internal" href="#sh-scheduler-trigger-sh-trigger">sh.scheduler.trigger() / sh.trigger()</a></li>
+<li><a class="reference internal" href="#sh-scheduler-change">sh.scheduler.change()</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sh-tools">sh.tools</a><ul>
+<li><a class="reference internal" href="#sh-tools-ping">sh.tools.ping()</a></li>
+<li><a class="reference internal" href="#sh-tools-dewpoint">sh.tools.dewpoint()</a></li>
+<li><a class="reference internal" href="#sh-tools-fetch-url">sh.tools.fetch_url()</a></li>
+<li><a class="reference internal" href="#sh-tools-dt2ts-dt">sh.tools.dt2ts(dt)</a></li>
+<li><a class="reference internal" href="#sh-tools-dt2js-dt">sh.tools.dt2js(dt)</a></li>
+<li><a class="reference internal" href="#sh-tools-rel2abs-temp-hum">sh.tools.rel2abs(temp, hum)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#loaded-modules">Loaded modules</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="logics">
+<h1>Logics<a class="headerlink" href="#logics" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Logic items within SmartHome.py are simple python scripts. SmartHome.py
+expects the logic scripts in /usr/local/smarthome/logics/.</p>
+</div>
+<div class="section" id="basic-structure">
+<h2>Basic Structure<a class="headerlink" href="#basic-structure" title="Permalink to this headline">¶</a></h2>
+<p>The most important object is &#8216;sh&#8217;. This ist the smarthome object. It
+contains every detail about the smarthome. With this object it is
+possible to access all items, plugins and basic functions of
+SmartHome.py. To get the value of an item call the name of it:
+sh.area.item(). And to set a new value: sh.area.item(new_value).</p>
+<pre>#!/usr/bin/env python
+# put on the light in the living room, if it is not on
+if not sh.living_room.light():
+    sh.living_room.light('on')
+</pre><p>It is very important to access the items always with parantheses ()!
+Otherwise an errors could accure.</p>
+<p>It is possible to iterate over <tt class="docutils literal"><span class="pre">sh</span></tt> and the item objects.</p>
+<pre>
+for item in sh:
+    print item
+    for child_item in item:
+        print child_item
+</pre></div>
+<div class="section" id="available-objects-methods">
+<h2>Available Objects/Methods<a class="headerlink" href="#available-objects-methods" title="Permalink to this headline">¶</a></h2>
+<p>Beside the &#8216;sh&#8217; object other important predefined objects are available.</p>
+<div class="section" id="logic">
+<h3>logic<a class="headerlink" href="#logic" title="Permalink to this headline">¶</a></h3>
+<p>This object provides access to the current logic object. It is possoble
+to change logic attributes (crontab, cycle, ...) during runtime. They
+will be lost after restarting SmartHome.py. <tt class="docutils literal"><span class="pre">while</span> <span class="pre">logic.alive:</span></tt>
+creates an endless loop. This way SmartHome.py could stop the loop at
+shutdown. Next section (trigger) describes the special function
+<tt class="docutils literal"><span class="pre">logic.trigger()</span></tt>. Predefined attributs of the logic object:</p>
+<ul class="simple">
+<li>logic.name: with the name of the logic as specified in logic.conf</li>
+<li>logic.last_time(): this function provides the last run of this logic
+(before the recent one)</li>
+<li>logic.prio: read and set of the current priority of this logic.</li>
+</ul>
+<div class="section" id="logic-trigger">
+<h4>logic.trigger()<a class="headerlink" href="#logic-trigger" title="Permalink to this headline">¶</a></h4>
+<p>Equal to <tt class="docutils literal"><span class="pre">sh.trigger()</span></tt>, but it triggers only the current logic. This
+function is useful to run the logic (again) at a specified time.</p>
+</div>
+</div>
+<div class="section" id="trigger">
+<h3>trigger<a class="headerlink" href="#trigger" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">trigger</span></tt> is a runtime enviroment for the logic, which provides some
+information about the event that triggered the logic.</p>
+<p>It is a dictonary which can be used by: <tt class="docutils literal"><span class="pre">trigger['by']</span></tt>,
+<tt class="docutils literal"><span class="pre">trigger['source']</span></tt>, <tt class="docutils literal"><span class="pre">trigger['dest']</span></tt> and <tt class="docutils literal"><span class="pre">trigger['value']</span></tt>.</p>
+</div>
+<div class="section" id="logger-and-sh-log">
+<h3>logger and sh.log<a class="headerlink" href="#logger-and-sh-log" title="Permalink to this headline">¶</a></h3>
+<p>This object is useful to generate log messages. It provides five
+different log levels: debug, info, warning, error, critical.
+logger.level(str) e.g. logger.info(&#8216;42&#8217;). The log messages are stored in
+the log file and the latest 50 entries are also in &#8216;sh.log&#8217; available.
+So its possible to access the messages by plugins (visu) and logics.
+Attention: the datetime in every log entry is the timezone aware
+localtime.</p>
+<pre># a simple loop over the log messages
+for entry in sh.log:
+    print(entry) # remark: if SmartHome.py is run in daemon mode output by 'print' is not visible.
+</pre></div>
+<div class="section" id="sh-now-and-sh-utcnow">
+<h3>sh.now and sh.utcnow<a class="headerlink" href="#sh-now-and-sh-utcnow" title="Permalink to this headline">¶</a></h3>
+<p>These two functions return a timezone-aware datetime object. Its
+possible to compute with different timezones. sh.tzinfo() and
+sh.utcinfo() address a local and the utc timezone.</p>
+</div>
+<div class="section" id="sh-sun">
+<h3>sh.sun<a class="headerlink" href="#sh-sun" title="Permalink to this headline">¶</a></h3>
+<p>This module provides access to parameters of the sun. In order to use
+this module, it is required to specify the latitude (e.g. lat = 51.1633)
+and longitude (e.g. lon = 10.4476) in the smarthome.conf file!</p>
+<pre># sh.sun.pos([offset]) specifies an minute offset.
+azimut, altitude = sh.sun.pos() # return the current sun position
+azimut, altitude = sh.sun.pos(30) # return the sun position 30 minutes
+                                  # in the future.
+
+# sh.sun.set([offset]) specifies an degree offset.
+sunset = sh.sun.set() # Returns a utc! based datetime object with the next
+                      # sunset.
+sunset_tw = sh.sun.set(-6) # Would return the end of the twilight.
+
+# sh.sun.rise([offset]) specifies an degree offset.
+sunrise = sh.sun.rise() # Returns a utc! based datetime object with the next
+                        # sunrise.
+sunrise_tw = sh.sun.rise(-6) # Would return the start of the twilight.
+</pre></div>
+<div class="section" id="sh-moon">
+<h3>sh.moon<a class="headerlink" href="#sh-moon" title="Permalink to this headline">¶</a></h3>
+<p>Besides the the three functions (pos, set, rise) it provides two more.
+<tt class="docutils literal"><span class="pre">sh.moon.light(offset)</span></tt> provides a value from 0 - 100 of the
+iluminated surface at the current time + offset.
+<tt class="docutils literal"><span class="pre">sh.moon.phase(offset)</span></tt> returns the lunar phase as an integer [0-7]. 0
+= new moon, 4 = full moon, 7 = waning crescent moon</p>
+</div>
+<div class="section" id="sh-item-methods">
+<h3>sh item methods<a class="headerlink" href="#sh-item-methods" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="sh-return-item-path">
+<h4>sh.return_item(path)<a class="headerlink" href="#sh-return-item-path" title="Permalink to this headline">¶</a></h4>
+<p>Returns an item object for the specified path. e.g.
+<tt class="docutils literal"><span class="pre">sh.return_item('first_floor.bath')</span></tt></p>
+</div>
+<div class="section" id="sh-return-items">
+<h4>sh.return_items()<a class="headerlink" href="#sh-return-items" title="Permalink to this headline">¶</a></h4>
+<p>Returns all item objects.
+<tt class="docutils literal"><span class="pre">for</span> <span class="pre">item</span> <span class="pre">in</span> <span class="pre">sh.return_items():</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">logger.info(item.id())</span></tt></p>
+</div>
+<div class="section" id="sh-match-items-regexpath">
+<h4>sh.match_items(regexpath)<a class="headerlink" href="#sh-match-items-regexpath" title="Permalink to this headline">¶</a></h4>
+<p>Returns all items matching a regular expression path.
+<tt class="docutils literal"><span class="pre">for</span> <span class="pre">item</span> <span class="pre">in</span> <span class="pre">sh.match_items('*.lights'):</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">#</span> <span class="pre">selects</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">ending</span> <span class="pre">with</span> <span class="pre">'lights'</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">logger.info(item.id())</span></tt></p>
+</div>
+<div class="section" id="sh-find-items-configattribute">
+<h4>sh.find_items(configattribute)<a class="headerlink" href="#sh-find-items-configattribute" title="Permalink to this headline">¶</a></h4>
+<p>Returns all items with the specified config attribute
+<tt class="docutils literal"><span class="pre">for</span> <span class="pre">item</span> <span class="pre">in</span> <span class="pre">sh.find_items('my_special_attribute'):</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">logger.info(item.id())</span></tt></p>
+</div>
+<div class="section" id="find-children-parentitem-configattribute">
+<h4>find_children(parentitem, configattribute):<a class="headerlink" href="#find-children-parentitem-configattribute" title="Permalink to this headline">¶</a></h4>
+<p>Returns all children items with the specified config attribute.</p>
+</div>
+</div>
+<div class="section" id="sh-scheduler">
+<h3>sh.scheduler<a class="headerlink" href="#sh-scheduler" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="sh-scheduler-trigger-sh-trigger">
+<h4>sh.scheduler.trigger() / sh.trigger()<a class="headerlink" href="#sh-scheduler-trigger-sh-trigger" title="Permalink to this headline">¶</a></h4>
+<p>This global function triggers any specified logic by its name.
+<tt class="docutils literal"><span class="pre">sh.trigger(name</span> <span class="pre">[,</span> <span class="pre">by]</span> <span class="pre">[,</span> <span class="pre">source]</span> <span class="pre">[,</span> <span class="pre">value]</span> <span class="pre">[,</span> <span class="pre">dt])</span></tt> <tt class="docutils literal"><span class="pre">name</span></tt>
+(mandatory) defines the logic to trigger. <tt class="docutils literal"><span class="pre">by</span></tt> a name of the calling
+logic. By default its set to &#8216;Logic&#8217;. <tt class="docutils literal"><span class="pre">source</span></tt> the reason for
+triggering <tt class="docutils literal"><span class="pre">value</span></tt> a variable. <tt class="docutils literal"><span class="pre">dt</span></tt> timezone aware datetime object,
+which specifies the triggering time</p>
+</div>
+<div class="section" id="sh-scheduler-change">
+<h4>sh.scheduler.change()<a class="headerlink" href="#sh-scheduler-change" title="Permalink to this headline">¶</a></h4>
+<p>This method changes some runtime options of the logics.
+<tt class="docutils literal"><span class="pre">sh.scheduler.change('alarmclock',</span> <span class="pre">active=False)</span></tt> disables the logic
+&#8216;alarmclock&#8217;. Besides the <tt class="docutils literal"><span class="pre">active</span></tt> flag, it is possible to change:
+<tt class="docutils literal"><span class="pre">cron</span></tt> and <tt class="docutils literal"><span class="pre">cycle</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="sh-tools">
+<h3>sh.tools<a class="headerlink" href="#sh-tools" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="docutils literal"><span class="pre">sh.tools</span></tt> object provide some useful functions:</p>
+<div class="section" id="sh-tools-ping">
+<h4>sh.tools.ping()<a class="headerlink" href="#sh-tools-ping" title="Permalink to this headline">¶</a></h4>
+<p>Pings a computer and returns True if the computer responds, otherwise
+False. <tt class="docutils literal"><span class="pre">sh.office.laptop(sh.tools.ping('hostname'))</span></tt></p>
+</div>
+<div class="section" id="sh-tools-dewpoint">
+<h4>sh.tools.dewpoint()<a class="headerlink" href="#sh-tools-dewpoint" title="Permalink to this headline">¶</a></h4>
+<p>Calculate the dewpoint for the provided temperature and humidity.
+<tt class="docutils literal"><span class="pre">sh.office.dew(sh.tools.dewpoint(sh.office.temp(),</span> <span class="pre">sh.office.hum())</span></tt></p>
+</div>
+<div class="section" id="sh-tools-fetch-url">
+<h4>sh.tools.fetch_url()<a class="headerlink" href="#sh-tools-fetch-url" title="Permalink to this headline">¶</a></h4>
+<p>Return a website as a String or &#8216;False&#8217; if it fails.
+<tt class="docutils literal"><span class="pre">sh.tools.fetch_url('https://www.regular.com')</span></tt> Its possible to use
+&#8216;username&#8217; and &#8216;password&#8217; to authenticate against a website.
+<tt class="docutils literal"><span class="pre">sh.tools.fetch_url('https://www.special.com',</span> <span class="pre">'username',</span> <span class="pre">'password')</span></tt>
+Or change the default &#8216;timeout&#8217; of two seconds.
+<tt class="docutils literal"><span class="pre">sh.tools.fetch_url('https://www.regular.com',</span> <span class="pre">timeout=4)</span></tt></p>
+</div>
+<div class="section" id="sh-tools-dt2ts-dt">
+<h4>sh.tools.dt2ts(dt)<a class="headerlink" href="#sh-tools-dt2ts-dt" title="Permalink to this headline">¶</a></h4>
+<p>Converts an datetime objetct to a unix timestamp.</p>
+</div>
+<div class="section" id="sh-tools-dt2js-dt">
+<h4>sh.tools.dt2js(dt)<a class="headerlink" href="#sh-tools-dt2js-dt" title="Permalink to this headline">¶</a></h4>
+<p>Converts an datetime objetct to a json timestamp.</p>
+</div>
+<div class="section" id="sh-tools-rel2abs-temp-hum">
+<h4>sh.tools.rel2abs(temp, hum)<a class="headerlink" href="#sh-tools-rel2abs-temp-hum" title="Permalink to this headline">¶</a></h4>
+<p>Converts the relative humidity to the absolute humidity.</p>
+</div>
+</div>
+</div>
+<div class="section" id="loaded-modules">
+<h2>Loaded modules<a class="headerlink" href="#loaded-modules" title="Permalink to this headline">¶</a></h2>
+<p>In the logic enviroment are several python modules already loaded:</p>
+<ul class="simple">
+<li>sys</li>
+<li>os</li>
+<li>time</li>
+<li>datetime</li>
+<li>ephem</li>
+<li>random</li>
+<li>Queue</li>
+<li>subprocess</li>
+</ul>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
