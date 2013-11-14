@@ -77,7 +77,7 @@ import lib.orb
 #####################################################################
 MODE = 'default'
 LOGLEVEL = logging.INFO
-VERSION = '0.9'
+VERSION = '1.0'
 TZ = gettz('UTC')
 try:
     os.chdir(BASE)
