@@ -13,10 +13,10 @@ The configuration of SmartHome.py is split up in four areas:
 etc/smarthome.conf [optional]
 -----------------------------
 
-Following attributes are supportet in smarthome.conf:
+Following attributes are supported in smarthome.conf:
 
 -  ``lat``, ``lon``, ``elev``: geographic coordinates of your home
-   (latitude, longitude, elevation). lat and lon are neccesary for
+   (latitude, longitude, elevation). lat and lon are necessary for
    sunrise/sunset calculation, dealing with the position of the sun.
 -  ``tz``: used timezone
 
@@ -56,19 +56,19 @@ An example of a very simple logic.conf:
 SmartHome.py would look in /usr/local/smarthome/logics/ for the file
 logic.py. The logic would be started - once - when the system starts.
 
-Following attributes are supportet controll the behavior of the logics:
+Following attributes are supported control the behavior of the logics:
 
 watch\_item
 ~~~~~~~~~~~
 
-The comma-separated list of items will be monitored for changes.
+The list of items will be monitored for changes.
 
 .. raw:: html
 
-   <pre>watch_item = house.door, terrace.door</pre>
+   <pre>watch_item = house.door | terrace.door</pre>
 
 Every change of these two items triggers (run) the logic.
-Or you could a regular expression:
+Or you could use a regular expression:
 
 .. raw:: html
 
@@ -94,7 +94,7 @@ Calls the logic with trigger['value'] # == '42'
 crontab
 ~~~~~~~
 
-like unix crontab with following options:
+Like Unix crontab with the following options:
 
 crontab = init Run the logic during the start of SmartHome.py.
 
@@ -110,12 +110,12 @@ crontab = minute hour day wday
    separated list, or \* (every day)
 
 crontab = sunrise Runs the logic at every sunrise. Use ``sunset`` to run
-at sunset. For sunset / sonrise You could provide:
+at sunset. For sunset / sunrise you could provide:
 
 -  an horizon offset in degrees e.g. crontab = sunset-6 You have to
-   specify your latitude/longitued in smarthome.conf.
+   specify your latitude/longitude in smarthome.conf.
 -  an offset in minutes specified by a 'm' e.g. crontab = sunset-10m
--  a boundry for the execution
+-  a boundary for the execution
 
    .. raw:: html
 
@@ -197,7 +197,7 @@ Plugins are configured in the plugin.conf file. A simple plugin.conf:
    </pre>
 
 The object name, class name and class path must be provided. The other
-attributes depend on the individual plugin. See the corrosponding plugin
+attributes depend on the individual plugin. See the corresponding plugin
 page for more information.
 
 The example above would generate the following statement
@@ -221,7 +221,7 @@ A simple item configuration:
        type = num
    </pre>
 
-Use nested items to build a tree representing your enviroment.
+Use nested items to build a tree representing your environment.
 
 .. raw:: html
 
@@ -242,7 +242,7 @@ Item Attributes
 
 -  ``type``: for storing values and/or triggering actions you have to
    specify this attribute. (If you do not specify this attribute the
-   item is only usefull for structuring your item tree). Supported
+   item is only useful for structuring your item tree). Supported
    types:
 -  bool: boolean type (on, 1, True or off, 0, False). True or False are
    internally used. Use e.g. ``if sh.item(): ...``.
@@ -272,8 +272,16 @@ Scenes
 ^^^^^^
 
 For using scenes a config file into the scenes directory for every
-'scene item' is neccessary. The scene config file consists of space
-separated lines with the ItemValue ItemPath\|LogicName Value.
+'scene item' is necessary. The scene config file consists of lines
+with 3 space separated values in the format ItemValue ItemPath\|LogicName
+Value:
+-  ItemValue: the first column contains the item value to check for
+   the configured action.
+-  ItemPath or LogicName: the second column contains an item path,
+   which is set to the given value, or a LogicName, which is triggered
+-  Value: in case an ItemPath was specified the item will be set to the
+   given value, in case a LogicName was specified the logic will be 
+   run (specify 'run' as value) or stop (specify 'stop' as value).
 
 .. raw:: html
 
@@ -295,7 +303,7 @@ separated lines with the ItemValue ItemPath\|LogicName Value.
 eval
 ^^^^
 
-This attribute is usefull for small evaluations and corrections. The
+This attribute is useful for small evaluations and corrections. The
 input value is accesible with ``value``.
 
 .. raw:: html
@@ -394,17 +402,17 @@ Returns the previous age of the item value as seconds.
 last\_change()
 ^^^^^^^^^^^^^^
 
-Returns an datetime object with the time of the last change.
+Returns a datetime object with the time of the last change.
 
 prev\_change()
 ^^^^^^^^^^^^^^
 
-Returns an datetime object with the time of the next to last change.
+Returns a datetime object with the time of the next to last change.
 
 last\_update()
 ^^^^^^^^^^^^^^
 
-Returns an datetime object with the time of the last update.
+Returns a datetime object with the time of the last update.
 
 changed\_by()
 ^^^^^^^^^^^^^
@@ -415,6 +423,6 @@ fade()
 ^^^^^^
 
 Fades the item to a specified value with the defined stepping (int or
-float) and timedelta (int or float in seconds). e.g.
+float) and timedelta (int or float in seconds). E.g.
 sh.living.light.fade(100, 1, 2.5) will in- or decrement the living room
 light to 100 by a stepping of '1' and a timedelta of '2.5' seconds.
