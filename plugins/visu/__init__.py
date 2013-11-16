@@ -133,10 +133,9 @@ class WebSocket(lib.connection.Server):
 
     def stop(self):
         self.alive = False
-        logger.debug('Closing WebSocket')
         for client in self.clients:
             try:
-                client.handle_close()
+                client.close()
             except:
                 pass
         self.close()
@@ -369,7 +368,7 @@ class WebSocketHandler(lib.connection.Stream):
 
     def handshake_failed(self):
         logger.debug("Handshake for {0} with the following header failed! {1}".format(self.addr, repr(self.header)))
-        self.handle_close()
+        self.close()
 
     def set_bit(self, byte, bit):
         return byte | (1 << bit)
@@ -397,7 +396,7 @@ class WebSocketHandler(lib.connection.Stream):
         opcode = data[0] & 0x0f
         if opcode == 8:
             logger.debug("WebSocket: closing connection to {0}.".format(self.addr))
-            self.handle_close()
+            self.close()
             return
         header = 2
         masked = self.bit_set(data[1], 7)
