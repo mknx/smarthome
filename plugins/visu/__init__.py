@@ -52,7 +52,6 @@ class WebSocket(lib.connection.Server):
         self.clients = []
         self.visu_items = {}
         self.visu_logics = {}
-        self._lock = threading.Lock()
         if tls == 'no':
             self.tls = False
         else:
@@ -123,7 +122,6 @@ class WebSocket(lib.connection.Server):
                 return
         client = WebSocketHandler(self._sh, self, sock, address, self.visu_items, self.visu_logics)
         self.clients.append(client)
-        self._lock.release()
 
     def run(self):
         self.alive = True
@@ -216,7 +214,6 @@ class WebSocketHandler(lib.connection.Stream):
         self.rrd = False
         self.log = False
         self.logs = smarthome.return_logs()
-        self._lock = threading.Lock()
         self._series_lock = threading.Lock()
         self.logics = logics
         self.proto = 3
