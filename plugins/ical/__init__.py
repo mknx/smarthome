@@ -106,10 +106,8 @@ class iCal():
         if par.startswith('TZID='):
             tmp, par, timezone = par.partition('=')
         if 'T' in val:  # ISO datetime
-            if 'Z' in val:
-                dt = datetime.datetime.strptime(val, "%Y%m%dT%H%M%SZ%z")
-            else:
-                dt = datetime.datetime.strptime(val, "%Y%m%dT%H%M%S")
+            val, sep, off = val.partition('Z')
+            dt = datetime.datetime.strptime(val, "%Y%m%dT%H%M%S")
         else:  # date
             y = int(val[0:4])
             m = int(val[4:6])
