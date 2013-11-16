@@ -73,7 +73,7 @@ Installation of the latest release
 Everything is extracted to /usr/local/smarthome/. It is possible to use
 another path.
 
-Developement
+Development
 ------------
 
 To install the recent developer version of SmartHome.py for user **smarthome**:

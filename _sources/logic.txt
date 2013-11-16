@@ -11,11 +11,12 @@ expects the logic scripts in /usr/local/smarthome/logics/.
 Basic Structure
 ===============
 
-The most important object is 'sh'. This ist the smarthome object. It
+The most important object is 'sh'. This is the smarthome object. It
 contains every detail about the smarthome. With this object it is
 possible to access all items, plugins and basic functions of
 SmartHome.py. To get the value of an item call the name of it:
-sh.area.item(). And to set a new value: sh.area.item(new\_value).
+sh.area.item(). To set a new value just specify it as argument:
+sh.area.item(new\_value).
 
 .. raw:: html
 
@@ -26,7 +27,7 @@ sh.area.item(). And to set a new value: sh.area.item(new\_value).
    </pre>
 
 It is very important to access the items always with parantheses ()!
-Otherwise an errors could accure.
+Otherwise an error could occur.
 
 It is possible to iterate over ``sh`` and the item objects.
 
@@ -47,7 +48,7 @@ Beside the 'sh' object other important predefined objects are available.
 logic
 -----
 
-This object provides access to the current logic object. It is possoble
+This object provides access to the current logic object. It is possible
 to change logic attributes (crontab, cycle, ...) during runtime. They
 will be lost after restarting SmartHome.py. ``while logic.alive:``
 creates an endless loop. This way SmartHome.py could stop the loop at
@@ -68,10 +69,10 @@ function is useful to run the logic (again) at a specified time.
 trigger
 -------
 
-``trigger`` is a runtime enviroment for the logic, which provides some
+``trigger`` is a runtime environment for the logic, which provides some
 information about the event that triggered the logic.
 
-It is a dictonary which can be used by: ``trigger['by']``,
+It is a dictionary which can be used by: ``trigger['by']``,
 ``trigger['source']``, ``trigger['dest']`` and ``trigger['value']``.
 
 logger and sh.log
@@ -97,7 +98,7 @@ sh.now and sh.utcnow
 
 These two functions return a timezone-aware datetime object. Its
 possible to compute with different timezones. sh.tzinfo() and
-sh.utcinfo() address a local and the utc timezone.
+sh.utcinfo() address a local and the UTC timezone.
 
 sh.sun
 ------
@@ -113,12 +114,12 @@ and longitude (e.g. lon = 10.4476) in the smarthome.conf file!
    azimut, altitude = sh.sun.pos(30) # return the sun position 30 minutes
                                      # in the future.
 
-   # sh.sun.set([offset]) specifies an degree offset.
+   # sh.sun.set([offset]) specifies a degree offset.
    sunset = sh.sun.set() # Returns a utc! based datetime object with the next
                          # sunset.
    sunset_tw = sh.sun.set(-6) # Would return the end of the twilight.
 
-   # sh.sun.rise([offset]) specifies an degree offset.
+   # sh.sun.rise([offset]) specifies a degree offset.
    sunrise = sh.sun.rise() # Returns a utc! based datetime object with the next
                            # sunrise.
    sunrise_tw = sh.sun.rise(-6) # Would return the start of the twilight.
@@ -127,10 +128,10 @@ and longitude (e.g. lon = 10.4476) in the smarthome.conf file!
 sh.moon
 -------
 
-Besides the the three functions (pos, set, rise) it provides two more.
+Besides the three functions (pos, set, rise) it provides two more.
 ``sh.moon.light(offset)`` provides a value from 0 - 100 of the
-iluminated surface at the current time + offset.
-``sh.moon.phase(offset)`` returns the lunar phase as an integer [0-7]. 0
+illuminated surface at the current time + offset.
+``sh.moon.phase(offset)`` returns the lunar phase as an integer [0-7]: 0
 = new moon, 4 = full moon, 7 = waning crescent moon
 
 sh item methods
@@ -139,7 +140,7 @@ sh item methods
 sh.return\_item(path)
 ~~~~~~~~~~~~~~~~~~~~~
 
-Returns an item object for the specified path. e.g.
+Returns an item object for the specified path. E.g.
 ``sh.return_item('first_floor.bath')``
 
 sh.return\_items()
@@ -175,8 +176,8 @@ This global function triggers any specified logic by its name.
 ``sh.trigger(name [, by] [, source] [, value] [, dt])`` ``name``
 (mandatory) defines the logic to trigger. ``by`` a name of the calling
 logic. By default its set to 'Logic'. ``source`` the reason for
-triggering ``value`` a variable. ``dt`` timezone aware datetime object,
-which specifies the triggering time
+triggering. ``value`` a variable. ``dt`` timezone aware datetime object,
+which specifies the triggering time.
 
 sh.scheduler.change()
 ~~~~~~~~~~~~~~~~~~~~~
@@ -216,12 +217,12 @@ Or change the default 'timeout' of two seconds.
 sh.tools.dt2ts(dt)
 ~~~~~~~~~~~~~~~~~~
 
-Converts an datetime objetct to a unix timestamp.
+Converts an datetime object to a unix timestamp.
 
 sh.tools.dt2js(dt)
 ~~~~~~~~~~~~~~~~~~
 
-Converts an datetime objetct to a json timestamp.
+Converts an datetime object to a json timestamp.
 
 
 sh.tools.rel2abs(temp, hum)
@@ -234,7 +235,7 @@ Converts the relative humidity to the absolute humidity.
 Loaded modules
 ==============
 
-In the logic enviroment are several python modules already loaded:
+In the logic environment are several python modules already loaded:
 
 -  sys
 -  os
