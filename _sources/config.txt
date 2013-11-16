@@ -275,6 +275,7 @@ For using scenes a config file into the scenes directory for every
 'scene item' is necessary. The scene config file consists of lines
 with 3 space separated values in the format ItemValue ItemPath\|LogicName
 Value:
+
 -  ItemValue: the first column contains the item value to check for the configured action.
 -  ItemPath or LogicName: the second column contains an item path, which is set to the given value, or a LogicName, which is triggered
 -  Value: in case an ItemPath was specified the item will be set to the given value, in case a LogicName was specified the logic will be run (specify 'run' as value) or stop (specify 'stop' as value).
