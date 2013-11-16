@@ -147,10 +147,10 @@
 </ul>
 <div class="section" id="etc-smarthome-conf-optional">
 <h2>etc/smarthome.conf [optional]<a class="headerlink" href="#etc-smarthome-conf-optional" title="Permalink to this headline">¶</a></h2>
-<p>Following attributes are supportet in smarthome.conf:</p>
+<p>Following attributes are supported in smarthome.conf:</p>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">lat</span></tt>, <tt class="docutils literal"><span class="pre">lon</span></tt>, <tt class="docutils literal"><span class="pre">elev</span></tt>: geographic coordinates of your home
-(latitude, longitude, elevation). lat and lon are neccesary for
+(latitude, longitude, elevation). lat and lon are necessary for
 sunrise/sunset calculation, dealing with the position of the sun.</li>
 <li><tt class="docutils literal"><span class="pre">tz</span></tt>: used timezone</li>
 </ul>
@@ -178,12 +178,12 @@ introduction</a> for howto write logics.</p>
     filename = logic.py
     crontab = init</pre><p>SmartHome.py would look in /usr/local/smarthome/logics/ for the file
 logic.py. The logic would be started - once - when the system starts.</p>
-<p>Following attributes are supportet controll the behavior of the logics:</p>
+<p>Following attributes are supported control the behavior of the logics:</p>
 <div class="section" id="watch-item">
 <h3>watch_item<a class="headerlink" href="#watch-item" title="Permalink to this headline">¶</a></h3>
-<p>The comma-separated list of items will be monitored for changes.</p>
-<pre>watch_item = house.door, terrace.door</pre><p>Every change of these two items triggers (run) the logic.
-Or you could a regular expression:</p>
+<p>The list of items will be monitored for changes.</p>
+<pre>watch_item = house.door | terrace.door</pre><p>Every change of these two items triggers (run) the logic.
+Or you could use a regular expression:</p>
 <pre>watch_item = *.door</pre></div>
 <div class="section" id="cycle">
 <h3>cycle<a class="headerlink" href="#cycle" title="Permalink to this headline">¶</a></h3>
@@ -193,7 +193,7 @@ Or you could a regular expression:</p>
 </div>
 <div class="section" id="crontab">
 <h3>crontab<a class="headerlink" href="#crontab" title="Permalink to this headline">¶</a></h3>
-<p>like unix crontab with following options:</p>
+<p>Like Unix crontab with the following options:</p>
 <p>crontab = init Run the logic during the start of SmartHome.py.</p>
 <p>crontab = minute hour day wday</p>
 <ul class="simple">
@@ -207,14 +207,14 @@ day) Please note: dont use days greater than 28 in the moment.</li>
 separated list, or * (every day)</li>
 </ul>
 <p>crontab = sunrise Runs the logic at every sunrise. Use <tt class="docutils literal"><span class="pre">sunset</span></tt> to run
-at sunset. For sunset / sonrise You could provide:</p>
+at sunset. For sunset / sunrise you could provide:</p>
 <ul>
 <li><p class="first">an horizon offset in degrees e.g. crontab = sunset-6 You have to
-specify your latitude/longitued in smarthome.conf.</p>
+specify your latitude/longitude in smarthome.conf.</p>
 </li>
 <li><p class="first">an offset in minutes specified by a &#8216;m&#8217; e.g. crontab = sunset-10m</p>
 </li>
-<li><p class="first">a boundry for the execution</p>
+<li><p class="first">a boundary for the execution</p>
 <pre>crontab = 17:00&lt;sunset  # sunset, but not bevor 17:00 (locale time)
 crontab = sunset&lt;20:00  # sunset, but not after 20:00 (locale time)
 crontab = 17:00&lt;sunset&lt;20:00  # sunset, beetween 17:00 and 20:00</pre></li>
@@ -274,7 +274,7 @@ iPhone/iPad. Plugins are placed in /usr/local/smarthome/plugins/.</p>
     class_path = plugins.prowl # path to the plugin
     apikey = abc123abc123 # attribute for the plugin e.g. secret key for prowl
 </pre><p>The object name, class name and class path must be provided. The other
-attributes depend on the individual plugin. See the corrosponding plugin
+attributes depend on the individual plugin. See the corresponding plugin
 page for more information.</p>
 <p>The example above would generate the following statement
 <tt class="docutils literal"><span class="pre">sh.notify</span> <span class="pre">=</span> <span class="pre">plugins.prowl.Prowl(apikey='abc123abc123')</span></tt>. From now on
@@ -291,7 +291,7 @@ are: a-z, A-Z and &#8216;_&#8217;!</p>
 <pre># /usr/local/smarthome/items/living.conf
 [living_room_temp]
     type = num
-</pre><p>Use nested items to build a tree representing your enviroment.</p>
+</pre><p>Use nested items to build a tree representing your environment.</p>
 <pre># /usr/local/smarthome/items/living.conf
 [living_room]
     [[temperature]]
@@ -307,7 +307,7 @@ are: a-z, A-Z and &#8216;_&#8217;!</p>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">type</span></tt>: for storing values and/or triggering actions you have to
 specify this attribute. (If you do not specify this attribute the
-item is only usefull for structuring your item tree). Supported
+item is only useful for structuring your item tree). Supported
 types:</li>
 <li>bool: boolean type (on, 1, True or off, 0, False). True or False are
 internally used. Use e.g. <tt class="docutils literal"><span class="pre">if</span> <span class="pre">sh.item():</span> <span class="pre">...</span></tt>.</li>
@@ -336,8 +336,12 @@ the value of an item at the specified times / cycles.</li>
 <div class="section" id="scenes">
 <h4>Scenes<a class="headerlink" href="#scenes" title="Permalink to this headline">¶</a></h4>
 <p>For using scenes a config file into the scenes directory for every
-&#8216;scene item&#8217; is neccessary. The scene config file consists of space
-separated lines with the ItemValue ItemPath|LogicName Value.</p>
+&#8216;scene item&#8217; is necessary. The scene config file consists of lines
+with 3 space separated values in the format ItemValue ItemPath|LogicName
+Value:
+-  ItemValue: the first column contains the item value to check for the configured action.
+-  ItemPath or LogicName: the second column contains an item path, which is set to the given value, or a LogicName, which is triggered
+-  Value: in case an ItemPath was specified the item will be set to the given value, in case a LogicName was specified the logic will be run (specify &#8216;run&#8217; as value) or stop (specify &#8216;stop&#8217; as value).</p>
 <pre># items/example.conf
 [example]
     type = scene
@@ -354,7 +358,7 @@ separated lines with the ItemValue ItemPath|LogicName Value.</p>
 </pre></div>
 <div class="section" id="eval">
 <h4>eval<a class="headerlink" href="#eval" title="Permalink to this headline">¶</a></h4>
-<p>This attribute is usefull for small evaluations and corrections. The
+<p>This attribute is useful for small evaluations and corrections. The
 input value is accesible with <tt class="docutils literal"><span class="pre">value</span></tt>.</p>
 <pre>
 # items/level.conf
@@ -433,15 +437,15 @@ is True.</li>
 </div>
 <div class="section" id="last-change">
 <h4>last_change()<a class="headerlink" href="#last-change" title="Permalink to this headline">¶</a></h4>
-<p>Returns an datetime object with the time of the last change.</p>
+<p>Returns a datetime object with the time of the last change.</p>
 </div>
 <div class="section" id="prev-change">
 <h4>prev_change()<a class="headerlink" href="#prev-change" title="Permalink to this headline">¶</a></h4>
-<p>Returns an datetime object with the time of the next to last change.</p>
+<p>Returns a datetime object with the time of the next to last change.</p>
 </div>
 <div class="section" id="last-update">
 <h4>last_update()<a class="headerlink" href="#last-update" title="Permalink to this headline">¶</a></h4>
-<p>Returns an datetime object with the time of the last update.</p>
+<p>Returns a datetime object with the time of the last update.</p>
 </div>
 <div class="section" id="changed-by">
 <h4>changed_by()<a class="headerlink" href="#changed-by" title="Permalink to this headline">¶</a></h4>
@@ -450,7 +454,7 @@ is True.</li>
 <div class="section" id="fade">
 <h4>fade()<a class="headerlink" href="#fade" title="Permalink to this headline">¶</a></h4>
 <p>Fades the item to a specified value with the defined stepping (int or
-float) and timedelta (int or float in seconds). e.g.
+float) and timedelta (int or float in seconds). E.g.
 sh.living.light.fade(100, 1, 2.5) will in- or decrement the living room
 light to 100 by a stepping of &#8216;1&#8217; and a timedelta of &#8216;2.5&#8217; seconds.</p>
 </div>

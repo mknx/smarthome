@@ -78,7 +78,7 @@ Changes:
 -  Python 3.2 migration
 -  Visu: new attributes ``acl`` and ``visu_acl``
 -  predefined items env.core and env.system tree used by smartVISU
--  SQLite: speed improvements
+-  SQLite: Due to hughe speed improvements the database has to be deleted. This will take place at the first start.
 -  1-Wire: adding DS18S20 support
 -  new config separtor for multiple entries: \|
 -  improving logic response time

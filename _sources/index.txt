@@ -4,6 +4,6 @@
 
 SmartHome.py is a modular framework to automate your (smart) home.
 
-See the `install <install>`_ and `config <config>`_ section to dive into your smarthome exprience.
+See the `install <install>`_ and `config <config>`_ section to dive into your smarthome experience.
 
 .. include:: rel10.rst

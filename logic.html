@@ -144,17 +144,18 @@ expects the logic scripts in /usr/local/smarthome/logics/.</p>
 </div>
 <div class="section" id="basic-structure">
 <h2>Basic Structure<a class="headerlink" href="#basic-structure" title="Permalink to this headline">¶</a></h2>
-<p>The most important object is &#8216;sh&#8217;. This ist the smarthome object. It
+<p>The most important object is &#8216;sh&#8217;. This is the smarthome object. It
 contains every detail about the smarthome. With this object it is
 possible to access all items, plugins and basic functions of
 SmartHome.py. To get the value of an item call the name of it:
-sh.area.item(). And to set a new value: sh.area.item(new_value).</p>
+sh.area.item(). To set a new value just specify it as argument:
+sh.area.item(new_value).</p>
 <pre>#!/usr/bin/env python
 # put on the light in the living room, if it is not on
 if not sh.living_room.light():
     sh.living_room.light('on')
 </pre><p>It is very important to access the items always with parantheses ()!
-Otherwise an errors could accure.</p>
+Otherwise an error could occur.</p>
 <p>It is possible to iterate over <tt class="docutils literal"><span class="pre">sh</span></tt> and the item objects.</p>
 <pre>
 for item in sh:
@@ -167,7 +168,7 @@ for item in sh:
 <p>Beside the &#8216;sh&#8217; object other important predefined objects are available.</p>
 <div class="section" id="logic">
 <h3>logic<a class="headerlink" href="#logic" title="Permalink to this headline">¶</a></h3>
-<p>This object provides access to the current logic object. It is possoble
+<p>This object provides access to the current logic object. It is possible
 to change logic attributes (crontab, cycle, ...) during runtime. They
 will be lost after restarting SmartHome.py. <tt class="docutils literal"><span class="pre">while</span> <span class="pre">logic.alive:</span></tt>
 creates an endless loop. This way SmartHome.py could stop the loop at
@@ -187,9 +188,9 @@ function is useful to run the logic (again) at a specified time.</p>
 </div>
 <div class="section" id="trigger">
 <h3>trigger<a class="headerlink" href="#trigger" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">trigger</span></tt> is a runtime enviroment for the logic, which provides some
+<p><tt class="docutils literal"><span class="pre">trigger</span></tt> is a runtime environment for the logic, which provides some
 information about the event that triggered the logic.</p>
-<p>It is a dictonary which can be used by: <tt class="docutils literal"><span class="pre">trigger['by']</span></tt>,
+<p>It is a dictionary which can be used by: <tt class="docutils literal"><span class="pre">trigger['by']</span></tt>,
 <tt class="docutils literal"><span class="pre">trigger['source']</span></tt>, <tt class="docutils literal"><span class="pre">trigger['dest']</span></tt> and <tt class="docutils literal"><span class="pre">trigger['value']</span></tt>.</p>
 </div>
 <div class="section" id="logger-and-sh-log">
@@ -209,7 +210,7 @@ for entry in sh.log:
 <h3>sh.now and sh.utcnow<a class="headerlink" href="#sh-now-and-sh-utcnow" title="Permalink to this headline">¶</a></h3>
 <p>These two functions return a timezone-aware datetime object. Its
 possible to compute with different timezones. sh.tzinfo() and
-sh.utcinfo() address a local and the utc timezone.</p>
+sh.utcinfo() address a local and the UTC timezone.</p>
 </div>
 <div class="section" id="sh-sun">
 <h3>sh.sun<a class="headerlink" href="#sh-sun" title="Permalink to this headline">¶</a></h3>
@@ -221,29 +222,29 @@ azimut, altitude = sh.sun.pos() # return the current sun position
 azimut, altitude = sh.sun.pos(30) # return the sun position 30 minutes
                                   # in the future.
 
-# sh.sun.set([offset]) specifies an degree offset.
+# sh.sun.set([offset]) specifies a degree offset.
 sunset = sh.sun.set() # Returns a utc! based datetime object with the next
                       # sunset.
 sunset_tw = sh.sun.set(-6) # Would return the end of the twilight.
 
-# sh.sun.rise([offset]) specifies an degree offset.
+# sh.sun.rise([offset]) specifies a degree offset.
 sunrise = sh.sun.rise() # Returns a utc! based datetime object with the next
                         # sunrise.
 sunrise_tw = sh.sun.rise(-6) # Would return the start of the twilight.
 </pre></div>
 <div class="section" id="sh-moon">
 <h3>sh.moon<a class="headerlink" href="#sh-moon" title="Permalink to this headline">¶</a></h3>
-<p>Besides the the three functions (pos, set, rise) it provides two more.
+<p>Besides the three functions (pos, set, rise) it provides two more.
 <tt class="docutils literal"><span class="pre">sh.moon.light(offset)</span></tt> provides a value from 0 - 100 of the
-iluminated surface at the current time + offset.
-<tt class="docutils literal"><span class="pre">sh.moon.phase(offset)</span></tt> returns the lunar phase as an integer [0-7]. 0
+illuminated surface at the current time + offset.
+<tt class="docutils literal"><span class="pre">sh.moon.phase(offset)</span></tt> returns the lunar phase as an integer [0-7]: 0
 = new moon, 4 = full moon, 7 = waning crescent moon</p>
 </div>
 <div class="section" id="sh-item-methods">
 <h3>sh item methods<a class="headerlink" href="#sh-item-methods" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="sh-return-item-path">
 <h4>sh.return_item(path)<a class="headerlink" href="#sh-return-item-path" title="Permalink to this headline">¶</a></h4>
-<p>Returns an item object for the specified path. e.g.
+<p>Returns an item object for the specified path. E.g.
 <tt class="docutils literal"><span class="pre">sh.return_item('first_floor.bath')</span></tt></p>
 </div>
 <div class="section" id="sh-return-items">
@@ -274,8 +275,8 @@ iluminated surface at the current time + offset.
 <tt class="docutils literal"><span class="pre">sh.trigger(name</span> <span class="pre">[,</span> <span class="pre">by]</span> <span class="pre">[,</span> <span class="pre">source]</span> <span class="pre">[,</span> <span class="pre">value]</span> <span class="pre">[,</span> <span class="pre">dt])</span></tt> <tt class="docutils literal"><span class="pre">name</span></tt>
 (mandatory) defines the logic to trigger. <tt class="docutils literal"><span class="pre">by</span></tt> a name of the calling
 logic. By default its set to &#8216;Logic&#8217;. <tt class="docutils literal"><span class="pre">source</span></tt> the reason for
-triggering <tt class="docutils literal"><span class="pre">value</span></tt> a variable. <tt class="docutils literal"><span class="pre">dt</span></tt> timezone aware datetime object,
-which specifies the triggering time</p>
+triggering. <tt class="docutils literal"><span class="pre">value</span></tt> a variable. <tt class="docutils literal"><span class="pre">dt</span></tt> timezone aware datetime object,
+which specifies the triggering time.</p>
 </div>
 <div class="section" id="sh-scheduler-change">
 <h4>sh.scheduler.change()<a class="headerlink" href="#sh-scheduler-change" title="Permalink to this headline">¶</a></h4>
@@ -309,11 +310,11 @@ Or change the default &#8216;timeout&#8217; of two seconds.
 </div>
 <div class="section" id="sh-tools-dt2ts-dt">
 <h4>sh.tools.dt2ts(dt)<a class="headerlink" href="#sh-tools-dt2ts-dt" title="Permalink to this headline">¶</a></h4>
-<p>Converts an datetime objetct to a unix timestamp.</p>
+<p>Converts an datetime object to a unix timestamp.</p>
 </div>
 <div class="section" id="sh-tools-dt2js-dt">
 <h4>sh.tools.dt2js(dt)<a class="headerlink" href="#sh-tools-dt2js-dt" title="Permalink to this headline">¶</a></h4>
-<p>Converts an datetime objetct to a json timestamp.</p>
+<p>Converts an datetime object to a json timestamp.</p>
 </div>
 <div class="section" id="sh-tools-rel2abs-temp-hum">
 <h4>sh.tools.rel2abs(temp, hum)<a class="headerlink" href="#sh-tools-rel2abs-temp-hum" title="Permalink to this headline">¶</a></h4>
@@ -323,7 +324,7 @@ Or change the default &#8216;timeout&#8217; of two seconds.
 </div>
 <div class="section" id="loaded-modules">
 <h2>Loaded modules<a class="headerlink" href="#loaded-modules" title="Permalink to this headline">¶</a></h2>
-<p>In the logic enviroment are several python modules already loaded:</p>
+<p>In the logic environment are several python modules already loaded:</p>
 <ul class="simple">
 <li>sys</li>
 <li>os</li>
