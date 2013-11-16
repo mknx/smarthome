@@ -37,6 +37,8 @@ git commit -m "set version to $TAG"
 
 echo
 
+git diff master..develop
+
 if [ "$1" = '-r' ]; then
     git tag -a -m "set version to $TAG" "$TAG"
     git push origin tag "$TAG"
