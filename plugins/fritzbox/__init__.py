@@ -53,7 +53,7 @@ class FritzBoxBase():
         con.close()
         if resp.status != 200:
             raise fbex("no connection to fritzbox.")
-        data = resp.read()
+        data = resp.read().decode()
         logger.debug("data = {0}".format(data))
         sid = re.search('<SID>(.*?)</SID>', data).group(1)
         logger.debug("sid = {0}".format(sid))
@@ -74,7 +74,7 @@ class FritzBoxBase():
             con.close()
             if resp.status != 200:
                 raise fbex("challenge/response failed")
-            data = resp.read()
+            data = resp.read().decode()
             self._sid = re.search('<SID>(.*?)</SID>', data).group(1)
             logger.debug('session id = {0}'.format(self._sid))
 
@@ -98,7 +98,7 @@ class FritzBoxBase():
     def call(self, call_from, call_to):
         logger.debug(
             "initiate call from {0} to {1}".format(call_from, call_to))
-        resp = self.execute({
+        self.execute({
             'telcfg:settings/UseClickToDial': 1,
             'telcfg:command/Dial': call_to,
             'telcfg:settings/DialPort': call_from
