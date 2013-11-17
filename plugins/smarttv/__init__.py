@@ -62,7 +62,7 @@ class SmartTV():
         key = base64.b64encode(key.encode())
         rem = base64.b64encode(remote.encode())
 
-        msg = bytearray([64, 0])
+        msg = bytearray([0x64, 0])
         msg.extend([len(src), 0])
         msg.extend(src)
         msg.extend([len(mac), 0])
