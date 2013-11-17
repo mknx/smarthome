@@ -371,6 +371,7 @@ class Client(Stream):
             return
         try:
             sockaddr = self._create_socket()
+            self.socket.settimeout(2)
             self.socket.connect(sockaddr)
             self.socket.setblocking(0)
 #           self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
