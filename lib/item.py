@@ -219,7 +219,7 @@ class Item():
                 try:
                     child = Item(smarthome, self, child_path, value)
                 except Exception as e:
-                    logger.error("Item {}: problem creating: ()".format(child_path, e))
+                    logger.error("Item {}: problem creating: {}".format(child_path, e))
                 else:
                     vars(self)[attr] = child
                     smarthome.add_item(child_path, child)
