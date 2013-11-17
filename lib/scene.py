@@ -41,6 +41,10 @@ class Scenes():
                     with open(scene_file, 'r') as f:
                         reader = csv.reader(f, delimiter=' ')
                         for row in reader:
+                            if row == []:  # ignore empty lines
+                                continue
+                            if row[0][0] == '#':  # ignore comments
+                                continue
                             ditem = smarthome.return_item(row[1])
                             if ditem is None:
                                 ditem = smarthome.return_logic(row[1])
