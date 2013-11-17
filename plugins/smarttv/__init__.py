@@ -63,13 +63,18 @@ class SmartTV():
         rem = base64.b64encode(remote.encode())
 
         msg = bytearray([64, 0])
-        msg.extend([len(src), 0, src])
-        msg.extend([len(mac), 0, mac])
-        msg.extend([len(rem), 0, rem])
+        msg.extend([len(src), 0])
+        msg.extend(src)
+        msg.extend([len(mac), 0])
+        msg.extend(mac)
+        msg.extend([len(rem), 0])
+        msg.extend(rem)
 
         pkt = bytearray([0])
-        pkt.extend([len(app), 0, app])
-        pkt.extend([len(msg), 0, msg])
+        pkt.extend([len(app), 0])
+        msg.extend(app)
+        pkt.extend([len(msg), 0])
+        msg.extend(msg)
 
         try:
             s.send(pkt)
@@ -81,11 +86,14 @@ class SmartTV():
             return
 
         msg = bytearray([0, 0, 0])
-        msg.extend([len(key), 0, key])
+        msg.extend([len(key), 0])
+        msg.extend(key)
 
         pkt = bytearray([0])
-        pkt.extend([len(tv), 0, tv])
-        pkt.extend([len(msg), 0, msg])
+        pkt.extend([len(tv), 0])
+        msg.extend(tv)
+        pkt.extend([len(msg), 0])
+        msg.extend(msg)
 
         try:
             s.send(pkt)
