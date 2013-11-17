@@ -100,6 +100,7 @@
 <li><a class="reference internal" href="#nw">nw</a></li>
 <li><a class="reference internal" href="#nw-acl">nw_acl</a></li>
 <li><a class="reference internal" href="#nw-udp-listen-nw-tcp-listen">nw_udp_listen/nw_tcp_listen</a></li>
+<li><a class="reference internal" href="#nw-udp-send">nw_udp_send</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
@@ -200,6 +201,24 @@ or ip:port.</p>
 set to the TCP/UDP payload. $ echo teststring | nc -u 127.0.0.1 8888
 would set the value of item2 to &#8216;teststring&#8217;.</p>
 </div>
+<div class="section" id="nw-udp-send">
+<h4>nw_udp_send<a class="headerlink" href="#nw-udp-send" title="Permalink to this headline">¶</a></h4>
+<p>This attribute allows you to specify a host and port to send item
+updates to.</p>
+<pre>
+[test]
+    [[item1]]
+        type = string
+        nw_udp_send = 11.11.11.11:7777  # sends an UDP packet with the item value as payload
+
+    [[item2]]
+        type = string
+        nw_udp_send = 11.11.11.11:7777=special data  # sends an UDP packet with 'special data' as payload
+
+    [[item3]]
+        type = string
+        nw_udp_send = 11.11.11.11:7777=command: itemvalue  # sends an UDP packet with 'command: ' and the current item value as payload
+</pre></div>
 </div>
 <div class="section" id="logic-conf">
 <h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
