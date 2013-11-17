@@ -268,11 +268,14 @@ class KNX(lib.connection.Client):
                 if ga not in self.gar:
                     self.gar[ga] = {'dpt': dpt, 'item': item, 'logic': None}
                 else:
-                    logger.warning("KNX: {0} knx_reply ({1}) already defined for {2}".format(item, ga, self.gar[ga]['item']))
+                    logger.warning("KNX: {0} knx_reply ({1}) already defined for {2}".format(item.id(), ga, self.gar[ga]['item']))
 
         if 'knx_send' in item.conf:
             if isinstance(item.conf['knx_send'], str):
                 item.conf['knx_send'] = [item.conf['knx_send'], ]
+            if 'knx_status' in item.conf:
+                logger.warning("KNX: {} knx_send and kxn_status defined. Ignoring knx_status!".format(item.id()))
+                del(item.conf['knx_status'])
             return self.update_item
         elif 'knx_status' in item.conf:
             if isinstance(item.conf['knx_status'], str):
