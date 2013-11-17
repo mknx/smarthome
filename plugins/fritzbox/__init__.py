@@ -53,16 +53,14 @@ class FritzBoxBase():
         con.close()
         if resp.status != 200:
             raise fbex("no connection to fritzbox.")
-        data = resp.read().decode()
+        data = resp.read().decode('iso-8859-1')
         logger.debug("data = {0}".format(data))
         sid = re.search('<SID>(.*?)</SID>', data).group(1)
         logger.debug("sid = {0}".format(sid))
         if sid == '0000000000000000':
             logger.debug("invalid sid, starting challenge/response")
-            challenge = re.search(
-                '<Challenge>(.*?)</Challenge>', data).group(1)
-            challenge_resp = (
-                challenge + '-' + self._password).decode('iso-8859-1').encode('utf-16le')
+            challenge = re.search('<Challenge>(.*?)</Challenge>', data).group(1)
+            challenge_resp = challenge + '-' + self._password
             m = hashlib.md5()
             m.update(challenge_resp)
             challenge_resp = challenge + '-' + m.hexdigest().lower()
@@ -74,7 +72,7 @@ class FritzBoxBase():
             con.close()
             if resp.status != 200:
                 raise fbex("challenge/response failed")
-            data = resp.read().decode()
+            data = resp.read().decode('iso-8859-1')
             self._sid = re.search('<SID>(.*?)</SID>', data).group(1)
             logger.debug('session id = {0}'.format(self._sid))
 
