@@ -326,7 +326,7 @@ Trigger the evaluation of an item with ``eval_trigger``:
        [[dew]]
            type = num
            eval = sh.tools.dewpoint(sh.room.temp(), sh.room.hum())
-           eval_trigger = room.temp, room.hum  # every change of temp or hum would trigger the evaluation of dew.
+           eval_trigger = room.temp | room.hum  # every change of temp or hum would trigger the evaluation of dew.
    </pre>
 
 Eval keywords to use with the eval\_trigger:
@@ -357,12 +357,12 @@ Eval keywords to use with the eval\_trigger:
            type = num
            name = average temperature
            eval = avg
-           eval_trigger = room_a.temp, room_b.temp
+           eval_trigger = room_a.temp | room_b.temp
        [[presence]]
            type = bool
            name = movement in on the rooms
            eval = or
-           eval_trigger = room_a.presence, room_b.presence
+           eval_trigger = room_a.presence | room_b.presence
    </pre>
 
 Item Functions
