@@ -1,5 +1,7 @@
 Roomba
 ====
+Plugin to control your Roomba trough a serial-port connection (wifi/bluetooth). So you can read sensors, start/stop Roomba or have some other fun.
+
 
 plugin.conf:
 =
