@@ -82,7 +82,7 @@ class CLIHandler(lib.connection.Stream):
         else:
             item = self.sh.return_item(path)
             if hasattr(item, 'id'):
-                if item._type:
+                if item.type():
                     self.push("{0} = {1}\n".format(item.id(), item()))
                 else:
                     self.push("{}\n".format(item.id()))
@@ -94,7 +94,7 @@ class CLIHandler(lib.connection.Stream):
     def la(self):
         self.push("Items:\n======\n")
         for item in self.sh.return_items():
-            if item._type:
+            if item.type():
                 self.push("{0} = {1}\n".format(item.id(), item()))
             else:
                 self.push("{0}\n".format(item.id()))
@@ -110,7 +110,7 @@ class CLIHandler(lib.connection.Stream):
             self.push("You have to specify an item value. Syntax: up item = value\n")
             return
         item = self.sh.return_item(path)
-        if not hasattr(item, '_type'):
+        if not item.type():
             self.push("Could not find item with a valid type specified: '{0}'\n".format(path))
             return
         item(value, 'CLI', self.source)

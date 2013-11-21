@@ -35,7 +35,7 @@ class Scenes():
             logger.warning("Directory scenes not found. Ignoring scenes.".format(self._scenes_dir))
             return
         for item in smarthome.return_items():
-            if item._type == 'scene':
+            if item.type() == 'scene':
                 scene_file = "{}{}.conf".format(self._scenes_dir, item.id())
                 try:
                     with open(scene_file, 'r') as f:

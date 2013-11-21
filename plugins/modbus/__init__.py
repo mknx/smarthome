@@ -105,7 +105,7 @@ class Modbus():
                     elif (datatype == 'VT_ARRAY_UI1') and ('modbus_datamask' in item.conf):
                         mask = int(item.conf['modbus_datamask'], 0)
                         value = self._decode_vt_array_ui1(regaddr, mask)
-                        if (item._type == 'bool'):
+                        if (item.type() == 'bool'):
                             value = (value == mask)
                     elif (datatype == 'VT_BSTR'):
                         value = self._decode_vt_bstr(regaddr)
