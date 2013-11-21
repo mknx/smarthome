@@ -66,7 +66,7 @@ The attribute keywords are:
             name = Light
             type = bool
             visu = yes
-            sv_widget = "&#123;&#123; device.dimmer('second.sleeping.light', 'Light', 'second.sleeping.light', 'second.sleeping.light.level') &#125;&#125;"
+            sv_widget = &#123;&#123; device.dimmer('second.sleeping.light', 'Light', 'second.sleeping.light', 'second.sleeping.light.level') &#125;&#125;
             knx_dpt = 1
             knx_listen = 3/2/12
             knx_send = 3/2/12
@@ -90,7 +90,7 @@ The page generator will replace it with the current path. This way you could eas
             name = Light
             type = bool
             visu = yes
-            sv_widget = "&#123;&#123; device.dimmer('item', 'item.name', 'item', 'item.level') &#125;&#125;"
+            sv_widget = &#123;&#123; device.dimmer('item', 'item.name', 'item', 'item.level') &#125;&#125;
             knx_dpt = 1
             knx_listen = 3/2/12
             knx_send = 3/2/12
