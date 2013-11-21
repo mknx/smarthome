@@ -1,6 +1,25 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
+#########################################################################
+#  Copyright 2013 Mirko Hirsch                        mirko.hirsch@gmx.de
+#########################################################################
+#  Roomba/iRobot plugin for SmartHome.py http://mknx.github.com/smarthome/
+#
+#  This plugin is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This plugin is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this plugin. If not, see <http://www.gnu.org/licenses/>.
+#########################################################################
 
-import serial
+import socket
 import time
 import sys
 import logging
@@ -27,25 +46,44 @@ cmd_dict=dict(
 # song = 140,                 #add 2n + 2 databytes
 # play = 141,                 #add 1 databyte
 
-
 class Roomba(object):
     _items = []
     
-    def __init__(self,smarthome,tty,baudrate,cycle):
+    def __init__(self,smarthome,cycle,socket_type,socket_addr,socket_port = 0):
         self._sh = smarthome
-        self.tty = tty
-        self.baudrate = baudrate
-        try:
-            self.ser = serial.Serial(self.tty, baudrate=self.baudrate, timeout=2)
-        except:
-            pass
-        self.is_connected = 'False'
+        self._socket_type = socket_type
+        self._socket_addr = str(socket_addr)
+        print (self._socket_addr)
+        self._socket_port = socket_port
         self._cycle = int(cycle)
-        if self._cycle > 0:
-            self._sh.scheduler.add('Roomba', self.get_sensors, prio=5, cycle=self._cycle, offset=10)      
-    
+        try:
+            if self._socket_type == 'bt':
+                self._socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+                self._socket.settimeout(5.0)
+            if self._socket_type == 'tcp':
+                self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._socket.settimeout(5.0)   
+        except:
+            print("Roomba: Prepare {1} for connection failed: {0} ".format(sys.exc_info(),self._socket_addr))
+        self.is_connected = 'False'
+     
     def run(self):
-        pass
+        self.alive = True
+        if self._cycle > 0:
+            self._sh.scheduler.add('Roomba', self.get_sensors, prio=5, cycle=self._cycle, offset=10)     
+            
+    def stop(self):
+        self.alive = False
+        try:
+            self._sh.scheduler.remove('Roomba')
+        except:
+            logger.error(
+                "Roomba: Removing Roomba from scheduler failed: {}".format(sys.exc_info()))
+        try:
+            self._socket.close()
+        except:
+            logger.error(
+                "Roomba: Closing connection failed: {}".format(sys.exc_info()))
     
     def init_command(self):
         self.send(128)  #start
@@ -64,34 +102,36 @@ class Roomba(object):
                 #print ("Send {0}".format(raw))
                 logger.debug("Roomba: Send List:{0}".format(raw))
                 try:
-                    self.ser.write(bytearray(raw))
+                    self._socket.send(bytearray(raw))
                 except:
                     logger.error("Roomba: Send failed for {}!".format(raw))
-                    
+                    self.is_connected = 'False'
             else:
                 #print ("Send [{0}]".format(raw))
                 logger.debug("Roomba: Send Single:{0}".format([raw]))
                 try:
-                    self.ser.write(bytearray([raw]))
+                    self._socket.send(bytearray([raw]))
                 except:
                     logger.error("Roomba: Send failed for {}!".format([raw]))
+                    self.is_connected = 'False'
 
     def connect(self):
-        logger.debug("Roomba: Try to connect")
+        logger.debug("Roomba: Try to connect to {}".format(self._socket_addr))
         try:
-            self.ser.open()
-            self.ser.flushInput()
-            logger.debug("Roomba: Connected")
+            if self._socket_type == 'bt':
+                self._socket.connect((self._socket_addr, 1))
+            if self._socket_type == 'tcp':
+                self._socket.connect((self._socket_addr, self._socket_port))
+            logger.debug("Roomba: Connected to {}".format(self._socket_addr))
             self.is_connected = 'True'
         except:
-            logger.error("Roomba: Function connect failed")
+            logger.error("Roomba: Function connect failed {}".format(sys.exc_info()))
             self.is_connected = 'False'
     
     def disconnect(self):
-        self.ser.close()
-        self.is_connected = 'False'
-        logger.debug("Roomba: Disconnected")
-    
+        if self.is_connected == 'True':
+            self.send(128)
+        
     def parse_item(self, item):
         if 'roomba_get' in item.conf:
             sensor_string = item.conf['roomba_get']
@@ -152,7 +192,16 @@ class Roomba(object):
         
     def get_sensors(self):
         self.send([142,0])
-        answer = self.ser.read(26)
+        i = 0
+        answer=[]
+        while i < 26:
+            try:
+                data = self._socket.recv(1)
+                i = i+1
+                data = int.from_bytes(data, byteorder='little')
+                answer.append(data)
+            except:
+                logger.error("Roomba: Sensors not readable")
         if len(answer) == 26:
             logger.debug("Roomba: Got sensor data.")
             answer = list(answer)
@@ -244,8 +293,6 @@ class Roomba(object):
                         value = sensor_dict[sensor]
                         item(value, 'Roomba', 'get_sensors')
                         #print ("SENSOR: {0}  VALUE: {1}".format(sensor,value))
-        else:
-            logger.error("Roomba: Sensors not readable")
         self.disconnect()
 
     def DecodeUnsignedShort(self, low, high):
@@ -277,6 +324,3 @@ class Roomba(object):
             angle /= math.pi
             #print ("{0} degrees".format(angle))
             return angle
-        
-
-        

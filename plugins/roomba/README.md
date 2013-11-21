@@ -7,9 +7,10 @@ plugin.conf:
 [roomba]
      class_name = Roomba
      class_path = plugins.roomba
-     tty = /dev/rfcomm1
-     baudrate = 57600
-     cycle = 0 #0=deactivate reading sensors
+     cycle 		= 240 #0=deactivate reading sensors
+	 socket_type = bt #tcp or bt 
+	 socket_addr = 00:13:04:11:14:77 # MAC for Bluetooth, IP for TCP 
+	 socket_port = 1234
 </pre>
 
 
@@ -70,7 +71,7 @@ To send integers to Roomba following the documentation of Roomba SCI as List!
             roomba_cmd = backward | 2 | spin_left | 2 | forward | 3 | spin_right | 3 | stop | 2 | clean
 			
 	[[raw]]
-		[stop]
+		[[[stop]]]
 			type = bool
 			enforce_updates = true
 			roomba_raw = 137 | 0 | 0 | 0
@@ -206,41 +207,22 @@ To send integers to Roomba following the documentation of Roomba SCI as List!
             roomba_cmd = bumps_wheeldrops_wheeldrop_caster
 </pre>
 
-Serial-Port:
+Connection:
 =
-There are several availabilitys to connect to Roomba Serial Port. This was tested with a bluetooth-modul wich creates a virtual serial port.
-This can be done in do-it-yourself your you can buy it i.e. "FT41 BlueRoom" from Fussel Elektronik.
+There are several availabilitys to connect to Roomba Serial Port. 
+This was tested with a DIY-bluetooth-modul.
+This can be done in do-it-yourself or you can buy it i.e. "FT41 BlueRoom" from Fussel-Tronic.
 Not tested is a connection trough a wifi-rs232 adapter. 
 
 #Bluetooth:
 #install Bluetooth
-<pre>apt-get install bluez bluez-utils</pre>
+<pre>apt-get install bluez</pre>
 
-#scan for modules
-<code>hcitool scan</code>
-output:
-<pre>
-Scanning ...
-	00:13:04:11:14:77	bluetooth-adapter
-</pre>
-#pair module
-<code>bluez-simple-agent hci0 00:13:04:11:14:77</code>
-Enter your PIN (0000/1234 for default) in following output:
-<pre>RequestPinCode (/org/bluez/1975/hci0/dev_A8_26_D9_F3_55_59)
-Enter PIN Code: 1234
-Release
-New device (/org/bluez/1975/hci0/dev_A8_26_D9_F3_55_59)
-</pre>
-#bind module to tty
-<code>nano /etc/bluetooth/rfcomm.conf</code>
-configure your rfcomm.conf:
-<pre>rfcomm1 {
-bind yes;
-device 00:13:04:11:14:77;
-channel 1;
-comment "Roomba";
-}
-</pre>
+Choose socket_type = 'bt' and add the Roomba Bluetooth-Mac in socket_addr = XX:XX:XX:XX:XX:XX
 
-Finally unplug and plug your bt-dongle an in /dev must be a /dev/rfcomm1 now.
+#TCP:
+ !!! Not tested yet !!!
+Choose <code>socket_type = 'tcp'</code> and add the IP and Port of your Roomba-Remote in <code>socket_addr = 192.168.2.123</code> and <code>socket_port = 1234</code>
+
+
 Good doocumentation to Roombas SCI: http://www.robotiklubi.ee/_media/kursused/roomba_sumo/failid/hacking_roomba.pdf
