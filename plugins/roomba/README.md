@@ -1,5 +1,6 @@
 Roomba
 ====
+Plugin to connect to a Roomba. Read Sensors, Start/Stop.
 
 plugin.conf:
 =
