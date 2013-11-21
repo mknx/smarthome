@@ -477,6 +477,10 @@ class Item():
         else:
             self._sh.scheduler.add(self.id() + '-Timer', self.__call__, value={'value': value, 'caller': caller}, next=next)
 
+    def type(self):
+        return self._type
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     i = Item('sh', 'parent', 'path1', {'type': 'str', 'child1': {'type': 'bool'}, 'value': 'tqwer'})
