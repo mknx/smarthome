@@ -114,9 +114,6 @@ class SQL():
             logger.warning("{} deprecated history attribute. Use sqlite as keyword instead.".format(item.id()))
             item.conf['sqlite'] = item.conf['history']
         if 'sqlite' in item.conf:
-            if item.type() not in ['num', 'bool']:
-                logger.warning("SQLite: only supports 'num' and 'bool' as types. Item: {} ".format(item.id()))
-                return
             item.series = functools.partial(self._series, item=item.id())
             item.db = functools.partial(self._single, item=item.id())
             if item.conf['sqlite'] == 'init':
