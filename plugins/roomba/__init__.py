@@ -56,15 +56,6 @@ class Roomba(object):
         print (self._socket_addr)
         self._socket_port = socket_port
         self._cycle = int(cycle)
-        try:
-            if self._socket_type == 'bt':
-                self._socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-                self._socket.settimeout(5.0)
-            if self._socket_type == 'tcp':
-                self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self._socket.settimeout(5.0)   
-        except:
-            print("Roomba: Prepare {1} for connection failed: {0} ".format(sys.exc_info(),self._socket_addr))
         self.is_connected = 'False'
      
     def run(self):
@@ -119,8 +110,12 @@ class Roomba(object):
         logger.debug("Roomba: Try to connect to {}".format(self._socket_addr))
         try:
             if self._socket_type == 'bt':
+                self._socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+                self._socket.settimeout(5.0)
                 self._socket.connect((self._socket_addr, 1))
             if self._socket_type == 'tcp':
+                self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._socket.settimeout(5.0)
                 self._socket.connect((self._socket_addr, self._socket_port))
             logger.debug("Roomba: Connected to {}".format(self._socket_addr))
             self.is_connected = 'True'
@@ -130,7 +125,7 @@ class Roomba(object):
     
     def disconnect(self):
         if self.is_connected == 'True':
-            self.send(128)
+            pass
         
     def parse_item(self, item):
         if 'roomba_get' in item.conf:
@@ -191,17 +186,20 @@ class Roomba(object):
         self.disconnect()
         
     def get_sensors(self):
+        #self.send(128)
+        time.sleep(0.2)
         self.send([142,0])
         i = 0
         answer=[]
         while i < 26:
+            i = i+1
             try:
                 data = self._socket.recv(1)
-                i = i+1
                 data = int.from_bytes(data, byteorder='little')
                 answer.append(data)
-            except:
-                logger.error("Roomba: Sensors not readable")
+            except socket.timeout:
+                logger.error("Roomba: Sensors not readable - Timeout")
+                return
         if len(answer) == 26:
             logger.debug("Roomba: Got sensor data.")
             answer = list(answer)
@@ -293,6 +291,8 @@ class Roomba(object):
                         value = sensor_dict[sensor]
                         item(value, 'Roomba', 'get_sensors')
                         #print ("SENSOR: {0}  VALUE: {1}".format(sensor,value))
+        else:
+            logger.error("Roomba: Sensors not readable")
         self.disconnect()
 
     def DecodeUnsignedShort(self, low, high):
