@@ -25,11 +25,46 @@
 # THE SOFTWARE.
 #
 ###############################################################################
-
 """
+==========================
+ Wake On Lan
+==========================
 
-.. module:: wol
-.. moduleauthor:: Marcus Popp <marcus@popp.mx>
+.. codeauthor:: Marcus Popp
+
+This plugin awakes computers by a network message. A magic Wake-on-LAN packet.
+
+Requirements
+============
+
+This plugin has no requirements or dependencies.
+
+Configuration
+=============
+
+plugin.conf
+-----------
+::
+
+    [wol]
+        class_name = WOL
+        class_path = plugins.wol
+
+items.conf
+----------
+::
+
+    [test]
+        [[wol]]
+            type = bool
+            wol_mac = 03:06:a0:87:22:33
+
+
+Methods
+=======
+
+.. autoclass:: WOL()
+   :members:
 
 """
 
@@ -40,15 +75,11 @@ logger = logging.getLogger('')
 
 
 class WOL():
-    """This is a Wake On LAN Plugin.
-
-        :param smarthome: reference to the root object
-        :param host: the IP address or host name to connect to
-        :param port: port number of the host to connect to
-
-        """
     def __init__(self, smarthome):
         self._sh = smarthome
+
+    def __call__(self, mac):
+        self.wol(mac)
 
     def run(self):
         self.alive = True
@@ -58,16 +89,7 @@ class WOL():
 
     def parse_item(self, item):
         if 'wol_mac' in item.conf:
-            mac = ''.join([p.zfill(2) for p in item.conf['wol_mac'].replace(':', ' ').split()])
-            mac = bytearray.fromhex(mac)
-            if len(mac) == 6:
-                item.conf['wol_mac'] = mac
-                return self.update_item
-            else:
-                logger.warning("WOL: {} mac address invalid!".format(item.id()))
-                return None
-        else:
-            return None
+            return self.update_item
 
     def parse_logic(self, logic):
         pass
@@ -75,18 +97,29 @@ class WOL():
     def update_item(self, item, caller=None, source=None, dest=None):
         if item():
             if 'wol_mac' in item.conf:
-                mac = item.conf['wol_mac']
-                magic = bytearray([255] * 6)
-                magic.extend(mac * 16)
-                try:
-                    _s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    _s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                    _s.connect('255.255.255.255', 9)
-                    _s.sendall(magic)
-                except:
-                    pass
-                finally:
-                    try:
-                        _s.close()
-                    except:
-                        pass
+                self.wol(item.conf['wol_mac'])
+
+    def wol(self, mac):
+        """
+        :param mac: MAC address to wake up
+        """
+        mac = ''.join([p.zfill(2) for p in mac.replace(':', ' ').split()])
+        mac = bytearray.fromhex(mac)
+        if len(mac) != 6:
+            logger.warning("WOL: invalid mac address {}!".format(mac))
+            return
+
+        magic = bytearray([255] * 6)
+        magic.extend(mac * 16)
+        try:
+            _s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            _s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            _s.connect('255.255.255.255', 9)
+            _s.sendall(magic)
+        except:
+            pass
+        finally:
+            try:
+                _s.close()
+            except:
+                pass
