@@ -29,9 +29,10 @@ logger = logging.getLogger('DLMS')
 
 class DLMS():
 
-    def __init__(self, smarthome, serialport, baudrate="auto", update_cycle="60"):
+    def __init__(self, smarthome, serialport, baudrate="auto", update_cycle="60", use_checksum = True):
         self._sh = smarthome
         self._update_cycle = int(update_cycle)
+        self._use_checksum = use_checksum
         if (baudrate.lower() == 'auto'):
             self._baudrate = -1
         else:
@@ -123,14 +124,15 @@ class DLMS():
         # remove echoed chars if present
         if (self._request == response[:len(self._request)]):
             response = response[len(self._request):]
-        # perform checks (start with STX, end with ETX, checksum match)
-        checksum = 0
-        for i in response[1:]:
-            checksum ^= i
-        if (len(response) < 5) or (response[0] != 0x02) or (response[-2] != 0x03) or (checksum != 0x00):
-            logger.warning(
-                "dlms: checksum/protocol error: response={} checksum={}".format(' '.join(hex(i) for i in response), checksum))
-            return
+        if self._use_checksum:
+            # perform checks (start with STX, end with ETX, checksum match)
+            checksum = 0
+            for i in response[1:]:
+                checksum ^= i
+            if (len(response) < 5) or (response[0] != 0x02) or (response[-2] != 0x03) or (checksum != 0x00):
+                logger.warning(
+                    "dlms: checksum/protocol error: response={} checksum={}".format(' '.join(hex(i) for i in response), checksum))
+                return
         #print(str(response[1:-4], 'ascii'))
         for line in re.split('\r\n', str(response[1:-4], 'ascii')):
             # if re.match('[0-9]+\.[0-9]\.[0-9](.+)', line): # allows only

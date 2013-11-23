@@ -31,12 +31,14 @@ If you like, you can also give the serial port a descriptive name with this.
     class_path = plugins.dlms
     serialport = /dev/ttyO1
 #    update_cycle = 20
+#    use_checksum = False
 #    baudrate = 300
 </pre>
 
 Description of the attributes:
 
 * __update_cycle__: interval in seconds how often the data is read from the meter (default 60)
+* __use_checksum__: enables/disables the checksum check of the received data (default True)
 * __baudrate__: use fixed baudrate after startup (always 300 baud) [300,600,1200,2400,4800,9600,auto] (default 'auto')
 
 ## items.conf
