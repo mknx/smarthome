@@ -117,7 +117,6 @@ class SQL():
             if item.type() not in ['num', 'bool']:
                 logger.warning("SQLite: only supports 'num' and 'bool' as types. Item: {} ".format(item.id()))
                 return
-            item.conf['sqlite'] = item.conf['history']
             item.series = functools.partial(self._series, item=item.id())
             item.db = functools.partial(self._single, item=item.id())
             if item.conf['sqlite'] == 'init':
