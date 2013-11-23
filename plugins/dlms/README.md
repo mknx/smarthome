@@ -5,6 +5,12 @@
 * smartmeter using DLMS (Device Language Message Specification) IEC 62056-21
 * ir reader e.g. from volkszaehler.org
 * serial port/USB-serial adapter
+* python3-serial
+
+install by
+<pre>
+$ apt-get install python3-serial
+</pre>
 
 make sure the serial port can be used by the user executing smarthome.py
 

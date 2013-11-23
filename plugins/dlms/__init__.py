@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-#  Copyright 2011 KNX-User-Forum e.V.           http://knx-user-forum.de/
+#  Copyright 2013 KNX-User-Forum e.V.           http://knx-user-forum.de/
 #########################################################################
 #  DLMS plugin for SmartHome.py.         http://mknx.github.io/smarthome/
 #
@@ -38,14 +38,12 @@ class DLMS():
         else:
             self._baudrate = int(baudrate)
         self._obis_codes = {}
-        self._serial = serial.Serial(
-            serialport, 300, bytesize=serial.SEVENBITS, parity=serial.PARITY_EVEN, timeout=2)
+        self._serial = serial.Serial(serialport, 300, bytesize=serial.SEVENBITS, parity=serial.PARITY_EVEN, timeout=2)
         self._request = bytearray('\x06000\r\n', 'ascii')
 
     def run(self):
         self.alive = True
-        self._sh.scheduler.add('DLMS', self._update_values,
-                               prio=5, cycle=self._update_cycle)
+        self._sh.scheduler.add('DLMS', self._update_values, prio=5, cycle=self._update_cycle)
 
     def stop(self):
         self.alive = False
@@ -80,8 +78,7 @@ class DLMS():
                 baud_capable = self._baudrate
             if baud_capable > self._serial.baudrate:
                 try:
-                    logger.debug(
-                        "dlms: meter returned capability for higher baudrate {}".format(baud_capable))
+                    logger.debug("dlms: meter returned capability for higher baudrate {}".format(baud_capable))
                     # change request to set higher baudrate
                     self._request[2] = response[4]
                     self._serial.write(self._request)
@@ -98,10 +95,8 @@ class DLMS():
                     self._serial.close()
                     del self._serial
                     logger.debug("dlms: socket closed - creating new one")
-                    self._serial = serial.Serial(
-                        port, baud_capable, bytesize=serial.SEVENBITS, parity=serial.PARITY_EVEN, timeout=2)
-                    logger.debug(
-                        "dlms: Switching took: {:.2f}s".format(time.time() - switch_start))
+                    self._serial = serial.Serial(port, baud_capable, bytesize=serial.SEVENBITS, parity=serial.PARITY_EVEN, timeout=2)
+                    logger.debug("dlms: Switching took: {:.2f}s".format(time.time() - switch_start))
                     logger.debug("dlms: switch done")
                 except Exception as e:
                     logger.warning("dlms: {0}".format(e))
@@ -130,8 +125,7 @@ class DLMS():
             for i in response[1:]:
                 checksum ^= i
             if (len(response) < 5) or (response[0] != 0x02) or (response[-2] != 0x03) or (checksum != 0x00):
-                logger.warning(
-                    "dlms: checksum/protocol error: response={} checksum={}".format(' '.join(hex(i) for i in response), checksum))
+                logger.warning("dlms: checksum/protocol error: response={} checksum={}".format(' '.join(hex(i) for i in response), checksum))
                 return
         #print(str(response[1:-4], 'ascii'))
         for line in re.split('\r\n', str(response[1:-4], 'ascii')):
@@ -145,14 +139,12 @@ class DLMS():
                     if (len(data) == 2):
                         logger.debug("dlms: {} = {}".format(data[0], data[1]))
                     else:
-                        logger.debug(
-                            "dlms: {} = {} {}".format(data[0], data[1], data[2]))
+                        logger.debug("dlms: {} = {} {}".format(data[0], data[1], data[2]))
                     if data[0] in self._obis_codes:
                         for item in self._obis_codes[data[0]]['items']:
                             item(data[1], 'DLMS', 'OBIS {}'.format(data[0]))
                 except Exception as e:
-                    logger.warning(
-                        "dlms: line={} exception={}".format(line, e))
+                    logger.warning("dlms: line={} exception={}".format(line, e))
 
     def parse_item(self, item):
         if 'dlms_obis_code' in item.conf:
