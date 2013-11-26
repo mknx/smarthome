@@ -6,13 +6,24 @@ bluez
 
 install by
 <pre>
-apt-get install bluez
+$ apt-get install bluez
+$ hcitool scan
+Scanning ...
+        <bt-addr>       <name of your inverter, e.g. 'SMA001d SN: 213000xxxx SN213000xxxx'>
+$ simple-agent hci0 <bt-addr>
+RequestPinCode (/org/bluez/3070/hci0/dev_bt_addr_underscores)
+Enter PIN Code: <pin-code>
+Release
+New device (/org/bluez/3070/hci0/dev_bt_addr_underscores)
+$ bluez-test-device trusted <bt-addr> yes
+$ bluez-test-device list
 </pre>
 
 ## Supported Hardware
 
 Tested with:
 * SMA SunnyBoy 5000TL-21
+* SMA Sunny Tripower 8000TL-10
 
 Should work with other SMA inverters as well - please let me know!
 
