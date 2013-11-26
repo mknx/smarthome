@@ -43,9 +43,10 @@ If you like, you can also give the serial port a descriptive name with this.
 
 Description of the attributes:
 
-* __update_cycle__: interval in seconds how often the data is read from the meter (default 60)
-* __use_checksum__: enables/disables the checksum check of the received data (default True)
-* __baudrate__: use fixed baudrate after startup (always 300 baud) [300,600,1200,2400,4800,9600,auto] (default 'auto')
+* __baudrate__: sets the baudrate used for reading from the meter - can be used to force specific baudrate [300,600,1200,2400,4800,9600,auto] (default 'auto')
+* __update_cycle__: interval in seconds how often the data is read from the meter - be careful not to set a shorter interval than a read operation takes (default 60)
+* __use_checksum__: controls the checksum check of the received data - disable if you get continuous checksum errors/timeouts (default True)
+* __reset_baudrate__: determines if the baudrate is reset to 300 baud in every read cycle or left at full speed - disable to improve performance if your meter allows it (default True)
 
 ## items.conf
 

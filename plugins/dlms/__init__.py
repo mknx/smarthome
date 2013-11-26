@@ -28,16 +28,30 @@ logger = logging.getLogger('DLMS')
 
 class DLMS():
 
-    def __init__(self, smarthome, serialport, baudrate="auto", update_cycle="60", use_checksum = False):
+    def __init__(self, smarthome, serialport, baudrate="auto", update_cycle="60", use_checksum = True, reset_baudrate = True):
         self._sh = smarthome
-        self._update_cycle = int(update_cycle)
-        self._use_checksum = use_checksum
-        self._serialport = serialport
+        self._obis_codes = {}
+        self._init_seq = bytes('/?!\r\n', 'ascii')
+        self._request = bytearray('\x06000\r\n', 'ascii')
         if (baudrate.lower() == 'auto'):
             self._baudrate = -1
         else:
             self._baudrate = int(baudrate)
-        self._obis_codes = {}
+            pow2 = int(self._baudrate / 600)
+            self._request[2] = 0x30
+            while (pow2 > 0):
+                pow2 >>= 1
+                self._request[2] += 1
+        self._update_cycle = int(update_cycle)
+        self._use_checksum = self.cast_bool_arg(use_checksum)
+        self._reset_baudrate = self.cast_bool_arg(reset_baudrate)
+        self._serial = serial.Serial(serialport, 300, bytesize=serial.SEVENBITS, parity=serial.PARITY_EVEN, timeout=2)
+
+    def cast_bool_arg(self, value):
+        if value.lower() in ['0', 'false', 'no', 'off']:
+            return False
+        elif value.lower() in ['1', 'true', 'yes', 'on']:
+            return True
 
     def run(self):
         self.alive = True
@@ -51,70 +65,62 @@ class DLMS():
     def _update_values(self):
         logger.debug("dlms: update")
         start = time.time()
-        self._serial = serial.Serial(self._serialport, 300, bytesize=serial.SEVENBITS, parity=serial.PARITY_EVEN, timeout=2)
-        self._request = bytearray('\x06000\r\n', 'ascii')
-        init_seq = bytes('/?!\r\n', 'ascii')
-        self._serial.flushInput()
-        self._serial.write(init_seq)
-        response = bytes()
-        prev_length = 0
         try:
-            logger.debug("Try Read Id")
+            if self._reset_baudrate:
+                self._serial.baudrate = 300
+                logger.debug("dlms: (re)set baudrate to 300 Baud")
+            self._serial.write(self._init_seq)
+            self._serial.drainOutput()
+            self._serial.flushInput()
+            response = bytes()
+            prev_length = 0
             while self.alive:
                 response += self._serial.read()
                 length = len(response)
                 # break if timeout or newline-character
-                if (length == prev_length) or ((length > len(init_seq)) and (response[-1] == 0x0a)):
+                if (response[-1] == 0x0a):
                     break
+                if (length == prev_length):
+                    logger.warning("dlms: read timeout! - response={}".format(response))
+                    return
                 prev_length = length
         except Exception as e:
             logger.warning("dlms: {0}".format(e))
-        # remove echoed chars if present
-        if (init_seq == response[:len(init_seq)]):
-            response = response[len(init_seq):]
-        if (len(response) >= 5) and ((response[4] - 0x30) in range(6)):
-            if (self._baudrate == -1):
-                baud_capable = 300 * (1 << (response[4] - 0x30))
-            else:
-                baud_capable = self._baudrate
-            if baud_capable > self._serial.baudrate:
-                try:
-                    logger.debug("dlms: meter returned capability for higher baudrate - try to change {}".format(baud_capable))
-                    stx = 'False'
-                    while self.alive and stx == 'False':
-                        response2 = bytes()
-                        self._request[2] = response[4]
-                        self._serial.timeout = 1
-                        # set baudrate to 300 first
-                        time.sleep(0.5)
-                        self._serial.baudrate = 300
-                        self._serial.write(self._request)
-                        # change request to set higher baudrate
-                        time.sleep(0.5)
-                        logger.debug("dlms: trying to switch baudrate")
-                        switch_start = time.time()
-                        self._serial.baudrate = baud_capable
-                        response2 += self._serial.read(1)
-                        if 0x02 in response2:
-                            if len(response2) >= len(self._request):
-                                response2 = response2[len(self_request):]
-                                logger.debug("dlms: cut echo")
-                            logger.debug("dlms: got STX switching took: {:.2f}s".format(time.time() - switch_start))
-                            etx = 'false'
-                            while etx == 'false':
-                                response2 += self._serial.read()
-                                if (0x03 in response2) and (0x21 in response2):
-                                    etx = 'true'
-                                    stx = 'true'
-                                    logger.debug("dlms: got ETX rading took: {:.2f}s".format(time.time() - start))
-                                    response = response2
-                except Exception as e:
-                    logger.warning("dlms: {0}".format(e))
+        #logger.warning("dlms: response={}".format(response))
+        if (len(response) < 5) or ((response[4] - 0x30) not in range(6)):
+            logger.warning("dlms: malformed response to init seq={}".format(response))
+            return
+
+        if (self._baudrate == -1):
+            self._baudrate = 300 * (1 << (response[4] - 0x30))
+            logger.debug("dlms: meter returned capability for {} Baud".format(self._baudrate))
+            self._request[2] = response[4]
+        try:
+            self._serial.write(self._request)
+            self._serial.drainOutput()
+            self._serial.flushInput()
+            if (self._baudrate != self._serial.baudrate):
+                # change request to set higher baudrate
+                logger.debug("dlms: switching to {} Baud".format(self._baudrate))
+                self._serial.baudrate = self._baudrate
+            response = bytes()
+            prev_length = 0
+            while self.alive:
+                response += self._serial.read()
+                length = len(response)
+                if (not self._use_checksum and (response[-1] == 0x03)) or ((length > 1) and (response[-2] == 0x03)):
+                    break
+                if (length == prev_length):
+                    logger.warning("dlms: read timeout! - response={}".format(response))
                     return
-                    
+                prev_length = length
+        except Exception as e:
+            logger.warning("dlms: {0}".format(e))
+            return
+
+        logger.debug("dlms: reading took: {:.2f}s".format(time.time() - start))
         if self._use_checksum:
             # perform checks (start with STX, end with ETX, checksum match)
-            response = response2
             checksum = 0
             for i in response[1:]:
                 checksum ^= i
