@@ -88,6 +88,7 @@ class Connections(Base):
             self._epoll.modify(fileno, self._rw)
 
     def poll(self):
+        time.sleep(0.0000000001)  # give epoll.modify a chance
         if not self._connections:
             time.sleep(1)
             return
