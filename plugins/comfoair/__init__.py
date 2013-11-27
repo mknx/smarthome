@@ -241,7 +241,7 @@ class ComfoAir():
                 else:
                     tdelay = 5 # default delay
                     if 'comfoair_trigger_afterwrite' in item.conf:
-                        tdelay = item.conf['comfoair_trigger_afterwrite']
+                        tdelay = float(item.conf['comfoair_trigger_afterwrite'])
                     if type(trigger) != list:
                         trigger = [trigger] 
                     for triggername in trigger:
