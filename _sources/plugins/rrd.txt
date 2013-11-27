@@ -52,6 +52,13 @@ rrd\_max
 
 Set this item attribute to log the maximum as well. Default is no.
 
+rrd\_mode
+~~~~~~~~~
+
+Set the type of data source. Default ist ''gauge''.
+-  ``gauge`` should be used for things like temperatures.
+-  ``counter`` should be used for continuous incrementing counters like the Powermeter (kWh), watercounter (m³), pellets (kg).
+
 .. raw:: html
 
    <pre>
