@@ -151,13 +151,6 @@ class SmartHome():
         signal.signal(signal.SIGTERM, self.stop)
 
         #############################################################
-        # Check Time
-        #############################################################
-        while datetime.date.today().isoformat() < '2013-10-24':  # XXX update date
-            time.sleep(5)
-            logger.info("Waiting for datetime update")
-
-        #############################################################
         # Logging
         #############################################################
         _logdate = "%Y-%m-%d %H:%M:%S"
@@ -180,6 +173,13 @@ class SmartHome():
             logging.getLogger('').addHandler(log_file)
         except IOError as e:
             print("Error creating logfile {}: {}".format(self._logfile, e))
+
+        #############################################################
+        # Check Time
+        #############################################################
+        while datetime.date.today().isoformat() < '2013-10-24':  # XXX update date
+            time.sleep(5)
+            logger.info("Waiting for datetime update")
 
         #############################################################
         # Catching Exceptions
