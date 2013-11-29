@@ -145,7 +145,6 @@ def _fadejob(item, dest, step, delta):
 
 
 class Item():
-    __defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None, 'scene': 0}
 
     def __init__(self, smarthome, parent, path, config):
         self._autotimer = False
@@ -238,18 +237,19 @@ class Item():
         #############################################################
         # Type
         #############################################################
+        __defaults = {'num': 0, 'str': '', 'bool': False, 'list': [], 'dict': {}, 'foo': None, 'scene': 0}
         if self._type is None:
             logger.debug("Item {}: no type specified.".format(self._path))
             return
-        if self._type not in self.__defaults:
-            logger.error("Item {}: type '{}' unknown. Please use one of: {}.".format(self._path, self._type, ', '.join(list(self.__defaults.keys()))))
+        if self._type not in __defaults:
+            logger.error("Item {}: type '{}' unknown. Please use one of: {}.".format(self._path, self._type, ', '.join(list(__defaults.keys()))))
             raise AttributeError
         self.cast = globals()['_cast_' + self._type]
         #############################################################
         # Value
         #############################################################
         if self._value is None:
-            self._value = self.__defaults[self._type]
+            self._value = __defaults[self._type]
         try:
             self._value = self.cast(self._value)
         except:
