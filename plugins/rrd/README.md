@@ -36,6 +36,11 @@ Set this item attribute to log the minimum as well. Default is no.
 ### rrd_max
 Set this item attribute to log the maximum as well. Default is no.
 
+### rrd_mode
+Set the type of data source. Default ist `gauge`.
+  * `gauge` - should be used for things like temperatures.
+  * `counter` - should be used for continuous incrementing counters like the Powermeter (kWh), watercounter (m³), pellets (kg).
+
 <pre>
 [outside]
     name = Outside
