@@ -45,7 +45,12 @@ def room(smarthome, room, tpldir):
         rimg = room.conf['sv_img']
     else:
         rimg = ''
-    for item in smarthome.find_children(room, 'sv_widget'):
+    if 'sv_widget' in room.conf:
+        items = [room]
+    else:
+        items = []
+    items.extend(smarthome.find_children(room, 'sv_widget'))
+    for item in items:
         if 'sv_img' in item.conf:
             img = item.conf['sv_img']
         else:
