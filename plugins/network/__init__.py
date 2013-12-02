@@ -147,7 +147,7 @@ class Network():
             logger.warning("UDP: Problem sending data to {}:{}: ".format(host, port, e))
             pass
         else:
-            logger.debug("UDP: Sending data to {}:{}: ".format(host, port, data))
+            logger.debug("UDP: Sending data to {}:{}: {}".format(host, port, data))
 
     def add_listener(self, proto, ip, port, acl='*', generic=False):
         dest = proto + ':' + ip + ':' + port
