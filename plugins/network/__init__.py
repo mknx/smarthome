@@ -144,7 +144,7 @@ class Network():
             sock.close()
             del(sock)
         except Exception as e:
-            logger.warning("UDP: Problem sending data to {}:{}: ".format(host, port, e))
+            logger.warning("UDP: Problem sending data to {}:{}: {}".format(host, port, e))
             pass
         else:
             logger.debug("UDP: Sending data to {}:{}: {}".format(host, port, data))
