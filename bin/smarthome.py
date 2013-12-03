@@ -278,7 +278,7 @@ class SmartHome():
         # Init Items
         #############################################################
         logger.info("Init Items")
-        item_conf = {}
+        item_conf = None
         for item_file in sorted(os.listdir(self._env_dir)):
             if item_file.endswith('.conf'):
                 try:
