@@ -364,7 +364,7 @@ class WebSocketHandler(lib.connection.Stream):
                 self.rfc6455_handshake()
             else:
                 self.handshake_failed()
-        elif 'Sec-WebSocket-Key2' in self.header:
+        elif b'Sec-WebSocket-Key2' in self.header:
             self.parse_data = self.hixie76_handshake
             self.set_terminator(8)
         else:
@@ -449,26 +449,26 @@ class WebSocketHandler(lib.connection.Stream):
 
     def hixie76_send(self, data):
         data = json.dumps(data, cls=JSONEncoder, separators=(',', ':'))
-        self.push("\x00{0}\xff".format(data))
+        self.push("\x00{0}\xff".format(data).encode())
 
     def hixie76_parse(self, data):
-        self.json_parse(data.lstrip('\x00'))
+        self.json_parse(data.decode().lstrip('\x00'))
 
     def hixie76_handshake(self, key3):
-        key1 = self.header['Sec-WebSocket-Key1']
-        key2 = self.header['Sec-WebSocket-Key2']
+        key1 = self.header[b'Sec-WebSocket-Key1'].decode()
+        key2 = self.header[b'Sec-WebSocket-Key2'].decode()
         spaces1 = key1.count(" ")
         spaces2 = key2.count(" ")
-        num1 = int("".join([c for c in key1 if c.isdigit()])) / spaces1
-        num2 = int("".join([c for c in key2 if c.isdigit()])) / spaces2
+        num1 = int("".join([c for c in key1 if c.isdigit()])) // spaces1
+        num2 = int("".join([c for c in key2 if c.isdigit()])) // spaces2
         key = hashlib.md5(struct.pack('>II8s', num1, num2, key3)).digest()
         # send header
-        self.push('HTTP/1.1 101 Web Socket Protocol Handshake\r\n')
-        self.push('Upgrade: WebSocket\r\n')
-        self.push('Connection: Upgrade\r\n')
-        self.push("Sec-WebSocket-Origin: {0}\r\n".format(self.header['Origin']))
-        self.push("Sec-WebSocket-Location: ws://{0}/\r\n\r\n".format(self.header['Host']))
+        self.push(b'HTTP/1.1 101 Web Socket Protocol Handshake\r\n')
+        self.push(b'Upgrade: WebSocket\r\n')
+        self.push(b'Connection: Upgrade\r\n')
+        self.push(b"Sec-WebSocket-Origin: " + self.header[b'Origin'] + b"\r\n")
+        self.push(b"Sec-WebSocket-Location: ws://" + self.header[b'Host'] + b"/\r\n\r\n")
         self.push(key)
         self.parse_data = self.hixie76_parse
         self.json_send = self.hixie76_send
-        self.set_terminator("\xff")
+        self.set_terminator(b"\xff")
