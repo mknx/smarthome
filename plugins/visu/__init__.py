@@ -293,6 +293,8 @@ class WebSocketHandler(lib.connection.Stream):
                 else:
                     logger.warning("Client {0} requested invalid item: {1}".format(self.addr, path))
             self.monitor['item'] = data['items']
+        elif command == 'ping':
+            self.json_send({'cmd': 'pong'})
         elif command == 'logic':  # logic
             if 'name' not in data or 'val' not in data:
                 return
