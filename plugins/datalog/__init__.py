@@ -34,7 +34,7 @@ class DataLog():
     _buffer = {}
     _buffer_lock = None
 
-    def __init__(self, smarthome, path="var/log/data", filepatterns={ "default" : "{log}-{year}-{month}-{day}.csv" }, logpatterns={ "csv" : "{time}|{item}|{value}\n" }, cycle=10):
+    def __init__(self, smarthome, path="var/log/data", filepatterns={ "default" : "{log}-{year}-{month}-{day}.csv" }, logpatterns={ "csv" : "{time};{item};{value}\n" }, cycle=10):
         self._sh = smarthome
         self.path = path
 
@@ -76,14 +76,15 @@ class DataLog():
 
     def parse_item(self, item):
         if 'datalog' in item.conf:
-            logs = item.conf['datalog']
+            if type(item.conf['datalog']) is list:
+                logs = item.conf['datalog']
+            else:
+                logs = [item.conf['datalog']]
 
-            if type(logs) is str:
-               logs = [logs]
-
+            found = False
             for log in logs:
                 if log not in self.filepatterns:
-                    logger.warning("DataLog: Unknown log {} for item {}".format(log, item.id()))
+                    logger.debug('Unknown log "{}" for item {}'.format(log, item.id()))
                     return None
 
                 if log not in self._buffer:
@@ -91,12 +92,14 @@ class DataLog():
 
                 if item.id() not in self._items:
                     self._items[item.id()] = []
-                elif log not in self._items[item.id()]:
-                    return self.update_item
 
-                self._items[item.id()].append(log)
+                if log not in self._items[item.id()]:
+                   self._items[item.id()].append(log)
+                   found = True
 
+            if found:
                 return self.update_item
+
         return None
 
     def parse_logic(self, logic):
@@ -117,7 +120,7 @@ class DataLog():
 
         for log in self._buffer:
             self._buffer_lock.acquire()
-            logger.debug('DataLog: Dumping log "{}" with {} entries ...'.format(log, len(self._buffer[log])))
+            logger.debug('Dumping log "{}" with {} entries ...'.format(log, len(self._buffer[log])))
             entries = self._buffer[log]
             self._buffer[log] = []
             self._buffer_lock.release()
@@ -137,10 +140,10 @@ class DataLog():
                         handles[filename].write(logpattern.format(**data))
 
                 except Exception as e:
-                    logger.error('DataLog: Error while writing to {}: {}'.format(filename, e))
+                    logger.error('Error while writing to {}: {}'.format(filename, e))
 
         for filename in handles:
             handles[filename].close()
 
-        logger.debug('DataLog: Dump done!')
+        logger.debug('Dump done!')
 
