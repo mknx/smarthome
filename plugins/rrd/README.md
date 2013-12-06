@@ -10,6 +10,21 @@ $ sudo python3 setup.py install</pre>
 Configuration
 =============
 
+Remark: 
+-------
+The rrd plugin and the sqlite plugin can not be used together. Some pros and cons:
+
+RRD
++ a stable, reliable tool
++ is used in a many data logging and graphing tools
+- slow moving development
+- only few new features on the roadmap
+
+SQLite
++ part of python, no additional installation necessary
++ accurate logging of changing times
++ more analysis functionality
+
 plugin.conf
 -----------
 <pre>
