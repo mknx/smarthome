@@ -18,7 +18,8 @@ Following attributes are supported in smarthome.conf:
 -  ``lat``, ``lon``, ``elev``: geographic coordinates of your home
    (latitude, longitude, elevation). lat and lon are necessary for
    sunrise/sunset calculation, dealing with the position of the sun.
--  ``tz``: used timezone
+-  ``tz``: timezone
+-  ``item_change_log``: log item changes with loglevel info
 
 Sample Configuration
 ~~~~~~~~~~~~~~~~~~~~
