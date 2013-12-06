@@ -117,6 +117,8 @@
 <li><a class="reference internal" href="#id">id()</a></li>
 <li><a class="reference internal" href="#return-parent">return_parent()</a></li>
 <li><a class="reference internal" href="#return-children">return_children()</a></li>
+<li><a class="reference internal" href="#autotimer-time-value">autotimer(time, value)</a></li>
+<li><a class="reference internal" href="#timer-time-value">timer(time, value)</a></li>
 <li><a class="reference internal" href="#age">age()</a></li>
 <li><a class="reference internal" href="#prev-age">prev_age()</a></li>
 <li><a class="reference internal" href="#last-change">last_change()</a></li>
@@ -152,7 +154,8 @@
 <li><tt class="docutils literal"><span class="pre">lat</span></tt>, <tt class="docutils literal"><span class="pre">lon</span></tt>, <tt class="docutils literal"><span class="pre">elev</span></tt>: geographic coordinates of your home
 (latitude, longitude, elevation). lat and lon are necessary for
 sunrise/sunset calculation, dealing with the position of the sun.</li>
-<li><tt class="docutils literal"><span class="pre">tz</span></tt>: used timezone</li>
+<li><tt class="docutils literal"><span class="pre">tz</span></tt>: timezone</li>
+<li><tt class="docutils literal"><span class="pre">item_change_log</span></tt>: log item changes with loglevel info</li>
 </ul>
 <div class="section" id="sample-configuration">
 <h3>Sample Configuration<a class="headerlink" href="#sample-configuration" title="Permalink to this headline">¶</a></h3>
@@ -308,15 +311,15 @@ are: a-z, A-Z and &#8216;_&#8217;!</p>
 <li><tt class="docutils literal"><span class="pre">type</span></tt>: for storing values and/or triggering actions you have to
 specify this attribute. (If you do not specify this attribute the
 item is only useful for structuring your item tree). Supported
-types:</li>
-<li>bool: boolean type (on, 1, True or off, 0, False). True or False are
-internally used. Use e.g. <tt class="docutils literal"><span class="pre">if</span> <span class="pre">sh.item():</span> <span class="pre">...</span></tt>.</li>
-<li>num: any number (integer or float).</li>
-<li>str: regular string or unicode string.</li>
-<li>list: list/array of values. Usefull e.g. for some KNX dpts.</li>
-<li>dict: python dictionary for generic purposes.</li>
-<li>foo: pecial purposes. No validation is done.</li>
-<li>scene: special keyword to support scenes</li>
+types:
+-  bool: boolean type (on, 1, True or off, 0, False). True or False are
+internally used. Use e.g. <tt class="docutils literal"><span class="pre">if</span> <span class="pre">sh.item():</span> <span class="pre">...</span></tt>.
+-  num: any number (integer or float).
+-  str: regular string or unicode string.
+-  list: list/array of values. Usefull e.g. for some KNX dpts.
+-  dict: python dictionary for generic purposes.
+-  foo: pecial purposes. No validation is done.
+-  scene: special keyword to support scenes</li>
 <li><tt class="docutils literal"><span class="pre">value</span></tt>: initial value of that item.</li>
 <li><tt class="docutils literal"><span class="pre">name</span></tt>: name which would be the str representation of the item
 (optional).</li>
@@ -332,6 +335,7 @@ value exceeds 25.0 or fall below 21.4. Or simply a single value.</li>
 these attributes.</li>
 <li><tt class="docutils literal"><span class="pre">crontab</span></tt> and <tt class="docutils literal"><span class="pre">cycle</span></tt>: see logic.conf for possible options to set
 the value of an item at the specified times / cycles.</li>
+<li><tt class="docutils literal"><span class="pre">autotimer</span></tt> see the item function below. e.g. <tt class="docutils literal"><span class="pre">autotimer</span> <span class="pre">=</span> <span class="pre">10m</span> <span class="pre">=</span> <span class="pre">42</span></tt></li>
 </ul>
 <div class="section" id="scenes">
 <h4>Scenes<a class="headerlink" href="#scenes" title="Permalink to this headline">¶</a></h4>
@@ -428,6 +432,15 @@ is True.</li>
 <h4>return_children()<a class="headerlink" href="#return-children" title="Permalink to this headline">¶</a></h4>
 <p>Returns the children of an item.
 <tt class="docutils literal"><span class="pre">for</span> <span class="pre">child</span> <span class="pre">in</span> <span class="pre">sh.item.return_children():</span> <span class="pre">...</span></tt></p>
+</div>
+<div class="section" id="autotimer-time-value">
+<h4>autotimer(time, value)<a class="headerlink" href="#autotimer-time-value" title="Permalink to this headline">¶</a></h4>
+<p>Set a timer to run at every item change. Specify the time (in seconds), or use m to specify minutes. e.g. autotimer(&#8216;10m&#8217;, 42) to set the item after 10 minutes to 42.
+If you call autotimer() without a timer or value, the functionality will be disabled.</p>
+</div>
+<div class="section" id="timer-time-value">
+<h4>timer(time, value)<a class="headerlink" href="#timer-time-value" title="Permalink to this headline">¶</a></h4>
+<p>Same as autotimer, excepts it runs only once.</p>
 </div>
 <div class="section" id="age">
 <h4>age()<a class="headerlink" href="#age" title="Permalink to this headline">¶</a></h4>

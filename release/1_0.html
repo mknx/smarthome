@@ -1,0 +1,242 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Release 1.0 - 2013-11-14 &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <div class="section" id="release-1-0-2013-11-14">
+<h1>Release 1.0 - 2013-11-14<a class="headerlink" href="#release-1-0-2013-11-14" title="Permalink to this headline">¶</a></h1>
+<p>Change to Python 3.X!!! (for X &gt;= 2)</p>
+<div class="section" id="with-contributions-from">
+<h2>With Contributions from:<a class="headerlink" href="#with-contributions-from" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Daniel (mode)</li>
+<li>Jan N. Klug</li>
+<li>Lars Bernau (lbernau)</li>
+<li>Marcus (mannmawg)</li>
+<li>Mark Hönisch</li>
+<li>Matthias Lemke</li>
+<li>Mike Pieper</li>
+<li>Mirko Hirsch</li>
+<li>mptei</li>
+<li>Niko Will</li>
+<li>Oliver Hinckel</li>
+<li>Robert Budde</li>
+<li>xtcommerce</li>
+</ul>
+</div>
+<div class="section" id="new-plugins">
+<h2>New Plugins<a class="headerlink" href="#new-plugins" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Artnet</li>
+<li>Boxcar</li>
+<li>DLMS</li>
+<li>easymeter</li>
+<li>eBusd</li>
+<li>ecmd</li>
+<li>eta_pu</li>
+<li>Hue</li>
+<li>iaqstick</li>
+<li>Kostal</li>
+<li>NetIO230B</li>
+<li>NMA</li>
+<li>SMA</li>
+<li>Squeezebox</li>
+<li>vr100</li>
+<li>wettercom</li>
+</ul>
+</div>
+<div class="section" id="base-features">
+<h2>Base Features<a class="headerlink" href="#base-features" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">sh.match_items, eval_trigger and watch_item: supports item
+attribute matches by &#8216;:attribute&#8217; e.g. &#8216;*:my&#8217; every item with the
+attribute my.</p>
+</li>
+<li><dl class="first docutils">
+<dt>New item methods:</dt>
+<dd><ul class="first last simple">
+<li>item.timer and autotimer to set a item value after the specified time</li>
+<li>age()</li>
+<li>prev_age()</li>
+<li>last_change()</li>
+<li>prev_change()</li>
+<li>last_update()</li>
+<li>prev_value()</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>New sh.tools methods:</dt>
+<dd><ul class="first last simple">
+<li>sh.tools.dt2ts(dt)</li>
+<li>sh.tools.dt2js(dt)</li>
+<li>sh.tools.rel2abs(temp, hum)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>New smarthome.py start options:</dt>
+<dd><ul class="first last simple">
+<li>-V: shows the Version</li>
+<li>-i: starts the interactive mode</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="plugin-features">
+<h2>Plugin Features<a class="headerlink" href="#plugin-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Asterisk: <tt class="docutils literal"><span class="pre">ast_db</span></tt> attribute to control Asterisk database entries</li>
+<li>KNX: new <tt class="docutils literal"><span class="pre">knx_status</span></tt> attribute</li>
+<li>Network: new attribute <tt class="docutils literal"><span class="pre">nw_udp_send</span></tt> to send UDP packets on an item change.</li>
+<li>RRDTool: use <tt class="docutils literal"><span class="pre">rrd</span> <span class="pre">=</span> <span class="pre">init</span></tt> to initialize the item value with the last database entry.</li>
+<li>SQLite: use <tt class="docutils literal"><span class="pre">sqlite</span> <span class="pre">=</span> <span class="pre">init</span></tt> to initialize the item value with the last database entry.</li>
+</ul>
+</div>
+<div class="section" id="changes">
+<h2>Changes:<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Python 3.2 migration</li>
+<li>Visu: new attributes <tt class="docutils literal"><span class="pre">acl</span></tt> and <tt class="docutils literal"><span class="pre">visu_acl</span></tt></li>
+<li>predefined items env.core and env.system tree used by smartVISU</li>
+<li>SQLite: Due to hughe speed improvements the database has to be deleted. This will take place at the first start.</li>
+<li>1-Wire: adding DS18S20 support</li>
+<li>new config separtor for multiple entries: |</li>
+<li>improving logic response time</li>
+</ul>
+</div>
+<div class="section" id="migrate">
+<h2>Migrate:<a class="headerlink" href="#migrate" title="Permalink to this headline">¶</a></h2>
+<p>If you want to migrate to the new (Python) version, you have to do the following steps:</p>
+<pre>
+<code>
+# install the base
+$ sudo apt-get install python3 python3-dev python3-setuptools
+$ sudo easy_install3 pip
+$ sudo pip-3.2 install ephem
+
+# to convert your old configuration !very important!
+$ ./tools/conf2-1.0.sh
+
+# change your logic files to python3 syntax
+$ 2to3-3.2 -f idioms -f all -w yourlogicfile.py
+
+# remove the old python pyc files
+$ find . -name *.pyc -type f -print0 | xargs -0 /bin/rm -f
+
+# if you want to use the RRDTool plugin
+$ sudo apt-get install librrd-dev
+$ cd lib/3rd/rrdtool
+$ sudo python3 setup.py install
+</code>
+</pre></div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

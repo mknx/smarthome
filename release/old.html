@@ -1,0 +1,430 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2013-06-13: New Release 0.9 &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <table border="1" class="docutils">
+<colgroup>
+<col width="100%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>title: Overview</td>
+</tr>
+<tr class="row-even"><td>layout: default</td>
+</tr>
+<tr class="row-odd"><td>summary:</td>
+</tr>
+<tr class="row-even"><td>uid: index</td>
+</tr>
+</tbody>
+</table>
+<p>SmartHome.py is a modular framework to automate your (smart) home.</p>
+<p>See the <a class="reference external" href="install">install</a> and <a class="reference external" href="config">config</a> section to start
+your SmartHome.</p>
+<p>You would like to support SmartHome.py?</p>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top"></form><div class="section" id="new-release-0-9">
+<h1>2013-06-13: New Release <a class="reference external" href="https://github.com/mknx/smarthome/tags">0.9</a><a class="headerlink" href="#new-release-0-9" title="Permalink to this headline">¶</a></h1>
+<p>with code contributions and help from: Alexander Rieger, Matthias Lemke
+and Niko Will!</p>
+<div class="section" id="new-plugins">
+<h2>New Plugins<a class="headerlink" href="#new-plugins" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="plugins/fritzbox">Fritzbox Plugin</a>: control anything a FritzBox
+offers with the web interface.</li>
+<li><a class="reference external" href="plugins/luxtronic2">Luxtronic2 Plugin</a>: get state information and
+control Luxtronic 2.0 heating controllers.</li>
+<li><a class="reference external" href="plugins/mpd">MPD Plugin</a>: to control Music Player Daemons.</li>
+<li><a class="reference external" href="plugins/smarttv">Samsung Smart TV Plugin</a>: send commands to a
+SmartTV device.</li>
+<li><a class="reference external" href="plugins/solarlog">Solarlog Plugin</a>: to retrieve information from
+SolarLog devices.</li>
+<li><a class="reference external" href="plugins/sqlite">SQLite Plugin</a>: to store the item history in a
+SQLite database.</li>
+<li><a class="reference external" href="plugins/xbmc">XBMC Plugin</a>: to control and monitor your XBMC.</li>
+</ul>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="config">Item</a>: setting values with the crontab and cycle attribute</li>
+<li><a class="reference external" href="logic">Logic</a>: Logic: calling with values by crontab and cycle</li>
+<li><a class="reference external" href="logic">Logic</a>: trigger supports destinations in
+<tt class="docutils literal"><span class="pre">trigger['dest']</span></tt></li>
+<li><a class="reference external" href="logic">Logic</a>: de-/activate logics. e.g.
+<tt class="docutils literal"><span class="pre">sh.scheduler.change('alarmclock',</span> <span class="pre">active=False)</span></tt></li>
+<li><a class="reference external" href="logic">Logic</a>: new basic methods: sh.return_item,
+sh.return_items, sh.match_items, sh.find_items, find_children</li>
+<li><a class="reference external" href="config">Scene support</a>: to set multiple item values at the same
+time</li>
+<li><a class="reference external" href="plugins/onewire">1-Wire Plugin</a>: rewritten to support many
+different sensors.</li>
+<li><a class="reference external" href="plugins/asterisk">Asterisk</a>: adding destination support for
+Userevents</li>
+<li><a class="reference external" href="plugins/cli">CLI plugin</a>: new command &#8216;cl&#8217; to clean the memory log
+of sh.py</li>
+<li><a class="reference external" href="plugins/dwd">DWD Plugin</a>: adding support for Pollen forecast</li>
+<li><a class="reference external" href="plugins/knx">KNX Plugin</a>:<ul>
+<li>change encoding of dpt10 to use a datetime object and send the
+isoweekday</li>
+<li>DPT 17 support</li>
+<li>adding support to log all packets (busmonitor)</li>
+</ul>
+</li>
+<li><a class="reference external" href="plugins/mail">Mail Plugin</a>: enable sending UTF-8 mails</li>
+<li><a class="reference external" href="plugins/visu">Visu Plugin</a>:<ul>
+<li>change url</li>
+<li>smartVISU support multiple widgets with one item</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="bug-fixes">
+<h2>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>KNX Plugin: fix broken knx_cache, with support from
+<a class="reference external" href="mailto:Robert&#37;&#52;&#48;knx-user-forum">Robert<span>&#64;</span>knx-user-forum</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="big-picture-smarthome-py-with-knx-1-wire-and-smartvisu">
+<h1>2013-02-11: Big Picture SmartHome.py with KNX, 1-Wire and smartVISU<a class="headerlink" href="#big-picture-smarthome-py-with-knx-1-wire-and-smartvisu" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://knx-user-forum.de/members/sipple.html">Martin</a> has created an
+<a class="reference external" href="/smarthome/img/big_picture.pdf">overview</a> how SmartHome.py interacts
+with KNX, 1-Wire and the smartVISU.</p>
+</div>
+<div class="section" id="id5">
+<h1>2013-02-02: <a class="reference external" href="https://github.com/mknx/smarthome/wiki/SmartHome.pi">Release of an Raspberry Pi image with SmartHome.py and smartVISU</a><a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="new-release-0-8">
+<h1>2013-01-31 New Release <a class="reference external" href="https://github.com/mknx/smarthome/tags">0.8</a><a class="headerlink" href="#new-release-0-8" title="Permalink to this headline">¶</a></h1>
+<p>with contributions from: Niko Will and Alexander Rieger. Thank you.</p>
+<p>I am happy to announce a new cooperation with
+<a class="reference external" href="http://code.google.com/p/smartvisu/">smartVISU</a> to give you the best
+user interface experience.</p>
+<div class="section" id="id7">
+<h2>New Plugins<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="plugins/dwd">DWD Plugin</a>: fetch weather warnings and forecasts
+from Deutscher Wetterrdienst (DWD).</li>
+<li><a class="reference external" href="plugins/mail">Mail Plugin</a>: sending (SMTP) and receiving (IMAP)
+mail.</li>
+<li><a class="reference external" href="plugins/rrd">RRD Plugin</a>: build round robin databases.</li>
+<li><a class="reference external" href="plugins/russound">Russound Plugin</a>: control a Russound audio
+device with RIO over TCP.</li>
+<li><a class="reference external" href="plugins/snom">Snom Plugin</a>: to handle snom VOIP phones.</li>
+</ul>
+</div>
+<div class="section" id="id10">
+<h2>Features<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Base<ul>
+<li>sh.tools.fetch_url()</li>
+<li>item.conf: new types list, dict</li>
+<li>sh.moon() with set(), rise(), pos(), light(), phase()</li>
+<li>sh.find_items(&#8216;config_string&#8217;), sh.find_children(self, parent,
+&#8216;config_string&#8217;)</li>
+</ul>
+</li>
+<li>Asterisk plugin: Call Log and mailbox count</li>
+<li>CLI plugin: adding &#8216;rl&#8217; to reload and &#8216;rr&#8217; to reload and run logic</li>
+<li>KNX plugin: DPT 16 support</li>
+<li>Network plugin: adding a simple http interface</li>
+<li>Visu plugin:<ul>
+<li><a class="reference external" href="http://code.google.com/p/smartvisu/">smartVISU</a> support: to
+generate pages for and communicate with this visualisation
+framework.</li>
+<li>plot rrd with flot</li>
+<li>list view</li>
+<li>dpt3 push buttons</li>
+<li>TITLE header template</li>
+<li>adding &#8216;unit&#8217; attribute to item.conf</li>
+<li>JQuery: 1.8.3, JQuery Mobile 1.2</li>
+<li>Log view SmartHome.py, Asterisk</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id12">
+<h2>Bug Fixes<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>KNX plugin: knx_init/knx_cache could not work if first connection
+attempt failed<ul>
+<li>dpt 10, 11, 16 handling fix</li>
+</ul>
+</li>
+<li>Onewire plugin: improve error handling</li>
+<li>Workaround for urllib2 memory leakage</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-release-0-7">
+<h1>2012-09-27 New Release <a class="reference external" href="https://github.com/mknx/smarthome/tags">0.7</a><a class="headerlink" href="#new-release-0-7" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id14">
+<h2>Features<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Items<ul>
+<li>Trees: You could now build unlimited item trees.</li>
+<li>id(): function to return the item id (path).</li>
+<li>eval: see the item configuration page for an explanation for
+&#8216;eval&#8217; and &#8216;eval_trigger&#8217;.</li>
+</ul>
+</li>
+<li><a class="reference external" href="plugins/asterisk">Asterisk plugin</a>: new function hangup(channel)</li>
+<li><a class="reference external" href="plugins/ical">iCal plugin</a>: to parse iCal files</li>
+<li><a class="reference external" href="plugins/visu">Visu Plugin</a>:<ul>
+<li>autogenerate visu pages</li>
+<li>new input type &#8216;time&#8217;</li>
+</ul>
+</li>
+<li>SmartHome.py:<ul>
+<li>sh.scheduler.change</li>
+<li>directory structure cleanup: logic =&gt; logics</li>
+<li>items directory: to put multiple item configuration files in</li>
+<li>sh.tools.dewpoint(): new function to calculate the dewpoint</li>
+<li>sh.tools.ping(): moved ping to the tools object.</li>
+<li>sh.tz =&gt; sh.tzinfo(): new function tzinfo().</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id16">
+<h2>Bug Fixes<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>CLI Plugin: update attribute negated</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-release-0-6">
+<h1>2012-06-21 New Release <a class="reference external" href="http://sourceforge.net/projects/smarthome/files/">0.6</a><a class="headerlink" href="#new-release-0-6" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="nonfunctional-changes">
+<h2>Nonfunctional changes<a class="headerlink" href="#nonfunctional-changes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Redesign of the underlying framework to reduce the number of
+necessary threads and system footprint.</li>
+</ul>
+</div>
+<div class="section" id="id18">
+<h2>Features<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="plugins/network">Network plugin</a> to receive TCP/UDP and send UDP
+messages and to trigger logics.</li>
+<li><a class="reference external" href="plugins/dmx">DMX plugin</a> accepts now a channel list to bound
+several channel to one item (value)</li>
+<li><a class="reference external" href="plugins/knx">KNX plugin</a> changed class options to <tt class="docutils literal"><span class="pre">host</span></tt> and
+<tt class="docutils literal"><span class="pre">port</span></tt>. Adding support for more DPTs. Sending the date/time on the
+bus.</li>
+<li><a class="reference external" href="plugins/asterisk">Asterisk plugin</a> changed class options to
+<tt class="docutils literal"><span class="pre">host</span></tt> and <tt class="docutils literal"><span class="pre">port</span></tt>. New functions: db_write, db_read and
+mailbox_count.</li>
+<li><a class="reference external" href="plugins/onewire">1-Wire plugin</a> changed class options to <tt class="docutils literal"><span class="pre">host</span></tt>
+and <tt class="docutils literal"><span class="pre">port</span></tt>. Supporting the current owfs version (2.8p15). New
+function <a class="reference external" href="plugins/onewire/#ibuttonhookibutton-item">ibutton_hook</a>
+to monitor intrusion attempts.</li>
+<li><a class="reference external" href="plugins/visu">Visu</a> three new interactive image elements added:
+switch, push and set. See the example.html file. JQuery mobile
+updated to 1.1.0. Websocket default <tt class="docutils literal"><span class="pre">port</span></tt> changed to 2121.</li>
+<li>New <a class="reference external" href="/config#item-attributes">item types</a> list and foo.</li>
+<li>New start option <tt class="docutils literal"><span class="pre">-d</span></tt> to set the log level to debug.</li>
+<li>UDP plugin is no longer supported. Please use the generic network
+plugin instead.</li>
+</ul>
+</div>
+<div class="section" id="id22">
+<h2>Bug Fixes<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Due to the redesign several bugs are fixed. I hope it will not
+intruduce the same amount of new bugs ;-)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-release-0-5">
+<h1>2012-04-12 New Release <a class="reference external" href="http://sourceforge.net/projects/smarthome/files/">0.5</a><a class="headerlink" href="#new-release-0-5" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id24">
+<h2>Features<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="plugins/visu">Visu</a> with JQuery mobile</li>
+<li>ping: sh.ping(host), return True if up, False if down.</li>
+</ul>
+</div>
+<div class="section" id="id26">
+<h2>Bug Fixes<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>using the enviroment timezone (TZ) - if provided</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-release-0-4">
+<h1>2011-10-29 New Release <a class="reference external" href="http://sourceforge.net/projects/smarthome/files/">0.4</a><a class="headerlink" href="#new-release-0-4" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="feature">
+<h2>Feature<a class="headerlink" href="#feature" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>KNX Reply with <a class="reference external" href="plugins/knx">KNX plugin</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-release-0-3">
+<h1>2011-08-14 New Release <a class="reference external" href="http://sourceforge.net/projects/smarthome/files/">0.3</a><a class="headerlink" href="#new-release-0-3" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id30">
+<h2>Features<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="plugins/asterisk">Asterisk plugin</a> to monitor channels and listen
+for UserEvents</li>
+<li><a class="reference external" href="config#fade">item.fade()</a>: fade the item to a specified value</li>
+<li><a class="reference external" href="config#item-attributes">item.area</a>: provides access to the area
+object</li>
+<li><a class="reference external" href="logic/config#logic">logic.alive</a>: safe loop expression for a clean
+shutdown</li>
+<li><a class="reference external" href="logic/config#crontab">logig crontab</a>: new keyword &#8216;init&#8217;</li>
+<li><a class="reference external" href="plugins/cli/#usage">CLI plugin</a>: new function &#8216;tr&#8217; to trigger
+logics</li>
+</ul>
+</div>
+<div class="section" id="id33">
+<h2>Nonfunctional changes<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>New Logic handling. Logics share worker threads and multiple
+instances of one logic could run at the same time.</li>
+<li>Two new functions to call/trigger a logic: logic.trigger() and
+sh.trigger().</li>
+<li>Every logic provides an &#8216;trigger&#8217; object with the reason of the call.</li>
+</ul>
+</div>
+<div class="section" id="id34">
+<h2>Bug Fixes<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>sh.sun.set() and rise provides a timezone aware datetime. :-) And a
+small fix in computing the dates.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-release-0-2">
+<h1>2011-06-21 New Release <a class="reference external" href="http://sourceforge.net/projects/smarthome/files/">0.2</a><a class="headerlink" href="#new-release-0-2" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id36">
+<h2>Features<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Two new <a class="reference external" href="config#item-attributes">item attributes</a>: threshold and
+offset</li>
+<li><a class="reference external" href="plugins/cli/">CLI plugin</a> for a simple telnet interface</li>
+<li><a class="reference external" href="plugins/dmx/">DMX plugin</a> to interact with the DMX bus</li>
+</ul>
+</div>
+<div class="section" id="id39">
+<h2>Bug Fixes<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>sh.sun.set() provided a timezone aware datetime which results in a
+internal conflict with a third party function.</li>
+<li>knx_ga is splitted into two attributes: knx_send, knx_listen. See
+the <a class="reference external" href="plugins/knx/">KNX plugin</a> for more information.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="initial-release">
+<h1>2011-04-09 Initial Release<a class="headerlink" href="#initial-release" title="Permalink to this headline">¶</a></h1>
+<p>You could find the initial release 0.1 in the
+<a class="reference external" href="http://sourceforge.net/projects/smarthome/files/">download</a> section.</p>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
