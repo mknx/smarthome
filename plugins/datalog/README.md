@@ -22,7 +22,7 @@ The plugin can be configured using the following settings:
    class_path = plugins.datalog
 #   path = var/log/data
 #   filepatterns = default:{log}-{year}-{month}-{day}.csv | yearly:{log}-{year}.csv
-#   logpatterns = csv:{time}|{item}|{value}\n
+#   logpatterns = csv:{time};{item};{value}\n
 #   cycle = 300
 </pre>
 
@@ -85,7 +85,7 @@ Example:
    class_name = DataLog
    class_path = plugins.datalog
    filepatterns = default:{log}-{year}-{month}-{day}.csv | custom:{log}-{year}-{month}-{day}.txt
-   logpatterns = csv:{time}|{item}|{value}\n
+   logpatterns = csv:{time};{item};{value}\n
 </pre>
 
 In this example the `default` log file will use the configured log pattern. The
