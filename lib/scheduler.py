@@ -241,7 +241,19 @@ class Scheduler(threading.Thread):
                 if key in self._scheduler[name]:
                     if key == 'cron':
                         if isinstance(kwargs[key], str):
-                            kwargs[key] = kwargs[key].split('|')
+                            _cron = {}
+                            for entry in kwargs[key].split('|'):
+                                desc, __, _value = entry.partition('=')
+                                desc = desc.strip()
+                                if _value == '':
+                                    _value = None
+                                else:
+                                    _value = _value.strip()
+                                _cron[desc] = _value
+                            if _cron == {}:
+                                kwargs[key] = None
+                            else:
+                                kwargs[key] = _cron
                     elif key == 'active':
                         if kwargs['active'] and not self._scheduler[name]['active']:
                             logger.info("Activating logic: {0}".format(name))
