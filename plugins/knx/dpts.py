@@ -81,7 +81,7 @@ def en5(value):
 def de5(payload):
     if len(payload) != 1:
         return None
-    return struct.unpack('>B', payload)[0]
+    return round(struct.unpack('>B', payload)[0], 1)
 
 
 def en5001(value):
@@ -95,7 +95,7 @@ def en5001(value):
 def de5001(payload):
     if len(payload) != 1:
         return None
-    return struct.unpack('>B', payload)[0] * 100.0 / 255
+    return round(struct.unpack('>B', payload)[0] * 100.0 / 255, 1)
 
 
 def en6(value):
