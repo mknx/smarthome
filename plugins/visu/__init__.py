@@ -463,7 +463,7 @@ class WebSocketHandler(lib.connection.Stream):
         spaces2 = key2.count(" ")
         num1 = int("".join([c for c in key1 if c.isdigit()])) // spaces1
         num2 = int("".join([c for c in key2 if c.isdigit()])) // spaces2
-        key = hashlib.md5(struct.pack('>II8s', num1, num2, key3)).digest()
+        key = hashlib.md5(struct.pack('>II8s', num1, num2, key3.decode())).digest()
         # send header
         self.push(b'HTTP/1.1 101 Web Socket Protocol Handshake\r\n')
         self.push(b'Upgrade: WebSocket\r\n')
