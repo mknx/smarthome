@@ -43,8 +43,8 @@ provides the current power status and details (e.g. total power consumed,
 current power).
 
 All status values retrieved by these messages have a unique identifier which
-is called OBIS code. This can be used to identify the meaning of the value
-returned.
+is called [OBIS](http://de.wikipedia.org/wiki/OBIS-Kennzahlen) code. This can
+be used to identify the meaning of the value returned.
 
 Description of the attributes:
 
