@@ -139,8 +139,10 @@ class Sml():
             values = {}
             logger.debug('Data: {}'.format(''.join(' {:02x}'.format(x) for x in data)))
             try:
-                while self._dataoffset < len(data) - 1:
-                    if data[self._dataoffset] == 0x77 and data[self._dataoffset+1] == 0x07:
+                while self._dataoffset < len(data):
+
+                    # Find SML_ListEntry starting with 0x77 0x07 and OBIS code end with 0xFF
+                    if data[self._dataoffset] == 0x77 and data[self._dataoffset+1] == 0x07 and data[self._dataoffset+7] == 0xff:
                         self._dataoffset += 1
                         entry = {
                           'objName'   : self._read_entity(data),
@@ -153,6 +155,7 @@ class Sml():
                         }
 
                         obis = '{}-{}:{}.{}.{}*{}'.format(entry['objName'][0], entry['objName'][1], entry['objName'][2], entry['objName'][3], entry['objName'][4], entry['objName'][5])
+                        logger.debug('Entry {} = {}'.format(obis, entry))
 
                         if entry['scaler'] is not None:
                             values[obis] = entry['value'] * 10 ** entry['scaler']
@@ -173,8 +176,8 @@ class Sml():
 
     def _read_entity(self, data):
         upack = {
-          5 : { 1 : '>b', 2 : '>h', 4 : '>i', 8 : '>q' },
-          6 : { 1 : '>B', 2 : '>H', 4 : '>I', 8 : '>Q' }
+          5 : { 1 : '>b', 2 : '>h', 3: '>i', 4 : '>i', 8 : '>q' },
+          6 : { 1 : '>B', 2 : '>H', 3: '>I', 4 : '>I', 8 : '>Q' }
         }
 
         result = None
@@ -198,11 +201,13 @@ class Sml():
         if type == 0:    # octet string
             result = data[self._dataoffset:self._dataoffset+len]
 
-        elif type == 5:  # signed int
-            result = struct.unpack(upack[type][len], data[self._dataoffset:self._dataoffset+len])[0]
+        elif type == 5 or type == 6:  # signed int or unsigned int
+            d = data[self._dataoffset:self._dataoffset+len]
 
-        elif type == 6:  # unsigned int
-            result = struct.unpack(upack[type][len], data[self._dataoffset:self._dataoffset+len])[0]
+            if len == 3:  # extend 3-byte value to 4-byte value for unpack()
+                d = b'\x00' + d
+
+            result = struct.unpack(upack[type][len], d)[0]
 
         elif type == 7:  # list
             result = []
