@@ -43,16 +43,10 @@ class DLMS():
                 pow2 >>= 1
                 self._request[2] += 1
         self._update_cycle = int(update_cycle)
-        self._use_checksum = self.cast_bool_arg(use_checksum)
-        self._reset_baudrate = self.cast_bool_arg(reset_baudrate)
-        self._no_waiting = self.cast_bool_arg(no_waiting)
+        self._use_checksum = smarthome.string2bool(use_checksum)
+        self._reset_baudrate = smarthome.string2bool(reset_baudrate)
+        self._no_waiting = smarthome.string2bool(no_waiting)
         self._serial = serial.Serial(serialport, 300, bytesize=serial.SEVENBITS, parity=serial.PARITY_EVEN, timeout=2)
-
-    def cast_bool_arg(self, value):
-        if value.lower() in ['0', 'false', 'no', 'off']:
-            return False
-        elif value.lower() in ['1', 'true', 'yes', 'on']:
-            return True
 
     def run(self):
         self.alive = True
