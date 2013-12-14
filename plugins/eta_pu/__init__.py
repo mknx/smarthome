@@ -134,7 +134,7 @@ class ETA_PU():
             logger.error(
                 "skipping item: found 'eta_pu_type' but parent has no 'eta_pu_uri'")
             return
-        uri = parent_item.conf['eta_pu_uri']
+        uri = parent_item.conf['eta_pu_uri'].strip('/')
         if uri not in self._uri:
             self._uri[uri] = []
         self._uri[uri].append(item)
