@@ -153,9 +153,10 @@ class ETA_PU():
         for elem in root.iter():
             for key in list(self._uri.keys()):
                 try:
-                    if key == elem.attrib['uri']:
-                        for i in self._uri[key]:
-                            pu_type = i.conf['eta_pu_type']
-                            i(elem.attrib[pu_type], caller='eta_pu')
+                    if 'uri' in elem.attrib:
+                        if key == elem.attrib['uri']:
+                            for i in self._uri[key]:
+                                pu_type = i.conf['eta_pu_type']
+                                i(elem.attrib[pu_type], caller='eta_pu')
                 except:
-                    pass
+                    logger.warning("XML parse error")
