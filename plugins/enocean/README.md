@@ -1,2 +1,3 @@
-EnOcean - Under development !!! Do not remove any comments until stable.
-====
+EnOcean - under development !!!
+
+Please do not remove any comments until stable.
