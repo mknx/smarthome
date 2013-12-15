@@ -463,14 +463,16 @@ class WebSocketHandler(lib.connection.Stream):
         spaces2 = key2.count(" ")
         num1 = int("".join([c for c in key1 if c.isdigit()])) // spaces1
         num2 = int("".join([c for c in key2 if c.isdigit()])) // spaces2
-        key = hashlib.md5(struct.pack('>II8s', num1, num2, key3.decode())).digest()
+        key = hashlib.md5()
+        key.update(struct.pack('>II', num1, num2))
+        key.update(key3)
         # send header
         self.push(b'HTTP/1.1 101 Web Socket Protocol Handshake\r\n')
         self.push(b'Upgrade: WebSocket\r\n')
         self.push(b'Connection: Upgrade\r\n')
         self.push(b"Sec-WebSocket-Origin: " + self.header[b'Origin'] + b"\r\n")
         self.push(b"Sec-WebSocket-Location: ws://" + self.header[b'Host'] + b"/\r\n\r\n")
-        self.push(key)
+        self.push(key.digest())
         self.parse_data = self.hixie76_parse
         self.json_send = self.hixie76_send
         self.set_terminator(b"\xff")
