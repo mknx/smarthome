@@ -248,7 +248,7 @@ class ETA_PU():
     def update_var_status(self):
         self._objects.clear()
         # fetch response
-        response = self.fetch_xml('{0}{1}'.format(self._setpath, self._setname))
+        response = self.fetch_xml('{0}/{1}'.format(self._setpath, self._setname))
         if response is None:
             return
         for uri in self._uri.keys():
