@@ -200,7 +200,7 @@ class ETA_PU():
         returning a function that can be used to set the value of the variable
     '''
     def parse_type(self, item):
-        uri = self._get_uri(item)
+        uri = self._get_uri(item).strip('/')
         if uri:
             if uri not in self._uri:
                 self._uri[uri] = []
@@ -267,6 +267,8 @@ class ETA_PU():
                     value = int(element.text) / int(element.attrib['scaleFactor'])- int(element.attrib['advTextOffset'])
                 else:
                     value = element.attrib[item.conf[__ETA_TYPE__]]
+                if item.type() == 'num':
+                    value = value.replace(',', '.')
                 item(value, caller=__ETA_PU__)
 
     '''
