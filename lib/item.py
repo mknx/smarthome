@@ -320,7 +320,7 @@ class Item():
     def _init_run(self):
         if self._eval_trigger:
             if self._eval:
-                self._sh.trigger(name=self._path, obj=self.__run_eval, by='Init', value={'caller': 'Init'})
+                self._sh.trigger(name=self._path, obj=self.__run_eval, by='Init', value={'value': self._value, 'caller': 'Init'})
 
     def __run_eval(self, value=None, caller='Eval', source=None, dest=None):
         if self._eval:
