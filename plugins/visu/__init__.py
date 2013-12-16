@@ -383,6 +383,7 @@ class WebSocketHandler(lib.connection.Stream):
         return not 0 == (byte & (1 << bit))
 
     def rfc6455_handshake(self):
+        logger.debug("rfc6455 Handshake")
         self.terminator = 8
         self.found_terminator = self.rfc6455_parse
         self.json_send = self.rfc6455_send
@@ -457,6 +458,7 @@ class WebSocketHandler(lib.connection.Stream):
         self.json_parse(data.decode().lstrip('\x00'))
 
     def hixie76_handshake(self, key3):
+        logger.debug("Hixie76 Handshake")
         key1 = self.header[b'Sec-WebSocket-Key1'].decode()
         key2 = self.header[b'Sec-WebSocket-Key2'].decode()
         spaces1 = key1.count(" ")
