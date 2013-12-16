@@ -25,6 +25,7 @@ import hashlib
 import json
 import logging
 import ssl
+import struct
 import threading
 
 import lib.connection
@@ -363,6 +364,9 @@ class WebSocketHandler(lib.connection.Stream):
                 self.rfc6455_handshake()
             else:
                 self.handshake_failed()
+        elif b'Sec-WebSocket-Key2' in self.header:
+            self.found_terminator = self.hixie76_handshake
+            self.terminator = 8
         else:
             self.handshake_failed()
 
@@ -442,3 +446,36 @@ class WebSocketHandler(lib.connection.Stream):
             logger.warning("data to big: {0}".format(data))
             return
         self.send(header + data.encode())
+
+    def hixie76_send(self, data):
+        data = json.dumps(data, cls=JSONEncoder, separators=(',', ':'))
+        packet = bytearray()
+        packet.append(0x00)
+        packet.extend(data.encode())
+        packet.append(0xff)
+        self.send(packet)
+
+    def hixie76_parse(self, data):
+        self.json_parse(data.decode().lstrip('\x00'))
+
+    def hixie76_handshake(self, key3):
+        logger.debug("Hixie76 Handshake")
+        key1 = self.header[b'Sec-WebSocket-Key1'].decode()
+        key2 = self.header[b'Sec-WebSocket-Key2'].decode()
+        spaces1 = key1.count(" ")
+        spaces2 = key2.count(" ")
+        num1 = int("".join([c for c in key1 if c.isdigit()])) // spaces1
+        num2 = int("".join([c for c in key2 if c.isdigit()])) // spaces2
+        key = hashlib.md5()
+        key.update(struct.pack('>II', num1, num2))
+        key.update(key3)
+        # send header
+        self.send(b'HTTP/1.1 101 Web Socket Protocol Handshake\r\n')
+        self.send(b'Upgrade: WebSocket\r\n')
+        self.send(b'Connection: Upgrade\r\n')
+        self.send(b"Sec-WebSocket-Origin: " + self.header[b'Origin'] + b"\r\n")
+        self.send(b"Sec-WebSocket-Location: ws://" + self.header[b'Host'] + b"/\r\n\r\n")
+        self.send(key.digest())
+        self.found_terminator = self.hixie76_parse
+        self.json_send = self.hixie76_send
+        self.terminator = b"\xff"
