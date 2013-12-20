@@ -273,13 +273,15 @@ class KNX(lib.connection.Client):
         if 'knx_send' in item.conf:
             if isinstance(item.conf['knx_send'], str):
                 item.conf['knx_send'] = [item.conf['knx_send'], ]
-            return self.update_item
-        elif 'knx_status' in item.conf:
+
+        if 'knx_status' in item.conf:
             if isinstance(item.conf['knx_status'], str):
                 item.conf['knx_status'] = [item.conf['knx_status'], ]
+
+        if 'knx_status' in item.conf or 'knx_send' in item.conf:
             return self.update_item
-        else:
-            return None
+
+        return None
 
     def parse_logic(self, logic):
         if 'knx_dpt' in logic.conf:
