@@ -370,8 +370,8 @@ class Scheduler(threading.Thread):
             if not next_event:
                 next_event = self._parse_month(crontab, next_month=True)  # next month
             return next_event
-        except Exception as e:
-            logger.exception("Error parsing crontab: {} {}".format(crontab, e))
+        except:
+            logger.error("Error parsing crontab: {}".format(crontab))
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
 
     def _parse_month(self, crontab, next_month=False):
