@@ -230,6 +230,7 @@ class SmartHome():
 
         logger.info("Start SmartHome.py {0}".format(VERSION))
         logger.debug("Python {0}".format(sys.version.split()[0]))
+        self._starttime = datetime.datetime.now()
 
         #############################################################
         # Link Tools
@@ -480,6 +481,9 @@ class SmartHome():
 
     def utcinfo(self):
         return self._utctz
+
+    def runtime(self):
+        return datetime.datetime.now() - self._starttime
 
     #################################################################
     # Helper Methods
