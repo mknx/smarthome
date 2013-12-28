@@ -327,7 +327,7 @@ class ComfoAir():
                         bytestoreceive = firstpartlen - len(packet)
                         self.log_debug('Trying to receive {} bytes for the first part of the response.'.format(bytestoreceive))
                         chunk = self.read_bytes(bytestoreceive)
-                        self.log_info('Received chunk of response: {}'.format(self.bytes2hexstring(chunk)))
+                        self.log_info('Received {} bytes chunk of response part 1: {}'.format(len(chunk), self.bytes2hexstring(chunk)))
                         
                         # Cut away old ACK (but only if the telegram wasn't started already)
                         if len(packet) == 0:
@@ -354,7 +354,7 @@ class ComfoAir():
                         bytestoreceive = packetlen - len(packet)
                         self.log_debug('Trying to receive {} bytes for the second part of the response.'.format(bytestoreceive))
                         chunk = self.read_bytes(bytestoreceive)
-                        self.log_info('Received chunk of response: {}'.format(self.bytes2hexstring(chunk)))
+                        self.log_info('Received {} bytes chunk of response part 2: {}'.format(len(chunk), self.bytes2hexstring(chunk)))
                         packet.extend(chunk)
                     except socket.timeout:
                         raise Exception("error receiving second part of packet: timeout")
