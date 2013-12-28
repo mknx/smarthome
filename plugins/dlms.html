@@ -116,8 +116,12 @@
 62056-21</li>
 <li>ir reader e.g. from volkszaehler.org</li>
 <li>serial port/USB-serial adapter</li>
+<li>python3-serial</li>
 </ul>
-<p>make sure the serial port can be used by the user executing smarthome.py</p>
+<p>install by</p>
+<pre>
+$ apt-get install python3-serial
+</pre><p>make sure the serial port can be used by the user executing smarthome.py</p>
 <p>Example (adapt the vendor- and product-id!):</p>
 <pre>
 echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6010", MODE="666"' > /etc/udev/rules.d/99-smartmeter.rules
@@ -142,14 +146,50 @@ IEC 62056-21</li>
     class_name = DLMS
     class_path = plugins.dlms
     serialport = /dev/ttyO1
-#    update_cycle = 20
 #    baudrate = 300
+#    update_cycle = 20
+#    use_checksum = no
+#    reset_baudrate = no
+#    no_waiting = yes
 </pre><p>Description of the attributes:</p>
 <ul class="simple">
+<li><strong>baudrate</strong>: sets the baudrate used for reading from the meter - can
+be used to force specific baudrate (300,600,1200,2400,4800,9600,auto
+- default: &#8216;auto&#8217;)</li>
 <li><strong>update_cycle</strong>: interval in seconds how often the data is read
-from the meter (default 60)</li>
-<li><strong>baudrate</strong>: use fixed baudrate after startup (always 300 baud)
-[300,600,1200,2400,4800,9600,auto] (default &#8216;auto&#8217;)</li>
+from the meter - be careful not to set a shorter interval than a read
+operation takes (default: 60)</li>
+<li><strong>use_checksum</strong>: controls the checksum check of the received data -
+disable if you get continuous checksum errors/timeouts (yes/no -
+default: yes)</li>
+<li><strong>reset_baudrate</strong>: determines if the baudrate is reset to 300 baud
+in every read cycle or left at full speed - disable to improve
+performance if your meter allows it (yes/no - default: yes)</li>
+<li><strong>no_waiting</strong>: omit additional waiting times required for some
+meters - enable to improve performance if your meter allows it
+(yes/no - default: no)</li>
+</ul>
+<p>Setup procedure:</p>
+<ol class="arabic simple">
+<li>Set only <strong>serialport</strong> and start in debug-mode</li>
+</ol>
+<ul class="simple">
+<li>not working: try to disable <strong>use_checksum</strong> / use fixed
+<strong>baudrate</strong> / cry for help</li>
+<li>working: move on</li>
+</ul>
+<ol class="arabic simple" start="2">
+<li>Optimize for speed</li>
+</ol>
+<ul class="simple">
+<li>disable <strong>reset_baudrate</strong> - still works?</li>
+<li>enable <strong>no_waiting</strong> - still works?</li>
+</ul>
+<ol class="arabic simple" start="3">
+<li>Read the time a reading takes from the debug-output</li>
+</ol>
+<ul class="simple">
+<li>set <strong>update_cycle</strong> to a meaningfull value</li>
 </ul>
 </div>
 <div class="section" id="items-conf">
@@ -161,15 +201,13 @@ reader will be printer after the first successful read operation.</p>
 <p>Attributes: * <strong>dlms_obis_code</strong>: obis code such as &#8216;x.y&#8217;, &#8216;x.y.z&#8217; or
 &#8216;x.y.z*q&#8217;</p>
 <pre>
-[Stromzaehler]
-  [[Bezug]]
-    [[[Energie]]]
-      type = num
-      dlms_obis_code = 1.8.1
-  [[Lieferung]]
-    [[[Energie]]]
-      type = num
-      dlms_obis_code = 2.8.1
+[Smartmeter]
+  [[Import_Energy]]
+    type = num
+    dlms_obis_code = 1.8.1
+  [[Export_Energy]]
+    type = num
+    dlms_obis_code = 2.8.1
 </pre></div>
 </div>
 </div>

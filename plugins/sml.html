@@ -13,7 +13,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>VR100 &mdash; SmartHome.py 1.0 documentation</title>
+    <title>Sml &mdash; SmartHome.py 1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -89,16 +89,22 @@
   <div class="row">
       <div class="col-md-3">
         <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
-<li><a class="reference internal" href="#">VR100</a><ul>
+<li><a class="reference internal" href="#">Sml</a><ul>
 <li><a class="reference internal" href="#requirements">Requirements</a><ul>
-<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
+<li><a class="reference internal" href="#hardware">Hardware</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#configuration">Configuration</a><ul>
 <li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
-<li><a class="reference internal" href="#items-conf">items.conf</a></li>
+<li><a class="reference internal" href="#items-conf">items.conf</a><ul>
+<li><a class="reference internal" href="#sml-obis">sml_obis</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#logic-conf">logic.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#methodes">Methodes</a></li>
 </ul>
 </li>
 </ul>
@@ -107,28 +113,25 @@
       </div>
     <div class="col-md-9">
       
-  <div class="section" id="vr100">
-<h1>VR100<a class="headerlink" href="#vr100" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="sml">
+<h1>Sml<a class="headerlink" href="#sml" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<p>bluez</p>
-<p>install by</p>
-<pre>
-$ apt-get install bluez
-$ hcitool scan
-Scanning ...
-        <bt-addr>       <name of your bluetooth-module, e.g. 'HC-05' or custom>
-$ simple-agent hci0 <bt-addr>
-RequestPinCode (/org/bluez/3070/hci0/dev_bt_addr_underscores)
-Enter PIN Code: <pin-code>
-Release
-New device (/org/bluez/3070/hci0/dev_bt_addr_underscores)
-$ bluez-test-device trusted <bt-addr> yes
-$ bluez-test-device list
-</pre><div class="section" id="supported-hardware">
-<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
-<p>A Vorwerk Kobold VR100 robotic vacuum cleaner with a retrofitted
-bluetooth module.</p>
+<p>To use this plugin for reading data from your smart power meter hardware
+you need to have a serial or network interface connected to your
+hardware.</p>
+<p>Most smart power meter hardware have an optical interface on the front
+of the casis. These are two IR LEDs which can be used to read data from
+the power meter hardware (e.g. by using a <a class="reference external" href="http://wiki.volkszaehler.org/hardware/controllers/ir-schreib-lesekopf">optical
+reader</a>
+connected to an USB port).</p>
+<div class="section" id="hardware">
+<h3>Hardware<a class="headerlink" href="#hardware" title="Permalink to this headline">¶</a></h3>
+<p>The plugin was tested with the following hardware:</p>
+<ul class="simple">
+<li>Hager EHZ363Z5</li>
+<li>Hager EHZ363W5</li>
+</ul>
 </div>
 </div>
 <div class="section" id="configuration">
@@ -136,54 +139,77 @@ bluetooth module.</p>
 <div class="section" id="plugin-conf">
 <h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
 <pre>
-[vr100]
-    class_name = VR100
-    class_path = plugins.vr100
-    bt_addr = 07:12:07:xx:xx:xx
-#    update_cycle = 60
-</pre><p>Description of the attributes:</p>
+[sml]
+  class_name = Sml
+  class_path = plugins.sml
+  serialport = /dev/ttyUSB0
+  # host = 192.168.2.1
+  # port = 1234
+
+</pre><p>The plugin reads data from smart power meter hardware by using a serial
+interface (e.g. /dev/ttyUSB0) or by connecting to a host/port. It reads
+messages using the SML (Smart Message Language) protocol. If you want to
+know more about the protocol see
+<a class="reference external" href="http://wiki.volkszaehler.org/software/sml">here</a>.</p>
+<p>Usually the smart power meter hardware is sending status information
+every few seconds via the interface which is read by the plugin. This
+status information, consisting of a SML_PublicOpen and SML_GetList
+message, provides the current power status and details (e.g. total power
+consumed, current power).</p>
+<p>All status values retrieved by these messages have a unique identifier
+which is called <a class="reference external" href="http://de.wikipedia.org/wiki/OBIS-Kennzahlen">OBIS</a>
+code. This can be used to identify the meaning of the value returned.</p>
+<p>Description of the attributes:</p>
 <ul class="simple">
-<li><strong>bt_addr</strong>: MAC-address of the robot (find out with &#8216;hcitool scan&#8217;)</li>
-<li><strong>update_cycle</strong>: interval in seconds how often the data is read
-from the robot (default 60)</li>
+<li><tt class="docutils literal"><span class="pre">serialport</span></tt> - defines the serial port to use to read data from</li>
+<li><tt class="docutils literal"><span class="pre">host</span></tt> - instead of serial port you can use a network connection</li>
+<li><tt class="docutils literal"><span class="pre">port</span></tt> - additionally to the host configuration you can specify a
+port</li>
 </ul>
 </div>
 <div class="section" id="items-conf">
 <h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
-<p>You can use all commands available by the serial interface.</p>
-<p>For a explanation of all available commands type &#8216;help&#8217; when connected
-to robot</p>
-<p>Attributes: * <strong>vr100_cmd</strong>: used to set a comand string *
-<strong>vr100_info</strong>: used to get data from the robot - all but the last
-strings are send as a comand, the last string is read to get the value</p>
-<p>Fields: * <strong>{}</strong>: the value of the item is written to this placeholder
-(don&#8217;t use if a fixed/no value is required)</p>
-<p>You should verify all your commands manually by using the serial
-interface.</p>
+<p>You can assign a value retrieved by the plugin to some of your items
+using the OBIS identifier.</p>
+<p>Here&#8217;s a list of OBIS codes which may be useful:</p>
+<ul class="simple">
+<li>129-129:199.130.3*255 - Manufacturer</li>
+<li>1-0:0.0.9*255 - ServerId / serial number</li>
+<li>1-0:1.8.0*255 - Total kWh consumption (in)</li>
+<li>1-0:1.8.1*255 - Tariff 1 kWh consumption (in)</li>
+<li>1-0:1.8.2*255 - Tariff 2 kWh consumption (in)</li>
+<li>1-0:2.8.0*255 - Total kWh delivery (out)</li>
+<li>1-0:2.8.1*255 - Tariff 1 kWh delivery (out)</li>
+<li>1-0:2.8.2*255 - Tariff 2 kWh delivery (out)</li>
+<li>1-0:16.7.0*255 - Current Delivery Watt (out)</li>
+</ul>
+<div class="section" id="sml-obis">
+<h4>sml_obis<a class="headerlink" href="#sml-obis" title="Permalink to this headline">¶</a></h4>
+<p>This assigns the value for the given OBIS code to the item.</p>
+<p>e.g. sml_obis = 1-0:1.8.0*255</p>
+</div>
+<div class="section" id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
+<p>Here you can find a sample configuration:</p>
 <pre>
-[VR100]
-  [[Reinigung]]
-    type = bool
-    vr100_cmd = Clean
-    [[[Spot]]]
-      type = bool
-      vr100_cmd = Clean Spot
-  [[Batterie]]
-    [[[Fuellstand]]]
+[power]
+  [[home]]
+    [[[total]]]
       type = num
-      sqlite = true
-      vr100_info = GetCharger FuelPercent
-    [[[Ladung_aktiv]]]
-      type = bool
-      vr100_info = GetCharger ChargingActive
-    [[[leer]]]
-      type = bool
-      vr100_info = GetCharger EmptyFuel
-    [[[Spannung]]]
+      sml_obis = 1-0:1.8.0*255
+    [[[current]]]
       type = num
-      sqlite = true
-      vr100_info = GetCharger VBattV
+      sml_obis = 1-0:16.7.0*255
 </pre></div>
+</div>
+<div class="section" id="logic-conf">
+<h3>logic.conf<a class="headerlink" href="#logic-conf" title="Permalink to this headline">¶</a></h3>
+<p>Currently there is no logic configuration for this plugin.</p>
+</div>
+</div>
+<div class="section" id="methodes">
+<h2>Methodes<a class="headerlink" href="#methodes" title="Permalink to this headline">¶</a></h2>
+<p>Currently there are no functions offered from this plugin.</p>
 </div>
 </div>
 

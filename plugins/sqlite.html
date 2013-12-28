@@ -91,6 +91,7 @@
         <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
 <li><a class="reference internal" href="#">SQLite</a><ul>
 <li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#remark">Remark:</a></li>
 <li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
 <li><a class="reference internal" href="#items-conf">items.conf</a></li>
 </ul>
@@ -111,6 +112,16 @@
 <h1>SQLite<a class="headerlink" href="#sqlite" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="remark">
+<h3>Remark:<a class="headerlink" href="#remark" title="Permalink to this headline">¶</a></h3>
+<p>The rrd plugin and the sqlite plugin can not be used together. Some pros
+and cons:</p>
+<p>RRD + a stable, reliable tool + is used in a many data logging and
+graphing tools - slow moving development - only few new features on the
+roadmap</p>
+<p>SQLite + part of python, no additional installation necessary + accurate
+logging of changing times + more analysis functionality</p>
+</div>
 <div class="section" id="plugin-conf">
 <h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
 <pre>
@@ -147,7 +158,8 @@ timeframe.</p>
 <li><tt class="docutils literal"><span class="pre">avg</span></tt>: for the average value</li>
 <li><tt class="docutils literal"><span class="pre">max</span></tt>: for the maximum value</li>
 <li><tt class="docutils literal"><span class="pre">min</span></tt>: for the minimum value</li>
-<li><tt class="docutils literal"><span class="pre">sum</span></tt>: for the value sum</li>
+<li><tt class="docutils literal"><span class="pre">on</span></tt>: percentage (as float from 0.00 to 1.00) where the value has
+been greater than 0.</li>
 </ul>
 <p>For the timeframe you have to specify a start point and a optional end
 point. By default it ends &#8216;now&#8217;. The time point could be specified with

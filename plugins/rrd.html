@@ -92,11 +92,13 @@
 <li><a class="reference internal" href="#">RRDTool</a><ul>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#remark">Remark:</a></li>
 <li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
 <li><a class="reference internal" href="#items-conf">items.conf</a><ul>
 <li><a class="reference internal" href="#rrd">rrd</a></li>
 <li><a class="reference internal" href="#rrd-min">rrd_min</a></li>
 <li><a class="reference internal" href="#rrd-max">rrd_max</a></li>
+<li><a class="reference internal" href="#rrd-mode">rrd_mode</a></li>
 </ul>
 </li>
 </ul>
@@ -123,6 +125,16 @@ $ cd lib/3rd/rrdtool
 $ sudo python3 setup.py install</pre></div>
 <div class="section" id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="remark">
+<h3>Remark:<a class="headerlink" href="#remark" title="Permalink to this headline">¶</a></h3>
+<p>The rrd plugin and the sqlite plugin can not be used together. Some pros
+and cons:</p>
+<p>RRD + a stable, reliable tool + is used in a many data logging and
+graphing tools - slow moving development - only few new features on the
+roadmap</p>
+<p>SQLite + part of python, no additional installation necessary + accurate
+logging of changing times + more analysis functionality</p>
+</div>
 <div class="section" id="plugin-conf">
 <h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
 <pre>
@@ -149,6 +161,13 @@ to the last known value (like cache = yes).</p>
 <div class="section" id="rrd-max">
 <h4>rrd_max<a class="headerlink" href="#rrd-max" title="Permalink to this headline">¶</a></h4>
 <p>Set this item attribute to log the maximum as well. Default is no.</p>
+</div>
+<div class="section" id="rrd-mode">
+<h4>rrd_mode<a class="headerlink" href="#rrd-mode" title="Permalink to this headline">¶</a></h4>
+<p>Set the type of data source. Default ist <tt class="docutils literal"><span class="pre">gauge</span></tt>. * <tt class="docutils literal"><span class="pre">gauge</span></tt> -
+should be used for things like temperatures. * <tt class="docutils literal"><span class="pre">counter</span></tt> - should be
+used for continuous incrementing counters like the Powermeter (kWh),
+watercounter (m³), pellets (kg).</p>
 <pre>
 [outside]
     name = Outside

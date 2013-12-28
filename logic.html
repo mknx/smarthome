@@ -105,7 +105,7 @@
 <li><a class="reference internal" href="#sh-item-methods">sh item methods</a><ul>
 <li><a class="reference internal" href="#sh-return-item-path">sh.return_item(path)</a></li>
 <li><a class="reference internal" href="#sh-return-items">sh.return_items()</a></li>
-<li><a class="reference internal" href="#sh-match-items-regexpath">sh.match_items(regexpath)</a></li>
+<li><a class="reference internal" href="#sh-match-items-regex">sh.match_items(regex)</a></li>
 <li><a class="reference internal" href="#sh-find-items-configattribute">sh.find_items(configattribute)</a></li>
 <li><a class="reference internal" href="#find-children-parentitem-configattribute">find_children(parentitem, configattribute):</a></li>
 </ul>
@@ -252,10 +252,11 @@ illuminated surface at the current time + offset.
 <p>Returns all item objects.
 <tt class="docutils literal"><span class="pre">for</span> <span class="pre">item</span> <span class="pre">in</span> <span class="pre">sh.return_items():</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">logger.info(item.id())</span></tt></p>
 </div>
-<div class="section" id="sh-match-items-regexpath">
-<h4>sh.match_items(regexpath)<a class="headerlink" href="#sh-match-items-regexpath" title="Permalink to this headline">¶</a></h4>
-<p>Returns all items matching a regular expression path.
-<tt class="docutils literal"><span class="pre">for</span> <span class="pre">item</span> <span class="pre">in</span> <span class="pre">sh.match_items('*.lights'):</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">#</span> <span class="pre">selects</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">ending</span> <span class="pre">with</span> <span class="pre">'lights'</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">logger.info(item.id())</span></tt></p>
+<div class="section" id="sh-match-items-regex">
+<h4>sh.match_items(regex)<a class="headerlink" href="#sh-match-items-regex" title="Permalink to this headline">¶</a></h4>
+<p>Returns all items matching a regular expression path and optional attribute.
+<tt class="docutils literal"><span class="pre">for</span> <span class="pre">item</span> <span class="pre">in</span> <span class="pre">sh.match_items('*.lights'):</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">#</span> <span class="pre">selects</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">ending</span> <span class="pre">with</span> <span class="pre">'lights'</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">logger.info(item.id())</span></tt>
+<tt class="docutils literal"><span class="pre">for</span> <span class="pre">item</span> <span class="pre">in</span> <span class="pre">sh.match_items('*.lights:special'):</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">#</span> <span class="pre">selects</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">ending</span> <span class="pre">with</span> <span class="pre">'lights'</span> <span class="pre">and</span> <span class="pre">attribute</span> <span class="pre">'special'</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="pre">logger.info(item.id())</span></tt></p>
 </div>
 <div class="section" id="sh-find-items-configattribute">
 <h4>sh.find_items(configattribute)<a class="headerlink" href="#sh-find-items-configattribute" title="Permalink to this headline">¶</a></h4>

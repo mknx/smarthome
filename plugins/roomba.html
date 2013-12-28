@@ -1,0 +1,350 @@
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Roomba &mdash; SmartHome.py 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="SmartHome.py 1.0 documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">SmartHome.py</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="../install.html">Install</a></li>
+                <li><a href="../config.html">Config</a></li>
+                <li><a href="../logic.html">Logics</a></li>
+                <li><a href="../plugin.html">Plugins</a></li>
+                <li><a href="https://github.com/mknx/smarthome/issues?state=open">Bugs</a></li>
+                <li><a href="https://github.com/mknx/smarthome/releases">Download</a></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">Roomba</a><ul>
+<li><a class="reference internal" href="#plugin-conf">plugin.conf:</a></li>
+<li><a class="reference internal" href="#item-conf">item.conf:</a></li>
+<li><a class="reference internal" href="#connection">Connection:</a></li>
+<li><a class="reference internal" href="#bluetooth">Bluetooth:</a></li>
+<li><a class="reference internal" href="#install-bluetooth">install Bluetooth</a></li>
+<li><a class="reference internal" href="#tcp">TCP:</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="roomba">
+<h1>Roomba<a class="headerlink" href="#roomba" title="Permalink to this headline">¶</a></h1>
+<p>Plugin to connect to a Roomba. Read Sensors, Start/Stop.</p>
+<div class="section" id="plugin-conf">
+<h2>plugin.conf:<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h2>
+<pre>
+[roomba]
+     class_name = Roomba
+     class_path = plugins.roomba
+     cycle      = 240 #0=deactivate reading sensors
+     socket_type = bt #tcp or bt
+     socket_addr = 00:13:04:11:14:77 # MAC for Bluetooth, IP for TCP
+     socket_port = 1234
+</pre></div>
+<div class="section" id="item-conf">
+<h2>item.conf:<a class="headerlink" href="#item-conf" title="Permalink to this headline">¶</a></h2>
+<p>There are 3 attributes wich can be used with the Roomba-Plugin:</p>
+<ul class="simple">
+<li>roomba_cmd = xxx Here you can use one of the following commands
+(clean, dock, power_off, spot, max) and the Roomba will do it. You
+can also define a &#8220;driving scene&#8221;: roomba_cmd = backward | 2 |
+stop | 2 | clean Integers are sleep times in this moment. The above
+example drives 2 seconds backward, stops for 2 seconds and begins to
+clean. There are the following commands available: forward (100mm/s)
+backward (100mm/s) spin_left spin_right stop</li>
+<li>roomba_get = xxx Use the following item.conf to see how to configure
+the item for your wanted sensor. I think the names are self
+explaining.</li>
+<li>roomba_raw = [123] To send integers to Roomba following the
+documentation of Roomba SCI as List!</li>
+</ul>
+<pre>[roomba]
+    [[command]]
+        [[[clean]]]
+            enforce_updates = true
+            name = clean
+            type = bool
+            roomba_cmd = clean
+        [[[dock]]]
+            enforce_updates = true
+            name = dock
+            type = bool
+            roomba_cmd = dock
+        [[[power_off]]]
+            enforce_updates = true
+            name = power_off
+            type = bool
+            roomba_cmd = power_off
+        [[[spot]]]
+            enforce_updates = true
+            name = spot
+            type = bool
+            roomba_cmd = spot
+        [[[max]]]
+            enforce_updates = true
+            name = max
+            type = bool
+            roomba_cmd = max
+        [[[test_scene]]]
+            enforce_updates = true
+            #drives backward for 2 seconds, then spins left for 2 seconds, then drives forward for 3 seconds, then spins right for 3 seconds, then stops and starts to clean after 2 seconds
+            name = test-drive
+            type = bool
+            roomba_cmd = backward | 2 | spin_left | 2 | forward | 3 | spin_right | 3 | stop | 2 | clean
+
+    [[raw]]
+        [[[stop]]]
+            type = bool
+            enforce_updates = true
+            roomba_raw = 137 | 0 | 0 | 0
+
+    [[sensor]]
+        [[[current]]]
+            #current in mA
+            enforce_updates = true
+            type = num
+            roomba_get = current
+        [[[temperature]]]
+            #temperature in degrees celsius
+            enforce_updates = true
+            type = num
+            roomba_get = temperature
+        [[[voltage]]]
+            #voltage in mV
+            enforce_updates = true
+            type = num
+            roomba_get = voltage
+        [[[button_clean]]]
+            #clean button pressed
+            enforce_updates = true
+            type = bool
+            roomba_get = buttons_clean
+        [[[capacity]]]
+            #capacity in mA
+            enforce_updates = true
+            type = num
+            roomba_get = capacity
+        [[[charge]]]
+            #charge in mA
+            enforce_updates = true
+            type = num
+            roomba_get = charge
+        [[[angle]]]
+            #angle since last request
+            enforce_updates = true
+            type = num
+            roomba_get = angle
+        [[[distance]]]
+            #distance since last request
+            enforce_updates = true
+            type = num
+            roomba_get = distance
+        [[[buttons_max]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = buttons_max
+        [[[buttons_clean]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = buttons_clean
+        [[[buttons_spot]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = buttons_spot
+        [[[buttons_power]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = buttons_power
+        [[[remote_opcode]]]
+            enforce_updates = true
+            type = num
+            roomba_get = remote_opcode
+        [[[dirt_detect_right]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = dirt_detect_right
+        [[[dirt_detect_left]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = dirt_detect_left
+        [[[motor_overcurrent_side_brush]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = motor_overcurrent_side_brush
+        [[[motor_overcurrent_vacuum]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = motor_overcurrent_vacuum
+        [[[motor_overcurrent_main_brush]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = motor_overcurrent_main_brush
+        [[[motor_overcurrent_drive_left]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = motor_overcurrent_drive_left
+        [[[virtual_wall]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = virtual_wall
+        [[[cliff_right]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = cliff_right
+        [[[cliff_front_right]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = cliff_front_right
+        [[[cliff_front_left]]]
+        enforce_updates = true
+            type = bool
+            roomba_get = cliff_front_left
+        [[[cliff_left]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = cliff_left
+        [[[wall]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = wall
+        [[[bumps_wheeldrops_bump_right]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = bumps_wheeldrops_bump_right
+        [[[bumps_wheeldrops_bump_left]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = bumps_wheeldrops_bump_left
+        [[[bumps_wheeldrops_wheeldrop_right]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = bumps_wheeldrops_wheeldrop_right
+        [[[bumps_wheeldrops_wheeldrop_left]]]
+            enforce_updates = true
+            type = bool
+            roomba_get = bumps_wheeldrops_wheeldrop_left
+        [[[bumps_wheeldrops_wheeldrop_caster]]]
+            enforce_updates = true
+            type = bool
+            roomba_cmd = bumps_wheeldrops_wheeldrop_caster
+</pre></div>
+<div class="section" id="connection">
+<h2>Connection:<a class="headerlink" href="#connection" title="Permalink to this headline">¶</a></h2>
+<p>There are several availabilitys to connect to Roomba Serial Port. This
+was tested with a DIY-bluetooth-modul. This can be done in
+do-it-yourself or you can buy it i.e. &#8220;FT41 BlueRoom&#8221; from
+Fussel-Tronic. Not tested is a connection trough a wifi-rs232 adapter.</p>
+</div>
+<div class="section" id="bluetooth">
+<h2>Bluetooth:<a class="headerlink" href="#bluetooth" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="install-bluetooth">
+<h2>install Bluetooth<a class="headerlink" href="#install-bluetooth" title="Permalink to this headline">¶</a></h2>
+<pre>apt-get install bluez</pre><p>Choose socket_type = &#8216;bt&#8217; and add the Roomba Bluetooth-Mac in
+socket_addr = XX:XX:XX:XX:XX:XX</p>
+</div>
+<div class="section" id="tcp">
+<h2>TCP:<a class="headerlink" href="#tcp" title="Permalink to this headline">¶</a></h2>
+<p>!!! Not tested yet !!! Choose socket_type = &#8216;tcp&#8217; and add the IP and
+Port of your Roomba-Remote in socket_addr = 192.168.2.123 and
+socket_port = 1234</p>
+<p>Good doocumentation to Roombas SCI:
+<a class="reference external" href="http://www.robotiklubi.ee/_media/kursused/roomba_sumo/failid/hacking_roomba.pdf">http://www.robotiklubi.ee/_media/kursused/roomba_sumo/failid/hacking_roomba.pdf</a></p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011-2013, Marcus Popp.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

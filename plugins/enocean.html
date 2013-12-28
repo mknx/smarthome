@@ -13,7 +13,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>VR100 &mdash; SmartHome.py 1.0 documentation</title>
+    <title>&lt;no title&gt; &mdash; SmartHome.py 1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -88,104 +88,15 @@
 <div class="container">
   <div class="row">
       <div class="col-md-3">
-        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
-<li><a class="reference internal" href="#">VR100</a><ul>
-<li><a class="reference internal" href="#requirements">Requirements</a><ul>
-<li><a class="reference internal" href="#supported-hardware">Supported Hardware</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#configuration">Configuration</a><ul>
-<li><a class="reference internal" href="#plugin-conf">plugin.conf</a></li>
-<li><a class="reference internal" href="#items-conf">items.conf</a></li>
-</ul>
-</li>
-</ul>
-</li>
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="simple">
 </ul>
 
         </div>
       </div>
     <div class="col-md-9">
       
-  <div class="section" id="vr100">
-<h1>VR100<a class="headerlink" href="#vr100" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<p>bluez</p>
-<p>install by</p>
-<pre>
-$ apt-get install bluez
-$ hcitool scan
-Scanning ...
-        <bt-addr>       <name of your bluetooth-module, e.g. 'HC-05' or custom>
-$ simple-agent hci0 <bt-addr>
-RequestPinCode (/org/bluez/3070/hci0/dev_bt_addr_underscores)
-Enter PIN Code: <pin-code>
-Release
-New device (/org/bluez/3070/hci0/dev_bt_addr_underscores)
-$ bluez-test-device trusted <bt-addr> yes
-$ bluez-test-device list
-</pre><div class="section" id="supported-hardware">
-<h3>Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permalink to this headline">¶</a></h3>
-<p>A Vorwerk Kobold VR100 robotic vacuum cleaner with a retrofitted
-bluetooth module.</p>
-</div>
-</div>
-<div class="section" id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="plugin-conf">
-<h3>plugin.conf<a class="headerlink" href="#plugin-conf" title="Permalink to this headline">¶</a></h3>
-<pre>
-[vr100]
-    class_name = VR100
-    class_path = plugins.vr100
-    bt_addr = 07:12:07:xx:xx:xx
-#    update_cycle = 60
-</pre><p>Description of the attributes:</p>
-<ul class="simple">
-<li><strong>bt_addr</strong>: MAC-address of the robot (find out with &#8216;hcitool scan&#8217;)</li>
-<li><strong>update_cycle</strong>: interval in seconds how often the data is read
-from the robot (default 60)</li>
-</ul>
-</div>
-<div class="section" id="items-conf">
-<h3>items.conf<a class="headerlink" href="#items-conf" title="Permalink to this headline">¶</a></h3>
-<p>You can use all commands available by the serial interface.</p>
-<p>For a explanation of all available commands type &#8216;help&#8217; when connected
-to robot</p>
-<p>Attributes: * <strong>vr100_cmd</strong>: used to set a comand string *
-<strong>vr100_info</strong>: used to get data from the robot - all but the last
-strings are send as a comand, the last string is read to get the value</p>
-<p>Fields: * <strong>{}</strong>: the value of the item is written to this placeholder
-(don&#8217;t use if a fixed/no value is required)</p>
-<p>You should verify all your commands manually by using the serial
-interface.</p>
-<pre>
-[VR100]
-  [[Reinigung]]
-    type = bool
-    vr100_cmd = Clean
-    [[[Spot]]]
-      type = bool
-      vr100_cmd = Clean Spot
-  [[Batterie]]
-    [[[Fuellstand]]]
-      type = num
-      sqlite = true
-      vr100_info = GetCharger FuelPercent
-    [[[Ladung_aktiv]]]
-      type = bool
-      vr100_info = GetCharger ChargingActive
-    [[[leer]]]
-      type = bool
-      vr100_info = GetCharger EmptyFuel
-    [[[Spannung]]]
-      type = num
-      sqlite = true
-      vr100_info = GetCharger VBattV
-</pre></div>
-</div>
-</div>
+  <p>EnOcean - under development !!!</p>
+<p>Please do not remove any comments until stable.</p>
 
 
     </div>

@@ -5,6 +5,19 @@ SQLite
 Configuration
 =============
 
+Remark:
+-------
+
+The rrd plugin and the sqlite plugin can not be used together. Some pros
+and cons:
+
+RRD + a stable, reliable tool + is used in a many data logging and
+graphing tools - slow moving development - only few new features on the
+roadmap
+
+SQLite + part of python, no additional installation necessary + accurate
+logging of changing times + more analysis functionality
+
 plugin.conf
 -----------
 
@@ -54,7 +67,8 @@ Supported functions are:
 -  ``avg``: for the average value
 -  ``max``: for the maximum value
 -  ``min``: for the minimum value
--  ``sum``: for the value sum
+-  ``on``: percentage (as float from 0.00 to 1.00) where the value has
+   been greater than 0.
 
 For the timeframe you have to specify a start point and a optional end
 point. By default it ends 'now'. The time point could be specified with
