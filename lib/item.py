@@ -362,7 +362,7 @@ class Item():
                 self._lock.notify_all()
                 self._change_logger("Item {} = {} via {} {} {}".format(self._path, value, caller, source, dest))
         self._lock.release()
-        if _changed or self._enforce_updates:
+        if _changed or self._enforce_updates or self._type == 'scene':
             self.__last_update = self._sh.now()
             for method in self.__methods_to_trigger:
                 try:
@@ -482,10 +482,3 @@ class Item():
 
     def type(self):
         return self._type
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    i = Item('sh', 'parent', 'path1', {'type': 'str', 'child1': {'type': 'bool'}, 'value': 'tqwer'})
-    i = Item('sh', 'parent', 'path', {'type': 'str', 'value': 'tqwer'})
-    i('test2')
