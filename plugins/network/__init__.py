@@ -289,9 +289,9 @@ class Network():
         if 'nw_udp_send' in item.conf:
             addr, __, message = item.conf['nw_udp_send'].partition('=')
             if message is None:
-                message = str(item()).encode()
+                message = str(item())
             else:
-                message = message.replace('itemvalue', str(item())).encode()
+                message = message.replace('itemvalue', str(item()))
             host, __, port = addr.partition(':')
             self.udp(host, port, message)
 
