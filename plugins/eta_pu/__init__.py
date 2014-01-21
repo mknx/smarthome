@@ -267,7 +267,7 @@ class ETA_PU():
                     value = int(element.text) / int(element.attrib['scaleFactor'])- int(element.attrib['advTextOffset'])
                 else:
                     value = element.attrib[item.conf[__ETA_TYPE__]]
-                if item.type() == 'num':
+                if isinstance(item, str):
                     value = value.replace(',', '.')
                 item(value, caller=__ETA_PU__)
 
