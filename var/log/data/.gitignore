@@ -1,5 +1,4 @@
 # ignore everything
 *
-# except .gitignore files
+# except .gitignore
 !.gitignore
-!data/
