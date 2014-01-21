@@ -534,7 +534,7 @@ class SmartHome():
 #####################################################################
 
 def reload_logics():
-    pid = lib.daemon.get_pid(__file__)
+    pid = lib.daemon.get_pid(os.path.abspath(__file__))
     if pid:
         os.kill(pid, signal.SIGHUP)
 
@@ -590,7 +590,7 @@ if __name__ == '__main__':
         print("SmartHome.py {0}".format(VERSION))
         exit(0)
     elif args.stop:
-        lib.daemon.kill(__file__)
+        lib.daemon.kill(os.path.abspath(__file__))
         exit(0)
     elif args.debug:
         LOGLEVEL = logging.DEBUG
@@ -601,7 +601,7 @@ if __name__ == '__main__':
         LOGLEVEL = logging.DEBUG
 
     # check for pid file
-    pid = lib.daemon.get_pid(__file__)
+    pid = lib.daemon.get_pid(os.path.abspath(__file__))
     if pid:
         print("SmartHome.py already running with pid {}".format(pid))
         print("Run 'smarthome.py -s' to stop it.")
