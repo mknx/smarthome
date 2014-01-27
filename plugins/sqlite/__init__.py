@@ -107,7 +107,7 @@ class SQL():
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         smarthome.scheduler.add('SQLite pack', self._pack, cron='2 3 * *', prio=5)
-        smarthome.scheduler.add('SQLite dump', self._dump, cycle=self._dump_cycle, prio=5)
+        smarthome.scheduler.add('SQLite dump', self._dump, cycle=self._dump_cycle, offset=20, prio=5)
 
     def parse_item(self, item):
         if 'history' in item.conf:  # XXX legacy history option remove sometime
