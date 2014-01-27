@@ -36,22 +36,22 @@ class SQL():
     # (period days, granularity hours)
     periods = [(1900, 168), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
     # SQL queries
-    # _end, _start, _item, _avg, _min, _max, _on
+    # _start, _item, _dur, _avg, _min, _max, _on
     # time, item, avg, vmin, vmax, power
     _pack_query = """
         SELECT
         group_concat(rowid),
-        MAX(_end),
         MIN(_start),
         _item,
-        SUM(_avg * (_end - _start)) / (MAX(_end) - MIN(_start)),
+        SUM(_dur),
+        SUM(_avg * _dur) / SUM(_dur),
         MIN(_min),
         MAX(_max),
-        SUM(_on * (_end - _start)) / (MAX(_end) - MIN(_start))
+        SUM(_on * _dur) / SUM(_dur))
         FROM num
-        WHERE (_end < {})
-        GROUP by CAST((_end / {}) AS INTEGER), _item
-        ORDER BY _end DESC;"""
+        WHERE (_start < {})
+        GROUP by CAST((_start / {}) AS INTEGER), _item
+        ORDER BY _start DESC;"""
 
     def __init__(self, smarthome, cycle=300, path=None):
 #       sqlite3.register_adapter(datetime.datetime, self._timestamp)
@@ -80,7 +80,8 @@ class SQL():
             logger.error("SQLite: database corrupt. Seek help.")
             self._fdb_lock.release()
             return
-        self._fdb.execute("CREATE TABLE IF NOT EXISTS num (_end INTEGER, _start INTEGER, _item TEXT, _avg REAL, _min REAL, _max REAL, _on REAL);")
+        self._fdb.execute("CREATE TABLE IF NOT EXISTS num (_start INTEGER, _item TEXT, _dur INTEGER, _avg REAL, _min REAL, _max REAL, _on REAL);")
+        self._fdb.execute("CREATE TABLE IF NOT EXISTS cache (_item TEXT PRIMARY KEY, _time INTEGER, _value REAL);")
         self._fdb.execute("CREATE INDEX IF NOT EXISTS idx ON num (_item);")
         common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
         if common is None:
@@ -117,16 +118,22 @@ class SQL():
             if item.type() not in ['num', 'bool']:
                 logger.warning("SQLite: only supports 'num' and 'bool' as types. Item: {} ".format(item.id()))
                 return
+            cache = self._fetchone("SELECT _time,_value from cache WHERE _item = '{}'".format(item.id()))
+            if cache is not None:
+                last_change, value = cache
+                item._sqlite_last = last_change
+                last_change = self._datetime(last_change)
+                prev_change = self._fetchone("SELECT _start from num WHERE _item = '{}' ORDER BY _start DESC LIMIT 1".format(item.id()))
+                if prev_change is not None:
+                    prev_change = self._datetime(prev_change[0])
+                    item.set(value, 'SQLite', prev_change=prev_change, last_change=last_change)
+            else:
+                last_change = self._timestamp(self._sh.now())
+                item._sqlite_last = last_change
+                self._execute("INSERT OR IGNORE INTO cache VALUES('{}',{},{})".format(item.id(), last_change, float(item())))
+            self._buffer[item] = []
             item.series = functools.partial(self._series, item=item.id())
             item.db = functools.partial(self._single, item=item.id())
-            last = self._timestamp(self._sh.now())
-            item._sqlite_last = last
-            if item.conf['sqlite'] == 'init':
-                last = self._fetchone("SELECT _avg from num WHERE _item = '{0}' ORDER BY _end DESC LIMIT 1".format(item.id()))
-                if last is not None:
-                    last = last[0]
-                    item.set(last, 'SQLite')
-            self._buffer[item] = []
             return self.update_item
         else:
             return None
@@ -139,12 +146,6 @@ class SQL():
         for item in self._buffer:
             if self._buffer[item] != []:
                 self._dump(item)
-            _start = self._timestamp(item.last_change())
-            _end = self._timestamp(self._sh.now())
-            _avg = float(item())
-            _on = int(bool(_avg))
-            self._buffer[item].append((_start, _end, _avg, _on))
-            self._dump(item)
         self._fdb_lock.acquire()
         try:
             self._fdb.close()
@@ -157,36 +158,37 @@ class SQL():
     def update_item(self, item, caller=None, source=None, dest=None):
         _start = self._timestamp(item.prev_change())
         _end = self._timestamp(item.last_change())
+        _dur = _end - _start
         _avg = float(item.prev_value())
         _on = int(bool(_avg))
-        self._buffer[item].append((_start, _end, _avg, _on))
+        self._buffer[item].append((_start, _dur, _avg, _on))
         if _end - item._sqlite_last > self._buffer_time:
             item._sqlite_last = _end
             self._dump(item)
+        # update cache with current value
+        self._execute("UPDATE OR IGNORE cache SET _time={}, _value={} WHERE _item='{}';".format(_end, float(item()), item.id()))
 
     def _datetime(self, ts):
         return datetime.datetime.fromtimestamp(ts / 1000, self._sh.tzinfo())
 
     def _dump(self, item):
-        if len(self._buffer[item]) == 1:
-            _start, _end, _avg, _on = self._buffer[item][0]
-            insert = (_end, _start, item.id(), _avg, _avg, _avg, _on)
+        tuples = sorted(self._buffer[item])
+        self._buffer[item] = []
+        if len(tuples) == 1:
+            _start, _dur, _avg, _on = tuples[0]
+            insert = (_start, item.id(), _dur, _avg, _avg, _avg, _on)
         else:
             _vals = []
             _dur = 0
             _avg = 0.0
             _on = 0.0
-            tuples = sorted(self._buffer[item])
-            self._buffer[item] = []
             _start = tuples[0][0]
-            _end = tuples[-1][1]
-            _dur = _end - _start
-            for __start, __end, __avg, __on in tuples:
-                __dur = __end - __start
+            for __start, __dur, __avg, __on in tuples:
                 _vals.append(__avg)
                 _avg += __dur * __avg
                 _on += __dur * __on
-            insert = (_end, _start, item.id(), _avg / _dur, min(_vals), max(_vals), _on / _dur)
+                _dur += __dur
+            insert = (_start, item.id(), _dur, _avg / _dur, min(_vals), max(_vals), _on / _dur)
         if not self._fdb_lock.acquire(timeout=10):
             return
         try:
@@ -194,6 +196,19 @@ class SQL():
             self._fdb.commit()
         except Exception as e:
             logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
+        finally:
+            self._fdb_lock.release()
+
+    def _execute(self, *query):
+        if not self._fdb_lock.acquire(timeout=2):
+            return
+        if not self.connected:
+            self._fdb_lock.release()
+            return
+        try:
+            self._fdb.execute(*query)
+        except Exception as e:
+            logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
         finally:
             self._fdb_lock.release()
 
@@ -259,10 +274,10 @@ class SQL():
                 period = int(now - period * 24 * 3600 * 1000)
                 granularity = int(granularity * 3600 * 1000)
                 for row in self._fdb.execute(self._pack_query.format(period, granularity)):
-                    gid, _end, _start, _item, _avg, _min, _max, _on = row
+                    gid, _start, _item, _dur, _avg, _min, _max, _on = row
                     if gid.count(',') == 0:  # ignore
                         continue
-                    insert = (_end, _start, _item, _avg, _min, _max, _on)
+                    insert = (_start, _item, _dur, _avg, _min, _max, _on)
                     self._fdb.execute("INSERT INTO num VALUES (?,?,?,?,?,?,?);", insert)
                     self._fdb.execute("DELETE FROM num WHERE rowid in ({0});".format(gid))
                     self._fdb.commit()
@@ -287,30 +302,28 @@ class SQL():
         reply = {'cmd': 'series', 'series': None, 'sid': sid}
         reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
         reply['update'] = self._sh.now() + datetime.timedelta(seconds=int(step / 1000))
-        where = " from num WHERE _item='{0}' AND _end > {1} AND _end <= {2} GROUP by CAST((_end / {3}) AS INTEGER)".format(item, istart, iend, step)
+        where = " from num WHERE _item='{0}' AND _start + _dur > {1} AND _start <= {2} GROUP by CAST((_start / {3}) AS INTEGER)".format(item, istart, iend, step)
         if func == 'avg':
-            query = "SELECT MIN(_start), ROUND(SUM(_avg * (_end - _start)) / (MAX(_end) - MIN(_start)), 2)" + where + " ORDER BY _end DESC"
+            query = "SELECT MIN(_start), ROUND(SUM(_avg * _dur) / SUM(_dur), 2)" + where + " ORDER BY _start DESC"
         elif func == 'min':
             query = "SELECT MIN(_start), MIN(_min)" + where
         elif func == 'max':
             query = "SELECT MIN(_start), MAX(_max)" + where
         elif func == 'on':
-            query = "SELECT MIN(_start), ROUND(SUM(_on * (_end - _start)) / (MAX(_end) - MIN(_start)), 2)" + where + " ORDER BY _end DESC"
+            query = "SELECT MIN(_start), ROUND(SUM(_on * _dur) / SUM(_dur), 2)" + where + " ORDER BY _start DESC"
         else:
             raise NotImplementedError
         _item = self._sh.return_item(item)
         if self._buffer[_item] != [] and end == 'now':
             self._dump(_item)
         tuples = self._fetchall(query)
+        print(tuples)
         if not tuples:
             if not update:
-                reply['series'] = [(iend, 0)]
+                reply['series'] = [(iend, _item())]
             return reply
         tuples = sorted(tuples)
-        if update:  # remove first entry
-            tuples = tuples[1:]
-        else:
-            tuples[0] = (istart, tuples[0][1])
+        tuples[0] = (istart, tuples[0][1])
         tuples.append((iend, tuples[-1][1]))  # add end entry with last valid entry
         reply['series'] = tuples
         return reply
@@ -318,15 +331,15 @@ class SQL():
     def _single(self, func, start, end='now', item=None):
         start = self._get_timestamp(start)
         end = self._get_timestamp(end)
-        where = " from num WHERE _item='{0}' AND _end > {1} AND _end <= {2}".format(item, start, end)
+        where = " from num WHERE _item='{0}' AND _start + _dur > {1} AND _start <= {2}".format(item, start, end)
         if func == 'avg':
-            query = "SELECT ROUND(SUM(_avg * (_end - _start)) / (MAX(_end) - MIN(_start)), 2)" + where
+            query = "SELECT ROUND(SUM(_avg * _dur) / SUM(_dur)), 2)" + where
         elif func == 'min':
             query = "SELECT MIN(_min)" + where
         elif func == 'max':
             query = "SELECT MAX(_max)" + where
         elif func == 'on':
-            query = "SELECT ROUND(SUM(_on * (_end - _start)) / (MAX(_end) - MIN(_start)), 2)" + where
+            query = "SELECT ROUND(SUM(_on * _dur) / SUM(_dur), 2)" + where
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return

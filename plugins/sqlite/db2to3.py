@@ -15,4 +15,5 @@ def db2to3(db):
                 db.execute("INSERT INTO num VALUES (?,?,?,?,?,?,?);", insert)
             end = time
     db.execute("DROP TABLE history;")
+    db.execute("VACUUM;")
     db.commit()
