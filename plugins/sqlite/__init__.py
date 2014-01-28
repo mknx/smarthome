@@ -35,9 +35,7 @@ class SQL():
     _buffer_time = 60 * 1000
     # (period days, granularity hours)
     periods = [(1900, 168), (400, 24), (32, 1), (7, 0.5), (1, 0.1)]
-    # SQL queries
     # _start, _item, _dur, _avg, _min, _max, _on
-    # time, item, avg, vmin, vmax, power
     _pack_query = """
         SELECT
         group_concat(rowid),
@@ -290,6 +288,7 @@ class SQL():
             self._fdb_lock.release()
 
     def _series(self, func, start, end='now', count=100, ratio=1, update=False, step=None, sid=None, item=None):
+        init = not update
         if sid is None:
             sid = item + '|' + func + '|' + start + '|' + end
         istart = self._get_timestamp(start)
@@ -304,28 +303,34 @@ class SQL():
         reply['update'] = self._sh.now() + datetime.timedelta(seconds=int(step / 1000))
         where = " from num WHERE _item='{0}' AND _start + _dur > {1} AND _start <= {2} GROUP by CAST((_start / {3}) AS INTEGER)".format(item, istart, iend, step)
         if func == 'avg':
-            query = "SELECT MIN(_start), ROUND(SUM(_avg * _dur) / SUM(_dur), 2)" + where + " ORDER BY _start DESC"
+            query = "SELECT MIN(_start), ROUND(SUM(_avg * _dur) / SUM(_dur), 2)" + where + " ORDER BY _start ASC"
         elif func == 'min':
             query = "SELECT MIN(_start), MIN(_min)" + where
         elif func == 'max':
             query = "SELECT MIN(_start), MAX(_max)" + where
         elif func == 'on':
-            query = "SELECT MIN(_start), ROUND(SUM(_on * _dur) / SUM(_dur), 2)" + where + " ORDER BY _start DESC"
+            query = "SELECT MIN(_start), ROUND(SUM(_on * _dur) / SUM(_dur), 2)" + where + " ORDER BY _start ASC"
         else:
             raise NotImplementedError
         _item = self._sh.return_item(item)
         if self._buffer[_item] != [] and end == 'now':
             self._dump(_item)
         tuples = self._fetchall(query)
-        print(tuples)
-        if not tuples:
-            if not update:
-                reply['series'] = [(iend, _item())]
-            return reply
-        tuples = sorted(tuples)
-        tuples[0] = (istart, tuples[0][1])
-        tuples.append((iend, tuples[-1][1]))  # add end entry with last valid entry
-        reply['series'] = tuples
+        if init:
+            if tuples:
+                if istart > tuples[0][0]:
+                    tuples[0] = (istart, tuples[0][1])
+                if end != 'now':
+                    tuples.append((iend, tuples[-1][1]))
+        item_change = self._timestamp(_item.last_change())
+        if item_change < iend:
+            if item_change < istart and init:
+                tuples.append((istart, float(_item())))
+            elif item_change < iend and init:
+                tuples.append((item_change, float(_item())))
+            tuples.append((iend, float(_item())))
+        if tuples:
+            reply['series'] = tuples
         return reply
 
     def _single(self, func, start, end='now', item=None):
