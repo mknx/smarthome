@@ -51,7 +51,7 @@ class SQL():
         GROUP by CAST((_start / {}) AS INTEGER), _item
         ORDER BY _start DESC;"""
 
-    def __init__(self, smarthome, cycle=300, path=None):
+    def __init__(self, smarthome, cycle=300, path=None, dumpfile=False):
 #       sqlite3.register_adapter(datetime.datetime, self._timestamp)
         self._sh = smarthome
         self.connected = False
@@ -60,6 +60,7 @@ class SQL():
         logger.debug("SQLite {0}".format(sqlite3.sqlite_version))
         self._fdb_lock = threading.Lock()
         self._fdb_lock.acquire()
+        self._dumpfile = dumpfile
         if path is None:
             self.path = smarthome.base_dir + '/var/db/smarthome.db'
         else:
@@ -103,8 +104,8 @@ class SQL():
         year = 365 * day
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
-        smarthome.scheduler.add('SQLite pack', self._pack, cron='2 3 * *', prio=5)
-        self._pack()
+        smarthome.scheduler.add('SQLite Maintain', self._maintain, cron='2 3 * *', prio=5)
+        self._maintain()
 
     def cleanup(self):
         current_items = [item.id() for item in self._buffer]
@@ -114,6 +115,18 @@ class SQL():
                 if item[0] not in current_items:
                     logger.info("SQLite: deleting entries for {}".format(item[0]))
                     self._execute("DELETE FROM num WHERE _item='{}';".format(item[0]))
+
+    def dump(self, dumpfile):
+        logger.info("SQLite: dumping database to {}".format(dumpfile))
+        self._fdb_lock.acquire()
+        try:
+            with open(dumpfile, 'w') as f:
+                for line in self._fdb.iterdump():
+                    f.write('{}\n'.format(line))
+        except Exception as e:
+            logger.warning("SQLite: Problem dumping to '{0}': {1}".format(dumpfile, e))
+        finally:
+            self._fdb_lock.release()
 
     def move(self, old, new):
         self._execute("UPDATE OR IGNORE num SET _item={} WHERE _item='{}';".format(new, old))
@@ -151,7 +164,7 @@ class SQL():
         self.alive = False
         for item in self._buffer:
             if self._buffer[item] != []:
-                self._dump(item)
+                self._insert(item)
         self._fdb_lock.acquire()
         try:
             self._fdb.close()
@@ -170,40 +183,12 @@ class SQL():
         self._buffer[item].append((_start, _dur, _avg, _on))
         if _end - item._sqlite_last > self._buffer_time:
             item._sqlite_last = _end
-            self._dump(item)
+            self._insert(item)
         # update cache with current value
         self._execute("UPDATE OR IGNORE cache SET _time={}, _value={} WHERE _item='{}';".format(_end, float(item()), item.id()))
 
     def _datetime(self, ts):
         return datetime.datetime.fromtimestamp(ts / 1000, self._sh.tzinfo())
-
-    def _dump(self, item):
-        tuples = sorted(self._buffer[item])
-        self._buffer[item] = []
-        if len(tuples) == 1:
-            _start, _dur, _avg, _on = tuples[0]
-            insert = (_start, item.id(), _dur, _avg, _avg, _avg, _on)
-        else:
-            _vals = []
-            _dur = 0
-            _avg = 0.0
-            _on = 0.0
-            _start = tuples[0][0]
-            for __start, __dur, __avg, __on in tuples:
-                _vals.append(__avg)
-                _avg += __dur * __avg
-                _on += __dur * __on
-                _dur += __dur
-            insert = (_start, item.id(), _dur, _avg / _dur, min(_vals), max(_vals), _on / _dur)
-        if not self._fdb_lock.acquire(timeout=10):
-            return
-        try:
-            self._fdb.execute("INSERT INTO num VALUES (?,?,?,?,?,?,?);", insert)
-            self._fdb.commit()
-        except Exception as e:
-            logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
-        finally:
-            self._fdb_lock.release()
 
     def _execute(self, *query):
         if not self._fdb_lock.acquire(timeout=2):
@@ -217,27 +202,6 @@ class SQL():
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
         finally:
             self._fdb_lock.release()
-
-    def _get_timestamp(self, frame='now'):
-        try:
-            return int(frame)
-        except:
-            pass
-        dt = self._sh.now()
-        ts = int(time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000)
-        if frame == 'now':
-            fac = 0
-            frame = 0
-        elif frame[-1] in self._frames:
-            fac = self._frames[frame[-1]]
-            frame = frame[:-1]
-        else:
-            return frame
-        try:
-            ts = ts - int(float(frame) * fac)
-        except:
-            logger.warning("SQLite: unkown time frame '{0}'".format(frame))
-        return ts
 
     def _fetchone(self, *query):
         if not self._fdb_lock.acquire(timeout=2):
@@ -268,6 +232,60 @@ class SQL():
         finally:
             self._fdb_lock.release()
         return reply
+
+    def _get_timestamp(self, frame='now'):
+        try:
+            return int(frame)
+        except:
+            pass
+        dt = self._sh.now()
+        ts = int(time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000)
+        if frame == 'now':
+            fac = 0
+            frame = 0
+        elif frame[-1] in self._frames:
+            fac = self._frames[frame[-1]]
+            frame = frame[:-1]
+        else:
+            return frame
+        try:
+            ts = ts - int(float(frame) * fac)
+        except:
+            logger.warning("SQLite: unkown time frame '{0}'".format(frame))
+        return ts
+
+    def _insert(self, item):
+        tuples = sorted(self._buffer[item])
+        self._buffer[item] = []
+        if len(tuples) == 1:
+            _start, _dur, _avg, _on = tuples[0]
+            insert = (_start, item.id(), _dur, _avg, _avg, _avg, _on)
+        else:
+            _vals = []
+            _dur = 0
+            _avg = 0.0
+            _on = 0.0
+            _start = tuples[0][0]
+            for __start, __dur, __avg, __on in tuples:
+                _vals.append(__avg)
+                _avg += __dur * __avg
+                _on += __dur * __on
+                _dur += __dur
+            insert = (_start, item.id(), _dur, _avg / _dur, min(_vals), max(_vals), _on / _dur)
+        if not self._fdb_lock.acquire(timeout=10):
+            return
+        try:
+            self._fdb.execute("INSERT INTO num VALUES (?,?,?,?,?,?,?);", insert)
+            self._fdb.commit()
+        except Exception as e:
+            logger.warning("SQLite: problem updating {}: {}".format(item.id(), e))
+        finally:
+            self._fdb_lock.release()
+
+    def _maintain(self):
+        self._pack()
+        if self._dumpfile:
+            self.dump(self._dumpfile)
 
     def _pack(self):
         if not self._fdb_lock.acquire(timeout=2):
@@ -322,7 +340,7 @@ class SQL():
             raise NotImplementedError
         _item = self._sh.return_item(item)
         if self._buffer[_item] != [] and end == 'now':
-            self._dump(_item)
+            self._insert(_item)
         tuples = self._fetchall(query)
         if tuples:
             if istart > tuples[0][0]:
@@ -359,7 +377,7 @@ class SQL():
             return
         _item = self._sh.return_item(item)
         if self._buffer[_item] != [] and end == 'now':
-            self._dump(_item)
+            self._insert(_item)
         tuples = self._fetchall(query)
         if tuples is None:
             return
