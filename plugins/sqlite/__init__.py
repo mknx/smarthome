@@ -45,7 +45,7 @@ class SQL():
         SUM(_avg * _dur) / SUM(_dur),
         MIN(_min),
         MAX(_max),
-        SUM(_on * _dur) / SUM(_dur))
+        SUM(_on * _dur) / SUM(_dur)
         FROM num
         WHERE (_start < {})
         GROUP by CAST((_start / {}) AS INTEGER), _item
@@ -79,26 +79,20 @@ class SQL():
             self._fdb_lock.release()
             return
         self._fdb.execute("CREATE TABLE IF NOT EXISTS num (_start INTEGER, _item TEXT, _dur INTEGER, _avg REAL, _min REAL, _max REAL, _on REAL);")
+        self._fdb.execute("CREATE TABLE IF NOT EXISTS bool (_start INTEGER, _item TEXT, _dur INTEGER, _value INTEGER);")
         self._fdb.execute("CREATE TABLE IF NOT EXISTS cache (_item TEXT PRIMARY KEY, _time INTEGER, _value REAL);")
         self._fdb.execute("CREATE INDEX IF NOT EXISTS idx ON num (_item);")
+        self._fdb.execute("CREATE INDEX IF NOT EXISTS idy ON bool (_item);")
         common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
         if common is None:
             self._fdb.execute("CREATE TABLE common (version INTEGER);")
             self._fdb.execute("INSERT INTO common VALUES (:version);", {'version': self._version})
-            version = self._version
         else:
             version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
-            if version == 1:
-                logger.warning("SQLite: dropping history!")
-                self._fdb.execute("DROP TABLE history;")
-                self._fdb.execute("DROP INDEX IF EXISTS idx;")
-                self._fdb.execute("DROP INDEX IF EXISTS idy;")
-            elif version == 2:
-                logger.info("SQLite: upgrading database.")
-                import plugins.sqlite.db2to3
-                plugins.sqlite.db2to3.db2to3(self._fdb)
-        if version < self._version:
-            self._fdb.execute("UPDATE common SET version=:version;", {'version': self._version})
+            if version < self._version:
+                import plugins.sqlite.upgrade
+                plugins.sqlite.upgrade.Upgrade(self._fdb, version)
+                self._fdb.execute("UPDATE common SET version=:version;", {'version': self._version})
         self._fdb.commit()
         self._fdb_lock.release()
         minute = 60 * 1000
@@ -110,6 +104,19 @@ class SQL():
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         smarthome.scheduler.add('SQLite pack', self._pack, cron='2 3 * *', prio=5)
+        self._pack()
+
+    def cleanup(self):
+        current_items = [item.id() for item in self._buffer]
+        db_items = self._fetchall("SELECT _item FROM num GROUP BY _item;")
+        if db_items:
+            for item in db_items:
+                if item[0] not in current_items:
+                    logger.info("SQLite: deleting entries for {}".format(item[0]))
+                    self._execute("DELETE FROM num WHERE _item='{}';".format(item[0]))
+
+    def move(self, old, new):
+        self._execute("UPDATE OR IGNORE num SET _item={} WHERE _item='{}';".format(new, old))
 
     def parse_item(self, item):
         if 'sqlite' in item.conf:
@@ -138,6 +145,7 @@ class SQL():
 
     def run(self):
         self.alive = True
+        self.cleanup()
 
     def stop(self):
         self.alive = False
@@ -316,19 +324,20 @@ class SQL():
         if self._buffer[_item] != [] and end == 'now':
             self._dump(_item)
         tuples = self._fetchall(query)
-        if init:
-            if tuples:
-                if istart > tuples[0][0]:
-                    tuples[0] = (istart, tuples[0][1])
-                if end != 'now':
-                    tuples.append((iend, tuples[-1][1]))
+        if tuples:
+            if istart > tuples[0][0]:
+                tuples[0] = (istart, tuples[0][1])
+            if end != 'now':
+                tuples.append((iend, tuples[-1][1]))
         item_change = self._timestamp(_item.last_change())
         if item_change < iend:
-            if item_change < istart and init:
-                tuples.append((istart, float(_item())))
-            elif item_change < iend and init:
-                tuples.append((item_change, float(_item())))
-            tuples.append((iend, float(_item())))
+            value = float(_item())
+            if item_change < istart:
+                tuples.append((istart, value))
+            elif init:
+                tuples.append((item_change, value))
+            if init:
+                tuples.append((iend, value))
         if tuples:
             reply['series'] = tuples
         return reply
