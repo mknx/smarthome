@@ -105,7 +105,6 @@ class SQL():
         self._frames = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         smarthome.scheduler.add('SQLite Maintain', self._maintain, cron='2 3 * *', prio=5)
-        self._maintain()
 
     def cleanup(self):
         current_items = [item.id() for item in self._buffer]
@@ -182,7 +181,6 @@ class SQL():
         _on = int(bool(_avg))
         self._buffer[item].append((_start, _dur, _avg, _on))
         if _end - item._sqlite_last > self._buffer_time:
-            item._sqlite_last = _end
             self._insert(item)
         # update cache with current value
         self._execute("UPDATE OR IGNORE cache SET _time={}, _value={} WHERE _item='{}';".format(_end, float(item()), item.id()))
@@ -255,8 +253,11 @@ class SQL():
         return ts
 
     def _insert(self, item):
+        if not self._fdb_lock.acquire(timeout=2):
+            return
         tuples = sorted(self._buffer[item])
         self._buffer[item] = []
+        item._sqlite_last = self._timestamp(item.last_change())
         if len(tuples) == 1:
             _start, _dur, _avg, _on = tuples[0]
             insert = (_start, item.id(), _dur, _avg, _avg, _avg, _on)
@@ -272,8 +273,6 @@ class SQL():
                 _on += __dur * __on
                 _dur += __dur
             insert = (_start, item.id(), _dur, _avg / _dur, min(_vals), max(_vals), _on / _dur)
-        if not self._fdb_lock.acquire(timeout=10):
-            return
         try:
             self._fdb.execute("INSERT INTO num VALUES (?,?,?,?,?,?,?);", insert)
             self._fdb.commit()
