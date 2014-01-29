@@ -282,6 +282,9 @@ class SQL():
             self._fdb_lock.release()
 
     def _maintain(self):
+        for item in self._buffer:
+            if self._buffer[item] != []:
+                self._insert(item)
         self._pack()
         if self._dumpfile:
             self.dump(self._dumpfile)
@@ -338,8 +341,6 @@ class SQL():
         else:
             raise NotImplementedError
         _item = self._sh.return_item(item)
-        if self._buffer[_item] != [] and end == 'now':
-            self._insert(_item)
         tuples = self._fetchall(query)
         if tuples:
             if istart > tuples[0][0]:
@@ -374,9 +375,6 @@ class SQL():
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return
-        _item = self._sh.return_item(item)
-        if self._buffer[_item] != [] and end == 'now':
-            self._insert(_item)
         tuples = self._fetchall(query)
         if tuples is None:
             return
