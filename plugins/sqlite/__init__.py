@@ -80,10 +80,8 @@ class SQL():
             self._fdb_lock.release()
             return
         self._fdb.execute("CREATE TABLE IF NOT EXISTS num (_start INTEGER, _item TEXT, _dur INTEGER, _avg REAL, _min REAL, _max REAL, _on REAL);")
-        self._fdb.execute("CREATE TABLE IF NOT EXISTS bool (_start INTEGER, _item TEXT, _dur INTEGER, _value INTEGER);")
-        self._fdb.execute("CREATE TABLE IF NOT EXISTS cache (_item TEXT PRIMARY KEY, _time INTEGER, _value REAL);")
+        self._fdb.execute("CREATE TABLE IF NOT EXISTS cache (_item TEXT PRIMARY KEY, _start INTEGER, _value REAL);")
         self._fdb.execute("CREATE INDEX IF NOT EXISTS idx ON num (_item);")
-        self._fdb.execute("CREATE INDEX IF NOT EXISTS idy ON bool (_item);")
         common = self._fdb.execute("SELECT * FROM sqlite_master WHERE name='common' and type='table';").fetchone()
         if common is None:
             self._fdb.execute("CREATE TABLE common (version INTEGER);")
@@ -135,7 +133,7 @@ class SQL():
             if item.type() not in ['num', 'bool']:
                 logger.warning("SQLite: only supports 'num' and 'bool' as types. Item: {} ".format(item.id()))
                 return
-            cache = self._fetchone("SELECT _time,_value from cache WHERE _item = '{}'".format(item.id()))
+            cache = self._fetchone("SELECT _start,_value from cache WHERE _item = '{}'".format(item.id()))
             if cache is not None:
                 last_change, value = cache
                 item._sqlite_last = last_change
@@ -183,7 +181,7 @@ class SQL():
         if _end - item._sqlite_last > self._buffer_time:
             self._insert(item)
         # update cache with current value
-        self._execute("UPDATE OR IGNORE cache SET _time={}, _value={} WHERE _item='{}';".format(_end, float(item()), item.id()))
+        self._execute("UPDATE OR IGNORE cache SET _start={}, _value={} WHERE _item='{}';".format(_end, float(item()), item.id()))
 
     def _datetime(self, ts):
         return datetime.datetime.fromtimestamp(ts / 1000, self._sh.tzinfo())
@@ -196,6 +194,7 @@ class SQL():
             return
         try:
             self._fdb.execute(*query)
+            self._fdb.commit()
         except Exception as e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
         finally:
@@ -341,6 +340,8 @@ class SQL():
         else:
             raise NotImplementedError
         _item = self._sh.return_item(item)
+        if self._buffer[_item] != [] and end == 'now':
+            self._insert(_item)
         tuples = self._fetchall(query)
         if tuples:
             if istart > tuples[0][0]:
@@ -375,6 +376,9 @@ class SQL():
         else:
             logger.warning("Unknown export function: {0}".format(func))
             return
+        _item = self._sh.return_item(item)
+        if self._buffer[_item] != [] and end == 'now':
+            self._insert(_item)
         tuples = self._fetchall(query)
         if tuples is None:
             return
