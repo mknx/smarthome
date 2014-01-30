@@ -40,7 +40,7 @@ This function removes orphaned item entries which are no longer referenced in th
 
 ## dump(filename)
 Dumps the database into the specified file.
-`sh.sql.dump(/tmp/smarthomedb.dump)` writes the database content into /tmp/smarthomedb.dump
+`sh.sql.dump('/tmp/smarthomedb.dump')` writes the database content into /tmp/smarthomedb.dump
 
 ## move(old, new)
 This function renames item entries.
