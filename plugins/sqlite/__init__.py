@@ -348,6 +348,8 @@ class SQL():
                 tuples[0] = (istart, tuples[0][1])
             if end != 'now':
                 tuples.append((iend, tuples[-1][1]))
+        else:
+            tuples = []
         item_change = self._timestamp(_item.last_change())
         if item_change < iend:
             value = float(_item())
