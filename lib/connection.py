@@ -258,11 +258,6 @@ class Stream(Base):
                 cut = index + len(terminator)
                 self.inbuffer = self.inbuffer[cut:]
                 self.found_terminator(data)
-            try:
-                self._out()
-            except:
-                self.close()
-                break
 
     def _is_balanced(self):
         stack = []
