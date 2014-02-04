@@ -37,24 +37,25 @@ To receive messages you have to add the logic defined in plugin.conf. It will be
 </pre>
 
 In the context of the KNX plugin the trigger dictionary consists of the following elements:
-trigger['value']    The Message received
-trigger['source']   The Sender 
+* trigger['value']    The Message received
+* trigger['source']   The Sender 
 
 # Functions
 * sending a Message
 * sending a Picture
 
 <pre>
-* sh.whatsapp("Message to send", "417912345678") #Will send to a explicite PhoneNumber.
-* sh.whatsapp("Message to send")  #Will send to the sender.
-* sh.whatsapp.sendPicture(url, username, password, phoneNumber)
-** variables: username, password, phoneNumber are optional
+sh.whatsapp("Message to send", "417912345678") #Will send to a explicite PhoneNumber.
+sh.whatsapp("Message to send")  #Will send to the sender.
+sh.whatsapp.sendPicture(url, username, password, phoneNumber)
+
+Variables: username, password, phoneNumber are optional
 </pre>
 If no phoneNumeber is set, it will take the first number from the trusted numbers
 
 
 ## Examples for whatsapp.py
-
+<pre>
 msg = trigger['value']
 absender = trigger['source']
 
@@ -62,3 +63,8 @@ if msg == "Zuhause?":
     antwort = "Ja" if sh.presenz.anwesend() else "Nein"
     sh.whatsapp(antwort)
 
+if msg == "Haustuere":
+    sh.whatsapp.sendPicture("http://192.168.1.123/cgi-bin/image.jpg") 
+
+
+</pre>
