@@ -189,10 +189,9 @@ class SQL():
     def _execute(self, *query):
         if not self._fdb_lock.acquire(timeout=2):
             return
-        if not self.connected:
-            self._fdb_lock.release()
-            return
         try:
+            if not self.connected:
+                return
             self._fdb.execute(*query)
             self._fdb.commit()
         except Exception as e:
@@ -203,10 +202,9 @@ class SQL():
     def _fetchone(self, *query):
         if not self._fdb_lock.acquire(timeout=2):
             return
-        if not self.connected:
-            self._fdb_lock.release()
-            return
         try:
+            if not self.connected:
+                return
             reply = self._fdb.execute(*query).fetchone()
         except Exception as e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
@@ -218,10 +216,9 @@ class SQL():
     def _fetchall(self, *query):
         if not self._fdb_lock.acquire(timeout=2):
             return
-        if not self.connected:
-            self._fdb_lock.release()
-            return
         try:
+            if not self.connected:
+                return
             reply = self._fdb.execute(*query).fetchall()
         except Exception as e:
             logger.warning("SQLite: Problem with '{0}': {1}".format(query, e))
