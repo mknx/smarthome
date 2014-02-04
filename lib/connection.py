@@ -116,7 +116,6 @@ class Connections(Base):
                         con = self._connections[fileno]
                         con._out()
                     except Exception as e:  # noqa
-#                       logger.exception("{}: {}".format(self._name, e))
                         con.close()
                         continue
                 if event & (select.EPOLLHUP | select.EPOLLERR):
@@ -295,6 +294,9 @@ class Stream(Base):
             return
         except socket.error:
             self.outbuffer.append(frame)
+        except Exception as e:  # noqa
+            logger.exception("{}: {}".format(self._name, e))
+            self.close()
         finally:
             self.__olock.release()
 
@@ -353,11 +355,7 @@ class Stream(Base):
                 self.outbuffer.appendleft(data[i:i + frame_size])
         else:
             self.outbuffer.appendleft(data)
-        try:
-            self._out()
-        except Exception as e:  # noqa
-            logger.exception("{}: {}".format(self._name, e))
-            self.close()
+        self._out()
         return True
 
 
