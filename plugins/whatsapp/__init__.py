@@ -56,13 +56,10 @@ class Whatsapp():
 
     def __call__(self, message, phoneNumber = None):
         if phoneNumber == None:
-            if self._wa._absender == None:
-                phoneNumber = self._trusted[0]
-            else:
-                phoneNumber = self._wa._absender
+            phoneNumber = self._trusted.split(' ')[0]
 
         jid = "%s@s.whatsapp.net" % phoneNumber
-        self._wa.methodsInterface.call("message_send", (jid, message))
+        self._wa.methodsInterface.call("message_send", (jid, message.encode('utf8').decode('iso-8859-1')))
 
     def sendPicture (self, url, username=None, password=None, phoneNumber = None):
         self._wa.sendPicture (url, username, password, phoneNumber)
