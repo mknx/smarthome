@@ -31,6 +31,7 @@ import logging
 #from urllib.request import urlopen
 from shutil import copyfileobj
 import urllib
+import time
 
 logger = logging.getLogger('Whatsapp')
 
@@ -75,6 +76,7 @@ class WhatsappListenerClient:
     def onDisconnected(self, reason):
         logger.info("Whatsapp: Disconnected because %s" %reason)
         if self.autoreconnect:
+            time.sleep(1)
             self._sh.whatsapp.createListener()
 
     def onMessageReceived(self, messageId, jid, messageContent, timestamp, wantsReceipt, pushName, isBroadCast):
