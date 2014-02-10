@@ -31,6 +31,7 @@ import logging
 #from urllib.request import urlopen
 from shutil import copyfileobj
 import urllib
+import time
 
 logger = logging.getLogger('Whatsapp')
 
