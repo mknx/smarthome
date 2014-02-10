@@ -193,6 +193,12 @@ class Sonos():
                 if command[2] == 'volume':
                     if isinstance(value, int):
                         cmd = self.command.volume(command[1], int(value))
+                if command[2] == 'next':
+                    if isinstance(value, int):
+                        cmd = self.command.next(command[1], int(value))
+                if command[2] == 'previous':
+                    if isinstance(value, int):
+                        cmd = self.command.previous(command[1], int(value))
                 if command[2] == 'play_uri':
                     cmd = self.command.play_uri(command[1], value)
 
@@ -252,6 +258,14 @@ class SonosCommand():
         return "speaker/{}/mute/set/{}".format(uid, int(value))
 
     @staticmethod
+    def next(uid, value):
+        return "speaker/{}/next/set/{}".format(uid, int(value))
+
+    @staticmethod
+    def previous(uid, value):
+        return "speaker/{}/previous/set/{}".format(uid, int(value))
+
+    @staticmethod
     def play(uid, value):
         return "speaker/{}/play/set/{}".format(uid, int(value))
 
@@ -300,3 +314,5 @@ class SonosCommand():
             return False
         except:
             return None
+
+
