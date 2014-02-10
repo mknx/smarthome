@@ -115,7 +115,6 @@ class Sonos():
     def parse_item(self, item):
 
         if 'sonos_recv' in item.conf:
-            #pydevd.settrace('192.168.178.44', port=12000, stdoutToServer=True, stderrToServer=True)
             cmd = self.resolve_cmd(item, 'sonos_recv')
 
             if cmd is None:
