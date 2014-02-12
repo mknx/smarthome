@@ -4,6 +4,9 @@ The plugin is designed to control the sonos speakers in connection with the sono
 
 0. Release
 -----------------------------
+  v0.3    2014-02-12
+    -- bug in thread routine 'subscribe' caused plugin not to resubscribed to sonos broker
+
   v0.2    2014-02-10
     -- command 'next' and 'previous' added
 
@@ -22,40 +25,25 @@ The plugin is designed to control the sonos speakers in connection with the sono
   smarthome.py
 
 
-2. Installation
------------------------------
-
-  Login to your Raspberry Pi
-  
-  Go to /usr/smarthome/plugins
-  
-  Create directory sonos (or whatver you want, plugins will be scanned automatically in this subfolder)
-  
-  Copy __init__.py to your newly created path.
-  
-  Done
-
-
-3. Integration in Smarthome.py
+2. Integration in Smarthome.py
 ------------------------------
 
   Go to /usr/smarthome/etc and edit plugins.conf and add ths entry:
-  
-  
+
     [sonos]
-  
+
       class_name = Sonos
       class_path = plugins.sonos
       broker_url = 192.168.178.31:12900               #this is the sonos server ip and port
 
 
   Go to /usr/smarthome/items
-    
+
   Create a file named sonos.conf
-  
+
   Edit file with this sample of mine:
-  
-  
+
+
     [sonos]
         sonos_uid = RINCON_000E5123456789             #replace uid with your sonos speaker uid
 
@@ -152,18 +140,18 @@ The plugin is designed to control the sonos speakers in connection with the sono
             sonos_send = speaker/<sonos_uid>/play_uri/set/{}
             #x-file-cifs://192.168.0.10/music/Depeche Mode - Heaven.mp3
 
-  
+
   To get your sonos speaker id, type this command in your browser (while sonos server running):
-  
+
     http://<sonos_server_ip:port>/client/list
-      
+
 
   To run this plugin with a logic, here is my example:
-    
+
   Go to /usr/smarthome/logics and create a self-named file (e.g. sonos.py)
   Edit this file and place your logic here:
-    
-    
+
+
     #!/usr/bin/env python
     #
 
@@ -172,16 +160,16 @@ The plugin is designed to control the sonos speakers in connection with the sono
     else:
         sh.sonos.mute(0)
 
-    
+
   Last step: go to /usr/smarthome/etc and edit logics.conf
   Add a section for your logic:
-    
+
     # logic
     [sonos_logic]
         filename = sonos.py
         watch_item = ow.ibutton
-    
-    
+
+
   In this small example, the sonos speaker with uid RINCON_000E58D5892E11230 is muted when the iButton is connected
   to an iButton Probe.
-    
+
