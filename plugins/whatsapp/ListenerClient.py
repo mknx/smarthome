@@ -41,6 +41,7 @@ class WhatsappListenerClient:
         self._sh = smarthome
         self.sendReceipts = sendReceipts
         self._trusted = trusted
+        self._absender = trusted[0]
         self._logic = logic
         self.autoreconnect = True
         Debugger.enabled =  False
