@@ -69,6 +69,8 @@ class Sonos():
         try:
             values = data.split('\n')
             for value in values:
+                #removes all trailing '\r', issue in sonos-broker 0.1.5 and prior versions
+                value = value.rstrip('\r')
                 logger.debug(value)
                 self.update_items_with_data(value)
 
