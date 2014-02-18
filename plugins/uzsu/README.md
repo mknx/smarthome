@@ -7,7 +7,6 @@ Calculating of sunset/sunrise in triggers, requires installation of ephem.
 # Configuration
 
 ## plugin.conf
-Please provide a plugin.conf snippet for your plugin with ever option your plugin supports. Optional attributes should be commented out.
 
 <pre>
 [uzsu]
@@ -18,7 +17,7 @@ Please provide a plugin.conf snippet for your plugin with ever option your plugi
 ## items.conf
 
 ### uzsu
-You can enable the univerial time switching capabilities for each item by setting the uzsu attribute to True.
+You have to specify a item with `type = list` and with the `uzsu_item` attribute set to the path of the item which will be set by this item.
 
 <pre>
 # items/my.conf
@@ -26,19 +25,17 @@ You can enable the univerial time switching capabilities for each item by settin
 [someroom]
     [[someitem]]
         type = int
-        uzsu = True
+        [[[anotheritem]]]
+            type = list
+            uzsu_item = someroom.someitem
+            cache = True
 </pre>
 
-# Methodes
+If you specify the `cache = True` as well, then you're switching entries will be there even if you restart smarthome.py.
 
-## get(item)
-Retrieve all switching entries for the specified item as a list of dictionaries.
+# Item Data Format
 
-## add(item, dt, value, active=True, time=None, rrule=None)
-Add a new switching entry for the given item.
-Parameter description:
-
-* __item__: the item object.
+Each UZSU item is of type list. Each list entry has to be a dict with specific key and value pairs. Here are the possible keys and what their for:
 
 * __dt__: a datetime object. With time = None and rrule = None this is the exact date and time when the item will be set to the specified value once.
 
@@ -50,17 +47,9 @@ Parameter description:
 
 * __rrule__: You can use the recurrence rules documented in the [iCalendar RFC](http://www.ietf.org/rfc/rfc2445.txt) for recurrence use of a switching entry.
 
-`sh.uzsu.add(sh.item1, datetime.datetime.now() + datetime.timedelta(minutes=2), '1')` would set the item1 to 1 in 2 minutes.
-`sh.uzsu.add(sh.item1, datetime.datetime.now() + datetime.timedelta(minutes=2), '1', True, rrule='FREQ=MINUTELY;INTERVAL=2;COUNT=5')` would set item1 to 1 every to minutes, starting in 2 minutes and exactly 5 times.
-`sh.uzsu.add(sh.item1, datetime.datetime.now() + datetime.timedelta(minutes=2), '0', True, '17:00<sunset<18:30', rrule='FREQ=DAILY;INTERVAL=2;COUNT=5')` would set the item1 to 0 every other day at sunset between 17:00 and 18:00 o'clock for 5 times.
+## Example
 
-## update(item, id, dt=None, value=None, active=None, time=None, rrule=None)
-This method updates every given parameter for an existing entry. See the `add` method for a description of each parameter.
+The following example will set the UZSU with two entries. The first will switch the item ON every two minutes, starting in two minutes and this five times. The second entry switches the corresponding item OFF every two minutes, starting in three minutes and this five times.
 
-`sh.uzsu.update(sh.item1, 1, active=False)` would deactive the entry with ID 1 for item1.
-
-## remove(item, id)
-This method removes an entry from an item.
-
-`sh.uzsu.remove(sh.item1, 1)` would remove the entry with ID 1 from item1.
+`sh.eg.wohnen.kugellampe.uzsu([{'dt':datetime.datetime.now() + datetime.timedelta(minutes=2), 'value':1, 'active':True, 'rrule':'FREQ=MINUTELY;INTERVAL=2;COUNT=5'},{'dt':datetime.datetime.now() + datetime.timedelta(minutes=3), 'value':0, 'active':True, 'rrule':'FREQ=MINUTELY;INTERVAL=2;COUNT=5'}])`
 
