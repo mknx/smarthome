@@ -86,7 +86,10 @@ class IMAP():
                 to = email.utils.parseaddr(mail['To'])[1]
                 fo = email.utils.parseaddr(mail['From'])[1]
                 sub, encoding = email.header.decode_header(mail['Subject'])[0]
-                subject = sub.decode()
+                if encoding is None:
+                    subject = sub
+                else:
+                    subject = sub.decode(encoding)
             except Exception as e:
                 logger.exception("IMAP: problem parsing message {}: {}".format(uid, e))
                 continue
