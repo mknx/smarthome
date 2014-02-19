@@ -147,7 +147,7 @@ class xbmc(lib.connection.Client):
                     self._items['title']('', 'XBMC')
             if event['method'] in ['Player.OnPlay']:
                 # use a different thread for event handling
-                self._sh.trigger('xmbc-event', self._parse_event, 'XBMC', value={'event': event})
+                self._sh.trigger('xbmc-event', self._parse_event, 'XBMC', value={'event': event})
             elif event['method'] in ['Application.OnVolumeChanged']:
                 if 'mute' in self._items:
                     self._set_item('mute', event['params']['data']['muted'])
