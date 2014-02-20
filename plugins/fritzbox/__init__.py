@@ -26,7 +26,7 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import hashlib
-import re
+from xml.dom.minidom import parseString
 
 logger = logging.getLogger('')
 
@@ -37,51 +37,38 @@ class fbex(Exception):
 
 class FritzBoxBase():
 
-    def __init__(self, host='fritz.box', password=None):
+    def __init__(self, host='fritz.box', username=None, password=None):
         self._host = host
+        self._username = username
         self._password = password
         self._sid = 0
 
+    def createResponse(self, challenge):
+        text = "%s-%s" % (challenge, self._password)
+        text = text.encode("utf-16le")
+        res = "%s-%s" % (challenge, hashlib.md5(text).hexdigest())
+        return res
+
     def _login(self):
-        params = urllib.parse.urlencode(
-            {'getpage': '../html/login_sid.xml', 'sid': self._sid})
-        headers = {"Content-type":
-                   "application/x-www-form-urlencoded", "Accept": "text/plain"}
-        con = http.client.HTTPConnection(self._host)
-        con.request("POST", "/cgi-bin/webcm", params, headers)
-        resp = con.getresponse()
-        con.close()
-        if resp.status != 200:
-            raise fbex("no connection to fritzbox.")
-        data = resp.read()
-        logger.debug("data = {0}".format(data))
-        sid = re.search('<SID>(.*?)</SID>', data).group(1)
-        logger.debug("sid = {0}".format(sid))
-        if sid == '0000000000000000':
+        uri = "http://" + self._host + "/login_sid.lua"
+        req = urllib.request.urlopen(uri)
+        data = req.read()
+        xml = parseString(data)
+        self._sid = xml.getElementsByTagName("SID").item(0).firstChild.data
+        logger.debug("sid = {0}".format(self._sid))
+        if self._sid == '0000000000000000':
             logger.debug("invalid sid, starting challenge/response")
-            challenge = re.search(
-                '<Challenge>(.*?)</Challenge>', data).group(1)
-            challenge_resp = (
-                challenge + '-' + self._password).decode('iso-8859-1').encode('utf-16le')
-            m = hashlib.md5()
-            m.update(challenge_resp)
-            challenge_resp = challenge + '-' + m.hexdigest().lower()
-            params = urllib.parse.urlencode(
-                {'login:command/response': challenge_resp, 'getpage': '../html/login_sid.xml'})
-            con = http.client.HTTPConnection(self._host)
-            con.request("POST", "/cgi-bin/webcm", params, headers)
-            resp = con.getresponse()
-            con.close()
-            if resp.status != 200:
-                raise fbex("challenge/response failed")
-            data = resp.read()
-            self._sid = re.search('<SID>(.*?)</SID>', data).group(1)
+            challenge = xml.getElementsByTagName("Challenge").item(0).firstChild.data
+            req = urllib.request.urlopen(uri + "?username=" + self._username + "&response=" + self.createResponse(challenge))
+            data = req.read()
+            xml = parseString(data)
+            self._sid = xml.getElementsByTagName("SID").item(0).firstChild.data
             logger.debug('session id = {0}'.format(self._sid))
 
     def execute(self, cmd_dict, return_resp=False):
         logger.debug("execute command: {0}".format(cmd_dict))
         self._login()
-        cmd_dict['getpage'] = '../html/login_sid.xml'
+        cmd_dict['getpage'] = '../html/login_sid.lua'
         cmd_dict['sid'] = self._sid
         params = urllib.parse.urlencode(cmd_dict)
         headers = {"Content-type":
@@ -107,8 +94,8 @@ class FritzBoxBase():
 
 class FritzBox(FritzBoxBase):
 
-    def __init__(self, smarthome, host='fritz.box', password=None):
-        FritzBoxBase.__init__(self, host, password)
+    def __init__(self, smarthome, host='fritz.box', username=None, password=None):
+        FritzBoxBase.__init__(self, host, username, password)
         self._sh = smarthome
 
     def run(self):
