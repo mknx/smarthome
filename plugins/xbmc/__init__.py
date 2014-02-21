@@ -156,7 +156,11 @@ class xbmc(lib.connection.Client):
 
     def _parse_event(self, event):
         if event['method'] == 'Player.OnPlay':
-            result = self._send('Player.GetActivePlayers')['result'][0]
+            activeplayerlist = self._send('Player.GetActivePlayers')['result']
+            if len(activeplayerlist) == 0:
+                logger.info("no active player found")
+                return
+            result = activeplayerlist[0]
             playerid = result['playerid']
             typ = result['type']
             self._items['state']('Playing', 'XBMC')
@@ -172,8 +176,12 @@ class xbmc(lib.connection.Client):
                 if 'media' in self._items:
                     self._items['media'](typ.capitalize(), 'XBMC')
                 result = self._send('Player.GetItem', {"properties": ["title", "artist"], "playerid": playerid}, "AudioGetItem")['result']
-                artist = result['item']['artist'][0]
-                title = artist + ' - ' + result['item']['title']
+                artistlist = result['item']['artist']
+                if len(artistlist) == 0:
+                    title = 'unknown'
+                else:
+                    artist = result['item']['artist'][0]
+                    title = artist + ' - ' + result['item']['title']
             elif typ == 'picture':
                 if 'media' in self._items:
                     self._items['media'](typ.capitalize(), 'XBMC')
