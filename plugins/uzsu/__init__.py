@@ -20,7 +20,7 @@
 ##########################################################################
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dateutil.rrule import rrulestr
 from dateutil import parser
@@ -44,8 +44,9 @@ class UZSU():
     def run(self):
         self.alive = True
         for item in self._items:
-            for entry in self._items[item]:
-                self._schedule(item)
+            if 'active' in self._items[item]:
+                if self._items[item]['active']:
+                    self._schedule(item)
 
     def stop(self):
         self.alive = False
@@ -58,14 +59,16 @@ class UZSU():
         self._sh.scheduler.remove('uzsu_{}'.format(item))
         _next = None
         _value = None
-        for entry in list(item()):
-            next, value = self._next_time(entry)
-            if _next is None:
-                _next = next
-                _value = value
-            elif next and next < _next:
-                _next = next
-                _value = value
+        if 'active' in self._items[item]:
+            if self._items[item]['active']:
+                for entry in self._items[item]['list']:
+                    next, value = self._next_time(entry)
+                    if _next is None:
+                        _next = next
+                        _value = value
+                    elif next and next < _next:
+                        _next = next
+                        _value = value
         if _next and not _value is None:
             self._sh.scheduler.add('uzsu_{}'.format(item), self._set, value={'item': item, 'value': _value}, next=_next)
 
@@ -79,50 +82,49 @@ class UZSU():
         try:
             if not isinstance(entry, dict):
                 return None, None
-            if not 'dt' in entry:
-                return None, None
             if not 'value' in entry:
                 return None, None
             if not 'active' in entry:
                 return None, None
+            if not 'time' in entry:
+                return None, None
             now = datetime.now()
-            dt = entry['dt']
             value = entry['value']
             active = entry['active']
+            today = datetime.today()
+            yesterday = today - timedelta(days=1)
+            time = entry['time']
             if not active:
                 return None, None
-            timestr = None
-            rrule = None
-            if 'time' in entry:
-                timestr = entry['time']
+            if 'date' in entry:
+                date = entry['date']
             if 'rrule' in entry:
-                rrule = rrulestr(entry['rrule'], dtstart=dt) if entry['rrule'] else None
-            if timestr and rrule:
+                if 'dtstart' in entry:
+                    rrule = rrulestr(entry['rrule'], dtstart=entry['dtstart'])
+                else:
+                    try:
+                        rrule = rrulestr(entry['rrule'], dtstart=datetime.combine(yesterday, parser.parse(time.strip()).time()))
+                    except:
+                        rrule = rrulestr(entry['rrule'], dtstart=datetime.combine(yesterday, datetime.min.time()))
                 dt = now
                 while self.alive:
                     dt = rrule.after(dt)
                     if dt is None:
                         return None, None
-                    if 'sun' in timestr:
-                        next = self._sun(datetime.combine(dt.date(), datetime.min.time()).replace(tzinfo=self._sh.tzinfo()), timestr)
+                    if 'sun' in time:
+                        next = self._sun(datetime.combine(dt.date(), datetime.min.time()).replace(tzinfo=self._sh.tzinfo()), time)
                     else:
-                        next = datetime.combine(dt.date(), parser.parse(timestr.strip()).time()).replace(tzinfo=self._sh.tzinfo())
+                        next = datetime.combine(dt.date(), parser.parse(time.strip()).time()).replace(tzinfo=self._sh.tzinfo())
                     if next and next.date() == dt.date() and next > datetime.now(self._sh.tzinfo()):
                         return next, value
-            elif rrule:
-                next = rrule.after(now)
-                return (next.replace(tzinfo=self._sh.tzinfo()), value) if next else (None, None)
-            elif timestr:
-                if 'sun' in timestr:
-                    next = self.sun(datetime.combine(dt.date(), datetime.min.time()).replace(tzinfo=self._sh.tzinfo()), timestr)
-                else:
-                    next = datetime.combine(dt.date(), parser.parse(timestr.strip()).time()).replace(tzinfo=self._sh.tzinfo())
-                if next and next.date() == dt.date() and next > datetime.now(self._sh.tzinfo()):
-                    return next, value
-            elif dt > now:
-                return dt.replace(tzinfo=self._sh.tzinfo()), value
+            if 'sun' in time:
+                next = self.sun(datetime.combine(today, datetime.min.time()).replace(tzinfo=self._sh.tzinfo()), time)
+            else:
+                next = datetime.combine(today, parser.parse(time.strip()).time()).replace(tzinfo=self._sh.tzinfo())
+            if next and next.date() == today and next > datetime.now(self._sh.tzinfo()):
+                return next, value
         except Exception as e:
-            logger.error("Error parsing time {}: {}".format(timestr, e))
+            logger.error("Error parsing time {}: {}".format(time, e))
         return None, None
 
     def _sun(self, dt, tstr):
