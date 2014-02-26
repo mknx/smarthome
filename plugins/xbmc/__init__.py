@@ -156,13 +156,12 @@ class xbmc(lib.connection.Client):
 
     def _parse_event(self, event):
         if event['method'] == 'Player.OnPlay':
-            activeplayerlist = self._send('Player.GetActivePlayers')['result']
-            if len(activeplayerlist) == 0:
-                logger.info("no active player found")
+            result = self._send('Player.GetActivePlayers')['result']
+            if len(result) == 0:
+                logger.info("XBMC: no active player found.")
                 return
-            result = activeplayerlist[0]
-            playerid = result['playerid']
-            typ = result['type']
+            playerid = result[0]['playerid']
+            typ = result[0]['type']
             self._items['state']('Playing', 'XBMC')
             if typ == 'video':
                 result = self._send('Player.GetItem', {"properties": ["title"], "playerid": playerid}, "VideoGetItem")['result']
@@ -176,18 +175,17 @@ class xbmc(lib.connection.Client):
                 if 'media' in self._items:
                     self._items['media'](typ.capitalize(), 'XBMC')
                 result = self._send('Player.GetItem', {"properties": ["title", "artist"], "playerid": playerid}, "AudioGetItem")['result']
-                artistlist = result['item']['artist']
-                if len(artistlist) == 0:
-                    title = 'unknown'
+                if len(result['item']['artist']) == 0:
+                    artist = 'unknown'
                 else:
                     artist = result['item']['artist'][0]
-                    title = artist + ' - ' + result['item']['title']
+                title = artist + ' - ' + result['item']['title']
             elif typ == 'picture':
                 if 'media' in self._items:
                     self._items['media'](typ.capitalize(), 'XBMC')
                 title = ''
             else:
-                logger.warning("Unknown type: {0}".format(typ))
+                logger.warning("XBMC: Unknown type: {0}".format(typ))
                 return
             if 'title' in self._items:
                 self._items['title'](title, 'XBMC')
