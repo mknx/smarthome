@@ -53,14 +53,41 @@ class MemLog():
     def parse_logic(self, logic):
         pass
 
+    def __call__(self, param1=None, param2=None):
+        logger.debug("{0}".format(param1))
+        self.log(['Hello'], 'INFO')
+        if type(param1) == list and type(param2) == type(None):
+            self.log(param1)
+        elif type(param1) == str and type(param2) == type(None):
+            self.log([param1])
+        elif type(param1) == str and type(param2) == str:
+            self.log([param2], param1)
+
     def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'MemLog':
             if item.conf['memlog'] == self.name:
                 if len(self._items) == 0:
-                    log = [self._sh.now(), threading.current_thread().name, 'INFO', item()]
+                    logvalues = [item()]
                 else:
-                    log = []
+                    logvalues = []
                     for item in self._items:
-                        log.append(self._sh.return_item(item)())
-                self._log.add(log)
+                        logvalues.append(self._sh.return_item(item)())
+
+                self.log(logvalues, 'INFO')
+
+    def log(self, logvalues, level = 'INFO'):
+        if len(logvalues):
+            log = []
+            for name in self._log.mapping:
+                if name == 'time':
+                    log.append(self._sh.now())
+                elif name == 'thread':
+                    log.append(threading.current_thread().name)
+                elif name == 'level':
+                    log.append(level)
+                else:
+                    log.append(logvalues[0])
+                    logvalues = logvalues[1:]
+
+            self._log.add(log)
 
