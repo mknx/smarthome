@@ -54,8 +54,6 @@ class MemLog():
         pass
 
     def __call__(self, param1=None, param2=None):
-        logger.debug("{0}".format(param1))
-        self.log(['Hello'], 'INFO')
         if type(param1) == list and type(param2) == type(None):
             self.log(param1)
         elif type(param1) == str and type(param2) == type(None):
