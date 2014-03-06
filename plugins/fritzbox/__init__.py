@@ -216,7 +216,8 @@ class FritzBox(lib.www.Client):
         if ain is not None:
             url += "&ain={}".format(ain)
         content = self.fetch_url(url)
-        return(content.decode().strip())
+        if content:
+            return(content.decode().strip())
 
     def _get(self, variable, value='', index=None):
         if variable in values:
