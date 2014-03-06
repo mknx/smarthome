@@ -86,7 +86,7 @@ This attribute defines supported functions of the plugin. See the the example fo
     [[fbswitch2]]
         type = num
         fritzbox = power
-        fb_ain = 081111111111
+        fb_ain = 082222222222
         eval = value / 1000  # convert from mW to W
 </pre>
 
@@ -116,3 +116,10 @@ This function reboots the FritzBox.
 
 ## reconnect()
 This function reconnect the upstream connection.
+
+## webcm(commands)
+This is a legacy function to the 'old' interface. See [www.wehavemorefun.de/fritzbox/Telcfg](http://www.wehavemorefun.de/fritzbox/Telcfg) for a list of possible commands.
+e.g. to make a call:
+<pre>
+sh.fritzbox.webcm({'telcfg:settings/UseClickToDial': '1', 'telcfg:command/Dial': '**611', 'telcfg:settings/DialPort': '**610'})
+</pre>

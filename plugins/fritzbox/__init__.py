@@ -59,7 +59,6 @@ commands = {'reconnect': ('WANIPConnection', 'ForceTermination'),
 #           'hangup': ('VoIP', 'X_AVM-DE_Hangup', None),
 
 # http://www.avm.de/de/News/artikel/schnittstellen_und_entwicklungen.php
-# http://www.wehavemorefun.de/fritzbox/Telcfg
 
 
 class CallMonitor(lib.connection.Client):
@@ -201,6 +200,15 @@ class FritzBox(lib.www.Client):
     def reconnect(self):
         self._set('reconnect')
 
+    def webcm(self, command={}):
+        # http://www.wehavemorefun.de/fritzbox/Telcfg
+        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+        command['sid'] = self._get_sid()
+        command['getpage'] = '../html/login_sid.xml'
+        body = urllib.parse.urlencode(command)
+        url = "http://{}/cgi-bin/webcm".format(self._fritzbox)
+        self.fetch_url(url, headers=headers, body=body, method='POST')
+
     # Plugin specific private methods
     def _aha_command(self, command, ain=None):
         # http://www.avm.de/de/Extern/files/session_id/AHA-HTTP-Interface.pdf
@@ -298,14 +306,6 @@ class FritzBox(lib.www.Client):
                 item(int(value), 'FritzBox')
 #       cycletime = time.time() - start
 #       logger.debug("cycle takes {0} seconds".format(cycletime))
-
-    def webcm(self, command={}):
-        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-        command['sid'] = self._get_sid()
-        command['getpage'] = '../html/login_sid.xml'
-        body = urllib.parse.urlencode(command)
-        url = "http://{}/cgi-bin/webcm".format(self._fritzbox)
-        self.fetch_url(url, headers=headers, body=body, method='POST')
 
 
 if __name__ == '__main__':
