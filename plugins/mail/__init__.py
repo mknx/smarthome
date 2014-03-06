@@ -77,6 +77,8 @@ class IMAP():
             return
         uids = data[0].split()
         for uid in uids:
+            if not self.alive:
+                break
             try:
                 rsp, data = imap.uid('fetch', uid, '(RFC822)')
                 if rsp != 'OK':
