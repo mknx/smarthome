@@ -103,7 +103,9 @@ class WOL():
         """
         :param mac: MAC address to wake up
         """
+        logger.debug("WOL: sending packet to {}".format(mac))
         mac = ''.join([p.zfill(2) for p in mac.replace(':', ' ').split()])
+
         mac = bytearray.fromhex(mac)
         if len(mac) != 6:
             logger.warning("WOL: invalid mac address {}!".format(mac))
@@ -114,7 +116,7 @@ class WOL():
         try:
             _s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             _s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            _s.sendto(magic, ('255.255.255.255', 9))
+            _s.sendto(magic, ('<broadcast>', 9))
         except:
             pass
         finally:
