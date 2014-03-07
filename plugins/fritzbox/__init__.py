@@ -9,7 +9,7 @@
 import datetime
 import logging
 import hashlib
-import urllib
+import urllib.parse
 import xml.etree.cElementTree
 
 import lib.connection
