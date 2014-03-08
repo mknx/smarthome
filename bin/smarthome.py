@@ -593,7 +593,7 @@ if __name__ == '__main__':
         reload_logics()
         exit(0)
     elif args.version:
-        print("SmartHome.py {0}".format(VERSION))
+        print("{0}".format(VERSION))
         exit(0)
     elif args.stop:
         lib.daemon.kill(__file__)
