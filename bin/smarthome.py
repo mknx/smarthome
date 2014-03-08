@@ -86,7 +86,6 @@ try:
     branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], stderr=subprocess.STDOUT).decode().strip('\n')
     if branch != 'master':
         VERSION += ".dev"
-    print(commit, branch)
 except Exception as e:
     VERSION += '0.man'
 
