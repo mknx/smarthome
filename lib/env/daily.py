@@ -35,8 +35,8 @@ try:
     body = urllib.parse.urlencode(data)
     content = lib.www.Client().fetch_url("http://get.smarthomepy.de/version", method='POST', body=body, timeout=5)
     if content:
-        version, change = content.decode().split('-')
-        if float(version) > data['v']:
+        major, minor, change = content.decode().split('.')
+        if float('.'.join([major, minor])) > data['v']:
             sh.env.core.upgrade(True)
         elif int(change) > data['c']:
             sh.env.core.update(True)
