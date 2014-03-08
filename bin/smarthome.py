@@ -77,13 +77,18 @@ import lib.orb
 #####################################################################
 MODE = 'default'
 LOGLEVEL = logging.INFO
-VERSION = '1.1-0'
+VERSION = '1.1.'
 TZ = gettz('UTC')
 try:
     os.chdir(BASE)
-    VERSION = subprocess.check_output(['git', 'describe', '--always', '--dirty=+'], stderr=subprocess.STDOUT).decode().strip('\n')
+    commit = subprocess.check_output(['git', 'describe', '--always'], stderr=subprocess.STDOUT).decode().strip('\n').split('-')[1]
+    VERSION += commit
+    branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], stderr=subprocess.STDOUT).decode().strip('\n')
+    if branch != 'master':
+        VERSION += ".dev"
+    print(commit, branch)
 except Exception as e:
-    pass
+    VERSION += '0.man'
 
 
 #####################################################################

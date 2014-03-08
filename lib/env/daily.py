@@ -12,28 +12,28 @@ import urllib.parse
 
 import lib.www
 
+## check version
 data = {}
-
 try:
     data['u'] = int((sh.now() - sh.env.core.start()).total_seconds() / 86400)
     data['i'] = sh.item_count
     data['p'] = len(sh._plugins._plugins)
-    __ = sh.version.split('-')
-    data['v'] = float(__[0])
-    data['c'] = int(__[1])
+    __ = sh.version.split('.')
+    data['v'] = float('.'.join([__[0], __[1]]))
+    data['c'] = int(__[2])
+    if len(__) == 4:
+        data['b'] = __[3]
 except:
     pass
-
 try:
     with open('/sys/class/net/eth0/address', 'r') as f:
         __ = f.readline().strip()
         data['m'] = hashlib.md5(__.encode()).hexdigest()
 except:
     pass
-
 try:
     body = urllib.parse.urlencode(data)
-    content = lib.www.Client().fetch_url("http://get.smarthomepy.de/version", method='POST', body=body)
+    content = lib.www.Client().fetch_url("http://get.smarthomepy.de/version", method='POST', body=body, timeout=5)
     if content:
         version, change = content.decode().split('-')
         if float(version) > data['v']:
