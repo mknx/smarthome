@@ -2,7 +2,7 @@
 
 Requirements
 ============
-This plugin needs one of the supported Drexel&Weiss devices connected through the USB service interface (not Modbusadapter):
+This plugin needs one of the supported Drexel&Weiss devices connected over the USB service interface (not over the  Modbusadapter):
 
    * aerosilent stratos
 
