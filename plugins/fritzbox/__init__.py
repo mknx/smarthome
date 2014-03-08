@@ -114,7 +114,7 @@ class FritzBox(lib.www.Client):
         self.alive = True
         self._sh.scheduler.add('fb-cycle', self._update_cycle, prio=5, cycle=self._cycle, offset=2)
         content = self._aha_command('getswitchlist')
-        if content:
+        if content and 'homeautoswitch' not in content:
             logger.info("FritzBox: found the following AIN: {}".format(content))
         if self._callmonitor_logics != []:
             self.__callmonitor = CallMonitor(self._callmonitor_logics, self._fritzbox)
