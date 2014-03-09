@@ -252,24 +252,27 @@ class SQL():
         if not self._fdb_lock.acquire(timeout=2):
             return
         tuples = sorted(self._buffer[item])
-        self._buffer[item] = []
+        tlen = len(tuples)
+        self._buffer[item] = self._buffer[item][tlen:]
         item._sqlite_last = self._timestamp(item.last_change())
-        if len(tuples) == 1:
-            _start, _dur, _avg, _on = tuples[0]
-            insert = (_start, item.id(), _dur, _avg, _avg, _avg, _on)
-        else:
-            _vals = []
-            _dur = 0
-            _avg = 0.0
-            _on = 0.0
-            _start = tuples[0][0]
-            for __start, __dur, __avg, __on in tuples:
-                _vals.append(__avg)
-                _avg += __dur * __avg
-                _on += __dur * __on
-                _dur += __dur
-            insert = (_start, item.id(), _dur, _avg / _dur, min(_vals), max(_vals), _on / _dur)
         try:
+            if tlen == 1:
+                _start, _dur, _avg, _on = tuples[0]
+                insert = (_start, item.id(), _dur, _avg, _avg, _avg, _on)
+            elif tlen > 1:
+                _vals = []
+                _dur = 0
+                _avg = 0.0
+                _on = 0.0
+                _start = tuples[0][0]
+                for __start, __dur, __avg, __on in tuples:
+                    _vals.append(__avg)
+                    _avg += __dur * __avg
+                    _on += __dur * __on
+                    _dur += __dur
+                insert = (_start, item.id(), _dur, _avg / _dur, min(_vals), max(_vals), _on / _dur)
+            else:  # no tuples
+                return
             self._fdb.execute("INSERT INTO num VALUES (?,?,?,?,?,?,?);", insert)
             self._fdb.commit()
         except Exception as e:
