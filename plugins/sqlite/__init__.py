@@ -363,9 +363,9 @@ class SQL():
     def _single(self, func, start, end='now', item=None):
         start = self._get_timestamp(start)
         end = self._get_timestamp(end)
-        where = " from num WHERE _item='{0}' AND _start + _dur > {1} AND _start <= {2}".format(item, start, end)
+        where = " from num WHERE _item='{0}' AND _start + _dur > {1} AND _start <= {2};".format(item, start, end)
         if func == 'avg':
-            query = "SELECT ROUND(SUM(_avg * _dur) / SUM(_dur)), 2)" + where
+            query = "SELECT ROUND(SUM(_avg * _dur) / SUM(_dur), 2)" + where
         elif func == 'min':
             query = "SELECT MIN(_min)" + where
         elif func == 'max':
