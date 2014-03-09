@@ -25,22 +25,23 @@ import lib.tools
 import re
 import threading
 from time import sleep
-from urllib.parse import quote_plus
+import json
+import urllib
+from urllib.parse import urlparse
 
 logger = logging.getLogger('Sonos')
 
+sonos_speaker = {}
 
 class UDPDispatcher(lib.connection.Server):
-    def __init__(self, parser, ip, port):
+    def __init__(self, ip, port):
         lib.connection.Server.__init__(self, ip, port, proto='UDP')
         self.dest = 'udp:' + ip + ':' + port
-        self.parser = parser
         self.connect()
-
 
     def handle_connection(self):
         try:
-            data, addr = self.socket.recvfrom(4096)
+            data, addr = self.socket.recvfrom(50000)
             ip = addr[0]
             addr = "{}:{}".format(addr[0], addr[1])
             logger.debug("{}: incoming connection from {}".format(self._name, addr))
@@ -48,8 +49,22 @@ class UDPDispatcher(lib.connection.Server):
             logger.exception("{}: {}".format(self._name, e))
             return
 
-        self.parser(ip, self.dest, data.decode().strip())
+        try:
+            sonos = json.loads(data.decode('utf-8'))
+            uid = sonos['uid']
 
+            if not uid:
+                logger.error("No uid found in sonos udp response!\nResponse: {}".format(sonos))
+
+            for key, value in sonos.items():
+                instance_var = getattr(sonos_speaker[uid], key)
+
+                if isinstance(instance_var, list):
+                    for item in instance_var:
+                        item(value, 'Sonos', '')
+
+        except Exception as err:
+            logger.error("Error parsing sonos broker response!\nError: {}".format(err))
 
 class Sonos():
     def __init__(self, smarthome, host='0.0.0.0', port='9999', broker_url=None):
@@ -59,29 +74,14 @@ class Sonos():
         self.port = port
         self._sh = smarthome
         self.command = SonosCommand()
-        self._val = {}
-        self._init_cmds = []
         self.subscribe_thread = None
         self.stop_threads = False
-        UDPDispatcher(self.parse_input, host, port)
-
-    def parse_input(self, source, dest, data):
-        try:
-            values = data.split('\n')
-            for value in values:
-                #removes all trailing '\r', issue in sonos-broker 0.1.5 and prior versions
-                value = value.rstrip('\r')
-                logger.debug(value)
-                self.update_items_with_data(value)
-
-        except Exception as err:
-            logger.debug(err)
+        UDPDispatcher(host, port)
 
     def run(self):
         self.alive = True
         self.subscribe_thread = threading.Thread(target=self.subscribe())
         self.subscribe_thread.start()
-
 
     def subscribe(self):
         counter = 120
@@ -93,10 +93,8 @@ class Sonos():
                 logger.debug('(re)registering to sonos broker server ...')
                 self.send_cmd('client/subscribe/{}'.format(self.port))
 
-                for cmd in self._init_cmds:
-                    logger.debug(cmd)
-                    self.send_cmd(cmd)
-
+                for uid, speaker in sonos_speaker.items():
+                    self.send_cmd(SonosCommand.current_state(uid))
                 counter = 0
 
             sleep(1)
@@ -106,54 +104,43 @@ class Sonos():
         self.alive = False
         self.stop_threads = True
 
-    def resolve_cmd(self, item, attr):
-        if '<sonos_uid>' in item.conf[attr]:
-            parent_item = item.return_parent()
-            if (parent_item is not None) and ('sonos_uid' in parent_item.conf):
-                item.conf[attr] = item.conf[attr].replace('<sonos_uid>', parent_item.conf['sonos_uid'].lower())
-            else:
-                logger.warning("sonos: could not resolve sonos_uid".format(item))
-        return item.conf[attr]
+    def resolve_uid(self, item):
+        uid = None
+
+        parent_item = item.return_parent()
+        if (parent_item is not None) and ('sonos_uid' in parent_item.conf):
+            uid = parent_item.conf['sonos_uid'].lower()
+        else:
+            logger.warning("sonos: could not resolve sonos_uid".format(item))
+        return uid
 
     def parse_item(self, item):
 
         if 'sonos_recv' in item.conf:
-            cmd = self.resolve_cmd(item, 'sonos_recv')
+            uid = self.resolve_uid(item)
 
-            if cmd is None:
+            if uid is None:
                 return None
+            attr = item.conf['sonos_recv']
 
-            logger.debug("sonos: {} receives updates by {}".format(item, cmd))
+            logger.debug("sonos: {} receives updates by {}".format(item, attr))
 
-            if not cmd in self._val:
-                self._val[cmd] = {'items': [item], 'logics': []}
-            else:
-                if not item in self._val[cmd]['items']:
-                    self._val[cmd]['items'].append(item)
+            if not uid in sonos_speaker:
+                sonos_speaker[uid] = SonosSpeaker()
 
-            if 'sonos_init' in item.conf:
-                cmd = self.resolve_cmd(item, 'sonos_init')
-                if cmd is None:
-                    return None
+            attr_list = getattr(sonos_speaker[uid], attr)
 
-                logger.debug("sonos: {0} is initialized by {1}".format(item, cmd))
-
-                if not cmd in self._val:
-                    self._val[cmd] = {'items': [item], 'logics': []}
-                else:
-                    if not item in self._val[cmd]['items']:
-                        self._val[cmd]['items'].append(item)
-
-                if not cmd in self._init_cmds:
-                    self._init_cmds.append(cmd)
+            if not item in attr_list:
+                attr_list.append(item)
 
         if 'sonos_send' in item.conf:
-            cmd = self.resolve_cmd(item, 'sonos_send')
 
-            if cmd is None:
+            uid = self.resolve_uid(item)
+            if uid is None:
                 return None
 
-            logger.debug("sonos: {} is send to {}".format(item, cmd))
+            attr = item.conf['sonos_send']
+            logger.debug("sonos: {} is send to {}".format(item, attr))
             return self.update_item
 
         return None
@@ -167,54 +154,52 @@ class Sonos():
             value = item()
 
             if 'sonos_send' in item.conf:
-                cmd = self.resolve_cmd(item, 'sonos_send')
+                uid = self.resolve_uid(item)
 
-                if not cmd:
+                if not uid:
                     return None
+                command = item.conf['sonos_send']
 
-                command = self.split_command(cmd)
-
-                #command[0] = speaker / zone? / group?
-                #command[1] = uid
-                #command[2..n] = command to execute
-
-                if command[2] == 'mute':
+                if command == 'mute':
                     if isinstance(value, bool):
-                        cmd = self.command.mute(command[1], int(value))
-                if command[2] == 'led':
+                        cmd = self.command.mute(uid, int(value))
+                if command == 'led':
                     if isinstance(value, bool):
-                        cmd = self.command.led(command[1], int(value))
-                if command[2] == 'play':
+                        cmd = self.command.led(uid,int(value))
+                if command == 'play':
                     if isinstance(value, bool):
-                        cmd = self.command.play(command[1], int(value))
-                if command[2] == 'pause':
+                        cmd = self.command.play(uid, int(value))
+                if command == 'pause':
                     if isinstance(value, bool):
-                        cmd = self.command.pause(command[1], int(value))
-                if command[2] == 'stop':
+                        cmd = self.command.pause(uid, int(value))
+                if command == 'stop':
                     if isinstance(value, bool):
-                        cmd = self.command.stop(command[1], int(value))
-                if command[2] == 'volume':
+                        cmd = self.command.stop(uid, int(value))
+                if command == 'volume':
                     if isinstance(value, int):
-                        cmd = self.command.volume(command[1], int(value))
-                if command[2] == 'next':
-                    if isinstance(value, int):
-                        cmd = self.command.next(command[1], int(value))
-                if command[2] == 'previous':
-                    if isinstance(value, int):
-                        cmd = self.command.previous(command[1], int(value))
-                if command[2] == 'play_uri':
-                    cmd = self.command.play_uri(command[1], value)
-
-                if command[2] == 'seek':
+                        cmd = self.command.volume(uid, int(value))
+                if command == 'next':
+                    cmd = self.command.next(uid)
+                if command == 'previous':
+                    cmd = self.command.previous(uid)
+                if command == 'play_uri':
+                    cmd = self.command.play_uri(uid, value)
+                if command == 'play_snippet':
+                    if item.conf['sonos_volume']:
+                        volume = item.conf['sonos_volume']
+                    else:
+                        volume = -1
+                    cmd = self.command.play_snippet(uid, value, volume)
+                if command == 'seek':
                     if not re.match(r'^[0-9][0-9]?:[0-9][0-9]:[0-9][0-9]$', value):
                         logger.warning('invalid timestamp for sonos seek command, use HH:MM:SS format')
                         cmd = None
                     else:
-                        cmd = self.command.seek(command[1], value)
-
+                        cmd = self.command.seek(uid, value)
+                if command == 'current_state':
+                    cmd = self.command.current_state(uid)
                 if cmd:
                     self.send_cmd(cmd)
-
         return None
 
     @staticmethod
@@ -235,7 +220,7 @@ class Sonos():
                 logger.warning("Sonos: Could not send message %s %s - %s %s" %
                                (self._broker_url, cmd, response.status, response.reason))
             conn.close()
-            del (conn)
+            del conn
 
         except Exception as e:
             logger.warning(
@@ -244,58 +229,85 @@ class Sonos():
         logger.debug("Sending request: {0}".format(cmd))
 
 
-    def update_items_with_data(self, data):
+class SonosSpeaker():
 
-        #trim the last occurence of '/': everything right-hand-side is our value
-        cmd = data.rsplit('/', 1)
-
-        if cmd[0] in self._val:
-            for item in self._val[cmd[0]]['items']:
-                logger.debug("data: {}".format(cmd[1]))
-                item(cmd[1], 'Sonos', '')
-
+    def __init__(self):
+        self.uid = []
+        self.ip = []
+        self.model = []
+        self.zone_name = []
+        self.zone_icon = []
+        self.serial_number = []
+        self.software_version = []
+        self.hardware_version = []
+        self.mac_address = []
+        self.playlist_position = []
+        self.volume = []
+        self.mute = []
+        self.led = []
+        self.streamtype = []
+        self.stop = []
+        self.play = []
+        self.pause = []
+        self.track_title = []
+        self.track_artist = []
+        self.track_duration = []
+        self.track_position = []
+        self.track_album_art = []
+        self.track_uri = []
+        self.radio_station = []
+        self.radio_show = []
 
 class SonosCommand():
     @staticmethod
     def mute(uid, value):
-        return "speaker/{}/mute/set/{}".format(uid, int(value))
+        return "speaker/{}/mute/{}".format(uid, int(value))
 
     @staticmethod
-    def next(uid, value):
-        return "speaker/{}/next/set/{}".format(uid, int(value))
+    def next(uid):
+        return "speaker/{}/next".format(uid)
 
     @staticmethod
-    def previous(uid, value):
-        return "speaker/{}/previous/set/{}".format(uid, int(value))
+    def previous(uid):
+        return "speaker/{}/previous".format(uid)
 
     @staticmethod
     def play(uid, value):
-        return "speaker/{}/play/set/{}".format(uid, int(value))
+        return "speaker/{}/play/{}".format(uid, int(value))
 
     @staticmethod
     def pause(uid, value):
-        return "speaker/{}/pause/set/{}".format(uid, int(value))
+        return "speaker/{}/pause/{}".format(uid, int(value))
 
     @staticmethod
     def stop(uid, value):
-        return "speaker/{}/stop/set/{}".format(uid, int(value))
+        return "speaker/{}/stop/{}".format(uid, int(value))
 
     @staticmethod
     def led(uid, value):
-        return "speaker/{}/led/set/{}".format(uid, int(value))
+        return "speaker/{}/led/{}".format(uid, int(value))
 
     @staticmethod
     def volume(uid, value):
-        return "speaker/{}/volume/set/{}".format(uid, value)
+        return "speaker/{}/volume/{}".format(uid, value)
 
     @staticmethod
     def seek(uid, value):
-        return "speaker/{}/seek/set/{}".format(uid, value)
+        return "speaker/{}/seek/{}".format(uid, value)
 
     @staticmethod
-    def play_uri(uid, value):
-        value = quote_plus(value)
-        return "speaker/{}/play_uri/set/{}".format(uid, value)
+    def play_uri(uid, uri):
+        uri = urllib.parse.quote_plus(uri, '&%=')
+        return "speaker/{}/play_uri/{}".format(uid, uri)
+
+    @staticmethod
+    def play_snippet(uid, uri, volume):
+        uri = urllib.parse.quote_plus(uri, '&%=')
+        return "speaker/{}/play_snippet/{}/{}".format(uid, uri, volume)
+
+    @staticmethod
+    def current_state(uid):
+        return "speaker/{}/current_state".format(uid)
 
     @staticmethod
     def get_uid_from_response(dom):
@@ -303,19 +315,4 @@ class SonosCommand():
             return dom.attributes["uid"].value.lower()
         except:
             return None
-
-    @staticmethod
-    def get_bool_result(dom, result_string):
-        try:
-            node = dom.getElementsByTagName(result_string)
-            if not node:
-                return None
-            value = node[0].childNodes[0].nodeValue.lower()
-
-            if value in ['true', '1', 't', 'y', 'yes']:
-                return True
-            return False
-        except:
-            return None
-
 
