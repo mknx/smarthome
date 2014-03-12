@@ -19,8 +19,12 @@ try:
     data['i'] = sh.item_count
     data['p'] = len(sh._plugins._plugins)
     __ = sh.version.split('.')
-    data['v'] = float('.'.join([__[0], __[1]]))
-    data['c'] = int(__[2])
+    lmajor = int(__[0])
+    lminor = int(__[1])
+    lchange = int(__[2])
+    data['m'] = lmajor
+    data['n'] = lminor
+    data['c'] = lchange
     if len(__) == 4:
         data['b'] = __[3]
 except:
@@ -35,10 +39,10 @@ try:
     body = urllib.parse.urlencode(data)
     content = lib.www.Client().fetch_url("http://get.smarthomepy.de/version", method='POST', body=body, timeout=5)
     if content:
-        major, minor, change = content.decode().split('.')
-        if float('.'.join([major, minor])) > data['v']:
+        rmajor, rminor, rchange = content.decode().split('.')
+        if int(rmajor) > lmajor or (int(rmajor) == lmajor and int(rminor) > lminor):
             sh.env.core.upgrade(True)
-        elif int(change) > data['c']:
+        elif int(rchange) > lchange:
             sh.env.core.update(True)
 except:
     pass
