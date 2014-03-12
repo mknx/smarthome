@@ -328,7 +328,7 @@ class SQL():
         reply = {'cmd': 'series', 'series': None, 'sid': sid}
         reply['params'] = {'update': True, 'item': item, 'func': func, 'start': iend, 'end': end, 'step': step, 'sid': sid}
         reply['update'] = self._sh.now() + datetime.timedelta(seconds=int(step / 1000))
-        where = " from num WHERE _item='{0}' AND _start + _dur > {1} AND _start <= {2} GROUP by CAST((_start / {3}) AS INTEGER)".format(item, istart, iend, step)
+        where = " from num WHERE _item='{0}' AND _start + _dur >= {1} AND _start <= {2} GROUP by CAST((_start / {3}) AS INTEGER)".format(item, istart, iend, step)
         if func == 'avg':
             query = "SELECT MIN(_start), ROUND(SUM(_avg * _dur) / SUM(_dur), 2)" + where + " ORDER BY _start ASC"
         elif func == 'min':
@@ -366,7 +366,7 @@ class SQL():
     def _single(self, func, start, end='now', item=None):
         start = self._get_timestamp(start)
         end = self._get_timestamp(end)
-        where = " from num WHERE _item='{0}' AND _start + _dur > {1} AND _start <= {2};".format(item, start, end)
+        where = " from num WHERE _item='{0}' AND _start + _dur >= {1} AND _start <= {2};".format(item, start, end)
         if func == 'avg':
             query = "SELECT ROUND(SUM(_avg * _dur) / SUM(_dur), 2)" + where
         elif func == 'min':
