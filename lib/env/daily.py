@@ -15,24 +15,24 @@ import lib.www
 ## check version
 data = {}
 try:
-    data['u'] = int((sh.now() - sh.env.core.start()).total_seconds() / 86400)
-    data['i'] = sh.item_count
-    data['p'] = len(sh._plugins._plugins)
+    data['up'] = int((sh.now() - sh.env.core.start()).total_seconds() / 86400)
+    data['it'] = sh.item_count
+    data['pl'] = len(sh._plugins._plugins)
     __ = sh.version.split('.')
     lmajor = int(__[0])
     lminor = int(__[1])
     lchange = int(__[2])
-    data['m'] = lmajor
-    data['n'] = lminor
-    data['c'] = lchange
+    data['ma'] = lmajor
+    data['mi'] = lminor
+    data['ch'] = lchange
     if len(__) == 4:
-        data['b'] = __[3]
+        data['br'] = __[3]
 except:
     pass
 try:
     with open('/sys/class/net/eth0/address', 'r') as f:
         __ = f.readline().strip()
-        data['m'] = hashlib.md5(__.encode()).hexdigest()
+        data['mc'] = hashlib.md5(__.encode()).hexdigest()
 except:
     pass
 try:
