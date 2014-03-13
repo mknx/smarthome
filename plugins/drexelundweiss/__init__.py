@@ -59,7 +59,7 @@ class DuW():
         self.devl[13] = {'device': 'aerosilent bianco', 'cmdpath': smarthome.base_dir + '/plugins/drexelundweiss/aerosilent_bianco.txt'}
         self.devl[14] = {'device': 'x2 plus', 'cmdpath': smarthome.base_dir + '/plugins/drexelundweiss/x2_plus.txt'}
         self.devl[15] = {'device': 'aerosilent business', 'cmdpath': smarthome.base_dir + '/plugins/drexelundweiss/aerosilent_business.txt'}
-        self.devl[17] = {'device': 'aerosilent stratos', 'cmdpath': smarthome.base_dir + '/plugins/drexelundweiss/x2_plus.txt'}
+        self.devl[17] = {'device': 'aerosilent stratos', 'cmdpath': smarthome.base_dir + '/plugins/drexelundweiss/aerosilent_stratos.txt'}
 
         try:
             self._port = serial.Serial(tty, 115200, timeout=5)
