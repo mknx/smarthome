@@ -1,22 +1,22 @@
-<Register>;<Description>;<min>;<max>;<divisor>;<comma>;<access>;<pcb>
-1328;Anforderung Wärmepumpe: Niedertemperatur-Heizkreis;0;1;1;0;R;WP
+ï»¿<Register>;<Description>;<min>;<max>;<divisor>;<comma>;<access>;<pcb>
+1328;Anforderung WÃ¤rmepumpe: Niedertemperatur-Heizkreis;0;1;1;0;R;WP
 1038;Anforderung: Brauchwasserheizung Elektoheizstab;0;1;1;0;R;WP
-1036;Anforderung: Brauchwasserheizung Wärmepumpe;0;1;1;0;R;WP
+1036;Anforderung: Brauchwasserheizung WÃ¤rmepumpe;0;1;1;0;R;WP
 1032;Anforderung: Raum-Heizstufe 1;0;1;1;0;R;WP
 1034;Anforderung: Raum-Heizstufe 2;0;1;1;0;R;WP
-1196;Anforderung: Sole Wärmepumpe;0;1;1;0;R;WP
+1196;Anforderung: Sole WÃ¤rmepumpe;0;1;1;0;R;WP
 5382;Ausschaltpunkt (Hysterese) Raum-Heizstufe 2;-1000;0;100;1;R/W;WP
 5378;Ausschaltpunkt (Hysterese) Raum-Heizstufe 1;100;300;100;1;R/W;WP
 922;Betriebsstunden: Elektroheizstab;0;600000000;60;0;R;WP
 912;Betriebsstunden: Heizstufe 1;0;600000000;60;0;R;WP
 914;Betriebsstunden: Heizstufe 2;0;600000000;60;0;R;WP
 910;Betriebsstunden: Kompressormotor;0;600000000;60;0;R;WP
-916;Betriebsstunden: Magnetventil Flüssiggas;0;600000000;60;0;R;WP
+916;Betriebsstunden: Magnetventil FlÃ¼ssiggas;0;600000000;60;0;R;WP
 924;Betriebsstunden: Niedertemperaturheizung;0;600000000;60;0;R;WP
-918;Betriebsstunden: Magnetventil Heißgas;0;600000000;60;0;R;WP
+918;Betriebsstunden: Magnetventil HeiÃŸgas;0;600000000;60;0;R;WP
 934;Betriebsstunden: Sole-Kreis;0;600000000;60;0;R;WP
 212;Boiler;-28000;100000;100;1;R;WP
-214;Boilerfühler Wärmepumpe;-28000;100000;100;1;R;WP
+214;BoilerfÃ¼hler WÃ¤rmepumpe;-28000;100000;100;1;R;WP
 838;Brandmeldealarm;0;1;1;0;R;WP
 5064;Brauchwasser Solltemperatur;20000;50000;1000;0;R/W;WP
 5130;Brauchwassertemperatur: Raumheizungssperre;20000;40000;1000;0;R/W;WP
@@ -31,7 +31,7 @@
 1272;EVU-Sperre Raumheizung aktiv;0;1;1;0;R;WP
 5036;Funktion BAD+;0;1;1;0;R/W;WP
 5492;Funktion HEIZUNG+;0;1;0;0;R/W;WP
-5000;Gerätetyp;1;90;1;0;R;WP
+5000;GerÃ¤tetyp;1;90;1;0;R;WP
 2000;History: Datum 01;0;31249999;1;0;R;WP
 2002;History: Datum 02;0;31249999;1;0;R;WP
 2004;History: Datum 03;0;31249999;1;0;R;WP
@@ -57,56 +57,56 @@
 2044;History: Datum 23;0;31249999;1;0;R;WP
 2046;History: Datum 24;0;31249999;1;0;R;WP
 2048;History: Datum 25;0;31249999;1;0;R;WP
-2150;History: Summenstörung (2) 01;0;2147483647;1;0;R;WP
-2152;History: Summenstörung (2) 02;0;2147483647;1;0;R;WP
-2154;History: Summenstörung (2) 03;0;2147483647;1;0;R;WP
-2156;History: Summenstörung (2) 04;0;2147483647;1;0;R;WP
-2158;History: Summenstörung (2) 05;0;2147483647;1;0;R;WP
-2160;History: Summenstörung (2) 06;0;2147483647;1;0;R;WP
-2162;History: Summenstörung (2) 07;0;2147483647;1;0;R;WP
-2164;History: Summenstörung (2) 08;0;2147483647;1;0;R;WP
-2166;History: Summenstörung (2) 09;0;2147483647;1;0;R;WP
-2168;History: Summenstörung (2) 10;0;2147483647;1;0;R;WP
-2170;History: Summenstörung (2) 11;0;2147483647;1;0;R;WP
-2172;History: Summenstörung (2) 12;0;2147483647;1;0;R;WP
-2174;History: Summenstörung (2) 13;0;2147483647;1;0;R;WP
-2176;History: Summenstörung (2) 14;0;2147483647;1;0;R;WP
-2178;History: Summenstörung (2) 15;0;2147483647;1;0;R;WP
-2180;History: Summenstörung (2) 16;0;2147483647;1;0;R;WP
-2182;History: Summenstörung (2) 17;0;2147483647;1;0;R;WP
-2184;History: Summenstörung (2) 18;0;2147483647;1;0;R;WP
-2186;History: Summenstörung (2) 19;0;2147483647;1;0;R;WP
-2188;History: Summenstörung (2) 20;0;2147483647;1;0;R;WP
-2190;History: Summenstörung (2) 21;0;2147483647;1;0;R;WP
-2192;History: Summenstörung (2) 22;0;2147483647;1;0;R;WP
-2194;History: Summenstörung (2) 23;0;2147483647;1;0;R;WP
-2196;History: Summenstörung (2) 24;0;2147483647;1;0;R;WP
-2198;History: Summenstörung (2) 25;0;2147483647;1;0;R;WP
-2100;History: Summenstörung 01;0;2147483647;1;0;R;WP
-2102;History: Summenstörung 02;0;2147483647;1;0;R;WP
-2104;History: Summenstörung 03;0;2147483647;1;0;R;WP
-2106;History: Summenstörung 04;0;2147483647;1;0;R;WP
-2108;History: Summenstörung 05;0;2147483647;1;0;R;WP
-2110;History: Summenstörung 06;0;2147483647;1;0;R;WP
-2112;History: Summenstörung 07;0;2147483647;1;0;R;WP
-2114;History: Summenstörung 08;0;2147483647;1;0;R;WP
-2116;History: Summenstörung 09;0;2147483647;1;0;R;WP
-2118;History: Summenstörung 10;0;2147483647;1;0;R;WP
-2120;History: Summenstörung 11;0;2147483647;1;0;R;WP
-2122;History: Summenstörung 12;0;2147483647;1;0;R;WP
-2124;History: Summenstörung 13;0;2147483647;1;0;R;WP
-2126;History: Summenstörung 14;0;2147483647;1;0;R;WP
-2128;History: Summenstörung 15;0;2147483647;1;0;R;WP
-2130;History: Summenstörung 16;0;2147483647;1;0;R;WP
-2132;History: Summenstörung 17;0;2147483647;1;0;R;WP
-2134;History: Summenstörung 18;0;2147483647;1;0;R;WP
-2136;History: Summenstörung 19;0;2147483647;1;0;R;WP
-2138;History: Summenstörung 20;0;2147483647;1;0;R;WP
-2140;History: Summenstörung 21;0;2147483647;1;0;R;WP
-2142;History: Summenstörung 22;0;2147483647;1;0;R;WP
-2144;History: Summenstörung 23;0;2147483647;1;0;R;WP
-2146;History: Summenstörung 24;0;2147483647;1;0;R;WP
-2148;History: Summenstörung 25;0;2147483647;1;0;R;WP
+2150;History: SummenstÃ¶rung (2) 01;0;2147483647;1;0;R;WP
+2152;History: SummenstÃ¶rung (2) 02;0;2147483647;1;0;R;WP
+2154;History: SummenstÃ¶rung (2) 03;0;2147483647;1;0;R;WP
+2156;History: SummenstÃ¶rung (2) 04;0;2147483647;1;0;R;WP
+2158;History: SummenstÃ¶rung (2) 05;0;2147483647;1;0;R;WP
+2160;History: SummenstÃ¶rung (2) 06;0;2147483647;1;0;R;WP
+2162;History: SummenstÃ¶rung (2) 07;0;2147483647;1;0;R;WP
+2164;History: SummenstÃ¶rung (2) 08;0;2147483647;1;0;R;WP
+2166;History: SummenstÃ¶rung (2) 09;0;2147483647;1;0;R;WP
+2168;History: SummenstÃ¶rung (2) 10;0;2147483647;1;0;R;WP
+2170;History: SummenstÃ¶rung (2) 11;0;2147483647;1;0;R;WP
+2172;History: SummenstÃ¶rung (2) 12;0;2147483647;1;0;R;WP
+2174;History: SummenstÃ¶rung (2) 13;0;2147483647;1;0;R;WP
+2176;History: SummenstÃ¶rung (2) 14;0;2147483647;1;0;R;WP
+2178;History: SummenstÃ¶rung (2) 15;0;2147483647;1;0;R;WP
+2180;History: SummenstÃ¶rung (2) 16;0;2147483647;1;0;R;WP
+2182;History: SummenstÃ¶rung (2) 17;0;2147483647;1;0;R;WP
+2184;History: SummenstÃ¶rung (2) 18;0;2147483647;1;0;R;WP
+2186;History: SummenstÃ¶rung (2) 19;0;2147483647;1;0;R;WP
+2188;History: SummenstÃ¶rung (2) 20;0;2147483647;1;0;R;WP
+2190;History: SummenstÃ¶rung (2) 21;0;2147483647;1;0;R;WP
+2192;History: SummenstÃ¶rung (2) 22;0;2147483647;1;0;R;WP
+2194;History: SummenstÃ¶rung (2) 23;0;2147483647;1;0;R;WP
+2196;History: SummenstÃ¶rung (2) 24;0;2147483647;1;0;R;WP
+2198;History: SummenstÃ¶rung (2) 25;0;2147483647;1;0;R;WP
+2100;History: SummenstÃ¶rung 01;0;2147483647;1;0;R;WP
+2102;History: SummenstÃ¶rung 02;0;2147483647;1;0;R;WP
+2104;History: SummenstÃ¶rung 03;0;2147483647;1;0;R;WP
+2106;History: SummenstÃ¶rung 04;0;2147483647;1;0;R;WP
+2108;History: SummenstÃ¶rung 05;0;2147483647;1;0;R;WP
+2110;History: SummenstÃ¶rung 06;0;2147483647;1;0;R;WP
+2112;History: SummenstÃ¶rung 07;0;2147483647;1;0;R;WP
+2114;History: SummenstÃ¶rung 08;0;2147483647;1;0;R;WP
+2116;History: SummenstÃ¶rung 09;0;2147483647;1;0;R;WP
+2118;History: SummenstÃ¶rung 10;0;2147483647;1;0;R;WP
+2120;History: SummenstÃ¶rung 11;0;2147483647;1;0;R;WP
+2122;History: SummenstÃ¶rung 12;0;2147483647;1;0;R;WP
+2124;History: SummenstÃ¶rung 13;0;2147483647;1;0;R;WP
+2126;History: SummenstÃ¶rung 14;0;2147483647;1;0;R;WP
+2128;History: SummenstÃ¶rung 15;0;2147483647;1;0;R;WP
+2130;History: SummenstÃ¶rung 16;0;2147483647;1;0;R;WP
+2132;History: SummenstÃ¶rung 17;0;2147483647;1;0;R;WP
+2134;History: SummenstÃ¶rung 18;0;2147483647;1;0;R;WP
+2136;History: SummenstÃ¶rung 19;0;2147483647;1;0;R;WP
+2138;History: SummenstÃ¶rung 20;0;2147483647;1;0;R;WP
+2140;History: SummenstÃ¶rung 21;0;2147483647;1;0;R;WP
+2142;History: SummenstÃ¶rung 22;0;2147483647;1;0;R;WP
+2144;History: SummenstÃ¶rung 23;0;2147483647;1;0;R;WP
+2146;History: SummenstÃ¶rung 24;0;2147483647;1;0;R;WP
+2148;History: SummenstÃ¶rung 25;0;2147483647;1;0;R;WP
 2050;History: Zeit 01;0;235959;1;0;R;WP
 2052;History: Zeit 02;0;235959;1;0;R;WP
 2054;History: Zeit 03;0;235959;1;0;R;WP
@@ -132,43 +132,43 @@
 2094;History: Zeit 23;0;235959;1;0;R;WP
 2096;History: Zeit 24;0;235959;1;0;R;WP
 2098;History: Zeit 25;0;235959;1;0;R;WP
-222;Hochdruck Wärmepumpe;0;1;1;0;R;WP
+222;Hochdruck WÃ¤rmepumpe;0;1;1;0;R;WP
 1160;HW-Version;0;900;1;0;R;WP
 1164;HW-Version SUB2;0;900;1;0;R;WP
 5066;Hysterese: Brauchwasser Solltemperatur;2000;8000;1000;0;R/W;WP
 7000;Information;0;2147483647;1;0;R;WP
 232;Kontakt (EVU);0;1;1;0;R;WP
-224;Niederdruck Wärmepumpe;0;1;1;0;R;WP
+224;Niederdruck WÃ¤rmepumpe;0;1;1;0;R;WP
 5168;Pelletofen vorhanden?;0;1;1;0;R;WP
-5282;Pelletofen: Anlaufverzögerung;1;60;1;0;R;WP
+5282;Pelletofen: AnlaufverzÃ¶gerung;1;60;1;0;R;WP
 5284;Pelletofen: Mindestlaufzeit;1;60;1;0;R;WP
 200;Raum;-28000;100000;100;1;R/W;WP
 5016;Raum-Soll;14000;26000;100;1;R/W;WP
-226;Revisionstüre;0;1;1;0;R;WP
+226;RevisionstÃ¼re;0;1;1;0;R;WP
 1158;SNR;1;999999;1;0;R;WP
-5496;Sollwert-Erhöhung Funktion HEIZUNG+;300;2000;100;1;R/W;WP
-1314;Status Wärmepumpe;0;12;1;0;R;WP
-1316;Status Wärmepumpe Restzeit;0;3600;1;0;R;WP
-828;Störung: Boilerfühler Elektroheizstab;0;1;1;0;R;WP
-830;Störung: Boilerfühler Wärmepumpe;0;1;1;0;R;WP
-810;Störung: Boilerübertemperatur;0;1;1;0;R;WP
-804;Störung: Temperaturfühler Raum;0;1;1;0;R;WP
-808;Störung: Temperaturfühler Verdampferregister;0;1;1;0;R;WP
-818;Störung: Wärmepumpe Hochdruck;0;1;1;0;R;WP
-820;Störung: Wärmepumpe Niederdruck;0;1;1;0;R;WP
-840;Störung: Wert nicht zulässig;0;3;1;0;R;WP
-800;Summenstörung;0;2147483647;1;0;R;WP
-7500;Summenstörung 2;0;2147483647;1;0;R;WP
+5496;Sollwert-ErhÃ¶hung Funktion HEIZUNG+;300;2000;100;1;R/W;WP
+1314;Status WÃ¤rmepumpe;0;12;1;0;R;WP
+1316;Status WÃ¤rmepumpe Restzeit;0;3600;1;0;R;WP
+828;StÃ¶rung: BoilerfÃ¼hler Elektroheizstab;0;1;1;0;R;WP
+830;StÃ¶rung: BoilerfÃ¼hler WÃ¤rmepumpe;0;1;1;0;R;WP
+810;StÃ¶rung: BoilerÃ¼bertemperatur;0;1;1;0;R;WP
+804;StÃ¶rung: TemperaturfÃ¼hler Raum;0;1;1;0;R;WP
+808;StÃ¶rung: TemperaturfÃ¼hler Verdampferregister;0;1;1;0;R;WP
+818;StÃ¶rung: WÃ¤rmepumpe Hochdruck;0;1;1;0;R;WP
+820;StÃ¶rung: WÃ¤rmepumpe Niederdruck;0;1;1;0;R;WP
+840;StÃ¶rung: Wert nicht zulÃ¤ssig;0;3;1;0;R;WP
+800;SummenstÃ¶rung;0;2147483647;1;0;R;WP
+7500;SummenstÃ¶rung 2;0;2147483647;1;0;R;WP
 1156;SW-Version;0;1000000;1;0;R;WP
 1174;Tag;1;7;1;0;R;WP
 7508;Time-Out: Solltemperatur Raum;0;1;1;0;R;WP
-7506;Time-Out: Temperaturfühler Raum;0;1;1;0;R;WP
+7506;Time-Out: TemperaturfÃ¼hler Raum;0;1;1;0;R;WP
 5212;Uhrzeit;0;235959;1;0;R/W;WP
 5442;Uhrzeit und Datum verschicken;0;1;1;0;R;WP
 210;Verdampferregister;-28000;100000;100;1;R;WP
-5374;Verzögerung Brauchwassererheizung\\(10 min);0;1;0;0;R/W;WP
-1212;Vorübergehende Boilerübertemperatur;0;1;1;0;R;WP
-7006;Vorübergehende Boilerübertemperatur;0;1;1;0;R;WP
-1044;Wärmepumpe;0;1;1;0;R;WP
+5374;VerzÃ¶gerung Brauchwassererheizung\\(10 min);0;1;0;0;R/W;WP
+1212;VorÃ¼bergehende BoilerÃ¼bertemperatur;0;1;1;0;R;WP
+7006;VorÃ¼bergehende BoilerÃ¼bertemperatur;0;1;1;0;R;WP
+1044;WÃ¤rmepumpe;0;1;1;0;R;WP
 5494;Zeitspanne Funktion HEIZUNG+;180;14400;60;0;R/W;WP
-5436;Zentralgerät Adresse;100;999999;1;0;R;WP
+5436;ZentralgerÃ¤t Adresse;100;999999;1;0;R;WP

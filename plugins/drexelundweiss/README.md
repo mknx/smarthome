@@ -4,7 +4,8 @@ This plugin uses the D&W USB service interface for connection, so you don't need
 
 Supported Devices
 ============
-This plugin needs one of the supported Drexel&Weiss devices:
+
+The plugin detects the connected device type automatically:
 
    * aerosilent bianco
    * aerosilent business
@@ -33,11 +34,13 @@ plugin.conf
    class_name = DuW
    class_path = plugins.drexelundweiss
    tty = /dev/ttyUSB0
+#   Busmonitor = 1
 #   LU_ID = 130
 #   WP_ID = 140
 </pre>
 
 You have to adapt the tty to your local environment and change LU_ID and WP_ID if not D&W default is used.
+Busmonitor mode will output all activity on Service Interface to smarthome.py log if started in debug mode, default is Busmonitor off.
 
 items.conf
 --------------
