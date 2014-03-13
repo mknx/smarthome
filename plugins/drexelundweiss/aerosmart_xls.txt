@@ -3,7 +3,8 @@
 1066;Aktive Lüfterstufe;0;4;1;0;R;LU
 1292;Anforderung der Ventilatoren durch Wärmepumpe;0;1;1;0;R;LU
 1218;Anforderung: Beschattung;0;1;1;0;R;LU
-1216;Anforderung: Bypassklappe;0;1;1;0;R;LU
+1038;Anforderung: Brauchwasserheizung Elektoheizstab;0;1;1;0;R;LU
+1036;Anforderung: Brauchwasserheizung Wärmepumpe;0;1;1;0;R;LU
 228;Anforderung: LST3_EXT;0;1;1;0;R;LU
 1032;Anforderung: Raum-Heizstufe1;0;1;1;0;R;LU
 1034;Anforderung: Raum-Heizstufe2;0;1;1;0;R;LU
@@ -18,7 +19,6 @@
 1300;Betriebsart Sommerautomatik;0;2;1;0;R;LU
 902;Betriebsstunden: Abluftventilator;0;600000000;60;0;R;LU
 964;Betriebsstunden: Beschattung;0;600000000;60;0;R;LU
-932;Betriebsstunden: Bypassklappe;0;600000000;60;0;R;LU
 928;Betriebsstunden: Feinstaubfilter;0;600000000;60;0;R;LU
 940;Betriebsstunden: Frostschutzeinrichtung;0;600000000;60;0;R;LU
 926;Betriebsstunden: Grobstaubfilter;0;600000000;60;0;R;LU
@@ -28,6 +28,7 @@
 904;Betriebsstunden: Lüfterstufe1;0;600000000;60;0;R;LU
 906;Betriebsstunden: Lüfterstufe2;0;600000000;60;0;R;LU
 908;Betriebsstunden: Lüfterstufe3;0;600000000;60;0;R;LU
+934;Betriebsstunden: Sole-Kreis;0;600000000;60;0;R;LU
 970;Betriebsstunden: Sole-Kreis Außenluft;0;600000000;60;0;R;LU
 900;Betriebsstunden: Zuluftventilator;0;600000000;60;0;R;LU
 838;Brandmeldealarm;0;1;1;0;R;LU
@@ -40,9 +41,9 @@
 5278;CO2-Zielwert Lüfterstufe2;800;999;1;0;R/W;LU
 5280;CO2-Zielwert Lüfterstufe3;1000;1500;1;0;R/W;LU
 5210;Datum;0;99999999;1;0;R/W;LU
+1184;Differenzdruck Zuluft;5000;500000;1000;0;R;LU
 1186;Drehzahl Abluftventilator 1/min;0;3500;1;0;R;LU
 1094;Drehzahl Abluftventilator %;0;10000;100;0;R;LU
-1184;Drehzahl Zuluftventilator 1/min;0;3500;1;0;R;LU
 1092;Drehzahl Zuluftventilator %;0;10000;100;0;R;LU
 5376;Einschaltpunkt (Hysterese) Raum-Heizstufe1;-300;-100;100;1;R/W;LU
 5380;Einschaltpunkt (Hysterese) Raum-Heizstufe2;-1500;-500;100;1;R/W;LU
@@ -176,6 +177,7 @@
 252;Relaiskontakt: EXT;0;1;1;0;R;LU
 226;Revisionstüre;0;1;1;0;R;LU
 1158;SNR;1;999999;1;0;R;LU
+216;Sole;-28000;100000;100;1;R;LU
 1084;Soll-Volumenstrom Abluft;0;280;1;0;R;LU
 5060;Soll-Volumenstrom Lüfterstufe2;40;230;1;0;R/W;LU
 1082;Soll-Volumenstrom Zuluft;0;280;1;0;R;LU
@@ -187,8 +189,10 @@
 5030;Standzeit Grobstaubfilter;131400;1051200;60;0;R;LU
 826;Störung: Abluftventilator;0;1;1;0;R;LU
 832;Störung: CO2-Sensor;0;1;1;0;R;LU
+856;Störung: Teilnehmer nicht erreichbar!;0;1;1;0;R;LU
 806;Störung: Temperaturfühler Außenluft;0;1;1;0;R;LU
 804;Störung: Temperaturfühler Raum;0;1;1;0;R;LU
+812;Störung: Temperaturfühler Sole;0;1;1;0;R;LU
 7504;Störung: Temperaturfühler Sole Außenluft;0;1;1;0;R;LU
 840;Störung: Wert nicht zulässig;0;3;1;0;R;LU
 824;Störung: Zuluftventilator;0;1;1;0;R;LU
@@ -197,8 +201,6 @@
 1156;SW-Version;0;1000000;1;0;R;LU
 1174;Tag;1;7;1;0;R;LU
 5340;Temperatur Außenluft: Beschattung;12000;22000;100;1;R/W;LU
-5084;Temperatur Außenluft: Bypass öffnen;10000;20000;1000;0;R/W;LU
-5086;Temperatur Außenluft: Bypass schließen;10000;20000;1000;0;R/W;LU
 5090;Temperatur Außenluft: Frostschutz aus;-10000;5000;1000;0;R/W;LU
 5088;Temperatur Außenluft: Frostschutz ein;-10000;5000;1000;0;R/W;LU
 5200;Temperatur Außenluft: Kühlung aus;16000;22000;1000;0;R/W;LU
@@ -208,8 +210,6 @@
 5386;Temperatur Außenluft: Sommerautomatik aktivieren;10000;19000;1000;0;R/W;LU
 5388;Temperatur Außenluft: Sommerautomatik deaktivieren;20000;30000;1000;0;R/W;LU
 206;Temperatur Sole: nach Außenluftvorwärmung;-28000;100000;100;1;R;LU
-5452;Temperatur: Bypass Kühlung Aus (Bypass öffnen);20000;35000;1000;0;R/W;LU
-5450;Temperatur: Bypass Kühlung Ein (Bypass schliessen);20000;35000;1000;0;R/W;LU
 5206;Temperaturschwelle Frostschutz;-5000;0;100;1;R/W;LU
 7508;Time-Out: Solltemperatur Raum;0;1;1;0;R;LU
 7506;Time-Out: Temperaturfühler Raum;0;1;1;0;R;LU

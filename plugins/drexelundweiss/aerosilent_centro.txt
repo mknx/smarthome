@@ -2,28 +2,21 @@
 5328;Absenkung der Lüfterstufe1;30;70;1;0;R/W;LU
 1066;Aktive Lüfterstufe;0;4;1;0;R;LU
 1292;Anforderung der Ventilatoren durch Wärmepumpe;0;1;1;0;R;LU
-1218;Anforderung: Beschattung;0;1;1;0;R;LU
 1216;Anforderung: Bypassklappe;0;1;1;0;R;LU
+1214;Anforderung: Durchgangsventil Sole Fortluft;0;1;1;0;R;LU
 228;Anforderung: LST3_EXT;0;1;1;0;R;LU
-1032;Anforderung: Raum-Heizstufe1;0;1;1;0;R;LU
-1034;Anforderung: Raum-Heizstufe2;0;1;1;0;R;LU
-1322;Anforderung: Sommerautomatik;0;1;1;0;R;LU
+1320;Anforderung: Sole Kühlung;0;1;1;0;R;LU
 1336;Anforderung: Ventilatoren extern;0;1;1;0;R;LU
-5382;Ausschaltpunkt (Hysterese) Raum-Heizstufe2;-1000;0;100;1;R/W;LU
-5378;Ausschaltpunkt (Hysterese) Raum-Heizstufe1;100;300;100;1;R/W;LU
 202;Außenluft;-28000;100000;100;1;R;LU
 5304;Außenluftfühler vorhanden?;0;1;1;0;R;LU
-5336;Beschattungsfunktion;0;1;1;0;R;LU
 5002;Betriebsart;0;5;1;0;R/W;LU
-1300;Betriebsart Sommerautomatik;0;2;1;0;R;LU
 902;Betriebsstunden: Abluftventilator;0;600000000;60;0;R;LU
 964;Betriebsstunden: Beschattung;0;600000000;60;0;R;LU
 932;Betriebsstunden: Bypassklappe;0;600000000;60;0;R;LU
+956;Betriebsstunden: Durchgangsventil Sole Fortluft;0;600000000;60;0;R;LU
 928;Betriebsstunden: Feinstaubfilter;0;600000000;60;0;R;LU
 940;Betriebsstunden: Frostschutzeinrichtung;0;600000000;60;0;R;LU
 926;Betriebsstunden: Grobstaubfilter;0;600000000;60;0;R;LU
-912;Betriebsstunden: Heizstufe1;0;600000000;60;0;R;LU
-914;Betriebsstunden: Heizstufe2;0;600000000;60;0;R;LU
 962;Betriebsstunden: Lüfterstufe0;0;600000000;60;0;R;LU
 904;Betriebsstunden: Lüfterstufe1;0;600000000;60;0;R;LU
 906;Betriebsstunden: Lüfterstufe2;0;600000000;60;0;R;LU
@@ -40,20 +33,26 @@
 5278;CO2-Zielwert Lüfterstufe2;800;999;1;0;R/W;LU
 5280;CO2-Zielwert Lüfterstufe3;1000;1500;1;0;R/W;LU
 5210;Datum;0;99999999;1;0;R/W;LU
+220;Differenzdruck Abluft;5000;500000;1000;0;R;LU
+218;Differenzdruck Zuluft;5000;500000;1000;0;R;LU
+5020;Drehzahl Abluftventilator %;0;10000;100;0;R/W;LU
 1186;Drehzahl Abluftventilator 1/min;0;3500;1;0;R;LU
 1094;Drehzahl Abluftventilator %;0;10000;100;0;R;LU
 1184;Drehzahl Zuluftventilator 1/min;0;3500;1;0;R;LU
 1092;Drehzahl Zuluftventilator %;0;10000;100;0;R;LU
-5376;Einschaltpunkt (Hysterese) Raum-Heizstufe1;-300;-100;100;1;R/W;LU
-5380;Einschaltpunkt (Hysterese) Raum-Heizstufe2;-1500;-500;100;1;R/W;LU
+5018;Drehzahl Zuluftventilator %;0;10000;100;0;R/W;LU
 5330;Erhöhung der Lüfterstufe3;30;100;1;0;R/W;LU
 5034;Feinstaubfilter vorhanden?;0;1;1;0;R;LU
 7004;Feinstaubfilter wechseln!;0;1;1;0;R;LU
+208;Fortluft Plattenwärmetauscher;-28000;100000;100;1;R;LU
+5426;Fortluftoption;0;1;1;0;R;LU
+5428;Fortluft-Solltemperatur für Frostfreihaltung;3000;10000;100;1;R;LU
 5398;Funktion Externe Kontakt;0;2;1;0;R;LU
-5384;Funktion Sommerautomatik;0;1;1;0;R;LU
+5432;Funktion Relaiskontakt: Summenstörung;0;2;1;0;R/W;LU
 5000;Gerätetyp;1;90;1;0;R;LU
 946;Gesamt beförderte Kubikmeter;0;600000000;1;0;R;LU
 960;Gesamt beförderte Luftmenge seit Filterwechsel;0;600000000;1;0;R;LU
+5360;Grenztemperatur für Vereisungsschutz;-40000;-8000;1000;0;R/W;LU
 5164;Grobstaubfilter Betriebsart Filterüberwachung;1;3;1;0;R;LU
 5166;Grobstaubfilter Maximales Fördervolumen;100000;1000000;1;0;R;LU
 5154;Grobstaubfilter vorhanden?;0;1;0;0;R;LU
@@ -163,31 +162,24 @@
 1164;HW-Version SUB2;0;900;1;0;R;LU
 7000;Information;0;2147483647;1;0;R;LU
 238;Kontakt: Brandmeldealarm;0;1;1;0;R;LU
+5438;Messbereich Drucksensor;0;2;1;0;R;LU
 5192;Kühlung vorhanden?;0;1;1;0;R;LU
-5270;Maximal zulässige Drehzahl Abluftventilator;1500;6000;1;0;R/W;LU
-5268;Maximal zulässige Drehzahl Zuluftventilator;1500;6000;1;0;R/W;LU
-5486;Mindestluftmenge;40;230;1;0;R/W;LU
-5168;Pelletofen vorhanden?;0;1;1;0;R;LU
-5282;Pelletofen: Anlaufverzögerung;1;60;1;0;R;LU
-5284;Pelletofen: Mindestlaufzeit;1;60;1;0;R;LU
 200;Raum;-28000;100000;100;1;R/W;LU
-5016;Raum-Soll;14000;26000;100;1;R/W;LU
-5338;Raumtemperatur: Beschattung;20000;26000;100;1;R/W;LU
 252;Relaiskontakt: EXT;0;1;1;0;R;LU
-226;Revisionstüre;0;1;1;0;R;LU
 1158;SNR;1;999999;1;0;R;LU
 1084;Soll-Volumenstrom Abluft;0;280;1;0;R;LU
-5060;Soll-Volumenstrom Lüfterstufe2;40;230;1;0;R/W;LU
 1082;Soll-Volumenstrom Zuluft;0;280;1;0;R;LU
-5390;Sommerautomatik Schaltpunkt1;0;2400;1;0;R/W;LU
-5392;Sommerautomatik Schaltpunkt2;0;2400;1;0;R/W;LU
-5394;Sommerautomatik Schaltpunkt3;0;2400;1;0;R/W;LU
-5396;Sommerautomatik Schaltpunkt4;0;2400;1;0;R/W;LU
 5032;Standzeit Feinstaubfilter;131400;1051200;60;0;R;LU
 5030;Standzeit Grobstaubfilter;131400;1051200;60;0;R;LU
 826;Störung: Abluftventilator;0;1;1;0;R;LU
 832;Störung: CO2-Sensor;0;1;1;0;R;LU
+836;Störung: Druckdifferenzregelung Abluft;0;1;1;0;R;LU
+834;Störung: Druckdifferenzregelung Zuluft;0;1;1;0;R;LU
+854;Störung: Druckverlust Abluft zu groß;0;1;1;0;R;LU
+852;Störung: Druckverlust Zuluft zu groß;0;1;1;0;R;LU
+856;Störung: Teilnehmer nicht erreichbar!;0;1;1;0;R;LU
 806;Störung: Temperaturfühler Außenluft;0;1;1;0;R;LU
+814;Störung: Temperaturfühler Fortluft Plattenwärmetauscher;0;1;1;0;R;LU
 804;Störung: Temperaturfühler Raum;0;1;1;0;R;LU
 7504;Störung: Temperaturfühler Sole Außenluft;0;1;1;0;R;LU
 840;Störung: Wert nicht zulässig;0;3;1;0;R;LU
@@ -196,7 +188,6 @@
 7500;Summenstörung2;0;2147483647;1;0;R;LU
 1156;SW-Version;0;1000000;1;0;R;LU
 1174;Tag;1;7;1;0;R;LU
-5340;Temperatur Außenluft: Beschattung;12000;22000;100;1;R/W;LU
 5084;Temperatur Außenluft: Bypass öffnen;10000;20000;1000;0;R/W;LU
 5086;Temperatur Außenluft: Bypass schließen;10000;20000;1000;0;R/W;LU
 5090;Temperatur Außenluft: Frostschutz aus;-10000;5000;1000;0;R/W;LU
@@ -205,8 +196,6 @@
 5198;Temperatur Außenluft: Kühlung ein;17000;23000;1000;0;R/W;LU
 5422;Temperatur Außenluft: Reduktion Luftmenge 10%;-20000;0;100;1;R/W;LU
 5424;Temperatur Außenluft: Reduktion Luftmenge 20%;-30000;-10000;100;1;R/W;LU
-5386;Temperatur Außenluft: Sommerautomatik aktivieren;10000;19000;1000;0;R/W;LU
-5388;Temperatur Außenluft: Sommerautomatik deaktivieren;20000;30000;1000;0;R/W;LU
 206;Temperatur Sole: nach Außenluftvorwärmung;-28000;100000;100;1;R;LU
 5452;Temperatur: Bypass Kühlung Aus (Bypass öffnen);20000;35000;1000;0;R/W;LU
 5450;Temperatur: Bypass Kühlung Ein (Bypass schliessen);20000;35000;1000;0;R/W;LU
