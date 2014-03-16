@@ -181,9 +181,10 @@ class SmartHome():
         #############################################################
         # Check Time
         #############################################################
-        while datetime.date.today().isoformat() < '2013-10-24':  # XXX update date
+        while datetime.date.today().isoformat() < '2014-03-16':  # XXX update date
             time.sleep(5)
-            logger.info("Waiting for datetime update")
+            print("Waiting for updated time.")
+            logger.info("Waiting for updated time.")
 
         #############################################################
         # Catching Exceptions
