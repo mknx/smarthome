@@ -110,6 +110,8 @@ class Jointspace():
                         self._send_key('Digit' + digit)
                         sleep(0.2)
                     self._send_key('Confirm')
+                elif(command == 'source'):
+                    self._post_json(json.dumps({'id': value}), "/1/sources/current")
                 elif(command == 'sendkey'):
                     key = args[0]
                     logger.info("Jointspace: sending key {}".format(key))
@@ -180,7 +182,7 @@ class Jointspace():
             con.request('POST', path, json, header)
             resp = con.getresponse().read().decode()
         except:
-            logger.warning("Jointspace: Error requesting {0}".format(url))
+            logger.warning("Jointspace: Error posting {0} to ".format(json, path))
             return False
         else:
             status = resp.split('<title>')[1].split('</title>')[0].strip()
