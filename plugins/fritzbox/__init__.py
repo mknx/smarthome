@@ -40,7 +40,7 @@ values = {'external_ip': ('WANIPConnection', 'GetExternalIPAddress', 'NewExterna
           'wlan_1': ('WLANConfiguration1', 'GetInfo', 'NewEnable', '1'),
           'wlan_2': ('WLANConfiguration2', 'GetInfo', 'NewEnable', '1'),
           'wlan_3': ('WLANConfiguration3', 'GetInfo', 'NewEnable', '1'),
-          'link': ('WANCommonInterfaceConfig', 'GetCommonLinkPropertiesl', 'NewPhysicalLinkStatus', None)
+          'link': ('WANCommonInterfaceConfig', 'GetCommonLinkProperties', 'NewPhysicalLinkStatus', 'Up')
           }
 #         'calls': ('VoIP', 'X_AVM-DE_DialGetConfig', 'NewX_AVM-DE_PhoneName', None),
 #         'phonebook': ('X_AVM-DE_OnTel', 'GetCallList', '', None)
