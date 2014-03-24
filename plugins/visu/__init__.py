@@ -288,7 +288,8 @@ class WebSocketHandler(lib.connection.Stream):
             if data['items'] == [None]:
                 return
             items = []
-            for path in list(set(data['items']).difference(set(self.monitor['item']))):
+#           for path in list(set(data['items']).difference(set(self.monitor['item']))):
+            for path in list(data['items']):
                 if path in self.items:
                     items.append([path, self.items[path]['item']()])
                 else:
