@@ -190,6 +190,16 @@ class Sonos():
                     else:
                         volume = -1
                     cmd = self.command.play_snippet(uid, value, volume)
+                if command == 'play_tts':
+                    if item.conf['sonos_volume']:
+                        volume = item.conf['sonos_volume']
+                    else:
+                        volume = -1
+                    if item.conf['sonos_tts_language']:
+                        language = item.conf['sonos_tts_language']
+                    else:
+                        language = 'de'
+                    cmd = self.command.play_tts(uid, value, language, volume)
                 if command == 'seek':
                     if not re.match(r'^[0-9][0-9]?:[0-9][0-9]:[0-9][0-9]$', value):
                         logger.warning('invalid timestamp for sonos seek command, use HH:MM:SS format')
@@ -219,8 +229,11 @@ class Sonos():
             else:
                 logger.warning("Sonos: Could not send message %s %s - %s %s" %
                                (self._broker_url, cmd, response.status, response.reason))
+
+            data = response.read()
+            logger.debug('Sonos server message: {}'.format(data))
+
             conn.close()
-            del conn
 
         except Exception as e:
             logger.warning(
@@ -304,6 +317,11 @@ class SonosCommand():
     def play_snippet(uid, uri, volume):
         uri = urllib.parse.quote_plus(uri, '&%=')
         return "speaker/{}/play_snippet/{}/{}".format(uid, uri, volume)
+
+    @staticmethod
+    def play_tts(uid, uri, language, volume):
+        uri = urllib.parse.quote_plus(uri, '&%=')
+        return "speaker/{}/play_tts/{}/{}/{}".format(uid, uri, language, volume)
 
     @staticmethod
     def current_state(uid):

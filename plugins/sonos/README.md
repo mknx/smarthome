@@ -4,6 +4,12 @@ The plugin is designed to control the sonos speakers in connection with the sono
 
 0. Release
 -----------------------------
+  v0.5    2014-03-26
+
+    -- Google Text-To-Speech support added
+    -- new commands:
+        -   play_tts (play any text through Google TTS API)
+    -- broken_pipe bugfix
 
   v0.4    2014-03-08
 
@@ -197,6 +203,15 @@ The plugin is designed to control the sonos speakers in connection with the sono
         sonos_send = play_snippet
         sonos_volume = <-1 - 100>   #-1: use current volume for snippet
         #x-file-cifs://192.168.0.10/music/snippets/welcome.mp3
+
+    [[play_tts]]
+        type = str                  #text is truncated to 100 chars
+        enforce_updates = True
+        sonos_send = play_tts
+        sonos_volume = <-1 - 100>   #-1: use current volume for tts snippet
+        sonos_tts_language = 'de'   #(see google translate url http://translate.google.com/translate_tts?tl=en....
+                                    #for more languages e.g. 'en', 'fr')
+                                    #If no value is given, 'en' is used
 
     [[uid]]
         type = str
