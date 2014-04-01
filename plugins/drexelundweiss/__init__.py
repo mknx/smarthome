@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #
-#  Copyright 2014 KNX-User-Forum e.V.           http://knx-user-forum.de/
+# Copyright 2014 KNX-User-Forum e.V. http://knx-user-forum.de/
 #
-#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
+# This file is part of SmartHome.py. http://mknx.github.io/smarthome/
 #
-#  SmartHome.py is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+# SmartHome.py is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#  SmartHome.py is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+# SmartHome.py is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #
 
 import logging
@@ -79,7 +79,7 @@ class DuW():
         try:
             self._port = serial.Serial(tty, 115200, timeout=5)
         except:
-            logger.error("Could not open {}.".format(tty))
+            logger.error("DuW: could not open {}.".format(tty))
             return
         else:
             self._is_connected = True
@@ -180,7 +180,8 @@ class DuW():
         if not self._cmd:
             self.alive = False
             try:
-                self._port.close()
+                if self._is_connected:
+                    self._port.close()
             except Exception as e:
                 logger.exception(e)
             return
@@ -330,7 +331,8 @@ class DuW():
             pass
 
         try:
-            self._port.close()
+            if self._is_connected:
+                self._port.close()
         except Exception as e:
             logger.exception(e)
 
@@ -362,17 +364,17 @@ class DuW():
                 if len(response) != 0:
                     if (response[-1] == 0x20 and dw_id == 0):
                         dw_id = int(response)
-                     #   logger.debug("Drexel dw_id: "+str(dw_id))
+                     # logger.debug("Drexel dw_id: "+str(dw_id))
                         response = bytes()
 
                     elif response[-1] == 0x20 and dw_id != 0 and dw_register == 0:
                         dw_register = int(response)
-                     #   logger.debug("Drexel dw_register: "+str(dw_register))
+                     # logger.debug("Drexel dw_register: "+str(dw_register))
                         response = bytes()
 
                     elif response[-1] == 0x0a:
                         dw_data = int(response)
-                     #   logger.debug("Drexel dw_data: "+str(dw_data))
+                     # logger.debug("Drexel dw_data: "+str(dw_data))
                         break
                         response = bytes()
                 else:
@@ -426,8 +428,6 @@ class DuW():
                 logger.warning("Drexel: WP register: " + str(register)
                                + " not supported by configured device!")
                 return None
-        else:
-            return None
 
     def update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'DuW':
