@@ -30,7 +30,6 @@ import urllib
 from urllib.parse import urlparse
 
 logger = logging.getLogger('Sonos')
-
 sonos_speaker = {}
 
 class UDPDispatcher(lib.connection.Server):
@@ -184,12 +183,30 @@ class Sonos():
                     cmd = self.command.previous(uid)
                 if command == 'play_uri':
                     cmd = self.command.play_uri(uid, value)
+
                 if command == 'play_snippet':
-                    if item.conf['sonos_volume']:
-                        volume = item.conf['sonos_volume']
-                    else:
-                        volume = -1
+
+                    volume_item_name = '{}.volume'.format(item._name)
+                    volume = -1
+                    for child in item.return_children():
+                        if child._name.lower() == volume_item_name.lower():
+                            volume = child()
+                            break
                     cmd = self.command.play_snippet(uid, value, volume)
+
+                if command == 'play_tts':
+
+                    volume_item_name = '{}.volume'.format(item._name)
+                    language_item_name = '{}.language'.format(item._name)
+                    volume = -1
+                    language = 'de'
+                    for child in item.return_children():
+                        if child._name.lower() == volume_item_name.lower():
+                            volume = child()
+                        if child._name.lower() == language_item_name.lower():
+                            language = child()
+                    cmd = self.command.play_tts(uid, value, language, volume)
+
                 if command == 'seek':
                     if not re.match(r'^[0-9][0-9]?:[0-9][0-9]:[0-9][0-9]$', value):
                         logger.warning('invalid timestamp for sonos seek command, use HH:MM:SS format')
@@ -219,8 +236,11 @@ class Sonos():
             else:
                 logger.warning("Sonos: Could not send message %s %s - %s %s" %
                                (self._broker_url, cmd, response.status, response.reason))
+
+            data = response.read()
+            logger.debug('Sonos server message: {}'.format(data))
+
             conn.close()
-            del conn
 
         except Exception as e:
             logger.warning(
@@ -304,6 +324,11 @@ class SonosCommand():
     def play_snippet(uid, uri, volume):
         uri = urllib.parse.quote_plus(uri, '&%=')
         return "speaker/{}/play_snippet/{}/{}".format(uid, uri, volume)
+
+    @staticmethod
+    def play_tts(uid, uri, language, volume):
+        uri = urllib.parse.quote_plus(uri, '&%=')
+        return "speaker/{}/play_tts/{}/{}/{}".format(uid, uri, language, volume)
 
     @staticmethod
     def current_state(uid):
