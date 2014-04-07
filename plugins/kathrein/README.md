@@ -25,10 +25,10 @@ This plugin has no requirements or dependencies.
 ### kathrein
 There are two possibilities to use this attribute. 
   * Define it on a string item and set it to `true`: With this configuration, every string you set to this item will be send to the Kathrein device.
-  * Define it on a boolean item and set it to a key value: With this configuration, the specified key value is sent whenever you set the item to `true` (if the item is only for sending a specific command to the tv then you should consider using the `enforce_updates` attribute, too). It is even possible to define several keys separeted with a comma.
+  * Define it on a boolean item and set it to a key value: With this configuration, the specified key value is sent whenever you set the item to `true` (if the item is only for sending a specific command to the tv then you should consider using the `enforce_updates` attribute, too). It is even possible to define several keys separated with a '|'.
 
 ### kahreinid
-With this attribute you can define to which kathrein device you want to send the specified command. If there is only one device configured you can avoid setting this attribute.
+With this attribute you can define to which kathrein device you want to send the specified command. If there is only one device configured you can avoid setting this attribute (not tested yet -> give some feedback if it works).
 
 <pre>
 [receiver]
