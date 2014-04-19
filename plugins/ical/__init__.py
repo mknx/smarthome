@@ -52,9 +52,9 @@ class iCal():
     def update_item(self, item, caller=None, source=None, dest=None):
         pass
 
-    def __call__(self, ics, delta=1, offset=0, username=None, password=None):
+    def __call__(self, ics, delta=1, offset=0, username=None, password=None, timeout=2):
         if ics.startswith('http'):
-            ical = self._sh.tools.fetch_url(ics, username=username, password=password)
+            ical = self._sh.tools.fetch_url(ics, username=username, password=password, timeout=timeout)
             if ical is False:
                 return {}
             ical = ical.decode()
