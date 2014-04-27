@@ -40,20 +40,20 @@ class UDPDispatcher(lib.connection.Server):
 
     def handle_connection(self):
         try:
-            data, addr = self.socket.recvfrom(50000)
+            data, addr = self.socket.recvfrom(65000)
             ip = addr[0]
             addr = "{}:{}".format(addr[0], addr[1])
-            logger.debug("{}: incoming connection from {}".format(self._name, addr))
+            logger.debug("{}: incoming connection from {}".format('sonos', addr))
         except Exception as e:
-            logger.exception("{}: {}".format(self._name, e))
+            logger.error("{}: {}".format(self._name, e))
             return
 
         try:
-            sonos = json.loads(data.decode('utf-8'))
+            sonos = json.loads(data.decode('utf-8').strip())
             uid = sonos['uid']
 
             if not uid:
-                logger.error("No uid found in sonos udp response!\nResponse: {}".format(sonos))
+                logger.error("No uid found in sonos udp response!\nResponse: {}")
 
             for key, value in sonos.items():
                 instance_var = getattr(sonos_speaker[uid], key)
@@ -73,37 +73,25 @@ class Sonos():
         self.port = port
         self._sh = smarthome
         self.command = SonosCommand()
-        self.subscribe_thread = None
-        self.stop_threads = False
+        self._sonoslock = threading.Lock()
+        self._sh.scheduler.add('sonos-update', self._subscribe, cycle=120)
+        self._sh.trigger('sonos-update', self._subscribe)
         UDPDispatcher(host, port)
 
     def run(self):
         self.alive = True
-        self.subscribe_thread = threading.Thread(target=self.subscribe())
-        self.subscribe_thread.start()
 
-    def subscribe(self):
-        counter = 120
-        while True:
-            #main thread is going to be stopped, exit thread
-            if self.stop_threads:
-                return
-            if counter == 120:
-                logger.debug('(re)registering to sonos broker server ...')
-                self.send_cmd('client/subscribe/{}'.format(self.port))
+    def _subscribe(self):
+        logger.debug('(re)registering to sonos broker server ...')
+        self._send_cmd('client/subscribe/{}'.format(self.port))
 
-                for uid, speaker in sonos_speaker.items():
-                    self.send_cmd(SonosCommand.current_state(uid))
-                counter = 0
-
-            sleep(1)
-            counter += 1
+        for uid, speaker in sonos_speaker.items():
+            self._send_cmd(SonosCommand.current_state(uid))
 
     def stop(self):
         self.alive = False
-        self.stop_threads = True
 
-    def resolve_uid(self, item):
+    def _resolve_uid(self, item):
         uid = None
 
         parent_item = item.return_parent()
@@ -116,7 +104,7 @@ class Sonos():
     def parse_item(self, item):
 
         if 'sonos_recv' in item.conf:
-            uid = self.resolve_uid(item)
+            uid = self._resolve_uid(item)
 
             if uid is None:
                 return None
@@ -133,14 +121,17 @@ class Sonos():
                 attr_list.append(item)
 
         if 'sonos_send' in item.conf:
+            try:
+                self._sonoslock.acquire()
+                uid = self._resolve_uid(item)
+                if uid is None:
+                    return None
 
-            uid = self.resolve_uid(item)
-            if uid is None:
-                return None
-
-            attr = item.conf['sonos_send']
-            logger.debug("sonos: {} is send to {}".format(item, attr))
-            return self.update_item
+                attr = item.conf['sonos_send']
+                logger.debug("sonos: {} is send to {}".format(item, attr))
+                return self._update_item
+            finally:
+                self._sonoslock.release()
 
         return None
 
@@ -148,12 +139,12 @@ class Sonos():
     def parse_logic(self, logic):
         pass
 
-    def update_item(self, item, caller=None, source=None, dest=None):
+    def _update_item(self, item, caller=None, source=None, dest=None):
         if caller != 'Sonos':
             value = item()
 
             if 'sonos_send' in item.conf:
-                uid = self.resolve_uid(item)
+                uid = self._resolve_uid(item)
 
                 if not uid:
                     return None
@@ -177,6 +168,9 @@ class Sonos():
                 if command == 'volume':
                     if isinstance(value, int):
                         cmd = self.command.volume(uid, int(value))
+                if command == 'max_volume':
+                    if isinstance(value, int):
+                        cmd = self.command.max_volume(uid, int(value))
                 if command == 'next':
                     cmd = self.command.next(uid)
                 if command == 'previous':
@@ -216,18 +210,13 @@ class Sonos():
                 if command == 'current_state':
                     cmd = self.command.current_state(uid)
                 if cmd:
-                    self.send_cmd(cmd)
+                    self._send_cmd(cmd)
         return None
 
-    @staticmethod
-    def split_command(cmd):
-        return cmd.lower().split('/')
-
-    def send_cmd(self, cmd):
+    def _send_cmd(self, cmd):
 
         try:
             conn = http.client.HTTPConnection(self._broker_url)
-
             conn.request("GET", cmd)
             response = conn.getresponse()
             if response.status == 200:
@@ -236,10 +225,7 @@ class Sonos():
             else:
                 logger.warning("Sonos: Could not send message %s %s - %s %s" %
                                (self._broker_url, cmd, response.status, response.reason))
-
             data = response.read()
-            logger.debug('Sonos server message: {}'.format(data))
-
             conn.close()
 
         except Exception as e:
@@ -248,6 +234,35 @@ class Sonos():
 
         logger.debug("Sending request: {0}".format(cmd))
 
+    def _send_cmd_response(self, cmd):
+        try:
+            data = ''
+            conn = http.client.HTTPConnection(self._broker_url)
+
+            conn.request("GET", cmd)
+            response = conn.getresponse()
+            if response.status == 200:
+                logger.info("Sonos: Message %s %s successfully sent - %s %s" %
+                            (self._broker_url, cmd, response.status, response.reason))
+                data = response.read()
+            else:
+                logger.warning("Sonos: Could not send message %s %s - %s %s" %
+                               (self._broker_url, cmd, response.status, response.reason))
+            conn.close()
+            return data
+
+        except Exception as e:
+            logger.warning(
+                "Could not send sonos notification: {0}. Error: {1}".format(cmd, e))
+
+        logger.debug("Sending request: {0}".format(cmd))
+
+
+    def get_favorite_radiostations(self, start_item=0, max_items=50):
+        return self._send_cmd_response(SonosCommand.favradio(start_item, max_items))
+
+    def version(self):
+        return "v0.7\t2014-04-27"
 
 class SonosSpeaker():
 
@@ -277,6 +292,8 @@ class SonosSpeaker():
         self.track_uri = []
         self.radio_station = []
         self.radio_show = []
+        self.status =[]
+        self.max_volume = []
 
 class SonosCommand():
     @staticmethod
@@ -312,6 +329,10 @@ class SonosCommand():
         return "speaker/{}/volume/{}".format(uid, value)
 
     @staticmethod
+    def max_volume(uid, value):
+        return "speaker/{}/maxvolume/{}".format(uid, value)
+
+    @staticmethod
     def seek(uid, value):
         return "speaker/{}/seek/{}".format(uid, value)
 
@@ -341,3 +362,21 @@ class SonosCommand():
         except:
             return None
 
+    @staticmethod
+    def favradio(start_item, max_items):
+        try:
+            start_item = int(start_item)
+        except ValueError:
+            logger.error('favradio: command ignored - start_item value \'{}\' is not an integer'.format(start_item))
+            return
+        str_start_item = '/{}'.format(start_item)
+
+        try:
+            max_items = int(max_items)
+        except ValueError:
+            logger.error('favradio: command ignored - max_items value \'{}\' is not an integer'.format(max_items))
+            return
+        str_max_items = '/{}'.format(max_items)
+
+        logger.debug("library/favradio{}{}".format(str_start_item, str_max_items))
+        return "library/favradio{}{}".format(str_start_item, str_max_items)
