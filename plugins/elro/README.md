@@ -2,7 +2,7 @@
 
 # Description
 
-You can use this Plugin to control elro (or elro-based) remote-contro-switches (rc-switches). If the backend-server uses the same command-syntax as the rc_switch_server project, you can even control non-elro rc-switches too! (Or everything other that can be switched on and off)
+You can use this Plugin to control elro (or elro-based) remote-control-switches (rc-switches). If the backend-server uses the same command-syntax as the rc_switch_server project, you can even control non-elro rc-switches too! (Or everything other that can be switched on and off)
 
 For rc_switch_server command-syntax look at https://github.com/Brootux/rc_switch_server.py (Server-Clients)
 
@@ -17,8 +17,8 @@ For rc_switch_server command-syntax look at https://github.com/Brootux/rc_switch
 [elro]
     class_name = Elro
     class_path = plugins.elro
-    elro_host = "localhost"
-    elro_port = 6700
+#    elro_host = "localhost"
+#    elro_port = 6700
 </pre>
 
 Description of the attributes:
