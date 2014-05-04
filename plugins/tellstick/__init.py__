@@ -4,24 +4,24 @@
 #  Copyright 2014-2015 Matthieu Gaigniere                matthieu@ip42.eu
 #########################################################################
 #
-#  Utilisation
+#  How to use 
 #  -----------
 #
-#  Activation du plugin dans le fichier `etc/plugin.conf`
+#  To activate the plugin in `etc/plugin.conf` :
 #  
 #      [tellstick]
 #        class_name = Tellstick
 #        class_path = plugins.tellstick
 #  
 #  
-#  Ajouter les arguments suivants aux items Tellstick :
+#  To add a tellstick item in items/items.conf :
 #  
-#      - ts_id : identifiant de l'appareil
+#      - ts_id : id of tellstick object
 #  
-#  Exemple :
+#  Example :
 #  
-#      [cuisine]
-#        [[volet]]
+#      [kitchen]
+#        [[shutter]]
 #          type = bool
 #          ts_id = 1
 #
