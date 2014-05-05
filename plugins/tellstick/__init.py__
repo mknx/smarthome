@@ -40,7 +40,6 @@ class Tellstick:
 
     def __init__(self, smarthome):
         self._sh = smarthome
-        self._ids = {}
 
     def run(self):
         self.alive = True
