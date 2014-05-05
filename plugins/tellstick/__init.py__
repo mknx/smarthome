@@ -46,7 +46,6 @@ class Tellstick:
 
     def stop(self):
         self.alive = False
-        self.handle_close()
 
     def parse_item(self, item):
         if 'ts_id' in item.conf:
