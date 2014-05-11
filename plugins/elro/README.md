@@ -23,7 +23,7 @@ You have to just simply copy the following into your plugin.conf file. The ip-ad
 
 ## items.conf
 
-This plugin has just mandatory item-fields. So you have always use all fields showed in the following example.
+The most item-fields of this plugin are mandatory. So you should always use all of the fields showed in the following example.
 
 ### Example
 
@@ -65,13 +65,14 @@ This plugin has just mandatory item-fields. So you have always use all fields sh
 
 Description of the attributes:
 
-* __elro_host__: the ip-address/hostname of the rc_switch_server
+* __elro_host__: the ip-address/hostname of the rc_switch_server (mandatory)
 * __elro_port__: the port of the rc_switch_server
 * __elro_system_code__: the code of your home (mandatory)
 * __elro_unit_code__: the code of the unit, you want to switch (mandatory)
 * __elro_send__: use always "value" here (mandatory)
 
 Hints:
+* __You have to setup the items as showed in a tree structure with the `elro_host` as its root!__ (The tree can be a subtree of a greater tree but always has to be `elro_host` as a attribute of the root item)
 * For __elro_system_code__ you have to set the correct bits of you code (no conversion)
 * For __elro_unit_code__ you have to convert your settings to binary (A = 1, B = 2, C = 4, D = 8, ...)
 * For __elro_send__ always use the transmitting of a value per button (because sometimes the signals dont get transported correctly from remote-transmitter, so you should have the chance to send "on" or "off" more than once)
