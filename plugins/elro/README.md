@@ -13,18 +13,13 @@ For rc_switch_server command-syntax look at https://github.com/Brootux/rc_switch
 # Configuration
 ## plugin.conf
 
+You have to just simply copy the following into your plugin.conf file. The ip-address/hostname of the rc_switch_server has to be setup later in the items.conf!
+
 <pre>
 [elro]
     class_name = Elro
     class_path = plugins.elro
-#    elro_host = "localhost"
-#    elro_port = 6700
 </pre>
-
-Description of the attributes:
-
-* __elro_host__: ip address of the rc_switch_server (mandatory)
-* __elro_port__: port of the rc_switch_server (mandatory)
 
 ## items.conf
 
@@ -35,6 +30,9 @@ This plugin has just mandatory item-fields. So you have always use all fields sh
 <pre>
 # items/rc_switches.conf
 [RCS]
+	type = str
+	elro_host = localhost
+	elro_port = 6700
     [[A]]
         type = bool
         elro_system_code = 0.0.0.0.1
@@ -67,6 +65,8 @@ This plugin has just mandatory item-fields. So you have always use all fields sh
 
 Description of the attributes:
 
+* __elro_host__: the ip-address/hostname of the rc_switch_server
+* __elro_port__: the port of the rc_switch_server
 * __elro_system_code__: the code of your home (mandatory)
 * __elro_unit_code__: the code of the unit, you want to switch (mandatory)
 * __elro_send__: use always "value" here (mandatory)
@@ -75,6 +75,37 @@ Hints:
 * For __elro_system_code__ you have to set the correct bits of you code (no conversion)
 * For __elro_unit_code__ you have to convert your settings to binary (A = 1, B = 2, C = 4, D = 8, ...)
 * For __elro_send__ always use the transmitting of a value per button (because sometimes the signals dont get transported correctly from remote-transmitter, so you should have the chance to send "on" or "off" more than once)
+
+### Example for multiple rc_switch_server´s
+
+<pre>
+# items/rc_switches.conf
+[RCS-1]
+	type = str
+	elro_host = localhost
+	elro_port = 6700
+    [[A]]
+        type = bool
+        elro_system_code = 0.0.0.0.1
+        elro_unit_code = 1
+        elro_send = value
+        enforce_updates = yes
+        visu_acl = rw
+    ...
+    
+[RCS-2]
+	type = str
+	elro_host = 192.168.0.100
+	elro_port = 6666
+    [[A]]
+        type = bool
+        elro_system_code = 0.0.0.0.2
+        elro_unit_code = 1
+        elro_send = value
+        enforce_updates = yes
+        visu_acl = rw
+    ...
+</pre>
 
 ## SmartVisu
 
