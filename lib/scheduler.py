@@ -483,6 +483,8 @@ class Scheduler(threading.Thread):
                 logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
                 return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
             if dmax < next_time:
+                if dmax < self._sh.now():
+                    dmax = dmax + datetime.timedelta(days=1)
                 next_time = dmax
         return next_time
 

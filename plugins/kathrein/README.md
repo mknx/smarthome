@@ -80,7 +80,7 @@ up
 down
 right
 left
-back
+exit
 standby
 text
 vol+
