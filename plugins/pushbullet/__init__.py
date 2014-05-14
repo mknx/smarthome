@@ -43,19 +43,19 @@ class Pushbullet():
     def note(self, title, body, deviceid=None, apikey=None):
         self._push(data={"type": "note", "title": title, "body": body}, deviceid=deviceid, apikey=apikey)
 
-    def link(self, title, url, apikey=None):
-        self._push(data={"type": "link", "url": url, "body": body}, deviceid=deviceid, apikey=apikey)
+    def link(self, title, url, deviceid=None, apikey=None):
+        self._push(data={"type": "link", "title": title, "url": url}, deviceid=deviceid, apikey=apikey)
 
-    def address(self, name, address, apikey=None):
+    def address(self, name, address, deviceid=None, apikey=None):
         self._push(data={"type": "address", "name": name, "address": address}, deviceid=deviceid, apikey=apikey)
 
-    def list(self, title, items, apikey=None):
+    def list(self, title, items, deviceid=None, apikey=None):
         self._push(data={"type": "list", "title": title, "items": items}, deviceid=deviceid, apikey=apikey)
 
-    def file(self, filepath, apikey=None):
+    def file(self, filepath, deviceid=None, apikey=None):
         self._push(data={"type": "file"}, file={"file": open(filepath, "rb")}, deviceid=deviceid, apikey=apikey)
 
-    def _push(self, data, deviceid=deviceid, apikey=None, file={}):
+    def _push(self, data, deviceid=None, apikey=None, file={}):
         data["device_iden"] = self._deviceid
         if deviceid:
             data["device_iden"] = deviceid
@@ -63,9 +63,10 @@ class Pushbullet():
         headers = {"User-Agent": "SmartHome.py"}
         if not file:
             headers["Content-Type"] = "application/json"
+            data = json.dumps(data)
         
         try:
-            response = requests.post(self._apiurl, data=json.dumps(data), headers=headers, files=file, auth=(self._apikey, ""))
+            response = requests.post(self._apiurl, data=data, headers=headers, files=file, auth=(self._apikey, ""))
             if (response.status_code == 200):
                 logger.debug("Pushbullet returns: Notification submitted.")
             elif (response.status_code == 400):
