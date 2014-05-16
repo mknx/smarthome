@@ -2,7 +2,7 @@
   
 ## Requirements  
 ### Python libraries  
-* requests - [http://docs.python-requests.org/en/latest/](http://docs.python-requests.org/en/latest/ "http://docs.python-requests.org/en/latest/")
+* requests - [install instructions](http://docs.python-requests.org/en/latest/user/install/#install "http://docs.python-requests.org/en/latest/user/install/#install")
   
 ### Other  
 * Pushbullet API-KEY - get it from [__here__](http://www.pushbullet.com/ "http://www.pushbullet.com") for free  
