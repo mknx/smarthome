@@ -37,6 +37,14 @@ class Sml():
     _connection_attempts = 0
     _dataoffset = 0
     _items = {}
+    _units = {  # Blue book @ http://www.dlms.com/documentation/overviewexcerptsofthedlmsuacolouredbooks/index.html
+       1 : 'a',    2 : 'mo',    3 : 'wk',  4 : 'd',    5 : 'h',     6 : 'min.',  7 : 's',     8 : '°',     9 : '°C',    10 : 'currency',
+      11 : 'm',   12 : 'm/s',  13 : 'm³', 14 : 'm³',  15 : 'm³/h', 16 : 'm³/h', 17 : 'm³/d', 18 : 'm³/d', 19 : 'l',     20 : 'kg',
+      21 : 'N',   22 : 'Nm',   23 : 'Pa', 24 : 'bar', 25 : 'J',    26 : 'J/h',  27 : 'W',    28 : 'VA',   29 : 'var',   30 : 'Wh',
+      31 : 'WAh', 32 : 'varh', 33 : 'A',  34 : 'C',   35 : 'V',    36 : 'V/m',  37 : 'F',    38 : 'Ω',    39 : 'Ωm²/h', 40 : 'Wb',
+      41 : 'T',   42 : 'A/m',  43 : 'H',  44 : 'Hz',  45 : 'Rac',  46 : 'Rre',  47 : 'Rap',  48 : 'V²h',  49 : 'A²h',   50 : 'kg/s',
+      51 : 'Smho'
+    }
     connected = False
 
     def __init__(self, smarthome, host=None, port=0, serialport=None, cycle=300):
@@ -59,9 +67,12 @@ class Sml():
     def parse_item(self, item):
         if 'sml_obis' in item.conf:
             obis = item.conf['sml_obis']
+            prop = item.conf['sml_prop'] if 'sml_prop' in item.conf else 'valueReal'
             if obis not in self._items:
-                self._items[obis] = []
-            self._items[obis].append(item)
+                self._items[obis] = {}
+            if prop not in self._items[obis]:
+                self._items[obis][prop] = []
+            self._items[obis][prop].append(item)
             return self.update_item
         return None
 
@@ -124,55 +135,62 @@ class Sml():
         if self.connected:
             start = time.time()
             try:
-                self._dataoffset = 0
                 data = self._read(512)
             except Exception as e:
                 logger.error(
                     'could not retrieve data from {0}: {1}'.format(self._target, e))
                 return
 
-            # Search SML List Entry sequences like:
-            # "77 07 81 81 c7 82 03 ff 01 01 01 01 04 xx xx xx xx" - manufactor
-            # "77 07 01 00 00 00 09 ff 01 01 01 01 0b xx xx xx xx xx xx xx xx xx xx 01" - server id
-            # "77 07 01 00 01 08 00 ff 63 01 80 01 62 1e 52 ff 56 00 00 00 29 85 01"
-            # Details see http://wiki.volkszaehler.org/software/sml
-            values = {}
-            logger.debug('Data: {}'.format(''.join(' {:02x}'.format(x) for x in data)))
-            try:
-                while self._dataoffset < len(data):
-
-                    # Find SML_ListEntry starting with 0x77 0x07 and OBIS code end with 0xFF
-                    if data[self._dataoffset] == 0x77 and data[self._dataoffset+1] == 0x07 and data[self._dataoffset+7] == 0xff:
-                        self._dataoffset += 1
-                        entry = {
-                          'objName'   : self._read_entity(data),
-                          'status'    : self._read_entity(data),
-                          'valTime'   : self._read_entity(data),
-                          'unit'      : self._read_entity(data),
-                          'scaler'    : self._read_entity(data),
-                          'value'     : self._read_entity(data),
-                          'signature' : self._read_entity(data)
-                        }
-
-                        obis = '{}-{}:{}.{}.{}*{}'.format(entry['objName'][0], entry['objName'][1], entry['objName'][2], entry['objName'][3], entry['objName'][4], entry['objName'][5])
-                        logger.debug('Entry {} = {}'.format(obis, entry))
-
-                        if entry['scaler'] is not None:
-                            values[obis] = entry['value'] * 10 ** entry['scaler']
-                        else:
-                            values[obis] = entry['value']
-                    else:
-                        self._dataoffset += 1
-            except IndexError:
-                pass
+            values = self._parse(data)
 
             for obis in values:
                 if obis in self._items:
-                    for item in self._items[obis]:
-                        item(values[obis])
+                    for prop in self._items[obis]:
+                        for item in self._items[obis][prop]:
+                            item(values[obis][prop])
 
             cycletime = time.time() - start
             logger.debug("cycle takes {0} seconds".format(cycletime))
+
+    def _parse(self, data):
+        # Search SML List Entry sequences like:
+        # "77 07 81 81 c7 82 03 ff 01 01 01 01 04 xx xx xx xx" - manufactor
+        # "77 07 01 00 00 00 09 ff 01 01 01 01 0b xx xx xx xx xx xx xx xx xx xx 01" - server id
+        # "77 07 01 00 01 08 00 ff 63 01 80 01 62 1e 52 ff 56 00 00 00 29 85 01"
+        # Details see http://wiki.volkszaehler.org/software/sml
+        values = {}
+        logger.debug('Data: {}'.format(''.join(' {:02x}'.format(x) for x in data)))
+        try:
+            self._dataoffset = 0
+            while self._dataoffset < len(data):
+
+                # Find SML_ListEntry starting with 0x77 0x07 and OBIS code end with 0xFF
+                if data[self._dataoffset] == 0x77 and data[self._dataoffset+1] == 0x07 and data[self._dataoffset+7] == 0xff:
+                    self._dataoffset += 1
+                    entry = {
+                      'objName'   : self._read_entity(data),
+                      'status'    : self._read_entity(data),
+                      'valTime'   : self._read_entity(data),
+                      'unit'      : self._read_entity(data),
+                      'scaler'    : self._read_entity(data),
+                      'value'     : self._read_entity(data),
+                      'signature' : self._read_entity(data)
+                    }
+
+                    # add additional calculated fields
+                    entry['obis'] = '{}-{}:{}.{}.{}*{}'.format(entry['objName'][0], entry['objName'][1], entry['objName'][2], entry['objName'][3], entry['objName'][4], entry['objName'][5])
+                    entry['valueReal'] = entry['value'] * 10 ** entry['scaler'] if entry['scaler'] is not None else entry['value']
+                    entry['unitName'] = self._units[entry['unit']] if entry['unit'] != None and entry['unit'] in self._units else None
+
+                    logger.debug('Entry {}'.format(entry))
+
+                    values[entry['obis']] = entry
+                else:
+                    self._dataoffset += 1
+        except KeyError:
+            pass
+
+        return values
 
     def _read_entity(self, data):
         upack = {
