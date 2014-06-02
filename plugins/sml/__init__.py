@@ -176,8 +176,8 @@ class Sml():
 
     def _read_entity(self, data):
         upack = {
-          5 : { 1 : '>b', 2 : '>h', 3: '>i', 4 : '>i', 8 : '>q' },
-          6 : { 1 : '>B', 2 : '>H', 3: '>I', 4 : '>I', 8 : '>Q' }
+          5 : { 1 : '>b', 2 : '>h', 4 : '>i', 8 : '>q' },  # int
+          6 : { 1 : '>B', 2 : '>H', 4 : '>I', 8 : '>Q' }   # uint
         }
 
         result = None
@@ -201,13 +201,16 @@ class Sml():
         if type == 0:    # octet string
             result = data[self._dataoffset:self._dataoffset+len]
 
-        elif type == 5 or type == 6:  # signed int or unsigned int
+        elif type == 5 or type == 6:  # int or uint
             d = data[self._dataoffset:self._dataoffset+len]
 
-            if len == 3:  # extend 3-byte value to 4-byte value for unpack()
+            ulen = len
+            if ulen not in upack[type]:  # extend to next greather unpack unit
+              while ulen not in upack[type]:
                 d = b'\x00' + d
+                ulen += 1
 
-            result = struct.unpack(upack[type][len], d)[0]
+            result = struct.unpack(upack[type][ulen], d)[0]
 
         elif type == 7:  # list
             result = []
