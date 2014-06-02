@@ -102,11 +102,7 @@ class KNX(lib.connection.Client):
         self._send(pkt)
 
     def _send_time(self):
-        now = self._sh.now()
-        if self.time_ga:
-            self.groupwrite(self.time_ga, now, '10')
-        if self.date_ga:
-            self.groupwrite(self.date_ga, now.date(), '11')
+        self.send_time(self.time_ga, self.date_ga)
 
     def send_time(self, time_ga=None, date_ga=None):
         now = self._sh.now()
