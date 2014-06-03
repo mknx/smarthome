@@ -176,8 +176,8 @@ class Sml():
 
     def _read_entity(self, data):
         upack = {
-          5 : { 1 : '>b', 2 : '>h', 3: '>i', 4 : '>i', 8 : '>q' },
-          6 : { 1 : '>B', 2 : '>H', 3: '>I', 4 : '>I', 8 : '>Q' }
+          5 : { 1 : '>b', 2 : '>h', 3: '>i', 4 : '>i', 5 : '>q', 8 : '>q' },
+          6 : { 1 : '>B', 2 : '>H', 3: '>I', 4 : '>I', 5 : '>Q', 8 : '>Q' }
         }
 
         result = None
@@ -206,6 +206,8 @@ class Sml():
 
             if len == 3:  # extend 3-byte value to 4-byte value for unpack()
                 d = b'\x00' + d
+            if len == 5:  # extend 5-byte value to 8-byte value for unpack()
+                d = b'\x00\x00\x00' + d
 
             result = struct.unpack(upack[type][len], d)[0]
 
