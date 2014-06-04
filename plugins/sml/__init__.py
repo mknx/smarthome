@@ -99,7 +99,7 @@ class Sml():
         except Exception as e:
             self._connection_attempts -= 1
             if self._connection_attempts <= 0:
-                self.log_err('Sml: Could not connect to {}: {}'.format(self._target, e))
+                logger.error('Sml: Could not connect to {}: {}'.format(self._target, e))
                 self._connection_attempts = self._connection_errorlog
             self._lock.release()
             return
