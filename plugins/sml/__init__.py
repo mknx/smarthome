@@ -25,6 +25,7 @@ import re
 import serial
 import threading
 import struct
+import socket
 
 logger = logging.getLogger('')
 
