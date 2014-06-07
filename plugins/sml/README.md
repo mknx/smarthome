@@ -17,6 +17,7 @@ The plugin was tested with the following hardware:
    * Hager EHZ363Z5
    * Hager EHZ363W5
    * EHM eHZ-GW8 E2A 500 AL1
+   * EHM eHZ-ED300L
 
 # Configuration
 
