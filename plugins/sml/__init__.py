@@ -91,11 +91,11 @@ class Sml():
             if self.serialport is not None:
                 self._target = 'serial://{}'.format(self.serialport)
                 self._serial = serial.Serial(
-                    self.serialport, 9600, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE, timeout=2)
+                    self.serialport, 9600, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE, timeout=0)
             elif self.host is not None:
                 self._target = 'tcp://{}:{}'.format(self.host, self.port)
                 self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self._sock.settimeout(2)
+                self._sock.settimeout(0.0)
                 self._sock.connect((self.host, self.port))
         except Exception as e:
             self._connection_attempts -= 1
@@ -127,10 +127,23 @@ class Sml():
             self._connection_attempts = 0
 
     def _read(self, length):
-        if self._serial is not None:
-            return self._serial.read(length)
-        elif self._sock is not None:
-            return self._sock.recv(length)
+        total = []
+        while 1:
+            if self._serial is not None:
+                data = self._serial.read(length)
+                if data:
+                    total.append(data)
+                else:
+                    break
+            elif self._sock is not None:
+                try:
+                    data = self._sock.recv(length)
+                    if data:
+                        total.append(data)
+                except Exception as e:
+                    break
+
+        return b''.join(total)
         
     def _refresh(self):
         if self.connected:
