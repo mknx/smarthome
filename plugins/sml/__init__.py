@@ -241,13 +241,16 @@ class Sml():
 
         if more > 0:
             tlf = data[self._dataoffset]
-            len = len << 4 + (tlf & 15)
+            len = (len << 4) + (tlf & 15)
             self._dataoffset += 1
 
         len -= 1
 
         if len == 0:     # skip empty optional value
             return result
+
+        if self._dataoffset + len >= builtins.len(data):
+            raise Exception("Try to read {} bytes, but only have {}".format(len, builtins.len(data) - self._dataoffset))
 
         if type == 0:    # octet string
             result = data[self._dataoffset:self._dataoffset+len]
