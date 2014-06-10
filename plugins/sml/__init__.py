@@ -33,6 +33,7 @@ logger = logging.getLogger('')
 class Sml():
     _serial = None
     _sock = None
+    _prepare = None
     _lock = None
     _target = None
     _connection_attempts = 0
@@ -46,15 +47,29 @@ class Sml():
       41 : 'T',   42 : 'A/m',  43 : 'H',  44 : 'Hz',  45 : 'Rac',  46 : 'Rre',  47 : 'Rap',  48 : 'V²h',  49 : 'A²h',   50 : 'kg/s',
       51 : 'Smho'
     }
+    _devices = {
+    }
     connected = False
 
-    def __init__(self, smarthome, host=None, port=0, serialport=None, cycle=300):
+    def __init__(self, smarthome, host=None, port=0, serialport=None, device="raw", cycle=300):
         self._sh = smarthome
         self.host = host
         self.port = port
         self.serialport = serialport
         self.cycle = cycle
         self._lock = threading.Lock()
+
+        if device in self._devices:
+          device = self._devices[device]
+
+        if device == "hex":
+            self._prepare = self._prepareHex
+        elif device == "raw":
+            self._prepare = self._prepareRaw
+        else:
+            logger.warning("Device type \"{}\" not supported - defaulting to \"raw\"".format(device))
+            self._prepare = self._prepareRaw
+
         smarthome.connections.monitor(self)
 
     def run(self):
@@ -155,7 +170,7 @@ class Sml():
                     'could not retrieve data from {0}: {1}'.format(self._target, e))
                 return
 
-            values = self._parse(data)
+            values = self._parse(self._prepare(data))
 
             for obis in values:
                 if obis in self._items:
@@ -210,6 +225,7 @@ class Sml():
         return values
 
     def _read_entity(self, data):
+        import builtins
         upack = {
           5 : { 1 : '>b', 2 : '>h', 4 : '>i', 8 : '>q' },  # int
           6 : { 1 : '>B', 2 : '>H', 4 : '>I', 8 : '>Q' }   # uint
@@ -260,4 +276,15 @@ class Sml():
         self._dataoffset += len
 
         return result
+
+    def _prepareRaw(self, data):
+        return data
+
+    def _prepareHex(self, data):
+        data = data.decode("iso-8859-1").lower();
+        data = re.sub("[^a-f0-9]", " ", data)
+        data = re.sub("( +[a-f0-9]|[a-f0-9] +)", "", data)
+        logger.debug("{}".format(data))
+        data = data.encode()
+        return bytes(''.join(chr(int(data[i:i+2], 16)) for i in range(0, len(data), 2)), "iso8859-1")
 
