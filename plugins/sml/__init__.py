@@ -189,7 +189,7 @@ class Sml():
         # Details see http://wiki.volkszaehler.org/software/sml
         values = {}
         packetsize = 7
-        logger.debug('Data: {}'.format(''.join(' {:02x}'.format(x) for x in data)))
+        logger.debug('Data:{}'.format(''.join(' {:02x}'.format(x) for x in data)))
         self._dataoffset = 0
         while self._dataoffset < len(data)-packetsize:
 
@@ -217,8 +217,9 @@ class Sml():
 
                     values[entry['obis']] = entry
                 except Exception as e:
-                    self._dataoffset += packetsize-1
-                    logger.warning('Can not parse entity at position {}: {}...'.format(self._dataoffset, ''.join(' {:02x}'.format(x) for x in data[packetstart:packetstart+64])))
+                    if self._dataoffset < len(data) - 1:
+                        logger.warning('Can not parse entity at position {}, byte {}: {}:{}...'.format(self._dataoffset, self._dataoffset - packetstart, e, ''.join(' {:02x}'.format(x) for x in data[packetstart:packetstart+64])))
+                        self._dataoffset = packetstart + packetsize - 1
             else:
                 self._dataoffset += 1
 
