@@ -48,6 +48,7 @@ class Sml():
       51 : 'Smho'
     }
     _devices = {
+      'smart-meter-gateway-com-1' : 'hex'
     }
     connected = False
 

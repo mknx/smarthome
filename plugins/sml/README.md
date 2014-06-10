@@ -30,6 +30,7 @@ The plugin was tested with the following hardware:
   serialport = /dev/ttyUSB0
   # host = 192.168.2.1
   # port = 1234
+  # device = raw | hex | <known-device>
 </pre>
 
 The plugin reads data from smart power meter hardware by using a serial
@@ -52,6 +53,26 @@ Description of the attributes:
    * `serialport` - defines the serial port to use to read data from
    * `host` - instead of serial port you can use a network connection
    * `port` - additionally to the host configuration you can specify a port
+   * `device` - specifies connected device to indicate pre-processing
+
+The `device` attribute can be used to specify the connected device and the
+kind of data delivery. Since different devices (e.g. when connecting the
+power meter device via a LAN gateway) the data can be differently. Usually
+when connecting a serial device directly to the power meter device the
+raw data can be directly used with this plugin. Some other devices needs
+to be configured.
+
+The following kinds of device types are supported:
+   * `raw` - this is the default and means the raw SML binary data is
+     send to the plugin
+   * `hex` - can be used in case the SML data is encoded as hex string
+   * or a known device name
+
+In case you have a known device you can also specify this and the plugin
+knows which data pre-processing is required. The following known devices
+are supported:
+   * `smart-meter-gateway-com-1` - The Smart Meter Gateway COM-1
+     http://shop.co-met.info/artikeldetails/kategorie/Smart-Metering/artikel/smart-meter-gateway-com-1.html
 
 ## items.conf
 
