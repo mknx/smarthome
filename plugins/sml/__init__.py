@@ -284,7 +284,6 @@ class Sml():
         data = data.decode("iso-8859-1").lower();
         data = re.sub("[^a-f0-9]", " ", data)
         data = re.sub("( +[a-f0-9]|[a-f0-9] +)", "", data)
-        logger.debug("{}".format(data))
         data = data.encode()
         return bytes(''.join(chr(int(data[i:i+2], 16)) for i in range(0, len(data), 2)), "iso8859-1")
 
