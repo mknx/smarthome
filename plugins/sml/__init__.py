@@ -36,7 +36,6 @@ class Sml():
     _prepare = None
     _lock = None
     _target = None
-    _connection_attempts = 0
     _dataoffset = 0
     _items = {}
     _units = {  # Blue book @ http://www.dlms.com/documentation/overviewexcerptsofthedlmsuacolouredbooks/index.html
@@ -114,16 +113,12 @@ class Sml():
                 self._sock.settimeout(0.0)
                 self._sock.connect((self.host, self.port))
         except Exception as e:
-            self._connection_attempts -= 1
-            if self._connection_attempts <= 0:
-                logger.error('Sml: Could not connect to {}: {}'.format(self._target, e))
-                self._connection_attempts = self._connection_errorlog
+            logger.error('Sml: Could not connect to {}: {}'.format(self._target, e))
             self._lock.release()
             return
         else:
             logger.info('Sml: Connected to {}'.format(self._target))
             self.connected = True
-            self._connection_attempts = 0
             self._lock.release()
 
     def disconnect(self):
@@ -140,7 +135,6 @@ class Sml():
             logger.info('Sml: Disconnected!')
             self.connected = False
             self._target = None
-            self._connection_attempts = 0
 
     def _read(self, length):
         total = []
