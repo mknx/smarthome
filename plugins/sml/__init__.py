@@ -110,8 +110,9 @@ class Sml():
             elif self.host is not None:
                 self._target = 'tcp://{}:{}'.format(self.host, self.port)
                 self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self._sock.settimeout(0.0)
+                self._sock.settimeout(2)
                 self._sock.connect((self.host, self.port))
+                self._sock.setblocking(False)
         except Exception as e:
             logger.error('Sml: Could not connect to {}: {}'.format(self._target, e))
             self._lock.release()
