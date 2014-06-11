@@ -54,7 +54,7 @@ class Sml():
     def __init__(self, smarthome, host=None, port=0, serialport=None, device="raw", cycle=300):
         self._sh = smarthome
         self.host = host
-        self.port = port
+        self.port = int(port)
         self.serialport = serialport
         self.cycle = cycle
         self._lock = threading.Lock()
