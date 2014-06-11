@@ -6,11 +6,11 @@ bluez
 
 install by
 <pre>
-$ apt-get install bluez
+$ apt-get install bluez python-gobject python-dbus
 $ hcitool scan
 Scanning ...
         <bt-addr>       <name of your inverter, e.g. 'SMA001d SN: 213000xxxx SN213000xxxx'>
-$ simple-agent hci0 <bt-addr>
+$ bluez-simple-agent hci0 <bt-addr>
 RequestPinCode (/org/bluez/3070/hci0/dev_bt_addr_underscores)
 Enter PIN Code: <pin-code>
 Release
