@@ -33,9 +33,9 @@ logger = logging.getLogger('')
 class Sml():
     _serial = None
     _sock = None
+    _prepare = None
     _lock = None
     _target = None
-    _connection_attempts = 0
     _dataoffset = 0
     _items = {}
     _units = {  # Blue book @ http://www.dlms.com/documentation/overviewexcerptsofthedlmsuacolouredbooks/index.html
@@ -46,15 +46,30 @@ class Sml():
       41 : 'T',   42 : 'A/m',  43 : 'H',  44 : 'Hz',  45 : 'Rac',  46 : 'Rre',  47 : 'Rap',  48 : 'V²h',  49 : 'A²h',   50 : 'kg/s',
       51 : 'Smho'
     }
+    _devices = {
+      'smart-meter-gateway-com-1' : 'hex'
+    }
     connected = False
 
-    def __init__(self, smarthome, host=None, port=0, serialport=None, cycle=300):
+    def __init__(self, smarthome, host=None, port=0, serialport=None, device="raw", cycle=300):
         self._sh = smarthome
         self.host = host
-        self.port = port
+        self.port = int(port)
         self.serialport = serialport
         self.cycle = cycle
         self._lock = threading.Lock()
+
+        if device in self._devices:
+          device = self._devices[device]
+
+        if device == "hex":
+            self._prepare = self._prepareHex
+        elif device == "raw":
+            self._prepare = self._prepareRaw
+        else:
+            logger.warning("Device type \"{}\" not supported - defaulting to \"raw\"".format(device))
+            self._prepare = self._prepareRaw
+
         smarthome.connections.monitor(self)
 
     def run(self):
@@ -95,19 +110,16 @@ class Sml():
             elif self.host is not None:
                 self._target = 'tcp://{}:{}'.format(self.host, self.port)
                 self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self._sock.settimeout(0.0)
+                self._sock.settimeout(2)
                 self._sock.connect((self.host, self.port))
+                self._sock.setblocking(False)
         except Exception as e:
-            self._connection_attempts -= 1
-            if self._connection_attempts <= 0:
-                logger.error('Sml: Could not connect to {}: {}'.format(self._target, e))
-                self._connection_attempts = self._connection_errorlog
+            logger.error('Sml: Could not connect to {}: {}'.format(self._target, e))
             self._lock.release()
             return
         else:
             logger.info('Sml: Connected to {}'.format(self._target))
             self.connected = True
-            self._connection_attempts = 0
             self._lock.release()
 
     def disconnect(self):
@@ -124,7 +136,6 @@ class Sml():
             logger.info('Sml: Disconnected!')
             self.connected = False
             self._target = None
-            self._connection_attempts = 0
 
     def _read(self, length):
         total = []
@@ -155,7 +166,7 @@ class Sml():
                     'could not retrieve data from {0}: {1}'.format(self._target, e))
                 return
 
-            values = self._parse(data)
+            values = self._parse(self._prepare(data))
 
             for obis in values:
                 if obis in self._items:
@@ -174,7 +185,7 @@ class Sml():
         # Details see http://wiki.volkszaehler.org/software/sml
         values = {}
         packetsize = 7
-        logger.debug('Data: {}'.format(''.join(' {:02x}'.format(x) for x in data)))
+        logger.debug('Data:{}'.format(''.join(' {:02x}'.format(x) for x in data)))
         self._dataoffset = 0
         while self._dataoffset < len(data)-packetsize:
 
@@ -202,14 +213,16 @@ class Sml():
 
                     values[entry['obis']] = entry
                 except Exception as e:
-                    self._dataoffset += packetsize-1
-                    logger.warning('Can not parse entity at position {}: {}...'.format(self._dataoffset, ''.join(' {:02x}'.format(x) for x in data[packetstart:packetstart+64])))
+                    if self._dataoffset < len(data) - 1:
+                        logger.warning('Can not parse entity at position {}, byte {}: {}:{}...'.format(self._dataoffset, self._dataoffset - packetstart, e, ''.join(' {:02x}'.format(x) for x in data[packetstart:packetstart+64])))
+                        self._dataoffset = packetstart + packetsize - 1
             else:
                 self._dataoffset += 1
 
         return values
 
     def _read_entity(self, data):
+        import builtins
         upack = {
           5 : { 1 : '>b', 2 : '>h', 4 : '>i', 8 : '>q' },  # int
           6 : { 1 : '>B', 2 : '>H', 4 : '>I', 8 : '>Q' }   # uint
@@ -225,13 +238,16 @@ class Sml():
 
         if more > 0:
             tlf = data[self._dataoffset]
-            len = len << 4 + (tlf & 15)
+            len = (len << 4) + (tlf & 15)
             self._dataoffset += 1
 
         len -= 1
 
         if len == 0:     # skip empty optional value
             return result
+
+        if self._dataoffset + len >= builtins.len(data):
+            raise Exception("Try to read {} bytes, but only have {}".format(len, builtins.len(data) - self._dataoffset))
 
         if type == 0:    # octet string
             result = data[self._dataoffset:self._dataoffset+len]
@@ -260,4 +276,14 @@ class Sml():
         self._dataoffset += len
 
         return result
+
+    def _prepareRaw(self, data):
+        return data
+
+    def _prepareHex(self, data):
+        data = data.decode("iso-8859-1").lower();
+        data = re.sub("[^a-f0-9]", " ", data)
+        data = re.sub("( +[a-f0-9]|[a-f0-9] +)", "", data)
+        data = data.encode()
+        return bytes(''.join(chr(int(data[i:i+2], 16)) for i in range(0, len(data), 2)), "iso8859-1")
 
