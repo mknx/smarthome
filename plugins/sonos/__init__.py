@@ -24,7 +24,6 @@ import lib.connection
 import lib.tools
 import re
 import threading
-from time import sleep
 import json
 import urllib
 from urllib.parse import urlparse
@@ -40,7 +39,7 @@ class UDPDispatcher(lib.connection.Server):
 
     def handle_connection(self):
         try:
-            data, addr = self.socket.recvfrom(65000)
+            data, addr = self.socket.recvfrom(10000)
             ip = addr[0]
             addr = "{}:{}".format(addr[0], addr[1])
             logger.debug("{}: incoming connection from {}".format('sonos', addr))
@@ -151,20 +150,15 @@ class Sonos():
                 command = item.conf['sonos_send']
 
                 if command == 'mute':
-                    if isinstance(value, bool):
-                        cmd = self.command.mute(uid, int(value))
+                    cmd = self.command.mute(uid)
                 if command == 'led':
-                    if isinstance(value, bool):
-                        cmd = self.command.led(uid,int(value))
+                    cmd = self.command.led(uid)
                 if command == 'play':
-                    if isinstance(value, bool):
-                        cmd = self.command.play(uid, int(value))
+                    cmd = self.command.play(uid)
                 if command == 'pause':
-                    if isinstance(value, bool):
-                        cmd = self.command.pause(uid, int(value))
+                    cmd = self.command.pause(uid)
                 if command == 'stop':
-                    if isinstance(value, bool):
-                        cmd = self.command.stop(uid, int(value))
+                    cmd = self.command.stop(uid)
                 if command == 'volume':
                     if isinstance(value, int):
                         cmd = self.command.volume(uid, int(value))
@@ -209,6 +203,16 @@ class Sonos():
                         cmd = self.command.seek(uid, value)
                 if command == 'current_state':
                     cmd = self.command.current_state(uid)
+                if command == 'join':
+                    cmd = self.command.join(uid, value)
+                if command == 'unjoin':
+                    cmd = self.command.unjoin(uid)
+                if command == 'partymode':
+                    cmd = self.command.partymode(uid)
+                if command == 'volume_up':
+                    cmd = self.command.volume_up(uid)
+                if command == 'volume_down':
+                    cmd = self.command.volume_down(uid)
                 if cmd:
                     self._send_cmd(cmd)
         return None
@@ -257,12 +261,11 @@ class Sonos():
 
         logger.debug("Sending request: {0}".format(cmd))
 
-
     def get_favorite_radiostations(self, start_item=0, max_items=50):
         return self._send_cmd_response(SonosCommand.favradio(start_item, max_items))
 
     def version(self):
-        return "v0.7\t2014-04-27"
+        return "v0.8.1\t2014-06-07"
 
 class SonosSpeaker():
 
@@ -276,6 +279,7 @@ class SonosSpeaker():
         self.software_version = []
         self.hardware_version = []
         self.mac_address = []
+
         self.playlist_position = []
         self.volume = []
         self.mute = []
@@ -294,11 +298,20 @@ class SonosSpeaker():
         self.radio_show = []
         self.status =[]
         self.max_volume = []
+        self.additional_zone_members = []
 
 class SonosCommand():
     @staticmethod
-    def mute(uid, value):
-        return "speaker/{}/mute/{}".format(uid, int(value))
+    def join(uid, value):
+        return "speaker/{}/join/{}".format(uid, value)
+
+    @staticmethod
+    def unjoin(uid):
+        return "speaker/{}/unjoin".format(uid)
+
+    @staticmethod
+    def mute(uid):
+        return "speaker/{}/mute".format(uid)
 
     @staticmethod
     def next(uid):
@@ -309,24 +322,32 @@ class SonosCommand():
         return "speaker/{}/previous".format(uid)
 
     @staticmethod
-    def play(uid, value):
-        return "speaker/{}/play/{}".format(uid, int(value))
+    def play(uid):
+        return "speaker/{}/play".format(uid)
 
     @staticmethod
-    def pause(uid, value):
-        return "speaker/{}/pause/{}".format(uid, int(value))
+    def pause(uid):
+        return "speaker/{}/pause".format(uid)
 
     @staticmethod
-    def stop(uid, value):
-        return "speaker/{}/stop/{}".format(uid, int(value))
+    def stop(uid):
+        return "speaker/{}/stop".format(uid)
 
     @staticmethod
-    def led(uid, value):
-        return "speaker/{}/led/{}".format(uid, int(value))
+    def led(uid):
+        return "speaker/{}/led".format(uid)
 
     @staticmethod
     def volume(uid, value):
         return "speaker/{}/volume/{}".format(uid, value)
+
+    @staticmethod
+    def volume_up(uid):
+        return "speaker/{}/volume_up".format(uid)
+
+    @staticmethod
+    def volume_down(uid):
+        return "speaker/{}/volume_down".format(uid)
 
     @staticmethod
     def max_volume(uid, value):
@@ -354,6 +375,10 @@ class SonosCommand():
     @staticmethod
     def current_state(uid):
         return "speaker/{}/current_state".format(uid)
+
+    @staticmethod
+    def partymode(uid):
+        return "speaker/{}/partymode".format(uid)
 
     @staticmethod
     def get_uid_from_response(dom):
