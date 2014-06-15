@@ -3,8 +3,20 @@ The plugin is designed to control the sonos speakers in connection with the sono
 
 
 ##Release
-
+    
+  v0.9    2014-06-15
+    
+    --  changed values play, pause, stop, led back to normal values (no toggle values). 
+        It makes logics easier to write.
+    --  new commands:
+        -   bass [read/write]: sets the bass for a speaker (value between -10 and 10)
+        -   treble [read/write]: sets the treble value for a speaker (value between -10 and 10)
+        -   loudness [read/write]: sets the loudness compensation for a speaker (value 0|1)
+        -   playmode [read/write] sets the playmode for a sonos speaker 
+            values: 'normal', 'shuffle_norepeat', 'shuffle', 'repeat_all'
+    
   v0.8.1  2014-06-07
+    
     --  bugfixes in some command processing
 
   v0.8    2014-06-06
@@ -42,12 +54,6 @@ The plugin is designed to control the sonos speakers in connection with the sono
         - it's now possible to set the volume and language (play_tts) dynamically
         (e.g sh.sonos.play_tts.volume(20))
 
-  v0.5    2014-03-26
-
-    --  Google Text-To-Speech support added
-    --  new commands:
-        -   play_tts (play any text through Google TTS API)
-    --  broken_pipe bugfix
 
 
 ##Requirements:
@@ -79,14 +85,14 @@ Edit file with this sample of mine:
         sonos_uid = RINCON_000E58C3892E01400
 
     [[mute]]
-        type = foo
+        type = bool
         enforce_updates = True
         visu_acl = rw
         sonos_recv = mute
         sonos_send = mute
 
     [[led]]
-        type = foo
+        type = bool
         enforce_updates = True
         visu_acl = rw
         sonos_recv = led
@@ -123,14 +129,14 @@ Edit file with this sample of mine:
         #Unset max_volume with value -1
 
     [[stop]]
-        type = foo
+        type = bool
         enforce_updates = True
         visu_acl = rw
         sonos_recv = stop
         sonos_send = stop
 
     [[play]]
-        type = foo
+        type = bool
         enforce_updates = True
         visu_acl = rw
         sonos_recv = play
@@ -143,7 +149,7 @@ Edit file with this sample of mine:
         sonos_send = seek    #use HH:mm:ss
 
     [[pause]]
-        type = foo
+        type = bool
         enforce_updates = True
         visu_acl = rw
         sonos_recv = pause
@@ -316,8 +322,39 @@ Edit file with this sample of mine:
         visu_acl = rw
         sonos_recv = additional_zone_members
 
+    [[bass]]
+        type = num
+        enforce_updates = True
+        visu_acl = rw
+        sonos_recv = bass
+        sonos_send = bass
+    
+    [[treble]]
+        type = num
+        enforce_updates = True
+        visu_acl = rw
+        sonos_recv = treble
+        sonos_send = treble
+        
+    [[loudness]]
+        type = bool
+        enforce_updates = True
+        visu_acl = rw
+        sonos_recv = loudness
+        sonos_send = loudness
+    
+    [[playmode]]
+        type = str
+        enforce_updates = True
+        visu_acl = rw
+        sonos_recv = playmode
+        sonos_send = playmode
+        
+        
+You can find an example config in the plugin sub-directory "examples". 
 
-  To get your sonos speaker id, type this command in your browser (while sonos server is running):
+
+To get your sonos speaker id, type this command in your browser (while sonos server is running):
   
     http://<sonos_server_ip:port>/client/list
 
@@ -326,7 +363,7 @@ Edit file with this sample of mine:
 
 If one or more speakers are in the same zone, almost all commands will be passed to the master speaker. You don't
 have to worry about which speaker is the zone master. Just send your command to one of the zone speaker. There are
-few 'single' speaker commands like 'volume' which are passed to the specified speaker exclusively.
+few 'single' speaker commands like 'volume', which are passed to the specified speaker exclusively.
 
 ###Group commands
 
@@ -341,6 +378,7 @@ few 'single' speaker commands like 'volume' which are passed to the specified sp
     play_snippet
     play_tts
     partymode
+    playmode
 
 ###Single Speaker commands
 
@@ -349,7 +387,9 @@ few 'single' speaker commands like 'volume' which are passed to the specified sp
     max_volume
     join
     unjoin
-
+    bass
+    treble
+    loudness
 
 ##Methods
 
