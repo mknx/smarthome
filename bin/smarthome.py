@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
+# Copyright 2011-2014 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
@@ -105,6 +105,7 @@ class LogHandler(logging.StreamHandler):
 
 
 class SmartHome():
+
     base_dir = BASE
     _plugin_conf = BASE + '/etc/plugin.conf'
     _env_dir = BASE + '/lib/env/'
@@ -125,7 +126,13 @@ class SmartHome():
     _utctz = TZ
 
     def __init__(self, smarthome_conf=BASE + '/etc/smarthome.conf'):
+
+        # set default timezone to UTC
         global TZ
+        self.tz = 'UTC'
+        os.environ['TZ'] = self.tz
+        self._tzinfo = TZ
+
         threading.currentThread().name = 'Main'
         self.alive = True
         self.version = VERSION
@@ -218,20 +225,18 @@ class SmartHome():
         logging.getLogger('').addHandler(log_mem)
 
         #############################################################
-        # Setting (local) tz
+        # Setting (local) tz if set in smarthome.conf
         #############################################################
-        self.tz = 'UTC'
-        os.environ['TZ'] = self.tz
         if hasattr(self, '_tz'):
             tzinfo = gettz(self._tz)
             if tzinfo is not None:
                 TZ = tzinfo
                 self.tz = self._tz
                 os.environ['TZ'] = self.tz
+                self._tzinfo = TZ
             else:
                 logger.warning("Problem parsing timezone: {}. Using UTC.".format(self._tz))
             del(self._tz, tzinfo)
-        self._tzinfo = TZ
 
         logger.info("Start SmartHome.py {0}".format(VERSION))
         logger.debug("Python {0}".format(sys.version.split()[0]))
