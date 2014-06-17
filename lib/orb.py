@@ -2,7 +2,7 @@
 #
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
+# Copyright 2011-2014 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
@@ -22,6 +22,7 @@
 
 import logging
 import datetime
+import math
 
 logger = logging.getLogger('')
 
@@ -81,13 +82,16 @@ class Orb():
         next_setting = next_setting + dateutil.relativedelta.relativedelta(minutes=moff)
         return next_setting.replace(tzinfo=tzutc())
 
-    def pos(self, offset=None):  # offset in minutes
+    def pos(self, offset=None, degree=False):  # offset in minutes
         date = datetime.datetime.utcnow()
         if offset:
             date += dateutil.relativedelta.relativedelta(minutes=offset)
         self._obs.date = date
         self._orb.compute(self._obs)
-        return (self._orb.az, self._orb.alt)
+        if degree:
+            return (round(math.degrees(self._orb.az), 2), round(math.degrees(self._orb.alt), 2))
+        else:
+            return (self._orb.az, self._orb.alt)
 
     def _light(self, offset=None):  # offset in minutes
         date = datetime.datetime.utcnow()
