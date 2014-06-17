@@ -3,9 +3,23 @@
 ## Requirements  
 ### Python libraries  
 * requests - [install instructions](http://docs.python-requests.org/en/latest/user/install/#install "http://docs.python-requests.org/en/latest/user/install/#install")
+* magic - [install instructions](https://github.com/ahupp/python-magic "https://github.com/ahupp/python-magic")
   
 ### Other  
 * Pushbullet API-KEY - get it from [__here__](http://www.pushbullet.com/ "http://www.pushbullet.com") for free  
+  
+---
+## What's new?
+  
+__2014-06-17__:
+
+* __New python library dependecy: "magic" (see requirements section above)__
+* Updated to pushbullet [api v2](http://www.pushbullet.com/api "http://www.pushbullet.com/api"), including new file handling  
+* New *(optional)* "body" parameters for link and file pushes  
+
+__2014-05-16__:
+
+* Initial version
   
 ---
 ## Configuration  
@@ -44,17 +58,19 @@ Send a note to your device.
 sh.pushbullet.note("Note to myself.", "Call my mother.")
 </pre>
 --- 
-### sh.pushbullet.link(title, url [, deviceid] [, apikey])
+### sh.pushbullet.link(title, url [, deviceid] [, apikey] [, body])
 Send a link to your device.  
   
 #### Parameters:  
 * __title__: The title of the page linked to
 * __url__:  The link url 
+* (optional) __body__: An optional message
   
 #### Example
 <pre>
 # send link to device with id: x28d7AJFx13
-sh.pushbullet.link("Pushbullet", "http://www.pushbullet.com", "x28d7AJFx13")
+#
+sh.pushbullet.link("Pushbullet", "http://www.pushbullet.com", "x28d7AJFx13", body="Try this cool service.")
 </pre>
 --- 
 ### sh.pushbullet.address(name, address [, deviceid] [, apikey])
@@ -83,14 +99,15 @@ Send a list of items to your device.
 sh.pushbullet.list("Shopping list", ["Milk", "Eggs", "Salt"])
 </pre>
 ---
-### sh.pushbullet.file(filepath [, deviceid] [, apikey])
+### sh.pushbullet.file(filepath [, deviceid] [, apikey] [, body])
 Send a file to your device.  
   
 #### Parameters:  
-* __filepath__: absolute path to the file to push  
+* __filepath__: absolute path to the file to push
+* (optional) __body__: An optional message
   
 #### Example
 <pre>
 #send smarthome log file to default device
-sh.pushbullet.note("/usr/local/smarthome/var/log/smarthome.log")
+sh.pushbullet.file("/usr/local/smarthome/var/log/smarthome.log", body="Take a look at this log-file")
 </pre>
