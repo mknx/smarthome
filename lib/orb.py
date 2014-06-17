@@ -89,7 +89,7 @@ class Orb():
         self._obs.date = date
         self._orb.compute(self._obs)
         if degree:
-            return (round(math.degrees(self._orb.az), 2), round(math.degrees(self._orb.alt), 2))
+            return (math.degrees(self._orb.az), math.degrees(self._orb.alt))
         else:
             return (self._orb.az, self._orb.alt)
 
