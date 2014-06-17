@@ -26,6 +26,7 @@ import serial
 import threading
 import struct
 import socket
+import errno
 
 logger = logging.getLogger('')
 
@@ -151,8 +152,11 @@ class Sml():
                     data = self._sock.recv(length)
                     if data:
                         total.append(data)
-                except Exception as e:
-                    break
+                except socket.error as e:
+                    if e.args[0] == errno.EAGAIN or e.args[0] == errno.EWOULDBLOCK:
+                        break
+                    else:
+                        raise e
 
         return b''.join(total)
         
