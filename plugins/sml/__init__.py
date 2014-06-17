@@ -165,17 +165,18 @@ class Sml():
             start = time.time()
             try:
                 data = self._read(512)
+
+                values = self._parse(self._prepare(data))
+
+                for obis in values:
+                    if obis in self._items:
+                        for prop in self._items[obis]:
+                            for item in self._items[obis][prop]:
+                                item(values[obis][prop])
+
             except Exception as e:
                 logger.error('Reading data from {0} failed: {1}'.format(self._target, e))
-                return
 
-            values = self._parse(self._prepare(data))
-
-            for obis in values:
-                if obis in self._items:
-                    for prop in self._items[obis]:
-                        for item in self._items[obis][prop]:
-                            item(values[obis][prop])
 
             cycletime = time.time() - start
             logger.debug("cycle takes {0} seconds".format(cycletime))
