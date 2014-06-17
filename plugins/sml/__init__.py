@@ -166,8 +166,7 @@ class Sml():
             try:
                 data = self._read(512)
             except Exception as e:
-                logger.error(
-                    'could not retrieve data from {0}: {1}'.format(self._target, e))
+                logger.error('Reading data from {0} failed: {1}'.format(self._target, e))
                 return
 
             values = self._parse(self._prepare(data))
