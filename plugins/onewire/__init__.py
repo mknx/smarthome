@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-#  Copyright 2012-2013 Marcus Popp                         marcus@popp.mx
+#  Copyright 2012-2014 Marcus Popp                         marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
@@ -207,7 +207,7 @@ class OwBase():
                 return keys
             elif page3[0] == 0xF4:  # AMSv2 V
                 return {'V': 'VAD'}
-            elif page3 == b'HUMIDIT3': # DataNab
+            elif page3 == b'HUMIDIT3':  # DataNab
                 keys['H'] = 'humidity'
                 return keys
             else:
@@ -379,7 +379,11 @@ class OneWire(OwBase):
                     logger.info("1-Wire: path not found for {0}".format(item.id()))
                     continue
                 try:
-                    value = float(self.read('/uncached' + path).decode())
+                    value = self.read('/uncached' + path).decode()
+                    if key.startswith('T') and value == '85.0000':
+                        logger.info("1-Wire: problem reading {0}. Wiring problem?".format(addr))
+                        continue
+                    value = float(value)
                 except Exception:
                     logger.info("1-Wire: problem reading {0}".format(addr))
                     if not self.connected:
@@ -391,9 +395,6 @@ class OneWire(OwBase):
                         value = round(10 ** ((float(value) / 47) * 1000))
                     else:
                         value = 0
-                elif key.startswith('T') and value == '85':
-                    logger.info("1-Wire: problem reading {0}. Wiring problem?".format(addr))
-                    continue
                 elif key == 'VOC':
                     value = value * 310 + 450
                 item(value, '1-Wire', path)

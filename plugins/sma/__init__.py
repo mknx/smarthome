@@ -217,7 +217,8 @@ class SMA():
             self._cmd_lock.release()
         if ('LAST_UPDATE' in self._fields) and not (self._inv_last_read_timestamp_utc == 0):
             self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
-            self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
+            #self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
+            self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m. %H:%M")
             for item in self._fields['LAST_UPDATE']['items']:
                 item(self._inv_last_read_str, 'SMA', self._inv_serial)
 
@@ -257,8 +258,10 @@ class SMA():
                     if (abs(diff) > self._allowed_timedelta) and not (inv_localtime == 0):
                         self._inv_set_time()
                         msg = self._recv_smanet2_msg()
-                        if msg is not None:
-                            logger.debug("sma: reply - len={} data=[{}]\n".format(len(msg), ', '.join(['0x%02x' % b for b in msg[41:]])))
+                        if msg is None:
+                            logger.debug("sma: could not get reply while setting inverter time\n")
+                        else:
+                            logger.debug("sma: reply while setting inverter time - len={} data=[{}]\n".format(len(msg), ', '.join(['0x%02x' % b for b in msg[41:]])))
         except Exception as e:
             logger.error("sma: adjusting inverter time failed - {}".format(e))
             return
