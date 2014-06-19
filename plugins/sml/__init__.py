@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#
-# Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#########################################################################
+#  Copyright 2012-2014 Oliver Hinckel                  github@ollisnet.de
+#########################################################################
 #
 #  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
@@ -17,7 +18,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
-#
+#########################################################################
 
 import logging
 import time
