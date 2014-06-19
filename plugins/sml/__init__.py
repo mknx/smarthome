@@ -33,13 +33,6 @@ logger = logging.getLogger('')
 
 
 class Sml():
-    _serial = None
-    _sock = None
-    _prepare = None
-    _lock = None
-    _target = None
-    _dataoffset = 0
-    _items = {}
     _units = {  # Blue book @ http://www.dlms.com/documentation/overviewexcerptsofthedlmsuacolouredbooks/index.html
        1 : 'a',    2 : 'mo',    3 : 'wk',  4 : 'd',    5 : 'h',     6 : 'min.',  7 : 's',     8 : '°',     9 : '°C',    10 : 'currency',
       11 : 'm',   12 : 'm/s',  13 : 'm³', 14 : 'm³',  15 : 'm³/h', 16 : 'm³/h', 17 : 'm³/d', 18 : 'm³/d', 19 : 'l',     20 : 'kg',
@@ -51,13 +44,18 @@ class Sml():
     _devices = {
       'smart-meter-gateway-com-1' : 'hex'
     }
-    connected = False
 
     def __init__(self, smarthome, host=None, port=0, serialport=None, device="raw"):
         self._sh = smarthome
         self.host = host
         self.port = int(port)
         self.serialport = serialport
+        self.connected = False
+        self._serial = None
+        self._sock = None
+        self._target = None
+        self._dataoffset = 0
+        self._items = {}
         self._lock = threading.Lock()
 
         if device in self._devices:
