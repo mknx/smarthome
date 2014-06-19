@@ -169,10 +169,12 @@ class Sml():
                 values = self._parse(self._prepare(data))
 
                 for obis in values:
+                    logger.debug('Entry {}'.format(values[obis]))
+
                     if obis in self._items:
                         for prop in self._items[obis]:
                             for item in self._items[obis][prop]:
-                                item(values[obis][prop])
+                                item(values[obis][prop], 'Sml')
 
             except Exception as e:
                 logger.error('Reading data from {0} failed: {1}'.format(self._target, e))
@@ -212,8 +214,6 @@ class Sml():
                     entry['obis'] = '{}-{}:{}.{}.{}*{}'.format(entry['objName'][0], entry['objName'][1], entry['objName'][2], entry['objName'][3], entry['objName'][4], entry['objName'][5])
                     entry['valueReal'] = entry['value'] * 10 ** entry['scaler'] if entry['scaler'] is not None else entry['value']
                     entry['unitName'] = self._units[entry['unit']] if entry['unit'] != None and entry['unit'] in self._units else None
-
-                    logger.debug('Entry {}'.format(entry))
 
                     values[entry['obis']] = entry
                 except Exception as e:
