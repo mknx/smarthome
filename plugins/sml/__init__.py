@@ -53,12 +53,11 @@ class Sml():
     }
     connected = False
 
-    def __init__(self, smarthome, host=None, port=0, serialport=None, device="raw", cycle=300):
+    def __init__(self, smarthome, host=None, port=0, serialport=None, device="raw"):
         self._sh = smarthome
         self.host = host
         self.port = int(port)
         self.serialport = serialport
-        self.cycle = cycle
         self._lock = threading.Lock()
 
         if device in self._devices:
@@ -72,15 +71,40 @@ class Sml():
             logger.warning("Device type \"{}\" not supported - defaulting to \"raw\"".format(device))
             self._prepare = self._prepareRaw
 
-        smarthome.connections.monitor(self)
-
     def run(self):
         self.alive = True
-        self._sh.scheduler.add('Sml', self._refresh, cycle=self.cycle)
+
+        while self.alive:
+            self.connect()
+
+            while not self.connected:
+                logger.debug('Not connected - waiting 5 seconds ...')
+                time.sleep(5)
+
+            while self.alive and self.connected:
+                try:
+                    data = self._read(512)
+
+                    if len(data):
+                        values = self._parse(self._prepare(data))
+
+                        for obis in values:
+                            logger.debug('Entry {}'.format(values[obis]))
+
+                            if obis in self._items:
+                                for prop in self._items[obis]:
+                                    for item in self._items[obis][prop]:
+                                        item(values[obis][prop], 'Sml')
+                    else:
+                        time.sleep(1)
+
+                except Exception as e:
+                    logger.error('Reading data from {0} failed: {1}'.format(self._target, e))
+
+        self.disconnect()
 
     def stop(self):
         self.alive = False
-        self.disconnect()
 
     def parse_item(self, item):
         if 'sml_obis' in item.conf:
@@ -103,7 +127,7 @@ class Sml():
 
     def connect(self):
         self._lock.acquire()
-        target = None
+        self._target = None
         try:
             if self.serialport is not None:
                 self._target = 'serial://{}'.format(self.serialport)
@@ -161,29 +185,6 @@ class Sml():
 
         return b''.join(total)
         
-    def _refresh(self):
-        if self.connected:
-            start = time.time()
-            try:
-                data = self._read(512)
-
-                values = self._parse(self._prepare(data))
-
-                for obis in values:
-                    logger.debug('Entry {}'.format(values[obis]))
-
-                    if obis in self._items:
-                        for prop in self._items[obis]:
-                            for item in self._items[obis][prop]:
-                                item(values[obis][prop], 'Sml')
-
-            except Exception as e:
-                logger.error('Reading data from {0} failed: {1}'.format(self._target, e))
-
-
-            cycletime = time.time() - start
-            logger.debug("cycle takes {0} seconds".format(cycletime))
-
     def _parse(self, data):
         # Search SML List Entry sequences like:
         # "77 07 81 81 c7 82 03 ff 01 01 01 01 04 xx xx xx xx" - manufactor
