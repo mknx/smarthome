@@ -70,19 +70,22 @@ class Pushbullet(object):
             if apikey == None:
                 apikey = self._apikey
 
-            upload_request_response = requests.post(self._upload_apiurl, data={"file_name": os.path.basename(filepath), "file_type": magic.from_file(filepath, mime=True)}, headers=headers, auth=apikey)
+            upload_request_response = requests.post(self._upload_apiurl, data=json.dumps({"file_name": os.path.basename(filepath), "file_type": magic.from_file(filepath, mime=True).decode("UTF-8")}), headers=headers, auth=(apikey,""))
 
             if self._is_response_ok(upload_request_response) == True:
                 data = upload_request_response.json()
-                upload_response = requests.post(data["upload_url"], data=data["data"], headers={"User-Agent": "SmartHome.py"}, files={"file": open(filepath, "rb")}, auth=apikey)
+                upload_response = requests.post(data["upload_url"], data=data["data"], headers={"User-Agent": "SmartHome.py"}, files={"file": open(filepath, "rb")})
 
                 if self._is_response_ok(upload_response) == True:
+                    if body == None:
+                        body = ""
+
                     self._push(data={"type": "file", "file_name": data["file_name"], "file_type": data["file_type"], "file_url": data["file_url"], "body": body}, deviceid=deviceid, apikey=apikey)
                 else:
                     logger.error("Error while uploading file: {0}".format(upload_response.text))
             else:
                 logger.error("Error while requesting upload: {0}".format(upload_request_response.text))
-        except RequestException as exception:
+        except Exception as exception:
             logger.error("Could not send file to Pushbullet notification. Error: {0}".format(exception))
 
     def _push(self, data, deviceid=None, apikey=None):
@@ -94,15 +97,14 @@ class Pushbullet(object):
             data["device_iden"] = deviceid
 
         try:
-            response = requests.post(self._apiurl, data=json.dumps(data), headers={"User-Agent": "SmartHome.py", "Content-Type": "application/json"}, auth=apikey)
+            response = requests.post(self._apiurl, data=json.dumps(data), headers={"User-Agent": "SmartHome.py", "Content-Type": "application/json"}, auth=(apikey,""))
             if self._is_response_ok(response) == False:
                 logger.error("Could not send Pushbullet notification. Error: {0}".format(response.text))
-        except RequestException as exception:
+        except Exception as exception:
             logger.error("Could not send Pushbullet notification. Error: {0}".format(exception))
 
-    @staticmethod
-    def _is_response_ok(response):
-        if response.status_code == 200:
+    def _is_response_ok(self, response):
+        if response.status_code == 200 or response.status_code == 204:
             logger.debug("Pushbullet returns: Notification submitted.")
             return True
         elif response.status_code == 400:
