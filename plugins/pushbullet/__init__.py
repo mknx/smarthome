@@ -32,10 +32,11 @@ class Pushbullet(object):
     _apiurl = "https://api.pushbullet.com/v2/pushes"
     _upload_apiurl = "https://api.pushbullet.com/v2/upload-request"
 
-    def __init__(self, smarthome, apikey=None, deviceid=None):
+    def __init__(self, smarthome, apikey=None, deviceid=None, debug=False):
         self._apikey = apikey
         self._deviceid = deviceid
         self._sh = smarthome
+        self._debug = debug
 
     def run(self):
         pass
@@ -118,4 +119,8 @@ class Pushbullet(object):
             logger.warning("Pushbullet returns: Server errors - something went wrong on PushBullet's side.")
         else:
             logger.error("Pushbullet returns unknown HTTP status code = {0}".format(response.status_code))
+
+        if self._debug == True:
+            logger.warning("Response was: {}".format(response.text))
+
         return False
