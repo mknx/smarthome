@@ -109,8 +109,9 @@ and longitude (e.g. lon = 10.4476) in the smarthome.conf file!
 
 .. raw:: html
 
-   <pre># sh.sun.pos([offset]) specifies an minute offset.
+   <pre># sh.sun.pos([offset], [degree=False]) specifies an optional minute offset and if the return values should be degrees instead of the default radians.
    azimut, altitude = sh.sun.pos() # return the current sun position
+   azimut, altitude = sh.sun.pos(degree=True) # return the current sun position in degrees
    azimut, altitude = sh.sun.pos(30) # return the sun position 30 minutes
                                      # in the future.
 

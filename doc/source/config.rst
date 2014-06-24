@@ -20,6 +20,8 @@ Following attributes are supported in smarthome.conf:
    sunrise/sunset calculation, dealing with the position of the sun.
 -  ``tz``: timezone
 -  ``item_change_log``: log item changes with loglevel info
+-  ``loglevel``: specify the loglevel. Levels could be debug, info, warning or error.
+
 
 Sample Configuration
 ~~~~~~~~~~~~~~~~~~~~
