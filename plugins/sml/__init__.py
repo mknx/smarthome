@@ -176,7 +176,9 @@ class Sml():
                                 item(values[obis][prop], 'Sml')
 
             except Exception as e:
-                logger.error('Reading data from {0} failed: {1}'.format(self._target, e))
+                logger.error('Reading data from {0} failed: {1} - reconnecting!'.format(self._target, e))
+                self.disconnect()
+                self.connect()
 
 
             cycletime = time.time() - start
