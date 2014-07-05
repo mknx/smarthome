@@ -162,23 +162,32 @@ class Sml():
     def _refresh(self):
         if self.connected:
             start = time.time()
-            try:
-                data = self._read(512)
+            retry = 5
+            while retry > 0:
+                try:
+                    data = self._read(512)
 
-                values = self._parse(self._prepare(data))
+                    retry = 0
+                    values = self._parse(self._prepare(data))
 
-                for obis in values:
-                    logger.debug('Entry {}'.format(values[obis]))
+                    for obis in values:
+                        logger.debug('Entry {}'.format(values[obis]))
 
-                    if obis in self._items:
-                        for prop in self._items[obis]:
-                            for item in self._items[obis][prop]:
-                                item(values[obis][prop], 'Sml')
+                        if obis in self._items:
+                            for prop in self._items[obis]:
+                                for item in self._items[obis][prop]:
+                                    item(values[obis][prop], 'Sml')
 
-            except Exception as e:
-                logger.error('Reading data from {0} failed: {1} - reconnecting!'.format(self._target, e))
-                self.disconnect()
-                self.connect()
+                except Exception as e:
+                    logger.error('Reading data from {0} failed: {1} - reconnecting!'.format(self._target, e))
+
+                    self.disconnect()
+                    time.sleep(1)
+                    self.connect()
+
+                    retry = retry - 1
+                    if retry == 0:
+                        logger.warn('Trying to read data in next cycle due to connection errors!')
 
 
             cycletime = time.time() - start
