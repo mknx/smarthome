@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#########################################################################
+# ########################################################################
 # Copyright 2013 KNX-User-Forum e.V. http://knx-user-forum.de/
 #########################################################################
 # This file is part of SmartHome.py. http://mknx.github.io/smarthome/
@@ -22,29 +22,35 @@ import http
 import logging
 import lib.connection
 import lib.tools
+import os
 import re
+import socket
 import threading
 import json
 import urllib
 from urllib.parse import urlparse
+import fcntl
+import struct
 
-logger = logging.getLogger('Sonos')
+logger = logging.getLogger('')
 sonos_speaker = {}
+
 
 class UDPDispatcher(lib.connection.Server):
     def __init__(self, ip, port):
         lib.connection.Server.__init__(self, ip, port, proto='UDP')
-        self.dest = 'udp:' + ip + ':' + port
+        self.dest = 'udp:' + ip + ':{port}'.format(port=port)
+        logger.debug('starting udp listener with {url}'.format(url=self.dest))
+
         self.connect()
 
     def handle_connection(self):
         try:
-            data, addr = self.socket.recvfrom(10000)
-            ip = addr[0]
-            addr = "{}:{}".format(addr[0], addr[1])
-            logger.debug("{}: incoming connection from {}".format('sonos', addr))
-        except Exception as e:
-            logger.error("{}: {}".format(self._name, e))
+            data, address = self.socket.recvfrom(10000)
+            address = "{}:{}".format(address[0], address[1])
+            logger.debug("{}: incoming connection from {}".format('sonos', address))
+        except Exception as err:
+            logger.error("{}: {}".format(self._name, err))
             return
 
         try:
@@ -53,6 +59,9 @@ class UDPDispatcher(lib.connection.Server):
 
             if not uid:
                 logger.error("No uid found in sonos udp response!\nResponse: {}")
+            if uid not in sonos_speaker:
+                logger.warning("no sonos speaker configured with uid '{uid}".format(uid=uid))
+                return
 
             for key, value in sonos.items():
                 instance_var = getattr(sonos_speaker[uid], key)
@@ -64,25 +73,39 @@ class UDPDispatcher(lib.connection.Server):
         except Exception as err:
             logger.error("Error parsing sonos broker response!\nError: {}".format(err))
 
+
 class Sonos():
-    def __init__(self, smarthome, host='0.0.0.0', port='9999', broker_url=None):
+    def __init__(self, smarthome, listen_host='0.0.0.0', listen_port=9999, broker_url=None, refresh=120):
 
         if broker_url:
             self._broker_url = broker_url
-        self.port = port
+        else:
+            self._broker_url = "{ip}:12900".format(ip=get_lan_ip())
+            if self._broker_url:
+                logger.warning("No broker url given, assuming current ip and default broker port: {url}".
+                               format(url=self._broker_url))
+            else:
+                logger.error("Could not detect broker url !!!")
+                return
+
+        self._listen_host = listen_host
+        self._listen_port = listen_port
         self._sh = smarthome
-        self.command = SonosCommand()
+        self._command = SonosCommand()
         self._sonoslock = threading.Lock()
-        self._sh.scheduler.add('sonos-update', self._subscribe, cycle=120)
+        self._sh.scheduler.add('sonos-update', self._subscribe, cycle=refresh)
+
+        logger.debug('refresh sonos speakers every {refresh} seconds'.format(refresh=refresh))
+
         self._sh.trigger('sonos-update', self._subscribe)
-        UDPDispatcher(host, port)
+        UDPDispatcher(self._listen_host, self._listen_port)
 
     def run(self):
         self.alive = True
 
     def _subscribe(self):
         logger.debug('(re)registering to sonos broker server ...')
-        self._send_cmd('client/subscribe/{}'.format(self.port))
+        self._send_cmd('client/subscribe/{}'.format(self._listen_port))
 
         for uid, speaker in sonos_speaker.items():
             self._send_cmd(SonosCommand.current_state(uid))
@@ -153,46 +176,47 @@ class Sonos():
 
                 if command == 'mute':
                     if isinstance(value, bool):
-                        cmd = self.command.mute(uid, value)
+                        cmd = self._command.mute(uid, value)
                 if command == 'led':
                     if isinstance(value, bool):
-                        cmd = self.command.led(uid, value)
+                        cmd = self._command.led(uid, value)
                 if command == 'play':
                     if isinstance(value, bool):
-                        cmd = self.command.play(uid, value)
+                        cmd = self._command.play(uid, value)
                 if command == 'pause':
                     if isinstance(value, bool):
-                        cmd = self.command.pause(uid, value)
+                        cmd = self._command.pause(uid, value)
                 if command == 'stop':
                     if isinstance(value, bool):
-                        cmd = self.command.stop(uid, value)
+                        cmd = self._command.stop(uid, value)
                 if command == 'volume':
                     if isinstance(value, int):
-                        cmd = self.command.volume(uid, int(value))
+                        cmd = self._command.volume(uid, int(value))
                 if command == 'max_volume':
                     if isinstance(value, int):
-                        cmd = self.command.max_volume(uid, int(value))
+                        cmd = self._command.max_volume(uid, int(value))
                 if command == 'bass':
                     if isinstance(value, int):
-                        cmd = self.command.bass(uid, int(value))
+                        cmd = self._command.bass(uid, int(value))
                 if command == 'treble':
                     if isinstance(value, int):
-                        cmd = self.command.treble(uid, int(value))
+                        cmd = self._command.treble(uid, int(value))
                 if command == 'loudness':
                     if isinstance(value, bool):
-                        cmd = self.command.loudness(uid, value)
+                        cmd = self._command.loudness(uid, value)
                 if command == 'playmode':
                     value = value.lower().strip('\'').strip('\"')
                     if value in ['normal', 'shuffle_norepeat', 'shuffle', 'repeat_all']:
-                        cmd = self.command.playmode(uid, value)
+                        cmd = self._command.playmode(uid, value)
                     else:
-                        logger.warning("Ignoring PLAYMODE command. Value {value} not a valid paramter!".format(value=value))
+                        logger.warning(
+                            "Ignoring PLAYMODE command. Value {value} not a valid paramter!".format(value=value))
                 if command == 'next':
-                    cmd = self.command.next(uid)
+                    cmd = self._command.next(uid)
                 if command == 'previous':
-                    cmd = self.command.previous(uid)
+                    cmd = self._command.previous(uid)
                 if command == 'play_uri':
-                    cmd = self.command.play_uri(uid, value)
+                    cmd = self._command.play_uri(uid, value)
                 if command == 'play_snippet':
                     volume_item_name = '{}.volume'.format(item._name)
                     volume = -1
@@ -200,7 +224,7 @@ class Sonos():
                         if child._name.lower() == volume_item_name.lower():
                             volume = child()
                             break
-                    cmd = self.command.play_snippet(uid, value, volume)
+                    cmd = self._command.play_snippet(uid, value, volume)
 
                 if command == 'play_tts':
                     volume_item_name = '{}.volume'.format(item._name)
@@ -212,26 +236,26 @@ class Sonos():
                             volume = child()
                         if child._name.lower() == language_item_name.lower():
                             language = child()
-                    cmd = self.command.play_tts(uid, value, language, volume)
+                    cmd = self._command.play_tts(uid, value, language, volume)
 
                 if command == 'seek':
                     if not re.match(r'^[0-9][0-9]?:[0-9][0-9]:[0-9][0-9]$', value):
                         logger.warning('invalid timestamp for sonos seek command, use HH:MM:SS format')
                         cmd = None
                     else:
-                        cmd = self.command.seek(uid, value)
+                        cmd = self._command.seek(uid, value)
                 if command == 'current_state':
-                    cmd = self.command.current_state(uid)
+                    cmd = self._command.current_state(uid)
                 if command == 'join':
-                    cmd = self.command.join(uid, value)
+                    cmd = self._command.join(uid, value)
                 if command == 'unjoin':
-                    cmd = self.command.unjoin(uid)
+                    cmd = self._command.unjoin(uid)
                 if command == 'partymode':
-                    cmd = self.command.partymode(uid)
+                    cmd = self._command.partymode(uid)
                 if command == 'volume_up':
-                    cmd = self.command.volume_up(uid)
+                    cmd = self._command.volume_up(uid)
                 if command == 'volume_down':
-                    cmd = self.command.volume_down(uid)
+                    cmd = self._command.volume_down(uid)
                 if cmd:
                     self._send_cmd(cmd)
         return None
@@ -284,10 +308,10 @@ class Sonos():
         return self._send_cmd_response(SonosCommand.favradio(start_item, max_items))
 
     def version(self):
-        return "v0.9\t2014-06-15"
+        return "v1.0-beta\t2014-06-26"
+
 
 class SonosSpeaker():
-
     def __init__(self):
         self.uid = []
         self.ip = []
@@ -314,13 +338,14 @@ class SonosSpeaker():
         self.track_uri = []
         self.radio_station = []
         self.radio_show = []
-        self.status =[]
+        self.status = []
         self.max_volume = []
         self.additional_zone_members = []
         self.bass = []
         self.treble = []
         self.loudness = []
         self.playmode = []
+
 
 class SonosCommand():
     @staticmethod
@@ -440,6 +465,31 @@ class SonosCommand():
             logger.error('favradio: command ignored - max_items value \'{}\' is not an integer'.format(max_items))
             return
         str_max_items = '/{}'.format(max_items)
-
         logger.debug("library/favradio{}{}".format(str_start_item, str_max_items))
         return "library/favradio{}{}".format(str_start_item, str_max_items)
+
+
+#######################################################################
+# UTIL FUNCTIONS
+#######################################################################
+
+def get_interface_ip(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', ifname[:15].encode('utf-8')))[20:24])
+
+
+def get_lan_ip():
+    try:
+        ip = socket.gethostbyname(socket.gethostname())
+        if ip.startswith("127.") and os.name != "nt":
+            interfaces = ["eth0", "eth1", "eth2", "wlan0", "wlan1", "wifi0", "ath0", "ath1", "ppp0"]
+            for ifname in interfaces:
+                try:
+                    ip = get_interface_ip(ifname)
+                    break
+                except IOError:
+                    pass
+        return ip
+    except Exception as err:
+        logger.exception(err)
+        return None

@@ -3,7 +3,18 @@ The plugin is designed to control the sonos speakers in connection with the sono
 
 
 ##Release
+
+  v1.0  2014-07-08
     
+    --  parameter 'broker_url' in plugin configuration now optional
+        -   if value is not set, the current system ip and the default broker port (12900) will be assumed
+        -   manually add  this parameter, if the sonos broker is not running on the same system
+    --  added optional parameter 'refresh' to plugin configuration (edit /usr/smarthome/etc/plugin.conf)
+        -   this parameter specifies, how often the broker is requested for sonos status updates (default: 120s)
+        -   Normally, all changes to the speakers will be triggered automatically to the plugin.
+    --  bug: if a sonos speaker was reported by the broker but was not declared in sonos.conf, an error occured
+    
+  
   v0.9    2014-06-15
     
     --  changed values play, pause, stop, led back to normal values (no toggle values). 
@@ -48,13 +59,6 @@ The plugin is designed to control the sonos speakers in connection with the sono
         -   get_favorite_radiostations()    Gets favorite radio stations from sonos library
         -   version                         Just the version of the current plugin
 
-  v0.6    2014-03-29
-
-    --  new structure for play_tts and play_snippet items
-        - it's now possible to set the volume and language (play_tts) dynamically
-        (e.g sh.sonos.play_tts.volume(20))
-
-
 
 ##Requirements:
 
@@ -69,11 +73,16 @@ The plugin is designed to control the sonos speakers in connection with the sono
 Go to /usr/smarthome/etc and edit plugins.conf and add ths entry:
 
     [sonos]
-  
       class_name = Sonos
       class_path = plugins.sonos
-      broker_url = 192.168.178.31:12900               #this is the sonos server ip and port
-
+      #broker_url = 192.168.178.31:12900        #optional
+      #refresh = 120                            #optional
+      
+You dont't have to set the ***broker_url*** variable. If value is not set, the current system ip and the default 
+broker port (12900) will be assumed. Add this this parameter manually, if the sonos broker is not running on 
+the same system.
+The ***refresh*** parameter specifies, how often the broker is requested for sonos status updates (default: 120s).
+Normally, all changes to the speakers will be triggered automatically to the plugin.
 
 Go to /usr/smarthome/items
     
@@ -424,6 +433,11 @@ get_favorite_radiostations(<start_item>, <max_items>)
 version()
 
     current plugin version
+
+
+##smartVISU Integration
+
+more information here: https://github.com/pfischi/shSonos/tree/develop/widget.smartvisu
 
 
 ##Logic examples
