@@ -308,7 +308,7 @@ class Sonos():
         return self._send_cmd_response(SonosCommand.favradio(start_item, max_items))
 
     def version(self):
-        return "v1.0-beta\t2014-06-26"
+        return "v1.0\t2014-07-08"
 
 
 class SonosSpeaker():
