@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
-#
-# Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
+#########################################################################
+#  Copyright 2012-2014 Oliver Hinckel                  github@ollisnet.de
+#########################################################################
 #
 #  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
@@ -17,7 +18,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
-#
+#########################################################################
 
 import logging
 import time
@@ -26,18 +27,12 @@ import serial
 import threading
 import struct
 import socket
+import errno
 
 logger = logging.getLogger('')
 
 
 class Sml():
-    _serial = None
-    _sock = None
-    _prepare = None
-    _lock = None
-    _target = None
-    _dataoffset = 0
-    _items = {}
     _units = {  # Blue book @ http://www.dlms.com/documentation/overviewexcerptsofthedlmsuacolouredbooks/index.html
        1 : 'a',    2 : 'mo',    3 : 'wk',  4 : 'd',    5 : 'h',     6 : 'min.',  7 : 's',     8 : '°',     9 : '°C',    10 : 'currency',
       11 : 'm',   12 : 'm/s',  13 : 'm³', 14 : 'm³',  15 : 'm³/h', 16 : 'm³/h', 17 : 'm³/d', 18 : 'm³/d', 19 : 'l',     20 : 'kg',
@@ -49,7 +44,6 @@ class Sml():
     _devices = {
       'smart-meter-gateway-com-1' : 'hex'
     }
-    connected = False
 
     def __init__(self, smarthome, host=None, port=0, serialport=None, device="raw", cycle=300):
         self._sh = smarthome
@@ -57,6 +51,12 @@ class Sml():
         self.port = int(port)
         self.serialport = serialport
         self.cycle = cycle
+        self.connected = False
+        self._serial = None
+        self._sock = None
+        self._target = None
+        self._dataoffset = 0
+        self._items = {}
         self._lock = threading.Lock()
 
         if device in self._devices:
@@ -151,28 +151,44 @@ class Sml():
                     data = self._sock.recv(length)
                     if data:
                         total.append(data)
-                except Exception as e:
-                    break
+                except socket.error as e:
+                    if e.args[0] == errno.EAGAIN or e.args[0] == errno.EWOULDBLOCK:
+                        break
+                    else:
+                        raise e
 
         return b''.join(total)
         
     def _refresh(self):
         if self.connected:
             start = time.time()
-            try:
-                data = self._read(512)
-            except Exception as e:
-                logger.error(
-                    'could not retrieve data from {0}: {1}'.format(self._target, e))
-                return
+            retry = 5
+            while retry > 0:
+                try:
+                    data = self._read(512)
 
-            values = self._parse(self._prepare(data))
+                    retry = 0
+                    values = self._parse(self._prepare(data))
 
-            for obis in values:
-                if obis in self._items:
-                    for prop in self._items[obis]:
-                        for item in self._items[obis][prop]:
-                            item(values[obis][prop])
+                    for obis in values:
+                        logger.debug('Entry {}'.format(values[obis]))
+
+                        if obis in self._items:
+                            for prop in self._items[obis]:
+                                for item in self._items[obis][prop]:
+                                    item(values[obis][prop], 'Sml')
+
+                except Exception as e:
+                    logger.error('Reading data from {0} failed: {1} - reconnecting!'.format(self._target, e))
+
+                    self.disconnect()
+                    time.sleep(1)
+                    self.connect()
+
+                    retry = retry - 1
+                    if retry == 0:
+                        logger.warn('Trying to read data in next cycle due to connection errors!')
+
 
             cycletime = time.time() - start
             logger.debug("cycle takes {0} seconds".format(cycletime))
@@ -208,8 +224,6 @@ class Sml():
                     entry['obis'] = '{}-{}:{}.{}.{}*{}'.format(entry['objName'][0], entry['objName'][1], entry['objName'][2], entry['objName'][3], entry['objName'][4], entry['objName'][5])
                     entry['valueReal'] = entry['value'] * 10 ** entry['scaler'] if entry['scaler'] is not None else entry['value']
                     entry['unitName'] = self._units[entry['unit']] if entry['unit'] != None and entry['unit'] in self._units else None
-
-                    logger.debug('Entry {}'.format(entry))
 
                     values[entry['obis']] = entry
                 except Exception as e:
