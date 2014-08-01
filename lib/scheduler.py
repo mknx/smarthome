@@ -122,7 +122,9 @@ class Scheduler(threading.Thread):
                 else:  # put last entry back and break while loop
                     self._triggerq.insert((dt, prio), (name, obj, by, source, dest, value))
                     break
-            self._lock.acquire()
+            if not self._lock.acquire(timeout=1):
+                logger.critical("Scheduler: Deadlock!")
+                continue
             for name in self._scheduler:
                 task = self._scheduler[name]
                 if task['next'] is not None:
@@ -297,7 +299,7 @@ class Scheduler(threading.Thread):
                     value = job['cron'][entry]
         self._scheduler[name]['next'] = next_time
         self._scheduler[name]['value'] = value
-        if name not in ['Connections', 'series', 'SQLite dump']:
+        if name not in ['Connections', 'serie', 'SQLite dump']:
             logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):
