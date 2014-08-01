@@ -52,11 +52,11 @@ commands = {'reconnect': ('WANIPConnection', 'ForceTermination'),
             'tam': ('TAM', 'SetEnable', 'NewEnable'),
             'setport': ('VoIP', 'X_AVM-DE_DialSetConfig', 'NewX_AVM-DE_PhoneName'),
             'call': ('VoIP', 'X_AVM-DE_DialNumber', 'NewX_AVM-DE_PhoneNumber'),
+            'hangup': ('VoIP', 'X_AVM-DE_DialHangup', None),
             'wlan': ('WLANConfiguration1', 'SetEnable', 'NewEnable'),
             'wlan_1': ('WLANConfiguration1', 'SetEnable', 'NewEnable'),
             'wlan_2': ('WLANConfiguration2', 'SetEnable', 'NewEnable'),
             'wlan_3': ('WLANConfiguration3', 'SetEnable', 'NewEnable')}
-#           'hangup': ('VoIP', 'X_AVM-DE_Hangup', None),
 
 # http://www.avm.de/de/News/artikel/schnittstellen_und_entwicklungen.php
 
@@ -193,6 +193,9 @@ class FritzBox(lib.www.Client):
                 entry['Date'] = datetime.datetime.strptime(entry['Date'], '%d.%m.%y %H:%M')
                 entries.append(entry)
             return entries
+
+    def hangup(self):
+        self._set('hangup', None)
 
     def reboot(self):
         self._set('reboot')
