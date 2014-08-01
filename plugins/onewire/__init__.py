@@ -220,6 +220,8 @@ class OwBase():
             return {'IA': 'sensed.A', 'IB': 'sensed.B', 'OA': 'PIO.A', 'OB': 'PIO.B'}
         elif typ == 'DS1420':  # Busmaster
             return {'BM': 'Busmaster'}
+        elif typ == 'DS2423':  # Counter
+            return {'CA': 'counter.A', 'CB': 'counter.B'}
         else:
             logger.info("1-Wire: unknown sensor {0} {1}".format(addr, typ))
             return
