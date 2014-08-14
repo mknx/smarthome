@@ -111,6 +111,9 @@ sh.fritzbox.call('**610', '**611')
 ## calllist()
 This function returns a list of all calls.
 
+## hangup()
+This function hangs up ongoing calls.
+
 ## reboot()
 This function reboots the FritzBox.
 

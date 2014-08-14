@@ -234,6 +234,8 @@ class DWD():
                                 forecast[day0][kind.tag] = value
                             elif day.tag == 'tomorrow':
                                 forecast[day1][kind.tag] = value
+                            elif day.tag == 'dayafter_to':
+                                forecast[day2][kind.tag] = value
                             else:
                                 logger.debug("unknown day: {0}".format(day.tag))
         fxp.clear()

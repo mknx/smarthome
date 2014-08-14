@@ -35,14 +35,15 @@ try:
         data['mc'] = hashlib.md5(__.encode()).hexdigest()
 except:
     pass
-try:
-    body = urllib.parse.urlencode(data)
-    content = lib.www.Client().fetch_url("http://get.smarthomepy.de/version", method='POST', body=body, timeout=5)
-    if content:
-        rmajor, rminor, rchange = content.decode().split('.')
-        if int(rmajor) > lmajor or (int(rmajor) == lmajor and int(rminor) > lminor):
-            sh.env.core.upgrade(True)
-        elif int(rchange) > lchange:
-            sh.env.core.update(True)
-except:
-    pass
+
+#try:
+#   body = urllib.parse.urlencode(data)
+#   content = lib.www.Client().fetch_url("http://get.smarthomepy.de/version", method='POST', body=body, timeout=5)
+#   if content:
+#       rmajor, rminor, rchange = content.decode().split('.')
+#       if int(rmajor) > lmajor or (int(rmajor) == lmajor and int(rminor) > lminor):
+#           sh.env.core.upgrade(True)
+#       elif int(rchange) > lchange:
+#           sh.env.core.update(True)
+#except:
+#   pass
