@@ -299,7 +299,7 @@ class Scheduler(threading.Thread):
                     value = job['cron'][entry]
         self._scheduler[name]['next'] = next_time
         self._scheduler[name]['value'] = value
-        if name not in ['Connections', 'serie', 'SQLite dump']:
+        if name not in ['Connections', 'series', 'SQLite dump']:
             logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):
@@ -472,12 +472,7 @@ class Scheduler(threading.Thread):
         if smin is not None:
             h, sep, m = smin.partition(':')
             try:
-                if next_time.date > now.date:
-                    dmin = now.replace(hour=int(h), minute=int(m), second=0, tzinfo=self._sh.tzinfo())
-                    if dmin < now:
-                        dmin = next_time.replace(hour=int(h), minute=int(m), second=0, tzinfo=self._sh.tzinfo())
-                else:
-                    dmin = next_time.replace(hour=int(h), minute=int(m), second=0, tzinfo=self._sh.tzinfo())
+                dmin = next_time.replace(hour=int(h), minute=int(m), second=0, tzinfo=self._sh.tzinfo())
             except Exception:
                 logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
                 return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
