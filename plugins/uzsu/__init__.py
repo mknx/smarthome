@@ -105,7 +105,10 @@ class UZSU():
                     try:
                         rrule = rrulestr(entry['rrule'], dtstart=datetime.combine(yesterday, parser.parse(time.strip()).time()))
                     except:
-                        rrule = rrulestr(entry['rrule'], dtstart=datetime.combine(yesterday, datetime.min.time()))
+                        if 'sun' in time:
+                            rrule = rrulestr(entry['rrule'], dtstart=datetime.combine(yesterday, self._sun(datetime.combine(yesterday.date(), datetime.min.time()).replace(tzinfo=self._sh.tzinfo()), time).time()))
+                        else:
+                            rrule = rrulestr(entry['rrule'], dtstart=datetime.combine(yesterday, datetime.min.time()))
                 dt = now
                 while self.alive:
                     dt = rrule.after(dt)
