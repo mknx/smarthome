@@ -25,6 +25,7 @@ import json
 import requests
 import magic
 import os
+import re
 
 logger = logging.getLogger("Pushbullet")
 
@@ -92,9 +93,13 @@ class Pushbullet(object):
         if apikey == None:
             apikey = self._apikey
 
-        data["device_iden"] = self._deviceid
         if deviceid:
-            data["device_iden"] = deviceid
+        	if re.match(r"^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$", deviceid):
+        		data["email"] = deviceid
+        	else:
+        		data["device_iden"] = deviceid
+        else:
+        	data["device_iden"] = self._deviceid
 
         try:
             response = requests.post(self._apiurl, data=json.dumps(data), headers={"User-Agent": "SmartHome.py", "Content-Type": "application/json"}, auth=(apikey,""))
