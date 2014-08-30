@@ -93,13 +93,13 @@ class Pushbullet(object):
         if apikey == None:
             apikey = self._apikey
 
-        if deviceid:
-        	if re.match(r"^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$", deviceid):
-        		data["email"] = deviceid
-        	else:
-        		data["device_iden"] = deviceid
+        if deviceid == None:
+            deviceid = self._deviceid
+            
+        if re.match(r"^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$", deviceid):
+        	data["email"] = deviceid
         else:
-        	data["device_iden"] = self._deviceid
+        	data["device_iden"] = deviceid
 
         try:
             response = requests.post(self._apiurl, data=json.dumps(data), headers={"User-Agent": "SmartHome.py", "Content-Type": "application/json"}, auth=(apikey,""))
