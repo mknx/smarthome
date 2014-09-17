@@ -214,7 +214,7 @@ class KNX(lib.connection.Client):
                     item = self.gar[dst]['item']
                     self.groupwrite(dst, item(), item.conf['knx_dpt'], 'response')
                 if self.gar[dst]['logic'] is not None:
-                    self.gar[dst]['logic'].trigger('KNX', src, 'read', dst)
+                    self.gar[dst]['logic'].trigger('KNX', src, None, dst)
 
     def run(self):
         self.alive = True
