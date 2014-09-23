@@ -1,4 +1,3 @@
-# ignore everything
-*
-# except .gitignore
-!.gitignore
+/logic.conf
+/plugin.conf
+*.gitignore

@@ -1,4 +1,3 @@
-# ignore everything
-*
-# except .gitignore
-!.gitignore
+/sonos_kueche_taste_ol_led.py
+/sonos_kueche_taste_ol_play.py
+*.gitignore

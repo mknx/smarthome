@@ -26,6 +26,8 @@ logger = logging.getLogger('')
 
 def return_html(smarthome, item):
     html = ''
+    logger.debug("...............................................")
+    logger.debug(item)
     if 'visu' in item.conf:
         visu = item.conf['visu']
         dom = item.id().replace('.', '_')
