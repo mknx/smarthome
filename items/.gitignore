@@ -1,3 +1,4 @@
-/sonos.conf
-*.gitignore
-/eg.conf
+# ignore everything
+*
+# except .gitignore
+!.gitignore

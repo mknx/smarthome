@@ -1,3 +1,4 @@
-/logic.conf
-/plugin.conf
-*.gitignore
+# ignore everything
+*
+# except .gitignore
+!.gitignore
