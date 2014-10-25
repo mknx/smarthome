@@ -257,6 +257,12 @@ class Item():
             raise
         self.__prev_value = self._value
         #############################################################
+        # Cache write/init
+        #############################################################
+        if self._cache:
+            if not os.path.isfile(self._cache):
+                _cache_write(self._cache, value)
+        #############################################################
         # Crontab/Cycle
         #############################################################
         if self._crontab is not None or self._cycle is not None:
