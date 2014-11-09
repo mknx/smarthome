@@ -31,9 +31,10 @@ logger = logging.getLogger('')
 
 class LOGO:
 
-    def __init__(self, smarthome, io_wait=5, host='192.168.0.76', port=102):
+    def __init__(self, smarthome, io_wait=5, host='192.168.0.76', port=102, version='0BA7'):
         self.host = str(host).encode('ascii')
         self.port = int(port)
+        self._version = version
         self._io_wait = float(io_wait)
         self._sock = False
         self._lock = threading.Lock()
@@ -53,6 +54,29 @@ class LOGO:
         'AQ': {'VMaddr': 944, 'words': 2},
         'AM': {'VMaddr': 952, 'words': 16},
         'VM': {'VMaddr': 0, 'bytes': 850}}
+
+    # Hardware Version 0BA8
+        self._vmIO_0BA8 = 1024  # lesen der I Q M AI AQ AM ab VM-Adresse VM1024
+        self._vmIO_len_0BA8 = 445  # Anzahl der zu lesenden Bytes 445
+        self.table_VM_IO_0BA8 = {  # Address-Tab der I,Q,M,AI,AQ,AM im PLC-VM-Buffer
+        'I': {'VMaddr': 1024, 'bytes': 8, 'bits': 64},
+        'Q': {'VMaddr': 1064, 'bytes': 8, 'bits': 64},
+        'M': {'VMaddr': 1104, 'bytes': 14, 'bits': 112},
+        'AI': {'VMaddr': 1032, 'words': 16},
+        'AQ': {'VMaddr': 1072, 'words': 16},
+        'AM': {'VMaddr': 1118, 'words': 64},
+        'NI': {'VMaddr': 1256, 'bytes': 16, 'bits':128},
+        'NAI': {'VMaddr': 1262, 'words': 64},
+        'NQ': {'VMaddr': 1390, 'bytes': 16, 'bits': 128},
+        'NAQ': {'VMaddr': 1406, 'words': 32},
+        'VM': {'VMaddr': 0, 'bytes': 850}}
+
+        if self._version == '0BA8':
+            self.tableVM_IO = self.table_VM_IO_0BA8
+            self._vmIO = self._vmIO_0BA8
+            self._vmIO_len = self._vmIO_len_0BA8
+    # End Hardware Version 0BA8
+
         self.reads = {}
         self.writes = {}
         self.Dateipfad = '/lib'  # Dateipfad zur Bibliothek
@@ -161,7 +185,7 @@ class LOGO:
                 typ = v['typ']  # z.B. I Q M AI AQ AM VM VMW
                 value = v['value']
                 write_res = -1
-                if typ in ['I', 'Q', 'M']:  # I1 Q1 M1
+                if typ in ['I', 'Q', 'M', 'NI', 'NQ']:  # I1 Q1 M1
                     if value is True:
                         #logger.debug("LOGO: set {0} : {1} : {2} ".format(k, v, value))
                         write_res = self.set_vm_bit(v['VMaddr'], v['VMbit'])    # Setzen
@@ -169,7 +193,7 @@ class LOGO:
                         #logger.debug("LOGO: clear {0} : {1} : {2} ".format(k, v, value))
                         write_res = self.clear_vm_bit(v['VMaddr'], v['VMbit'])  # Löschen
 
-                elif typ in ['AI', 'AQ', 'AM', 'VMW']:    # AI1 AQ1 AM1 VMW
+                elif typ in ['AI', 'AQ', 'AM', 'NAI', 'NAQ', 'VMW']:    # AI1 AQ1 AM1 VMW
                     write_res = self.write_vm_word(v['VMaddr'], value)
 
                 elif typ == 'VM':       # VM0 VM10.6
@@ -349,7 +373,7 @@ class LOGO:
             else:
                 VMaddr = int(self.tableVM_IO[typ]['VMaddr'])    # Startaddresse
 
-            if typ in ['I', 'Q', 'M']:  # I1 Q1 M1
+            if typ in ['I', 'Q', 'M', 'NI', 'NQ']:  # I1 Q1 M1
                 MaxBits = int(self.tableVM_IO[typ]['bits'])    # Anzahl bits
                 if address > MaxBits:
                     raise LOGO('Address out of range. {0}1-{0}{1}'.format(typ, MaxBits))
@@ -358,7 +382,7 @@ class LOGO:
                 bitNr = r
                 return {'VMaddr': VMaddr, 'VMbit': bitNr, 'typ': typ, 'DataType': 'bit'}
 
-            elif typ in ['AI', 'AQ', 'AM']:    # AI1 AQ1 AM1
+            elif typ in ['AI', 'AQ', 'AM', 'NAI', 'NAQ']:    # AI1 AQ1 AM1
                 MaxWords = int(self.tableVM_IO[typ]['words'])  # Anzahl words
                 if address > MaxWords:
                     raise LOGO('Address out of range. {0}1-{0}{1}'.format(typ, MaxWords))
