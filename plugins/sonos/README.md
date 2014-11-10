@@ -2,6 +2,12 @@ This sub-project is a client implementation fpr the Sonos Broker. It is a plugin
 Smarthome.py framework (https://github.com/mknx/smarthome).
 
 ##Release
+  
+  v1.2  2014-11-09
+  
+    --  added force_stream_mode option to play_tts command (see broker documentation)
+    --  added 'fade_in' parameter to play_snippet and play_tts command
+        -- the volume for the resumed track fades in
 
   v1.1  2014-09-23
 
