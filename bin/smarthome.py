@@ -325,16 +325,6 @@ class SmartHome():
         logger.info("Items: {}".format(self.item_count))
 
         #############################################################
-        # Start Connections
-        #############################################################
-        self.scheduler.add('Connections', self.connections.check, cycle=10, offset=0)
-
-        #############################################################
-        # Start Plugins
-        #############################################################
-        self._plugins.start()
-
-        #############################################################
         # Init Logics
         #############################################################
         self._logics = lib.logic.Logics(self, self._logic_conf, self._env_logic_conf)
@@ -343,6 +333,16 @@ class SmartHome():
         # Init Scenes
         #############################################################
         lib.scene.Scenes(self)
+
+        #############################################################
+        # Start Connections
+        #############################################################
+        self.scheduler.add('Connections', self.connections.check, cycle=10, offset=0)
+
+        #############################################################
+        # Start Plugins
+        #############################################################
+        self._plugins.start()
 
         #############################################################
         # Execute Maintenance Method

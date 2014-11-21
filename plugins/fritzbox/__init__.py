@@ -47,7 +47,7 @@ values = {'external_ip': ('WANIPConnection', 'GetExternalIPAddress', 'NewExterna
 #         'port': ('VoIP', 'X_AVM-DE_GetPhonePort', 'NewX_AVM-DE_PhoneName', None),
 #         'clients': ('VoIP', 'X_AVM-DE_GetClients', 'NewX_AVM-DE_ClientList', None),
 
-commands = {'reconnect': ('WANIPConnection', 'ForceTermination'),
+commands = {'reconnect': ('WANIPConnection', 'ForceTermination', None),
             'reboot': ('DeviceConfig', 'Reboot', None),
             'tam': ('TAM', 'SetEnable', 'NewEnable'),
             'setport': ('VoIP', 'X_AVM-DE_DialSetConfig', 'NewX_AVM-DE_PhoneName'),
@@ -195,7 +195,7 @@ class FritzBox(lib.www.Client):
             return entries
 
     def hangup(self):
-        self._set('hangup', None)
+        self._set('hangup')
 
     def reboot(self):
         self._set('reboot')

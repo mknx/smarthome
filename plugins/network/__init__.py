@@ -39,7 +39,7 @@ class TCPHandler(lib.connection.Stream):
         self.source = source
 
     def found_terminator(self, data):
-        self.parser(self.source, self.dest, data.decode().strip())
+        self.parser(self.source, self.dest, data.decode(errors="ignore").strip())
         self.close()
 
 
@@ -68,7 +68,7 @@ class HTTPHandler(lib.connection.Stream):
         self.source = source
 
     def found_terminator(self, data):
-        for line in data.decode().splitlines():
+        for line in data.decode(errors="ignore").splitlines():
             if line.startswith('GET'):
                 request = line.split(' ')[1].strip('/')
                 if self.parser(self.source, self.dest, urllib.parse.unquote(request)) is not False:
@@ -110,7 +110,7 @@ class UDPDispatcher(lib.connection.Server):
         except Exception as e:
             logger.exception("{}: {}".format(self._name, e))
             return
-        self.parser(ip, self.dest, data.decode().strip())
+        self.parser(ip, self.dest, data.decode(errors="ignore").strip())
 
 
 class Network():

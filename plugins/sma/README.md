@@ -51,8 +51,13 @@ Description of the attributes:
 
 ## items.conf
 
+The item having 'sma = PLUGIN_ACTIVE' can be set to True/False in order to connect/disconnect to the inverter during night. 
+
 <pre>
 [Inverter]
+  [[Plugin_active]]
+    type = bool
+    sma = PLUGIN_ACTIVE
   [[Feeding_Power_in_W]]
     type = num
     sma = AC_P_TOTAL
