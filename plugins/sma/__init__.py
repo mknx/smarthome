@@ -218,7 +218,7 @@ class SMA():
         if ('LAST_UPDATE' in self._fields) and not (self._inv_last_read_timestamp_utc == 0):
             self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
             #self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
-            self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m. %H:%M")
+            self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m. %H:%M  ")
             for item in self._fields['LAST_UPDATE']['items']:
                 item(self._inv_last_read_str, 'SMA', self._inv_serial)
 
