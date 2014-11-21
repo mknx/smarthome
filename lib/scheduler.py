@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2011-2013 Marcus Popp                          marcus@popp.mx
+# Copyright 2011-2014 Marcus Popp                          marcus@popp.mx
 #########################################################################
 #  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
 #
@@ -299,7 +299,7 @@ class Scheduler(threading.Thread):
                     value = job['cron'][entry]
         self._scheduler[name]['next'] = next_time
         self._scheduler[name]['value'] = value
-        if name not in ['Connections', 'serie', 'SQLite dump']:
+        if name not in ['Connections', 'series', 'SQLite dump']:
             logger.debug("{0} next time: {1}".format(name, next_time))
 
     def __iter__(self):
@@ -468,6 +468,7 @@ class Scheduler(threading.Thread):
             logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
             return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
 
+        now = self._sh.now()
         if smin is not None:
             h, sep, m = smin.partition(':')
             try:
@@ -485,7 +486,7 @@ class Scheduler(threading.Thread):
                 logger.error('Wrong syntax: {0}. Should be [H:M<](sunrise|sunset)[+|-][offset][<H:M]'.format(crontab))
                 return datetime.datetime.now(tzutc()) + dateutil.relativedelta.relativedelta(years=+10)
             if dmax < next_time:
-                if dmax < self._sh.now():
+                if dmax < now:
                     dmax = dmax + datetime.timedelta(days=1)
                 next_time = dmax
         return next_time

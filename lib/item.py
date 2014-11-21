@@ -257,6 +257,12 @@ class Item():
             raise
         self.__prev_value = self._value
         #############################################################
+        # Cache write/init
+        #############################################################
+        if self._cache:
+            if not os.path.isfile(self._cache):
+                _cache_write(self._cache, self._value)
+        #############################################################
         # Crontab/Cycle
         #############################################################
         if self._crontab is not None or self._cycle is not None:
@@ -383,7 +389,7 @@ class Item():
                 self._sh.trigger(name=item.id(), obj=item.__run_eval, value=args, by=caller, source=source, dest=dest)
         if _changed and self._cache and not self._fading:
             try:
-                _cache_write(self._cache, value)
+                _cache_write(self._cache, self._value)
             except Exception as e:
                 logger.warning("Item: {}: could update cache {}".format(self._path, e))
         if self._autotimer and caller != 'Autotimer' and not self._fading:

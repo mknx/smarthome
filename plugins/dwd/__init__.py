@@ -189,9 +189,10 @@ class DWD():
                 elif line.startswith('Vorhersage'):
                     header = line
                 elif line.count(location):
-                    header = re.sub(r"/\d\d?", '', header)
                     day, month, year = re.findall(r"\d\d\.\d\d\.\d\d\d\d", header)[0].split('.')
                     date = datetime.datetime(int(year), int(month), int(day), hour, tzinfo=self.tz)
+                    if re.search("\d\d\/\d\d", header):
+                        date = date + datetime.timedelta(days=-1)
                     space = re.compile(r'  +')
                     fc = space.split(line)
                     forecast[date] = fc[1:]

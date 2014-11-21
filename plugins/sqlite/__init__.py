@@ -104,7 +104,7 @@ class SQL():
         self._times = {'i': minute, 'h': hour, 'd': day, 'w': week, 'm': month, 'y': year}
         smarthome.scheduler.add('SQLite Maintain', self._maintain, cron='2 3 * *', prio=5)
 
-    def cleanup(self):
+    def remove_orphans(self):
         current_items = [item.id() for item in self._buffer]
         db_items = self._fetchall("SELECT _item FROM num GROUP BY _item;")
         if db_items:
@@ -155,7 +155,6 @@ class SQL():
 
     def run(self):
         self.alive = True
-        self.cleanup()
 
     def stop(self):
         self.alive = False
