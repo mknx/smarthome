@@ -195,7 +195,7 @@ class FritzBox(lib.www.Client):
             return entries
 
     def hangup(self):
-        self._set('hangup', None)
+        self._set('hangup')
 
     def reboot(self):
         self._set('reboot')
