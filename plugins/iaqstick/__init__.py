@@ -142,6 +142,18 @@ class iAQ_Stick():
                             item(ppm, 'iAQ_Stick', 'USB')
             except Exception as e:
                 logger.error("iaqstick: update failed - {}".format(e))
+                logger.error("iaqstick: Trying to recover ...")
+                broken_id = self._devs[dev]['id']
+                del self._devs[dev]
+                __devs = usb.core.find(idVendor=0x03eb, idProduct=0x2013, find_all=True)
+                for __dev in __devs:
+                    if (__dev not in self._devs):
+                        id = self._init_dev(__dev)
+                        if id == broken_id:
+                            logger.error("iaqstick: {} was ressurrected".format(id))
+                            self._devs[__dev]['id'] = id
+                        else:
+                            logger.error("iaqstick: found other yet unknown stick: {}".format(id))
 
     def parse_item(self, item):
         if 'iaqstick_info' in item.conf:
