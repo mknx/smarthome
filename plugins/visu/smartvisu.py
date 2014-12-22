@@ -45,11 +45,30 @@ def room(smarthome, room, tpldir):
         rimg = room.conf['sv_img']
     else:
         rimg = ''
+    if 'sv_heading_right' in room.conf:
+        heading_right = room.conf['sv_heading_right']
+    else:
+        heading_right = ''
+    if 'sv_heading_center' in room.conf:
+        heading_center = room.conf['sv_heading_center']
+    else:
+        heading_center = ''
+    if 'sv_heading_left' in room.conf:
+        heading_left = room.conf['sv_heading_left']
+    else:
+        heading_left = ''
+    if heading_right != '' or heading_center != '' or heading_left != '':
+        heading = parse_tpl(tpldir + '/heading.html', [('{{ visu_heading_right }}', heading_right), ('{{ visu_heading_center }}', heading_center), ('{{ visu_heading_left }}', heading_left)])
+    else:
+        heading = ''
     if 'sv_widget' in room.conf:
         items = [room]
     else:
         items = []
-    items.extend(smarthome.find_children(room, 'sv_widget'))
+    if room.conf['sv_page'] == 'room':
+	items.extend(smarthome.find_children(room, 'sv_widget'))
+    elif room.conf['sv_page'] == 'overview':
+    	items.extend(smarthome.find_items('sv_item_type'))
     for item in items:
         if 'sv_img' in item.conf:
             img = item.conf['sv_img']
@@ -62,7 +81,6 @@ def room(smarthome, room, tpldir):
             widget = item.conf['sv_widget']
             widgets += parse_tpl(tpldir + '/widget.html', [('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_widget }}', widget), ('item.name', str(item)), ("'item", "'" + item.id())])
     return parse_tpl(tpldir + '/room.html', [('{{ visu_name }}', str(room)), ('{{ visu_widgets }}', widgets), ('{{ visu_img }}', rimg)])
-
 
 def pages(smarthome, directory):
     nav_lis = ''
