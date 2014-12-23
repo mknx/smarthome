@@ -170,14 +170,16 @@ class RTR():
 	def update_item(self, item, caller=None, source=None, dest=None):
 		if caller != 'plugin':
 			if 'rtr_setpoint' in item.conf:
+				c = 'c' + item.conf['rtr_setpoint']
 				if self._controller[c]['validated'] \
 				and ( self._controller[c]['stopItem'] is None or self._sh.return_item(self._controller[c]['stopItem'])() is True ):
-					self.pi_controller('c' + item.conf['rtr_setpoint'])
+					self.pi_controller(c)
 
 			if 'rtr_current' in item.conf:
+				c = 'c' + item.conf['rtr_current']
 				if self._controller[c]['validated'] \
 				and ( self._controller[c]['stopItem'] is None or self._sh.return_item(self._controller[c]['stopItem'])() is True ):
-					self.pi_controller('c' + item.conf['rtr_current'])
+					self.pi_controller(c)
 
 	def update_items(self):
 		for c in self._controller.keys():
