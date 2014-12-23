@@ -14,8 +14,8 @@
 
 Description of the attributes:
 
-* __default_Kp__: change default value for Kp (optional, default: 0)
-* __default_Ki__: change default value for Ki (optional, default: 0)
+* __default_Kp__: change default value for Kp (optional, default: 5)
+* __default_Ki__: change default value for Ki (optional, default: 240)
 
 ## items.conf
 
