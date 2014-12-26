@@ -120,27 +120,27 @@ def pages(smarthome, directory):
         except Exception as e:
             logger.warning("Could not delete file {0}: {1}".format(fp, e))
     for item in smarthome.find_items('sv_page'):
-        if item.conf['sv_page'] == 'room' or item.conf['sv_page'] == 'overview':
-            r = room(smarthome, item, tpldir)
-            if 'sv_img' in item.conf:
-                img = item.conf['sv_img']
-            else:
-                img = ''
-            if 'sv_nav_aside' in item.conf:
-                if isinstance(item.conf['sv_nav_aside'], list):
-                    nav_aside = ', '.join(item.conf['sv_nav_aside'])
-                else:
-                    nav_aside = item.conf['sv_nav_aside']
-            else:
-                nav_aside = ''
-            nav_lis += parse_tpl(tpldir + '/navi.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_aside }}', nav_aside), ('item.name', str(item)), ("'item", "'" + item.id())])
-            try:
-                with open("{0}/{1}.html".format(outdir, item.id()), 'w') as f:
-                    f.write(r)
-            except Exception as e:
-                logger.warning("Could not write to {0}/{1}.html: {}".format(outdir, item.id(), e))
-        elif item.conf['sv_page'] == 'seperator':
+        if item.conf['sv_page'] == 'seperator':
             nav_lis += parse_tpl(tpldir + '/navi_sep.html', [('{{ name }}', str(item))])
+            continue
+        r = room(smarthome, item, tpldir)
+        if 'sv_img' in item.conf:
+            img = item.conf['sv_img']
+        else:
+            img = ''
+        if 'sv_nav_aside' in item.conf:
+            if isinstance(item.conf['sv_nav_aside'], list):
+                nav_aside = ', '.join(item.conf['sv_nav_aside'])
+            else:
+                nav_aside = item.conf['sv_nav_aside']
+        else:
+            nav_aside = ''
+        nav_lis += parse_tpl(tpldir + '/navi.html', [('{{ visu_page }}', item.id()), ('{{ visu_name }}', str(item)), ('{{ visu_img }}', img), ('{{ visu_aside }}', nav_aside), ('item.name', str(item)), ("'item", "'" + item.id())])
+        try:
+            with open("{0}/{1}.html".format(outdir, item.id()), 'w') as f:
+                f.write(r)
+        except Exception as e:
+            logger.warning("Could not write to {0}/{1}.html: {}".format(outdir, item.id(), e))
     nav = parse_tpl(tpldir + '/navigation.html', [('{{ visu_navis }}', nav_lis)])
     try:
         with open(outdir + '/navigation.html', 'w') as f:
