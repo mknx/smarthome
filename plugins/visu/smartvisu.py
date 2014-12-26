@@ -70,6 +70,8 @@ def room(smarthome, room, tpldir):
     elif room.conf['sv_page'] == 'overview':
         items.extend(smarthome.find_items('sv_item_type'))
     for item in items:
+        if room.conf['sv_page'] == 'overview' and not item.conf['sv_item_type'] == room.conf['sv_overview']:
+            continue
         if 'sv_img' in item.conf:
             img = item.conf['sv_img']
         else:
