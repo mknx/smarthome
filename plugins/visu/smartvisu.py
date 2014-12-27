@@ -123,6 +123,9 @@ def pages(smarthome, directory):
         if item.conf['sv_page'] == 'seperator':
             nav_lis += parse_tpl(tpldir + '/navi_sep.html', [('{{ name }}', str(item))])
             continue
+        if item.conf['sv_page'] == 'overview' and not 'sv_overview' in item.conf:
+            logger.error("missing sv_overview for {0}".format(item.id()) )
+            continue
         r = room(smarthome, item, tpldir)
         if 'sv_img' in item.conf:
             img = item.conf['sv_img']
