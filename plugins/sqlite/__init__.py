@@ -368,9 +368,9 @@ class SQL():
         if self._buffer[_item] != [] and end == 'now':
             self._insert(_item)
         tuples = self._fetchall(query)
+        _item = self._sh.return_item(item)
+        _item_change = self._timestamp(_item.last_change())
         if tuples:
-            _item = self._sh.return_item(item)
-            _item_change = self._timestamp(_item.last_change())
             if _item_change < end:
                 _value = float(_item())
                 if tuples[0][0] is None:
@@ -393,7 +393,8 @@ class SQL():
                         return round((delta1 * value + delta2 * int(bool(_value))) / delta, 2)
             else:
                 return tuples[0][0]
-        else:
+        elif _item_change < end:
+            _value = float(_item())
             if func == 'on':
                 return int(bool(_value))
             else:
