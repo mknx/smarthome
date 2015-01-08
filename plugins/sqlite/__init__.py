@@ -77,6 +77,7 @@ class SQL():
             version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
             if version < self._version:
                 import plugins.sqlite.upgrade
+                logger.info("SQLite: upgrading database. Please wait!")
                 plugins.sqlite.upgrade.Upgrade(self._fdb, version)
                 self._fdb.execute("UPDATE common SET version=:version;", {'version': self._version})
         self._fdb.commit()
