@@ -215,9 +215,10 @@ class SmartHome():
         #############################################################
         if hasattr(self, '_loglevel'):
             try:
-                logging.getLogger('').setLevel(vars(logging)[self._loglevel.upper()])
-            except:
-                pass
+                logger.setLevel(self._loglevel.upper())
+                log_file.setLevel(self._loglevel.upper())
+            except Exception as e:
+                logger.error("Problem setting loglevel to {0}: {1}".format(self._loglevel.upper(), e))
         self.log = lib.log.Log(self, 'env.core.log', ['time', 'thread', 'level', 'message'], maxlen=self._log_buffer)
         log_mem = LogHandler(self.log)
         log_mem.setLevel(logging.WARNING)
