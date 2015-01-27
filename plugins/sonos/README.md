@@ -3,6 +3,15 @@ Smarthome.py framework (https://github.com/mknx/smarthome).
 
 ##Release
   
+  v1.3  2015-01-18
+
+    --  added "get_playlist" and "set_playlist" commmands
+        It is now possible to store the playlist for later use.
+    --  added "is_coordinator" property
+    --  added "tts_local_mode" property
+    --  added a fallback method to retrieve the local ip address
+    --  only working with Sonos Broker version v0.5
+
   v1.2  2014-11-09
   
     --  added force_stream_mode option to play_tts command (see broker documentation)
@@ -48,22 +57,6 @@ Smarthome.py framework (https://github.com/mknx/smarthome).
     
     --  bugfixes in some command processing
     
-    
-  v0.8    2014-06-06
-
-    --  changed some values in sonos plugin config to 'foo' (commands without parameter like play, 
-        pause, next etc), updated usage of 'enforce_updates = True' for some values,
-        !! please update / replace  your sonos config file !!
-    --  new command:
-        -   join [write]: joins a speaker to another speaker (uid as parameter)
-        -   unjoin [write]: removes the speaker from current group
-        -   partymode [write]: group all speaker to one zone (partymode)
-        -   volume_up [write]: increases the volume (+2)
-        -   volume_down [write]: decreases the volume (-2)
-    --  new value:
-        -   additional_zone_members [read]: additional zone members if speaker is in a group
-    --  changed commands: pause, play, stop, led, mute now toggle commands
-    --  documentation: 'Group behaviour' added
 
 ## Requirements:
 
@@ -404,6 +397,32 @@ Edit file with this sample of mine:
             sonos_recv = alarms
             sonos_send = alarms
         
+        [[is_coordinator]]
+            type = bool
+            sonos_recv = is_coordinator
+
+        [[tts_local_mode]]
+            type = bool
+            sonos_recv = tts_local_mode
+        
+        [[get_playlist]]
+           type = str  # the give item value represents the local file path
+                    # where to save the playlist
+            sonos_send = get_playlist
+            enforce_updates = True
+
+        [[set_playlist]]
+            type = str  # the give item value represents the file path where
+                        # the playlist is stored (previously saved with
+                        # 'get_playlist')
+            sonos_send = set_playlist
+            enforce_updates = True
+
+            [[[play_after_insert]]]
+                type = bool
+                value = 0
+
+        
  This sonos.conf file implements most of the commands to interact with the Sonos Broker. Please follow the detailed
  description under the [command section in the Broker manual](../README.md#available-commands).
 
@@ -434,6 +453,7 @@ Edit file with this sample of mine:
     play_tts ('group_command' parameter only affects the snippet volume)
     partymode
     playmode
+    set_playlist
 
 ###### These commands only act as group commands if the parameter 'group_command' is set to 1:
 
