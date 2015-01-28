@@ -35,18 +35,23 @@ from yowsup.stacks import YowStack
 from yowsup.common import YowConstants
 from yowsup.layers import YowLayerEvent
 from yowsup import env
-
+import subprocess
+import base64
 logger = logging.getLogger('Whatsapp')
 
 
 class Whatsapp():
-    def __init__(self, smarthome, account, password, trusted=None, logic='Whatsapp'):
+    def __init__(self, smarthome, account, password, trusted=None, logic='Whatsapp', cli_mode='False'):
 # Set Plugin Attributes
         self._sh = smarthome
         self._credentials = (account, password.encode('utf-8'))
         self._trusted = trusted
         self._logic = logic
-
+        if cli_mode == 'True':
+            self._cli_mode = True
+            return
+        else:
+            self._cli_mode = False
 # Yowsup Layers
         self._layers = (
             SmarthomeLayer,
@@ -71,12 +76,16 @@ class Whatsapp():
         self._SmarthomeLayer.setPlugin(self)
 
     def run(self):
+        if self._cli_mode == True:
+            return
         try:
             self._stack.loop()
         except AuthError as e:
             logger.info("Authentication Error!")
 
     def stop(self):
+        if self._cli_mode == True:
+            return
         logger.info("Shutting Down WhatsApp Client")
         disconnectEvent = YowLayerEvent(YowNetworkLayer.EVENT_STATE_DISCONNECT)
         self._stack.broadcastEvent(disconnectEvent)
@@ -88,6 +97,9 @@ class Whatsapp():
         pass
 
     def __call__(self, message, phoneNumber=None):
+        if self._cli_mode == True:
+            subprocess.call(['/usr/local/bin/yowsup-cli', 'demos', '-l', self._credentials[0] + ':' + self._credentials[1].decode(), '-s', phoneNumber, message])
+            return
         if phoneNumber == None:
             try:
                 phoneNumber = self._trusted.split(' ')[0]
