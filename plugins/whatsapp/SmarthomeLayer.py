@@ -27,6 +27,8 @@ from yowsup.layers.interface                          import ProtocolEntityCallb
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
 from yowsup.layers.protocol_receipts.protocolentities import OutgoingReceiptProtocolEntity
 from yowsup.layers.protocol_acks.protocolentities     import OutgoingAckProtocolEntity
+from yowsup.layers.protocol_iq.protocolentities       import PingIqProtocolEntity
+from yowsup.common                                    import YowConstants
 
 logger = logging.getLogger('Whatsapp')
 
@@ -78,6 +80,11 @@ class SmarthomeLayer(YowInterfaceLayer):
         logger.info("Received Notification: {}".format(notificationData))
 
     def sendMsg(self, msg, num):
-        outgoingMessageProtocolEntity = TextMessageProtocolEntity(msg, to="%s@s.whatsapp.net" % num)
+        outgoingMessageProtocolEntity = TextMessageProtocolEntity(msg, to="%s@%s" % (num, YowConstants.DOMAIN))
         logger.info("Sending Message {0} to {1}".format(msg, num))
         self.toLower(outgoingMessageProtocolEntity)
+
+    def do_ping(self):
+        ping_entity = PingIqProtocolEntity(to=YowConstants.DOMAIN)
+        self.toLower(ping_entity)
+        logger.info("Pinging...")

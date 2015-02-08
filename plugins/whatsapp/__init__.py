@@ -21,27 +21,32 @@
 #########################################################################
 
 import logging
-from plugins.whatsapp.SmarthomeLayer           import SmarthomeLayer
-from yowsup.layers.auth                        import YowAuthenticationProtocolLayer
-from yowsup.layers.auth                        import AuthError
-from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
-from yowsup.layers.protocol_receipts           import YowReceiptProtocolLayer
-from yowsup.layers.protocol_acks               import YowAckProtocolLayer
-from yowsup.layers.coder                       import YowCoderLayer
-from yowsup.layers.auth                        import YowCryptLayer
-from yowsup.layers.stanzaregulator             import YowStanzaRegulator
-from yowsup.layers.network                     import YowNetworkLayer
-from yowsup.stacks import YowStack
-from yowsup.common import YowConstants
-from yowsup.layers import YowLayerEvent
-from yowsup import env
+from plugins.whatsapp.SmarthomeLayer            import SmarthomeLayer
+from yowsup.layers.auth                         import YowAuthenticationProtocolLayer
+from yowsup.layers.auth                         import AuthError
+from yowsup.layers.protocol_messages            import YowMessagesProtocolLayer
+from yowsup.layers.protocol_receipts            import YowReceiptProtocolLayer
+from yowsup.layers.protocol_acks                import YowAckProtocolLayer
+from yowsup.layers.protocol_ib                  import YowIbProtocolLayer
+from yowsup.layers.protocol_iq                  import YowIqProtocolLayer
+from yowsup.layers.protocol_notifications       import YowNotificationsProtocolLayer
+from yowsup.layers.protocol_presence            import YowPresenceProtocolLayer
+from yowsup.layers.logger                       import YowLoggerLayer
+from yowsup.layers.protocol_iq.protocolentities import PingIqProtocolEntity
+from yowsup.layers.coder                        import YowCoderLayer
+from yowsup.layers.auth                         import YowCryptLayer
+from yowsup.layers.stanzaregulator              import YowStanzaRegulator
+from yowsup.layers.network                      import YowNetworkLayer
+from yowsup.stacks                              import YowStack
+from yowsup.common                              import YowConstants
+from yowsup.layers                              import YowLayerEvent
+from yowsup                                     import env
 import subprocess
-import base64
 logger = logging.getLogger('Whatsapp')
 
 
 class Whatsapp():
-    def __init__(self, smarthome, account, password, trusted=None, logic='Whatsapp', cli_mode='False'):
+    def __init__(self, smarthome, account, password, trusted=None, logic='Whatsapp', cli_mode='False', ping_cycle='600'):
 # Set Plugin Attributes
         self._sh = smarthome
         self._credentials = (account, password.encode('utf-8'))
@@ -55,8 +60,9 @@ class Whatsapp():
 # Yowsup Layers
         self._layers = (
             SmarthomeLayer,
-            (YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer),
+            (YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer, YowIbProtocolLayer, YowIqProtocolLayer, YowNotificationsProtocolLayer, YowPresenceProtocolLayer),
             YowCoderLayer,
+#            YowLoggerLayer,
             YowCryptLayer,
             YowStanzaRegulator,
             YowNetworkLayer)
@@ -72,8 +78,15 @@ class Whatsapp():
         self._stack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
 
 # Get SmarthomeLayer and set this Plugin
-        self._SmarthomeLayer = self._stack.getLayer(5)
+        self._SmarthomeLayer = self._stack.getLayer(len(self._stack._YowStack__stack) - 1)
         self._SmarthomeLayer.setPlugin(self)
+
+# Ping it
+        if int(ping_cycle) > 0:
+            self._sh.scheduler.add('Yowsup_Ping', self.do_ping, prio=5, cycle=int(ping_cycle))
+
+    def do_ping(self):
+        self._SmarthomeLayer.do_ping()
 
     def run(self):
         if self._cli_mode == True:
@@ -97,9 +110,6 @@ class Whatsapp():
         pass
 
     def __call__(self, message, phoneNumber=None):
-        if self._cli_mode == True:
-            subprocess.call(['/usr/local/bin/yowsup-cli', 'demos', '-l', self._credentials[0] + ':' + self._credentials[1].decode(), '-s', phoneNumber, message])
-            return
         if phoneNumber == None:
             try:
                 phoneNumber = self._trusted.split(' ')[0]
@@ -107,6 +117,9 @@ class Whatsapp():
                 logger.error("Error sending Whatsapp Message")
             except IndentationError:
                 logger.error("Error sending Whatsapp Message")
+        if self._cli_mode == True:
+            subprocess.call(['/usr/local/bin/yowsup-cli', 'demos', '-l', self._credentials[0] + ':' + self._credentials[1].decode(), '-s', phoneNumber, message])
+            return
         self._SmarthomeLayer.sendMsg(message, phoneNumber)
 
     def message_received(self, message, sender):

@@ -1,4 +1,4 @@
-# Whatsapp - Yowsup 2 - Alpha Version!
+# Whatsapp - Yowsup 2
 
 # Requirements/Description
 
@@ -11,7 +11,7 @@ To use this Plugin you need:
 * PhoneNumber registered on Whatsapp. see: http://www.forum-raspberrypi.de/Thread-tutorial-mit-dem-pi-ueber-whatsapp-nachrichten-etc-senden
 
 # Known Bugs
-Plugin will not work after a while in idle mode. There are problems with keepalive/reconnecting. Not recommend for productive use!
+Reconnect is on connection loss is not yet implemented.
 
 # Configuration
 
@@ -22,17 +22,20 @@ Plugin will not work after a while in idle mode. There are problems with keepali
 	class_name = Whatsapp
 	class_path = plugins.whatsapp
 	account = '4917912345678'
-	password = 'abcdefghi...'
+	password = 'abcdefghi='
 	trusted = 4917912345678 4917912345679
 	logic = 'Logi_Whatsapp'
+	ping_cycle = 600
+
 </pre>
 
 Description of the attributes:
 
 * account: Registered Whatsapp PhoneNumber including country code, without '+' or '00' eg. 417912345678 (Switzerland/Swisscom) (Yowsup:phone)
-* password: Password to use for login. (Yowsup:password)
+* password: Password to use for login. Base64 encoded. (Yowsup:password)
 * trusted: Space separated List with PhoneNumbers you Trust
 * logic: Logic that is called when msg from trusted number is received
+* ping_cycle: time in seconds between whatsapp server pings to keep the connection established. 0 = No pinging
 
 ## logic.conf
 To receive messages you have to add the logic defined in plugin.conf. It will be called from the Plugin.
@@ -49,7 +52,7 @@ trigger['source']   The Sender
 * sending a Message
 
 <pre>
-* sh.whatsapp("Message to send", "417912345678") #Will send to a explicite PhoneNumber.
+* sh.whatsapp("Message to send", "497912345678") #Will send to a explicite PhoneNumber.
 </pre>
 If no phoneNumeber is set, it will take the first number from the trusted numbers
 
