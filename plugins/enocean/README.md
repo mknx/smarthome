@@ -52,6 +52,11 @@ Example item.conf
 =
 <pre>
 [Enocean]
+    [[Outside_Temperature]]
+        type = num
+        enocean_rx_id = 0180924D
+        enocean_rx_eep = A5_02_05
+        enocean_rx_key = TMP
     [[Door]]
         enocean_rx_id = 01234567
         enocean_rx_eep = D5_00_01
@@ -106,7 +111,7 @@ Example item.conf
 Add new listening enocean devices
 =
 
-You have to know about the EnOcean RORG of your device (available through Mr.Google or the vendor). Further the RORG must be declared in the plugin. The following EEPs are supported:
+You have to know about the EnOcean RORG of your device (please search the internet or ask the vendor). Further the RORG must be declared in the plugin. The following EEPs are supported:
 
 A5_02_01 - A5_02_0B    Temperature Sensors (40°C overall range, various starting offsets, 1/6°C resolution)
 
