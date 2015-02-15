@@ -113,31 +113,20 @@ Add new listening enocean devices
 
 You have to know about the EnOcean RORG of your device (please search the internet or ask the vendor). Further the RORG must be declared in the plugin. The following EEPs are supported:
 
-A5_02_01 - A5_02_0B    Temperature Sensors (40°C overall range, various starting offsets, 1/6°C resolution)
-
-A5_02_10 - A5_02_1B    Temperature Sensors (80°C overall range, various starting offsets, 1/3°C resolution)
-
-A5_02_20    High Precision Temperature Sensor (ranges -10*C to +41.2°C, 1/20°C resolution)
-
-A5_02_30    High Precision Temperature Sensor (ranges -40*C to +62.3°C, 1/10°C resolution)
-
-A5_11_04    Dimmer status feedback
-
-A5_12_01    Power Measurement
-
-D5_00_01    Door/Window Contact, e.g. Eltako FTK, FTKB
-
-F6_02_01/F6_02_02    2-Button-Rocker
-
-F6_02_03    2-Button-Rocker, Status feedback from manual buttons on different actors, e.g. Eltako FT55, FSUD-230, FSVA-230V or Gira switches.
-
-F6_10_00    Mechanical Handle
+* A5_02_01 - A5_02_0B    Temperature Sensors (40°C overall range, various starting offsets, 1/6°C resolution)
+* A5_02_10 - A5_02_1B    Temperature Sensors (80°C overall range, various starting offsets, 1/3°C resolution)
+* A5_02_20    High Precision Temperature Sensor (ranges -10*C to +41.2°C, 1/20°C resolution)
+* A5_02_30    High Precision Temperature Sensor (ranges -40*C to +62.3°C, 1/10°C resolution)
+* A5_11_04    Dimmer status feedback
+* A5_12_01    Power Measurement
+* D5_00_01    Door/Window Contact, e.g. Eltako FTK, FTKB
+* F6_02_01/F6_02_02    2-Button-Rocker
+* F6_02_03    2-Button-Rocker, Status feedback from manual buttons on different actors, e.g. Eltako FT55, FSUD-230, FSVA-230V or Gira switches.
+* F6_10_00    Mechanical Handle
 
 Send commands: Tx EEPs
 =
 
-A5_38_08_01 Regular switch actor command (on/off)
-
-A5_38_08_02 Dimmer command with fix on off command (on: 100, off:0)
-
-A5_38_08_03 Dimmer command with specified dim level (0-100)
+* A5_38_08_01 Regular switch actor command (on/off)
+* A5_38_08_02 Dimmer command with fix on off command (on: 100, off:0)
+* A5_38_08_03 Dimmer command with specified dim level (0-100)
