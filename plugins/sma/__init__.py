@@ -314,7 +314,7 @@ class SMA():
                     i = 41
                     try:
                         while (i < (len(msg) - 11)):
-                            full_id = int.from_bytes(msg[i:i + 4], byteorder='little')
+                            full_id = int.from_bytes(msg[i:i + 3], byteorder='little')
                             lri = full_id & 0xFFFF00
                             cls = full_id & 0x0000FF
                             dataType = msg[i + 3]
@@ -344,8 +344,8 @@ class SMA():
                         logger.error("sma: rx - exception when parsing msg - len={} data=[{}]\n".format(len(msg), ', '.join(['0x%02x' % b for b in msg])))
                         continue
                 elif (len(msg) == 44):
-                    start_id = int.from_bytes(msg[33:37], byteorder='little')
-                    end_id = int.from_bytes(msg[37:41], byteorder='little')
+                    start_id = int.from_bytes(msg[33:36], byteorder='little')
+                    end_id = int.from_bytes(msg[37:40], byteorder='little')
                     logger.info("sma: inverters returns \"no new data\" in id range from {:#06x} to {:#06x}".format(start_id, end_id))
                 else:
                     logger.warning("sma: rx - unknown/malformed response!")
