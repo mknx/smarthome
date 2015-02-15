@@ -26,7 +26,7 @@ import re
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 
-NS_URL = '{http://knx.org/xml/project/10}'
+NS_URL = '{http://knx.org/xml/project/11}'
 FIND_GA = NS_URL + 'GroupAddress'
 
 def write_dpt(dpt, depth, f):
