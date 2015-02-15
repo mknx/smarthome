@@ -143,6 +143,8 @@ for ga in root.findall('.//' + FIND_GA):
                         if not p[0] in item['sh_attributes'].keys():
                             item['sh_attributes'][p[0]] = []
                         item['sh_attributes'][p[0]].append(p[1].strip())
+    else:
+        print "Not added: " +  ga.attrib['Name']
 
 for k in a.keys():
     OUTFILE = u"{0}.conf".format(k)
