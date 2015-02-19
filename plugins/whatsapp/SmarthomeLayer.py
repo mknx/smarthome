@@ -29,6 +29,7 @@ from yowsup.layers.protocol_receipts.protocolentities import OutgoingReceiptProt
 from yowsup.layers.protocol_acks.protocolentities     import OutgoingAckProtocolEntity
 from yowsup.layers.protocol_iq.protocolentities       import PingIqProtocolEntity
 from yowsup.common                                    import YowConstants
+from yowsup.layers.network                            import YowNetworkLayer
 
 logger = logging.getLogger('Whatsapp')
 
@@ -88,3 +89,9 @@ class SmarthomeLayer(YowInterfaceLayer):
         ping_entity = PingIqProtocolEntity(to=YowConstants.DOMAIN)
         self.toLower(ping_entity)
         logger.info("Pinging...")
+
+    def onEvent(self, yowLayerEvent):
+        if yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_DISCONNECTED:
+            logger.info("YOWSUP DISCONNECTED")
+        if yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_CONNECTED:
+            logger.info("YOWSUP CONNECTED")
