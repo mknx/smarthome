@@ -37,11 +37,14 @@ from yowsup.layers.coder                        import YowCoderLayer
 from yowsup.layers.auth                         import YowCryptLayer
 from yowsup.layers.stanzaregulator              import YowStanzaRegulator
 from yowsup.layers.network                      import YowNetworkLayer
+from yowsup.layers                              import YowParallelLayer
 from yowsup.stacks                              import YowStack
 from yowsup.common                              import YowConstants
 from yowsup.layers                              import YowLayerEvent
 from yowsup                                     import env
 import subprocess
+import datetime
+
 logger = logging.getLogger('Whatsapp')
 
 
@@ -60,7 +63,7 @@ class Whatsapp():
 # Yowsup Layers
         self._layers = (
             SmarthomeLayer,
-            (YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer, YowIbProtocolLayer, YowIqProtocolLayer, YowNotificationsProtocolLayer, YowPresenceProtocolLayer),
+            YowParallelLayer((YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer, YowIbProtocolLayer, YowIqProtocolLayer, YowNotificationsProtocolLayer, YowPresenceProtocolLayer)),
             YowCoderLayer,
 #            YowLoggerLayer,
             YowCryptLayer,
@@ -83,10 +86,16 @@ class Whatsapp():
 
 # Ping it
         if int(ping_cycle) > 0:
+            if int(ping_cycle) < 10:
+                ping_cycle = 10
             self._sh.scheduler.add('Yowsup_Ping', self.do_ping, prio=5, cycle=int(ping_cycle))
 
     def do_ping(self):
         self._SmarthomeLayer.do_ping()
+        self._sh.scheduler.add('Yowsup_Ping_Checker', self.check_ping, next=self._sh.now() + datetime.timedelta(0, 5))
+
+    def check_ping(self):
+        self._SmarthomeLayer.check_ping()
 
     def run(self):
         if self._cli_mode == True:

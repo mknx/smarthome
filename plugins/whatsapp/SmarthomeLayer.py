@@ -35,6 +35,9 @@ logger = logging.getLogger('Whatsapp')
 
 
 class SmarthomeLayer(YowInterfaceLayer):
+    _last_ping_snd_id = None
+    _last_ping_rcvd_id = None
+
     def setPlugin(self, plugin):
         self._plugin = plugin
 
@@ -73,7 +76,9 @@ class SmarthomeLayer(YowInterfaceLayer):
 
     @ProtocolEntityCallback("iq")
     def onIq(self, entity):
-        logger.info("Received IQ: {}".format(entity))
+        logger.debug("Received IQ: ID: {} Type: {} XMLNS: {} To: {} From: {}".format(entity._id, entity._type, entity.xmlns, entity.to, entity._from))
+        if entity._type == 'result':
+            self._last_ping_rcvd_id = entity._id
 
     @ProtocolEntityCallback("notification")
     def onNotification(self, notification):
@@ -87,10 +92,19 @@ class SmarthomeLayer(YowInterfaceLayer):
 
     def do_ping(self):
         ping_entity = PingIqProtocolEntity(to=YowConstants.DOMAIN)
+        self._last_ping_snd_id = ping_entity._id
         self.toLower(ping_entity)
-        logger.info("Pinging...")
+        logger.debug("Pinging... ID: {}".format(ping_entity._id))
+
+    def check_ping(self):
+        if self._last_ping_snd_id != self._last_ping_rcvd_id:
+            logger.warning("Ping ID {} dropped. Last successful ping response ID {}. Connection Lost. Reconnecting...".format(self._last_ping_snd_id, self._last_ping_rcvd_id))
+            self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
+        else:
+            logger.info("Ping check ok. ID {}".format(self._last_ping_rcvd_id))
 
     def onEvent(self, yowLayerEvent):
+#        logger.info("YS_Event: {}".format(yowLayerEvent.getName()))
         if yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_DISCONNECTED:
             logger.info("YOWSUP DISCONNECTED")
         if yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_CONNECTED:
