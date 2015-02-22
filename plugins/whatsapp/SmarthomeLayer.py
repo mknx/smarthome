@@ -100,6 +100,8 @@ class SmarthomeLayer(YowInterfaceLayer):
     def check_ping(self):
         if self._last_ping_snd_id != self._last_ping_rcvd_id:
             logger.warning("Ping ID {} dropped. Last successful ping response ID {}. Connection Lost. Reconnecting...".format(self._last_ping_snd_id, self._last_ping_rcvd_id))
+            self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_DISCONNECT))
+            time.sleep(3)
             self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
         else:
             logger.info("Ping check ok. ID {}".format(self._last_ping_rcvd_id))
