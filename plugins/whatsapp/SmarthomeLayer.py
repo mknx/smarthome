@@ -30,6 +30,7 @@ from yowsup.layers.protocol_acks.protocolentities     import OutgoingAckProtocol
 from yowsup.layers.protocol_iq.protocolentities       import PingIqProtocolEntity
 from yowsup.common                                    import YowConstants
 from yowsup.layers.network                            import YowNetworkLayer
+from yowsup.layers                                    import YowLayerEvent
 
 logger = logging.getLogger('Whatsapp')
 
