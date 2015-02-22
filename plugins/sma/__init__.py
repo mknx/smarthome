@@ -204,22 +204,25 @@ class SMA():
     def _update_values(self):
         #logger.warning("sma: signal strength = {}%%".format(self._inv_get_bt_signal_strength()))
         self._cmd_lock.acquire()
-        for request in self._requests:
-            if not self.alive:
-                break
-            self._inv_send_request(request)
-            if not self.alive:
-                break
-            self._reply_lock.acquire()
-            # wait 5sec for reply
-            self._reply_lock.wait(5)
-            self._reply_lock.release()
-        if ('LAST_UPDATE' in self._fields) and not (self._inv_last_read_timestamp_utc == 0):
-            self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
-            #self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
-            self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m. %H:%M  ")
-            for item in self._fields['LAST_UPDATE']['items']:
-                item(self._inv_last_read_str, 'SMA', self._inv_serial)
+        try:
+            for request in self._requests:
+                if not self.alive:
+                    break
+                self._inv_send_request(request)
+                if not self.alive:
+                    break
+                self._reply_lock.acquire()
+                # wait 5sec for reply
+                self._reply_lock.wait(5)
+                self._reply_lock.release()
+            if ('LAST_UPDATE' in self._fields) and not (self._inv_last_read_timestamp_utc == 0):
+                self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
+                #self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
+                self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m. %H:%M  ")
+                for item in self._fields['LAST_UPDATE']['items']:
+                    item(self._inv_last_read_str, 'SMA', self._inv_serial)
+        except Exception as e:
+            logger.error("sma: error while updating values - {}".format(e))
         self._cmd_lock.release()
 
     def run(self):
