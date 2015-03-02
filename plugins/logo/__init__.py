@@ -378,7 +378,7 @@ class LOGO:
                 if address > MaxBits:
                     raise LOGO('Address out of range. {0}1-{0}{1}'.format(typ, MaxBits))
                 q, r = divmod(address - 1, 8)
-                VMaddr = VMaddr + q * 8
+                VMaddr = VMaddr + q
                 bitNr = r
                 return {'VMaddr': VMaddr, 'VMbit': bitNr, 'typ': typ, 'DataType': 'bit'}
 
