@@ -26,25 +26,25 @@ import re
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 
-NS_URL = '{http://knx.org/xml/project/10}'
+NS_URL = '{http://knx.org/xml/project/11}'
 FIND_GA = NS_URL + 'GroupAddress'
 
 def write_dpt(dpt, depth, f):
-	if dpt == 1:
-		write_param("type=bool", depth, f)
-		write_param("visu=toggle", depth, f)
-	elif dpt == 2 or dpt == 3 or dpt == 10 or dpt == 11:
-		write_param("type=foo", depth, f)
-	elif dpt == 4 or dpt == 24:
-		write_param("type=str", depth, f)
-		write_param("visu=div", depth, f)
-	else:
-		write_param("type=num", depth, f)
-		write_param("visu=slider", depth, f)
-		write_param("knx_dpt=5001", depth, f)
-		return
+    if dpt == 1:
+        write_param("type=bool", depth, f)
+        write_param("visu=toggle", depth, f)
+    elif dpt == 2 or dpt == 3 or dpt == 10 or dpt == 11:
+        write_param("type=foo", depth, f)
+    elif dpt == 4 or dpt == 24:
+        write_param("type=str", depth, f)
+        write_param("visu=div", depth, f)
+    else:
+        write_param("type=num", depth, f)
+        write_param("visu=slider", depth, f)
+        write_param("knx_dpt=5001", depth, f)
+        return
 
-	write_param("knx_dpt=" + str(dpt), depth, f)
+    write_param("knx_dpt=" + str(dpt), depth, f)
 
 def write_dict(a, depth, f):
     if 'sh_attributes' in a.keys():
@@ -66,33 +66,33 @@ def write_attributes(attr, depth, f):
             if len(val) > 0:
                 val += ", "
             val += v
-        write_param(u"{0} = {1}".format(k, val), depth, f)    
+        write_param(u"{0} = {1}".format(k, val), depth, f)
 
 def write_param(string, depth, f):
-	for i in range(depth):
-		f.write('    ')
+    for i in range(depth):
+        f.write('    ')
 
-	f.write(string + '\n')
+    f.write(string + '\n')
 
 def write_item(string, depth, f):
-	for i in range(depth):
-		f.write('    ')
+    for i in range(depth):
+        f.write('    ')
 
-	for i in range(depth + 1):
-		f.write('[')
+    for i in range(depth + 1):
+        f.write('[')
 
-	f.write("'" + string.encode('UTF-8').lower() + "'")
+    f.write("'" + string.encode('UTF-8').lower() + "'")
 
-	for i in range(depth + 1):
-		f.write(']')
+    for i in range(depth + 1):
+        f.write(']')
 
-	f.write('\n')
+    f.write('\n')
 
 def ga2str(ga):
-	return "%d/%d/%d" % ((ga >> 11) & 0xf, (ga >> 8) & 0x7, ga & 0xff)
+    return "%d/%d/%d" % ((ga >> 11) & 0xf, (ga >> 8) & 0x7, ga & 0xff)
 
 def pa2str(pa):
-	return "%d.%d.%d" % (pa >> 12, (pa >> 8) & 0xf, pa & 0xff)
+    return "%d.%d.%d" % (pa >> 12, (pa >> 8) & 0xf, pa & 0xff)
 
 class AutoVivification(dict):
     """Implementation of perl's autovivification feature."""
@@ -104,7 +104,7 @@ class AutoVivification(dict):
             return value
 
 ##############################################################
-#		Main
+#        Main
 ##############################################################
 
 PROJECTFILE = sys.argv[1]
@@ -126,7 +126,7 @@ for ga in root.findall('.//' + FIND_GA):
             item = a
             for part in parts:
                 item = item[part]
-            
+
             parts = match.group('sh_str').split('|',1)
             ga_str = ga2str(int(ga.attrib['Address']))
             ga_attributes = parts[0].split(',')
@@ -135,21 +135,23 @@ for ga in root.findall('.//' + FIND_GA):
                 if not ga_attribute in item['sh_attributes'].keys():
                     item['sh_attributes'][ga_attribute] = []
                 item['sh_attributes'][ga_attribute].append(ga_str)
-            
+
             if len(parts) > 1:
                 for part in parts[1].split('|'):
                     p = part.split('=')
                     if len(p) == 2:
                         if not p[0] in item['sh_attributes'].keys():
                             item['sh_attributes'][p[0]] = []
-                        item['sh_attributes'][p[0]].append(p[1].strip())                            
+                        item['sh_attributes'][p[0]].append(p[1].strip())
+    else:
+        print "Not added: " +  ga.attrib['Name']
 
 for k in a.keys():
     OUTFILE = u"{0}.conf".format(k)
     print u"Create File: {0}".format(OUTFILE)
-    
+
     if (os.path.exists(OUTFILE)):
-	    os.remove(OUTFILE)
+        os.remove(OUTFILE)
 
     with open(OUTFILE, 'w') as f:
         write_item(k, 0, f)
