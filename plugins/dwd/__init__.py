@@ -46,7 +46,7 @@ class DWD():
         self.lock = threading.Lock()
         self.tz = dateutil.tz.gettz('Europe/Berlin')
         try:
-            warnings = csv.reader(open(self._warnings_csv, "r"), delimiter=';')
+            warnings = csv.reader(open(self._warnings_csv, "r", encoding='utf_8'), delimiter=';')
         except IOError as e:
             logger.error('Could not open warning catalog {}: {}'.format(self._warnings_csv, e))
         for row in warnings:
