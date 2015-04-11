@@ -2,7 +2,12 @@ This sub-project is a client implementation fpr the Sonos Broker. It is a plugin
 Smarthome.py framework (https://github.com/mknx/smarthome).
 
 ##Release
+
+  v1.4  2015-04-11
   
+    -- added "wifi_state" command (only Sonos Broker >= v0.6)
+    -- added refresh_media_library function (only Sonos Broker >= v0.6)
+    
   v1.3  2015-01-18
 
     --  added "get_playlist" and "set_playlist" commmands
@@ -499,11 +504,24 @@ get_favorite_radiostations(<start_item>, <max_items>)
             "total": "10"
     }
 
+    call this function with:
+    
+    sh.sonos.get_favorite_radiostations()
+    
 version()
 
     current plugin version
 
-
+refresh_media_library(<display_option>)
+    
+    Refreshs the media library
+    For parameter 'display_option' see 
+    <a href="http://www.sonos.com/support/help/3.4/en/sonos_user_guide/Chap07_new/Compilation_albums.htm">Sonos Help Page</<a>
+    
+    call this function with:
+    
+    sh.sonos.refresh_media_library()
+    
 ## smartVISU Integration
 
 more information here: https://github.com/pfischi/shSonos/tree/develop/widget.smartvisu
