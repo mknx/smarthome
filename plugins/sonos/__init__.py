@@ -77,9 +77,14 @@ class UDPDispatcher(lib.connection.Server):
 
 class Sonos():
     def __init__(self, smarthome, listen_host='0.0.0.0', listen_port=9999, broker_url=None, refresh=120):
-
-        # get lan ip
+        self._sonoslock = threading.Lock()
         self._lan_ip = get_lan_ip()
+
+        if not self._lan_ip:
+            logger.critical("Could not fetch internal ip address. Set it manually!")
+            self.alive = False
+            return
+        logger.info("using local ip address {ip}".format(ip=self._lan_ip))
 
         # check broker variable
         if broker_url:
@@ -102,7 +107,6 @@ class Sonos():
         self._listen_port = listen_port
         self._sh = smarthome
         self._command = SonosCommand()
-        self._sonoslock = threading.Lock()
 
         logger.debug('refresh sonos speakers every {refresh} seconds'.format(refresh=refresh))
 
@@ -184,7 +188,6 @@ class Sonos():
 
         return None
 
-    #nothing yet
     def parse_logic(self, logic):
         pass
 
@@ -378,8 +381,47 @@ class Sonos():
                             break
                     cmd = self._command.volume_down(uid, group_command)
 
+                if command == 'get_playlist':
+                    cmd = self._command.get_playlist(uid)
+                    data = self._send_cmd(cmd)
+
+                    if data:
+                        try:
+                            with open(item(), 'w') as f:
+                                f.write(data)
+                                logger.info("Playlist saved to {file}".format(file=item()))
+                        except Exception as err:
+                            logger.error("Could not save playlist to {file}".format(file=item()))
+                            logger.error(err)
+                    else:
+                        logger.warning("No playlist returned")
+                    return
+
+                if command == 'set_playlist':
+
+                    play_item_name = '{}.play_after_insert'.format(item._name)
+                    play_after_insert = 0
+                    for child in item.return_children():
+                        if child._name.lower() == play_item_name.lower():
+                            play_after_insert = child()
+                            break
+
+                    if not os.path.isfile(item()):
+                        logger.warning("File {file} not found".format(file=item()))
+                        return
+                    try:
+                        with open(item(), 'r') as f:
+                            playlist = f.read()
+                            cmd = self._command.set_playlist(uid, playlist, play_after_insert)
+                            self._send_cmd(cmd)
+                    except Exception as err:
+                        logger.error("Could not open playlist {file}".format(file=item()))
+                        logger.error(err)
+                    return
+
                 if cmd:
                     self._send_cmd(cmd)
+                    return
         return None
 
     def _send_cmd(self, payload):
@@ -389,12 +431,18 @@ class Sonos():
             headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
             response = requests.post(self._broker_url, data=json.dumps(payload), headers=headers)
 
+            html_start = "<html><head><title>Sonos Broker</title></head><body>"
+            html_end = "</body></html>"
+
             if response.status_code == 200:
                 logger.info("Sonos: Message %s %s successfully sent - %s %s" %
                             (self._broker_url, payload, response.status_code, response.reason))
+                return response.text.replace(html_start, "", 1).replace(html_end, "", 1)
+
             else:
                 logger.warning("Sonos: Could not send message %s %s - %s %s" %
                                (self._broker_url, payload, response.status_code, response.text))
+                return None
         except Exception as e:
             logger.warning(
                 "Could not send sonos notification: {0}. Error: {1}".format(payload, e))
@@ -426,7 +474,7 @@ class Sonos():
         return self._send_cmd_response(SonosCommand.favradio(start_item, max_items))
 
     def version(self):
-        return "v1.2\t2014-10-15"
+        return "v1.3\t2015-01-18"
 
 
 class SonosSpeaker():
@@ -436,6 +484,7 @@ class SonosSpeaker():
         self.model = []
         self.zone_name = []
         self.zone_icon = []
+        self.is_coordinator = []
         self.serial_number = []
         self.software_version = []
         self.hardware_version = []
@@ -464,7 +513,7 @@ class SonosSpeaker():
         self.loudness = []
         self.playmode = []
         self.alarms = []
-
+        self.tts_local_mode = []
 
 class SonosCommand():
 
@@ -662,7 +711,6 @@ class SonosCommand():
             }
         }
 
-
     @staticmethod
     def play_tts(uid, tts, language, volume, group_command, force_stream_mode, fade_in):
         return {
@@ -688,7 +736,7 @@ class SonosCommand():
         }
 
     @staticmethod
-    def bass(uid, value, group_command):
+    def bass(uid, value, group_command=0):
         return {
             'command': 'set_bass',
             'parameter': {
@@ -709,7 +757,7 @@ class SonosCommand():
         }
 
     @staticmethod
-    def treble(uid, value, group_command):
+    def treble(uid, value, group_command=0):
         return {
             'command': 'set_treble',
             'parameter': {
@@ -720,7 +768,7 @@ class SonosCommand():
         }
 
     @staticmethod
-    def loudness(uid, value, group_command):
+    def loudness(uid, value, group_command=0):
         return {
             'command': 'set_loudness',
             'parameter': {
@@ -729,6 +777,27 @@ class SonosCommand():
                 'uid': '{uid}'.format(uid=uid)
             }
         }
+
+    @staticmethod
+    def get_playlist(uid):
+        return {
+            'command': 'get_playlist',
+            'parameter': {
+                'uid': uid.lower(),
+                }
+        }
+
+    @staticmethod
+    def set_playlist(uid, playlist, play_after_insert=0):
+        return {
+            'command': 'set_playlist',
+            'parameter': {
+                'uid': uid.lower(),
+                'playlist': playlist,
+                'play_after_insert': play_after_insert
+            }
+        }
+
 
     @staticmethod
     def favradio(start_item, max_items):
@@ -773,9 +842,15 @@ def get_lan_ip():
                     pass
         return ip
     except Exception as err:
-        logger.exception(err)
+        return get_lan_ip_fallback()
+
+def get_lan_ip_fallback():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        s.connect(('<broadcast>', 0))
+        return s.getsockname()[0]
+    except Exception as err:
+        logger.critical(err)
         return None
-
-
-
 

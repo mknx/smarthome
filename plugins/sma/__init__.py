@@ -105,14 +105,14 @@ attribute_to_text = {35: "Fault",
                      1130: "No",
                      0xFFFFFD: "NaN",
                     }
-                    
+
 # eval-id: eval-expression
 lri_evals = {'num32bit_scaleby1': '(lambda x: x if x not in [0x80000000, 0xFFFFFFFF] else 0)(int.from_bytes(msg[i + 8:i + 12], byteorder="little"))',
              'num32bit_scaleby100.0': '(lambda x: x / 100.0 if x not in [0x80000000, 0xFFFFFFFF] else 0)(int.from_bytes(msg[i + 8:i + 12], byteorder="little"))',
              'num32bit_scaleby1000.0': '(lambda x: x / 1000.0 if x not in [0x80000000, 0xFFFFFFFF] else 0)(int.from_bytes(msg[i + 8:i + 12], byteorder="little"))',
              'num64bit_scaleby1': '(lambda x: x if x not in [0x8000000000000000, 0xFFFFFFFFFFFFFFFF] else 0)(int.from_bytes(msg[i + 8:i + 16], byteorder="little"))',
              'sw_version_decode': '"{}{}.{}{}.{:02d}.{}".format(msg[i + 27] >> 4, msg[i + 27] & 0xf, msg[i + 26] >> 4, msg[i + 26] & 0xf, msg[i + 25], msg[i + 24] if msg[i + 24] > 5 else "NEABRS"[msg[i + 24]])',
-             'attribute_decode': '(lambda x: attribute_to_text[x[0]] if x[0] in attribute_to_text else "?")(list(__import__("itertools").dropwhile(lambda attr_tpl: (attr_tpl[1] != 1) or (attr_tpl[0] == 0xFFFFFE), [(int.from_bytes(msg[o:o + 3], byteorder="little"), msg[o + 3]) for o in range(i+8,i+40,4)]))[0])', 
+             'attribute_decode': '(lambda x: attribute_to_text[x[0]] if x[0] in attribute_to_text else "?")(list(__import__("itertools").dropwhile(lambda attr_tpl: (attr_tpl[1] != 1) or (attr_tpl[0] == 0xFFFFFE), [(int.from_bytes(msg[o:o + 3], byteorder="little"), msg[o + 3]) for o in range(i+8,i+40,4)]))[0])',
             }
 
 TYPE_LABEL = (0x821E00, 0x8220FF, 0x58000200)
@@ -203,37 +203,40 @@ class SMA():
 
     def _update_values(self):
         #logger.warning("sma: signal strength = {}%%".format(self._inv_get_bt_signal_strength()))
-        for request in self._requests:
-            if not self.alive:
-                break
-            self._cmd_lock.acquire()
-            self._inv_send_request(request)
-            if not self.alive:
-                break
-            self._reply_lock.acquire()
-            # wait 5sec for reply
-            self._reply_lock.wait(5)
-            self._reply_lock.release()
-            self._cmd_lock.release()
-        if ('LAST_UPDATE' in self._fields) and not (self._inv_last_read_timestamp_utc == 0):
-            self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
-            #self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
-            self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m. %H:%M  ")
-            for item in self._fields['LAST_UPDATE']['items']:
-                item(self._inv_last_read_str, 'SMA', self._inv_serial)
+        self._cmd_lock.acquire()
+        try:
+            for request in self._requests:
+                if not self.alive:
+                    break
+                self._inv_send_request(request)
+                if not self.alive:
+                    break
+                self._reply_lock.acquire()
+                # wait 5sec for reply
+                self._reply_lock.wait(5)
+                self._reply_lock.release()
+            if ('LAST_UPDATE' in self._fields) and not (self._inv_last_read_timestamp_utc == 0):
+                self._inv_last_read_datetime = datetime.fromtimestamp(self._inv_last_read_timestamp_utc, tz.tzlocal())
+                #self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m.%Y %H:%M:%S")
+                self._inv_last_read_str = self._inv_last_read_datetime.strftime("%d.%m. %H:%M  ")
+                for item in self._fields['LAST_UPDATE']['items']:
+                    item(self._inv_last_read_str, 'SMA', self._inv_serial)
+        except Exception as e:
+            logger.error("sma: error while updating values - {}".format(e))
+        self._cmd_lock.release()
 
     def run(self):
         self.alive = True
         self._is_connected = False
         if (self._plugin_active_item is None):
             self._plugin_active = True
-        else:        
+        else:
             self._plugin_active = self._plugin_active_item()
-        # "or self._is_connected" ensures the connection will be closed before terminating 
+        # "or self._is_connected" ensures the connection will be closed before terminating
         while (self.alive or self._is_connected):
             #logger.warning("sma: state self._is_connected = {} / self._plugin_active = {} / self.alive = {}".format(self._is_connected, self._plugin_active, self.alive))
 
-            # connect to inverter is active but not connected
+            # connect to inverter if active but not connected
             if (self._plugin_active and not self._is_connected):
                 self._cmd_lock.acquire()
                 try:
@@ -279,10 +282,10 @@ class SMA():
                                     logger.debug("sma: reply while setting inverter time - len={} data=[{}]\n".format(len(msg), ', '.join(['0x%02x' % b for b in msg[41:]])))
                 except Exception as e:
                     logger.error("sma: adjusting inverter time failed - {}".format(e))
-                    return           
+                    return
                 self._sh.scheduler.add('SMA', self._update_values, prio=5, cycle=self._update_cycle)
 
-            # disconnect from inverter and stop updates if not active or if not alive       
+            # disconnect from inverter and stop updates if not active or if not alive
             if (self._is_connected and not (self._plugin_active and self.alive)):
                 self._cmd_lock.acquire()
                 try:
@@ -302,7 +305,7 @@ class SMA():
                 self._cmd_lock.release()
                 continue
 
-            # receive messages from inverter        
+            # receive messages from inverter
             if (self._plugin_active and self._is_connected):
                 msg = self._recv_smanet2_msg(no_timeout_warning=True)
                 if not self.alive:
@@ -343,18 +346,22 @@ class SMA():
                         logger.error("sma: rx: exception - {}".format(e))
                         logger.error("sma: rx - exception when parsing msg - len={} data=[{}]\n".format(len(msg), ', '.join(['0x%02x' % b for b in msg])))
                         continue
-                    self._reply_lock.acquire()
-                    self._reply_lock.notify()
-                    self._reply_lock.release()
+                elif (len(msg) == 44):
+                    start_id = int.from_bytes(msg[33:36], byteorder='little')
+                    end_id = int.from_bytes(msg[37:40], byteorder='little')
+                    logger.info("sma: inverters returns \"no new data\" in id range from {:#06x} to {:#06x}".format(start_id, end_id))
                 else:
                     logger.warning("sma: rx - unknown/malformed response!")
                     logger.warning("sma: rx - len={} data=[{}]\n".format(len(msg), ', '.join(['0x%02x' % b for b in msg])))
                     seq_num = int.from_bytes(msg[27:29], byteorder='little')
                     logger.warning("sma: sma2-seq={} / sma2-data=[{}]\n".format(seq_num, ' '.join(['0x%02x' % b for b in msg[29:]])))
+                self._reply_lock.acquire()
+                self._reply_lock.notifyAll()
+                self._reply_lock.release()
             else:
                 time.sleep(2)
         # this is the end of the while-loop
-        
+
     def stop(self):
         self.alive = False
 

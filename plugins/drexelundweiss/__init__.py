@@ -23,6 +23,7 @@ import logging
 import threading
 import serial
 import os.path
+import time
 
 
 logger = logging.getLogger('')
@@ -318,7 +319,7 @@ class DuW():
                         logger.exception("Drexel: {0}".format(e))
                     finally:
                         self._lock.release()
-
+                time.sleep(0.1)
             # exit poll service
             self._pollservice = False
         except Exception as e:
@@ -380,6 +381,7 @@ class DuW():
                 else:
                     logger.debug("Drexel read timeout: ")
                     break
+                time.sleep(0.1)
         except Exception as e:
             logger.warning("Drexel: {0}".format(e))
         finally:

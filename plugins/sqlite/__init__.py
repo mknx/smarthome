@@ -1,22 +1,9 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2013-2014 Marcus Popp                          marcus@popp.mx
-#########################################################################
-#  This file is part of SmartHome.py.    http://mknx.github.io/smarthome/
+# Copyright 2015 Marcus Popp                               marcus@popp.mx
 #
-#  SmartHome.py is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#
-#  SmartHome.py is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
+# Personal and non-commercial use only, redistribution is prohibited.
 #########################################################################
 
 import logging
@@ -90,6 +77,7 @@ class SQL():
             version = int(self._fdb.execute("SELECT version FROM common;").fetchone()[0])
             if version < self._version:
                 import plugins.sqlite.upgrade
+                logger.info("SQLite: upgrading database. Please wait!")
                 plugins.sqlite.upgrade.Upgrade(self._fdb, version)
                 self._fdb.execute("UPDATE common SET version=:version;", {'version': self._version})
         self._fdb.commit()
@@ -381,9 +369,37 @@ class SQL():
         if self._buffer[_item] != [] and end == 'now':
             self._insert(_item)
         tuples = self._fetchall(query)
-        if tuples is None:
-            return
-        return tuples[0][0]
+        _item = self._sh.return_item(item)
+        _item_change = self._timestamp(_item.last_change())
+        if tuples:
+            if _item_change < end:
+                _value = float(_item())
+                if tuples[0][0] is None:
+                    if func == 'on':
+                        return int(bool(_value))
+                    else:
+                        return _value
+                else:
+                    value = tuples[0][0]
+                    delta = end - start
+                    delta1 = _item_change - start
+                    delta2 = end - _item_change
+                    if func == 'avg':
+                        return round((delta1 * value + delta2 * _value) / delta, 2)
+                    elif func == 'min':
+                        return min(value, _value)
+                    elif func == 'max':
+                        return max(value, _value)
+                    elif func == 'on':
+                        return round((delta1 * value + delta2 * int(bool(_value))) / delta, 2)
+            else:
+                return tuples[0][0]
+        elif _item_change < end:
+            _value = float(_item())
+            if func == 'on':
+                return int(bool(_value))
+            else:
+                return _value
 
     def _timestamp(self, dt):
         return int(time.mktime(dt.timetuple())) * 1000 + int(dt.microsecond / 1000)

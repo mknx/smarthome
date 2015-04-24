@@ -11,6 +11,12 @@
 ---
 ## What's new?
   
+__2014-08_26__:
+
+* Added support for eMail-Addresses as deviceId
+* Updated README.md with instructions "How to get your deviceId"  
+* Added usage example to send a note to a specific device  
+
 __2014-06-17__:
 
 * __New python library dependecy: "magic" (see requirements section above)__
@@ -38,7 +44,15 @@ Description of the attributes:
   
 * __apikey__: set api-key globally so you do not have to set it in the function calls  
 * __deviceid__: set deviceid globally so it will be used as defaul target, you can override this on each call  
-    
+  
+---  
+## How to get your deviceId
+
+1) Use your browser to log into your account on [http://www.pushbullet.com](http://www.pushbullet.com "http://www.pushbullet.com")  
+2) Select your desired target device  
+3) Copy the last part of the browser url (behind the "device_iden=") into your clipboard.
+4) Paste it to your plugin.conf or your api call.  
+  
 ---  
 ## Functions
   
@@ -56,6 +70,12 @@ Send a note to your device.
 <pre>
 #send simple note to default device
 sh.pushbullet.note("Note to myself.", "Call my mother.")
+
+#send simple note to device with id: x28d7AJFx13
+sh.pushbullet.note("Note to myself.", "Call my mother.", "x28d7AJFx13")
+
+#send simple note to user with email: teddy.tester@testing.de
+sh.pushbullet.note("Note to myself.", "Call my mother.", "teddy.tester@testing.de")
 </pre>
 --- 
 ### sh.pushbullet.link(title, url [, deviceid] [, apikey] [, body])

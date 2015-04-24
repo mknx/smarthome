@@ -296,7 +296,7 @@ class Item():
         return vars(self)[item]
 
     def __bool__(self):
-        return self._value
+        return bool(self._value)
 
     def __str__(self):
         return self._name
