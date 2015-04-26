@@ -134,6 +134,28 @@ class EnOcean():
         else:
             logger.warning("enocean: unknown event packet received")
 
+    def _rocker_sequence(self, item, sender_id, sequence):
+        try:
+            for step in sequence:
+                event, relation, delay = step.split()             
+                #logger.debug("waiting for {} {} {}".format(event, relation, delay))
+                if item._enocean_rs_events[event.upper()].wait(float(delay)) != (relation.upper() == "WITHIN"):
+                    logger.debug("NOT {} - aborting sequence!".format(step))
+                    return
+                else:
+                    logger.debug("{}".format(step))
+                    item._enocean_rs_events[event.upper()].clear()
+                    continue          
+            value = True
+            if 'enocean_rocker_action' in item.conf:
+                if item.conf['enocean_rocker_action'].upper() == "UNSET":
+                    value = False
+                elif item.conf['enocean_rocker_action'].upper() == "TOGGLE":
+                    value = not item()
+            item(value, 'EnOcean', "{:08X}".format(sender_id))
+        except Exception as e:
+            logger.error("enocean: error handling enocean_rocker_sequence \"{}\" - {}".format(sequence, e))        
+
     def _process_packet_type_radio(self, data, optional):
         #logger.warning("enocean: processing radio message with data = [{}] / optional = [{}]".format(', '.join(['0x%02x' % b for b in data]), ', '.join(['0x%02x' % b for b in optional])))
 
@@ -163,7 +185,25 @@ class EnOcean():
                     for item in items:
                         rx_key = item.conf['enocean_rx_key'].upper()
                         if rx_key in results:
-                            item(results[rx_key], 'EnOcean', "{:08X}".format(sender_id))
+                            if 'enocean_rocker_sequence' in item.conf:
+                                try:   
+                                    if hasattr(item, '_enocean_rs_thread') and item._enocean_rs_thread.isAlive():
+                                        if results[rx_key]:
+                                            logger.debug("sending pressed event")
+                                            item._enocean_rs_events["PRESSED"].set()
+                                        else:
+                                            logger.debug("sending released event")
+                                            item._enocean_rs_events["RELEASED"].set()
+                                    elif results[rx_key]:
+                                        item._enocean_rs_events = {'PRESSED': threading.Event(), 'RELEASED': threading.Event()}
+                                        item._enocean_rs_thread = threading.Thread(target=self._rocker_sequence, name="enocean-rs", args=(item, sender_id, item.conf['enocean_rocker_sequence'].split(','), ))
+                                        #logger.info("starting enocean_rocker_sequence thread")
+                                        item._enocean_rs_thread.daemon = True
+                                        item._enocean_rs_thread.start()
+                                except Exception as e:
+                                    logger.error("enocean: error handling enocean_rocker_sequence - {}".format(e))
+                            else:
+                                item(results[rx_key], 'EnOcean', "{:08X}".format(sender_id))
         elif (sender_id <= self.tx_id + 127) and (sender_id >= self.tx_id):
             logger.debug("enocean: Received repeated enocean stick message")
         else:
@@ -375,7 +415,7 @@ class EnOcean():
                 else:
                     logger.error('enocean: tx_eep is not a string value')
             else:
-                logger.warning('enocean: item has no tx_eep value')
+                logger.debug('enocean: item has no tx_eep value')
 
     def read_num_securedivices(self):
         self._send_common_command(CO_RD_NUMSECUREDEVICES)
