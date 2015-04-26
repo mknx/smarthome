@@ -92,20 +92,44 @@ Example item.conf
             type = num
             enocean_rx_key = STATUS
     [[actor1]]
-            enocean_rx_id = FFAABBCC
-            enocean_rx_eep = A5_12_01
-            [[[power]]]
-                type = num
-                enocean_rx_key = VALUE
+        enocean_rx_id = FFAABBCC
+        enocean_rx_eep = A5_12_01
+        [[[power]]]
+            type = num
+            enocean_rx_key = VALUE
     [[actor1B]]
-            enocean_rx_id = FFAABBCD
-            enocean_rx_eep = F6_02_03
-            [[[light]]]
-                type = bool
-                enocean_rx_key = B
-                enocean_tx_eep = A5_38_08_01
-                enocean_tx_id_offset = 2
-
+        enocean_rx_id = FFAABBCD
+        enocean_rx_eep = F6_02_03
+        [[[light]]]
+            type = bool
+            enocean_rx_key = B
+            enocean_tx_eep = A5_38_08_01
+            enocean_tx_id_offset = 2
+    [[rocker]]
+        enocean_rx_id = 0029894A
+        enocean_rx_eep = F6_02_01
+        [[[short_800ms_directly_to_knx]]]
+            type = bool
+            enocean_rx_key = AI
+            enocean_rocker_action = **toggle**
+            enocean_rocker_sequence = released **within** 0.8
+            knx_dpt = 1
+            knx_send = 3/0/60
+        [[long_800ms_directly_to_knx]]
+            type = bool
+            enocean_rx_key = AI
+            enocean_rocker_action = toggle
+            enocean_rocker_sequence = released **after** 0.8
+            knx_dpt = 1
+            knx_send = 3/0/61
+        [[rocker_double_800ms_to_knx_send_1]]
+            type = bool
+            enforce_updates = true
+            enocean_rx_key = AI
+            enocean_rocker_action = **set**
+            enocean_rocker_sequence = **released within 0.4 released within 0.4**
+            knx_dpt = 1
+            knx_send = 3/0/62
 </pre>
 
 Add new listening enocean devices
