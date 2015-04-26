@@ -115,19 +115,19 @@ Example item.conf
             enocean_rocker_sequence = released **within** 0.8
             knx_dpt = 1
             knx_send = 3/0/60
-        [[long_800ms_directly_to_knx]]
+        [[[long_800ms_directly_to_knx]]]
             type = bool
             enocean_rx_key = AI
             enocean_rocker_action = toggle
             enocean_rocker_sequence = released **after** 0.8
             knx_dpt = 1
             knx_send = 3/0/61
-        [[rocker_double_800ms_to_knx_send_1]]
+        [[[rocker_double_800ms_to_knx_send_1]]]
             type = bool
             enforce_updates = true
             enocean_rx_key = AI
             enocean_rocker_action = **set**
-            enocean_rocker_sequence = **released within 0.4 released within 0.4**
+            enocean_rocker_sequence = **released within 0.4, pressed within 0.4**
             knx_dpt = 1
             knx_send = 3/0/62
 </pre>

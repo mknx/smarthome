@@ -171,7 +171,7 @@ class EnOcean():
             dest_id = int.from_bytes(optional[1:5], byteorder='big', signed=False)
             dBm = -optional[5]
             SecurityLevel = optional[6]
-            logger.info("enocean: radio message with additional info: subtelnum = {} / dest_id = {:08X} / signal = {}dBm / SecurityLevel = {}".format(subtelnum, dest_id, dBm, SecurityLevel))
+            logger.debug("enocean: radio message with additional info: subtelnum = {} / dest_id = {:08X} / signal = {}dBm / SecurityLevel = {}".format(subtelnum, dest_id, dBm, SecurityLevel))
 
         if sender_id in self._rx_items:
             logger.debug("enocean: Sender ID found in item list")
