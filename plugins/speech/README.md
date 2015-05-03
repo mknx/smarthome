@@ -109,9 +109,9 @@ KNXfriend at "knx-user-forum.de" wrote that it also works with Automagic.
 Links
 =====
 
-Tasker: https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm
-AutoVoice: https://play.google.com/store/apps/details?id=com.joaomgcd.autovoice
-AutoVoice Pro: https://play.google.com/store/apps/details?id=com.joaomgcd.autovoice.unlock
-Automagic (alternative for Tasker with AutoVoice, thanks for the tip from KNXfriend): https://play.google.com/store/apps/details?id=ch.gridvision.ppam.androidautomagic
+* Tasker: https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm
+* AutoVoice: https://play.google.com/store/apps/details?id=com.joaomgcd.autovoice
+* AutoVoice Pro: https://play.google.com/store/apps/details?id=com.joaomgcd.autovoice.unlock
+* Automagic (alternative for Tasker with AutoVoice, thanks for the tip from KNXfriend): https://play.google.com/store/apps/details?id=ch.gridvision.ppam.androidautomagic
 
-Support Thread: http://knx-user-forum.de/forum/supportforen/smarthome-py/39857-plugin-speech-parser
+* Support Thread: http://knx-user-forum.de/forum/supportforen/smarthome-py/39857-plugin-speech-parser
