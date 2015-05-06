@@ -101,7 +101,7 @@ class SmarthomeLayer(YowInterfaceLayer):
 #        logger.info("YS_Event: {}".format(yowLayerEvent.getName()))
         if yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_DISCONNECTED:
             logger.info("YOWSUP DISCONNECTED")
-            if self._plugin._run == true:
+            if self._plugin._run == True:
                 logger.info("Reconnecting...")
                 self.connect()
                 

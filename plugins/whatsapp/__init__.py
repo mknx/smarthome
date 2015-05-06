@@ -55,7 +55,7 @@ class Whatsapp():
         self._credentials = (account, password.encode('utf-8'))
         self._trusted = trusted
         self._logic = logic
-        self._run = false
+        self._run = False
         if cli_mode == 'True':
             self._cli_mode = True
             return
@@ -86,7 +86,7 @@ class Whatsapp():
         self._SmarthomeLayer.setPlugin(self)
 
     def run(self):
-        self._run = true
+        self._run = True
         if self._cli_mode == True:
             return
         try:
@@ -95,7 +95,7 @@ class Whatsapp():
             logger.info("Authentication Error!")
 
     def stop(self):
-        self._run = false
+        self._run = False
         if self._cli_mode == True:
             return
         logger.info("Shutting Down WhatsApp Client")
