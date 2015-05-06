@@ -49,12 +49,13 @@ logger = logging.getLogger('Whatsapp')
 
 
 class Whatsapp():
-    def __init__(self, smarthome, account, password, trusted=None, logic='Whatsapp', cli_mode='False', ping_cycle='600'):
+    def __init__(self, smarthome, account, password, trusted=None, logic='Whatsapp', cli_mode='False'):
 # Set Plugin Attributes
         self._sh = smarthome
         self._credentials = (account, password.encode('utf-8'))
         self._trusted = trusted
         self._logic = logic
+        self._run = false
         if cli_mode == 'True':
             self._cli_mode = True
             return
@@ -84,28 +85,17 @@ class Whatsapp():
         self._SmarthomeLayer = self._stack.getLayer(len(self._stack._YowStack__stack) - 1)
         self._SmarthomeLayer.setPlugin(self)
 
-# Ping it
-        if int(ping_cycle) > 0:
-            if int(ping_cycle) < 10:
-                ping_cycle = 10
-            self._sh.scheduler.add('Yowsup_Ping', self.do_ping, prio=5, cycle=int(ping_cycle))
-
-    def do_ping(self):
-        self._SmarthomeLayer.do_ping()
-        self._sh.scheduler.add('Yowsup_Ping_Checker', self.check_ping, next=self._sh.now() + datetime.timedelta(0, 5))
-
-    def check_ping(self):
-        self._SmarthomeLayer.check_ping()
-
     def run(self):
+        self._run = true
         if self._cli_mode == True:
             return
         try:
-            self._stack.loop()
+            self._stack.loop(timeout = 0.5, discrete = 0.5)
         except AuthError as e:
             logger.info("Authentication Error!")
 
     def stop(self):
+        self._run = false
         if self._cli_mode == True:
             return
         logger.info("Shutting Down WhatsApp Client")

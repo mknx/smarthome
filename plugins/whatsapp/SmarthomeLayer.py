@@ -56,7 +56,7 @@ class SmarthomeLayer(YowInterfaceLayer):
     def onReceipt(self, entity):
         logger.info("Received Receipt: ID {}".format(entity._id))
         logger.info("Sending ACK")
-        ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", "delivery")
+        ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", entity.getType(), entity.getFrom())
         self.toLower(ack)
 
     @ProtocolEntityCallback("ack")
@@ -91,24 +91,19 @@ class SmarthomeLayer(YowInterfaceLayer):
         logger.info("Sending Message {0} to {1}".format(msg, num))
         self.toLower(outgoingMessageProtocolEntity)
 
-    def do_ping(self):
-        ping_entity = PingIqProtocolEntity(to=YowConstants.DOMAIN)
-        self._last_ping_snd_id = ping_entity._id
-        self.toLower(ping_entity)
-        logger.debug("Pinging... ID: {}".format(ping_entity._id))
+    def connect(self):
+        self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
 
-    def check_ping(self):
-        if self._last_ping_snd_id != self._last_ping_rcvd_id:
-            logger.warning("Ping ID {} dropped. Last successful ping response ID {}. Connection Lost. Reconnecting...".format(self._last_ping_snd_id, self._last_ping_rcvd_id))
-            self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_DISCONNECT))
-            time.sleep(3)
-            self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
-        else:
-            logger.info("Ping check ok. ID {}".format(self._last_ping_rcvd_id))
+    def disconnect(self):
+        self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_DISCONNECT))
 
     def onEvent(self, yowLayerEvent):
 #        logger.info("YS_Event: {}".format(yowLayerEvent.getName()))
         if yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_DISCONNECTED:
             logger.info("YOWSUP DISCONNECTED")
+            if self._plugin._run == true:
+                logger.info("Reconnecting...")
+                self.connect()
+                
         if yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_CONNECTED:
             logger.info("YOWSUP CONNECTED")
