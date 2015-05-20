@@ -389,11 +389,12 @@ class OneWire(OwBase):
                         continue
                     value = float(value)
                 except Exception as e:
-                    logger.warning("1-Wire: problem reading {}: {}".format(addr, e))
+                    logger.warning("1-Wire: problem reading {} {}: {}".format(addr, path, e))
                     if not self.connected:
                         return
                     else:
-                        continue
+                        self.close()
+                        break
                 if key == 'L':  # light lux conversion
                     if value > 0:
                         value = round(10 ** ((float(value) / 47) * 1000))
