@@ -357,7 +357,7 @@ class EnOcean():
 
             if (rx_key in ['A0', 'A1', 'B0', 'B1']):
                 logger.warning("enocean: key \"{}\" does not match EEP - \"0\" (Zero, number) should be \"O\" (letter) (same for \"1\" and \"I\") - will be accepted for now".format(rx_key))
-                rx_key = rx_key.replace('0', 'O').replace("1", 'I')
+                item.conf['enocean_rx_key'] = rx_key = rx_key.replace('0', 'O').replace("1", 'I')
 
             if (not rx_id in self._rx_items):
                 self._rx_items[rx_id] = {rx_eep: [item]}
