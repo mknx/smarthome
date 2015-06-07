@@ -322,6 +322,10 @@ class Item():
                     self._eval = ' + '.join(items)
                 elif self._eval == 'avg':
                     self._eval = '({0})/{1}'.format(' + '.join(items), len(items))
+                elif self._eval == 'max':
+                    self._eval = 'max({0})'.format(','.join(items))
+                elif self._eval == 'min':
+                    self._eval = 'min({0})'.format(','.join(items))
 
     def _init_run(self):
         if self._eval_trigger:
