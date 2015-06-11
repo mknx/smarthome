@@ -84,7 +84,7 @@ class Pluggit():
         self._lock.acquire()
         try:
             logger.info("Pluggit: connecting to {0}:{1}".format(self._host, self._port))
-            self._Pluggit = ModbusTcpClient(host='192.168.0.222', port=502)
+            self._Pluggit = ModbusTcpClient(self._host, self._port)
         except Exception as e:
             logger.error("Pluggit: could not connect to {0}:{1}: {2}".format(self._host, self._port, e))
             return
