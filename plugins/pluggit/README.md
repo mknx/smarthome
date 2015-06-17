@@ -44,6 +44,10 @@ The following list of information can be specified:
   * prmNumOfWeekProgram: Number of the Active Week Program (for Week Program mode)
   * prmRomIdxSpeedLevel: Speed level of Fans in Manual mode; shows a current speed level [4-0]; used for changing of the fan speed level
   * prmFilterRemainingTime: Remaining time of the Filter Lifetime (Days)
+  * prmRamIdxT1: Frischluft temperature in degree
+  * prmRamIdxT2: Zuluft temperature in degree
+  * prmRamIdxT3: Abluft temperature in degree
+  * prmRamIdxT4: Fortluft temperature in degree
   * prmRamIdxBypassActualState: Bypass state> Closed 0x0000; In process 0x0001; Closing 0x0020; Opening 0x0040; Opened 0x00FF
   * activatePowerBoost: bool variable that changes the Unit Mode to manual mode and sets the fan speed level to the highest level (4)
 
@@ -75,6 +79,26 @@ Example configuration which shows the current unit mode, the actual week program
         visu_acl = ro
         enforce_updates = true
         pluggit_listen = prmFilterRemainingTime
+    [[frischluft]]
+        type = num
+        visu_acl = ro
+        enforce_updates = true
+        pluggit_listen = prmRamIdxT1
+    [[zuluft]]
+        type = num
+        visu_acl = ro
+        enforce_updates = true
+        pluggit_listen = prmRamIdxT2
+    [[abluft]]
+        type = num
+        visu_acl = ro
+        enforce_updates = true
+        pluggit_listen = prmRamIdxT3
+    [[fortluft]]
+        type = num
+        visu_acl = ro
+        enforce_updates = true
+        pluggit_listen = prmRamIdxT4
     [[bypassState]]
         type = str
         visu_acl = ro

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
-# Copyright 2015 Henning Behrend; Version 0.1
+# Copyright 2015 Henning Behrend; Version 0.2
 #########################################################################
 #  This file is part of SmartHome.py.   http://smarthome.sourceforge.net/
 #
@@ -24,8 +24,13 @@ import time
 import threading
 import logging
 
+# import pydevd
+
 # pymodbus library from https://code.google.com/p/pymodbus/
 from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.payload import BinaryPayloadBuilder
 
 logger = logging.getLogger('pluggit')
 
@@ -49,10 +54,10 @@ class Pluggit():
     # dictionary for modbus registers
     _modbusRegisterDic = {
         # 'prmDateTime': 108,                   # 40109: Current Date/time in Unix time (amount of seconds from 1.1.1970)
-        # 'prmRamIdxT1': 132,                   # 40133: T1, °C
-        # 'prmRamIdxT2': 134,                   # 40135: T2, °C
-        # 'prmRamIdxT3': 136,                   # 40137: T3, °C
-        # 'prmRamIdxT4': 138,                   # 40139: T4, °C
+        'prmRamIdxT1': 133,                     # 40133: T1, °C
+        'prmRamIdxT2': 135,                     # 40135: T2, °C
+        'prmRamIdxT3': 137,                     # 40137: T3, °C
+        'prmRamIdxT4': 139,                     # 40139: T4, °C
         # 'prmRamIdxT5': 140,                   # 40141: T5, °C
         'prmRamIdxUnitMode': 168,               # 40169: Active Unit mode> 0x0004 Manual Mode; 0x0008 WeekProgram
         'prmRamIdxBypassActualState': 198,      # 40199: Bypass state> Closed 0x0000; In process 0x0001; Closing 0x0020; Opening 0x0040; Opened 0x00FF
@@ -76,6 +81,7 @@ class Pluggit():
         self._is_connected = False
         self._items = {}
         self.connect()
+        # pydevd.settrace("192.168.0.125")
 
     def connect(self):
         start_time = time.time()
@@ -265,6 +271,39 @@ class Pluggit():
                 if values == self._modbusRegisterDic['prmRamIdxBypassActualState'] and registerValue == 0:
                     # logger.debug("Pluggit: Bypass state: closed")
                     item('geschlossen', 'Pluggit')
+
+                # Temperatures
+                # Frischluft außen
+                if values == self._modbusRegisterDic['prmRamIdxT1']:
+                    t1 = self._Pluggit.read_holding_registers(values, 2, unit=22)
+                    decodert1 = BinaryPayloadDecoder.fromRegisters(t1.registers, endian=Endian.Big)
+                    t1 = decodert1.decode_32bit_float()
+                    logger.debug("Pluggit: Frischluft außen: {0:4.1f}".format(t1))
+                    item(t1, 'Pluggit')
+
+                # Zuluft innen
+                if values == self._modbusRegisterDic['prmRamIdxT2']:
+                    t2 = self._Pluggit.read_holding_registers(values, 2, unit=22)
+                    decodert2 = BinaryPayloadDecoder.fromRegisters(t2.registers, endian=Endian.Big)
+                    t2 = decodert2.decode_32bit_float()
+                    logger.debug("Pluggit: Zuluft innen: {0:4.1f}".format(t2))
+                    item(t2, 'Pluggit')
+
+                # Abluft innen
+                if values == self._modbusRegisterDic['prmRamIdxT3']:
+                    t3 = self._Pluggit.read_holding_registers(values, 2, unit=22)
+                    decodert3 = BinaryPayloadDecoder.fromRegisters(t3.registers, endian=Endian.Big)
+                    t3 = decodert3.decode_32bit_float()
+                    logger.debug("Pluggit: Abluft innen: {0:4.1f}".format(t3))
+                    item(t3, 'Pluggit')
+
+                # Fortluft außen
+                if values == self._modbusRegisterDic['prmRamIdxT4']:
+                    t4 = self._Pluggit.read_holding_registers(values, 2, unit=22)
+                    decodert4 = BinaryPayloadDecoder.fromRegisters(t4.registers, endian=Endian.Big)
+                    t4 = decodert4.decode_32bit_float()
+                    logger.debug("Pluggit: Fortluft außen: {0:4.1f}".format(t4))
+                    item(t4, 'Pluggit')
 
                 # logger.debug("Pluggit: ------------------------------------------> Ende der Schleife vor sleep, Durchlauf Nr. {0}".format(myCounter))
                 time.sleep(0.1)
