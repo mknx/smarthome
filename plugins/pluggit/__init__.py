@@ -278,7 +278,9 @@ class Pluggit():
                     t1 = self._Pluggit.read_holding_registers(values, 2, unit=22)
                     decodert1 = BinaryPayloadDecoder.fromRegisters(t1.registers, endian=Endian.Big)
                     t1 = decodert1.decode_32bit_float()
-                    logger.debug("Pluggit: Frischluft außen: {0:4.1f}".format(t1))
+                    t1 = round(t1, 2)
+                    # logger.debug("Pluggit: Frischluft außen: {0:4.1f}".format(t1))
+                    # logger.debug("Pluggit: Frischluft außen: {0}".format(t1))
                     item(t1, 'Pluggit')
 
                 # Zuluft innen
@@ -286,7 +288,9 @@ class Pluggit():
                     t2 = self._Pluggit.read_holding_registers(values, 2, unit=22)
                     decodert2 = BinaryPayloadDecoder.fromRegisters(t2.registers, endian=Endian.Big)
                     t2 = decodert2.decode_32bit_float()
-                    logger.debug("Pluggit: Zuluft innen: {0:4.1f}".format(t2))
+                    t2 = round(t2, 2)
+                    # logger.debug("Pluggit: Zuluft innen: {0:4.1f}".format(t2))
+                    # logger.debug("Pluggit: Zuluft innen: {0}".format(t2))
                     item(t2, 'Pluggit')
 
                 # Abluft innen
@@ -294,7 +298,9 @@ class Pluggit():
                     t3 = self._Pluggit.read_holding_registers(values, 2, unit=22)
                     decodert3 = BinaryPayloadDecoder.fromRegisters(t3.registers, endian=Endian.Big)
                     t3 = decodert3.decode_32bit_float()
-                    logger.debug("Pluggit: Abluft innen: {0:4.1f}".format(t3))
+                    t3 = round(t3, 2)
+                    # logger.debug("Pluggit: Abluft innen: {0:4.1f}".format(t3))
+                    # logger.debug("Pluggit: Abluft innen: {0}".format(t3))
                     item(t3, 'Pluggit')
 
                 # Fortluft außen
@@ -302,7 +308,9 @@ class Pluggit():
                     t4 = self._Pluggit.read_holding_registers(values, 2, unit=22)
                     decodert4 = BinaryPayloadDecoder.fromRegisters(t4.registers, endian=Endian.Big)
                     t4 = decodert4.decode_32bit_float()
-                    logger.debug("Pluggit: Fortluft außen: {0:4.1f}".format(t4))
+                    t4 = round(t4, 2)
+                    # logger.debug("Pluggit: Fortluft außen: {0:4.1f}".format(t4))
+                    # logger.debug("Pluggit: Fortluft außen: {0}".format(t4))
                     item(t4, 'Pluggit')
 
                 # logger.debug("Pluggit: ------------------------------------------> Ende der Schleife vor sleep, Durchlauf Nr. {0}".format(myCounter))
