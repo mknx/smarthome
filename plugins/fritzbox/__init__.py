@@ -99,13 +99,14 @@ class FritzBox(lib.www.Client):
 </s:Body>
 </s:Envelope>"""
 
-    def __init__(self, smarthome, username, password, host='fritz.box', cycle=300):
+    def __init__(self, smarthome, username, password, host='fritz.box', cycle=300, timeout=5):
         self._sid = False
         self._sh = smarthome
         self._fritzbox = host
         self._cycle = int(cycle)
         self._username = username
         self._password = password
+        self._timeout = int(timeout)
         self._items = []
         self._ahas = []
         self._callmonitor_logics = []
@@ -130,10 +131,10 @@ class FritzBox(lib.www.Client):
                     if 'fb_wlan' in item.conf:
                         item.conf['fritzbox'] = "wlan_{}".format(item.conf['fb_wlan'])
                 elif value == 'tam':
-                    if not 'fb_tam' in item.conf:
+                    if 'fb_tam' not in item.conf:
                         item.conf['fb_tam'] = 0
                 elif value == 'host':
-                    if not 'fb_mac' in item.conf:
+                    if 'fb_mac' not in item.conf:
                         logger.warning("FritzBox: please specify fb_mac for {}".format(item.id()))
                         return
                 self._items.append(item)
@@ -182,7 +183,7 @@ class FritzBox(lib.www.Client):
         self._set('call', "{}".format(call_to))
 
     def calllist(self):
-        content = self.fetch_url("https://{}:49443/calllist.lua?sid={}".format(self._fritzbox, self._get_sid()))
+        content = self.fetch_url("https://{}:49443/calllist.lua?sid={}".format(self._fritzbox, self._get_sid()), timeout=self._timeout)
         if content:
             entries = []
             tree = xml.etree.cElementTree.fromstring(content.decode())
@@ -210,7 +211,7 @@ class FritzBox(lib.www.Client):
         command['getpage'] = '../html/login_sid.xml'
         body = urllib.parse.urlencode(command)
         url = "http://{}/cgi-bin/webcm".format(self._fritzbox)
-        self.fetch_url(url, headers=headers, body=body, method='POST')
+        self.fetch_url(url, headers=headers, body=body, method='POST', timeout=self._timeout)
 
     # Plugin specific private methods
     def _aha_command(self, command, ain=None):
@@ -218,7 +219,7 @@ class FritzBox(lib.www.Client):
         url = "http://{}/webservices/homeautoswitch.lua?switchcmd={}&sid={}".format(self._fritzbox, command, self._get_sid())
         if ain is not None:
             url += "&ain={}".format(ain)
-        content = self.fetch_url(url)
+        content = self.fetch_url(url, timeout=self._timeout)
         if content:
             return(content.decode().strip())
 
@@ -234,7 +235,7 @@ class FritzBox(lib.www.Client):
         if index is not None:
             value += "<{0}>{1}</{0}>".format('NewIndex', index)
         body = self._body.format(action, service, value)
-        content = self.fetch_url(url, auth='digest', headers=headers, body=body, username=self._username, password=self._password, method='POST')
+        content = self.fetch_url(url, auth='digest', headers=headers, body=body, username=self._username, password=self._password, method='POST', timeout=self._timeout)
         if content and element:
             tree = xml.etree.cElementTree.fromstring(content.decode())
             element = tree.find('.//{}'.format(element))
@@ -252,13 +253,13 @@ class FritzBox(lib.www.Client):
     def _get_sid(self):
         if self._sid:
             return self._sid
-        content = self.fetch_url("http://{}/login_sid.lua".format(self._fritzbox))
+        content = self.fetch_url("http://{}/login_sid.lua".format(self._fritzbox), timeout=self._timeout)
         if content:
             tree = xml.etree.cElementTree.fromstring(content.decode())
             challenge = tree.find('.//Challenge').text
             response = hashlib.md5("{}-{}".format(challenge, self._password).encode('utf-16le')).hexdigest()
             url = "http://{}/login_sid.lua?username={}&response={}-{}".format(self._fritzbox, self._username, challenge, response)
-            content = self.fetch_url(url)
+            content = self.fetch_url(url, timeout=self._timeout)
             tree = xml.etree.cElementTree.fromstring(content.decode())
             sid = tree.find('.//SID').text
             if sid != '0000000000000000':
@@ -279,10 +280,10 @@ class FritzBox(lib.www.Client):
         if index is not None:
             value = "<{0}>{1}</{0}>{2}".format('NewIndex', index, value)  # für tam notwendig
         body = self._body.format(action, service, value)
-        self.fetch_url(url, auth='digest', headers=headers, body=body, username=self._username, password=self._password, method='POST')
+        self.fetch_url(url, auth='digest', headers=headers, body=body, username=self._username, password=self._password, method='POST', timeout=self._timeout)
 
     def _update_cycle(self):
-#       start = time.time()
+        # start = time.time()
         for item in self._items:
             if not self.alive:
                 return
