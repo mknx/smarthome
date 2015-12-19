@@ -94,6 +94,12 @@ class EEP_Parser():
     def _parse_eep_A5_02_30(self, payload, status):
         return {'TMP': (((payload[1] & 0x03) * 256.0 + payload[2]) / 10.0) - 40.0}
 
+    def _parse_eep_A5_04_01(self, payload, status):
+        result = {}
+        result['HUM'] = (payload[1] / 250.0 * 100)
+        result['TMP'] = (payload[2] / 250.0 * 40.0)
+        return result
+
     def _parse_eep_A5_11_04(self, payload, status):
         #4 Byte communication (4BS) Telegramm, RORG = A5 = ORG = 0x07
         # For example dim status feedback from eltako FSUD-230 actor.
