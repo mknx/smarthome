@@ -3,6 +3,21 @@ Smarthome.py framework (https://github.com/mknx/smarthome).
 
 ##Release
 
+  v1.61 2016-01-03
+        
+    --  bug: discover function call now working
+    --  command "balance" added; documentation updated 
+    
+  v1.6  2015-12-23
+    
+    -- function 'discover' added to perform a manual scan for new Sonos speaker
+  
+  v1.5  2015-10-30
+  
+    -- property 'display_version' added
+    -- property 'model_number' added
+    -- property 'household_id' added (a unique identifier for all players in a household)
+
   v1.4  2015-04-11
   
     -- added "wifi_state" command (only Sonos Broker >= v0.6)
@@ -279,6 +294,21 @@ Edit file with this sample of mine:
             type = str
             sonos_recv = model
             visu_acl = rw
+
+        [[model_number]]
+            type = str
+            sonos_recv = model_number
+            visu_acl = rw
+    
+        [[display_version]]
+            type = str
+            sonos_recv = display_version
+            visu_acl = rw
+    
+        [[household_id]]
+            type = str
+            sonos_recv = household_id
+            visu_acl = rw
     
         [[zone_name]]
             type = str
@@ -427,6 +457,16 @@ Edit file with this sample of mine:
                 type = bool
                 value = 0
 
+        [[balance]]
+            type = num
+            visu_acl = rw
+            sonos_recv = balance
+            sonos_send = balance
+            
+            [[[group_command]]]
+                type = bool
+                value = 0
+        
         
  This sonos.conf file implements most of the commands to interact with the Sonos Broker. Please follow the detailed
  description under the [command section in the Broker manual](../README.md#available-commands).
@@ -473,6 +513,7 @@ Edit file with this sample of mine:
     bass
     treble
     loudness
+    balance
 
 ## Methods
 
@@ -505,12 +546,14 @@ get_favorite_radiostations(<start_item>, <max_items>)
     }
 
     call this function with:
-    
     sh.sonos.get_favorite_radiostations()
     
 version()
 
     current plugin version
+    
+    call this function with:
+    sh.sonos.version()
 
 refresh_media_library(<display_option>)
     
@@ -521,7 +564,15 @@ refresh_media_library(<display_option>)
     call this function with:
     
     sh.sonos.refresh_media_library()
+
+discover()
+
+    Performs a manual scan for Sonos speaker in the network.
     
+    call this function with:
+    sh.sonos.discover()
+
+
 ## smartVISU Integration
 
 more information here: https://github.com/pfischi/shSonos/tree/develop/widget.smartvisu
