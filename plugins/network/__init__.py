@@ -285,7 +285,7 @@ class Network():
     def update_item(self, item, caller=None, source=None, dest=None):
         if 'nw_udp_send' in item.conf:
             addr, __, message = item.conf['nw_udp_send'].partition('=')
-            if message is None:
+            if not message:
                 message = str(item())
             else:
                 message = message.replace('itemvalue', str(item()))
