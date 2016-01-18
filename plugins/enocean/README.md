@@ -85,6 +85,7 @@ Example item.conf
                 enocean_rx_key = D
                 enocean_tx_eep = A5_38_08_03
                 enocean_tx_id_offset = 1
+                ref_level = 80
     [[handle]]
         enocean_rx_id = 01234567
         enocean_rx_eep = F6_10_00

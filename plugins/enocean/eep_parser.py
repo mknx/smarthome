@@ -122,6 +122,29 @@ class EEP_Parser():
         results['VALUE'] = value
         return results
 
+    def _parse_eep_A5_20_04(self, payload, status):
+        # Status command from heating radiator valve, for example Hora smartdrive MX, RORG = 0x07
+        logger.debug("enocean: processing A5_20_04")
+        results = {}
+        TS = ((status & 1 << 6) == 1 << 6) #1: temperature setpoint, 0: feed temperature
+        FL = ((status & 1 << 7) == 1 << 7) #1: failure, 0: normal
+        BLS= ((status & 1 << 5) == 1 << 5) #1: locked, 0: unlocked
+        results['BLS'] = BLS
+        # current valve position 0-100%
+        results['CP'] = payload[0]
+        #Current feet temperature or setpoint
+        if(TS == 1):
+            results['TS'] = 10 + (payload[1]/255*30)
+        else:
+           results['FT'] = 20 + (payload[1]/255*80)
+        #Current room temperature or failure code
+        if (FL == 0): 
+            results['TMP'] = 10 + (payload[2]/255*30)
+        else: 
+            results['FC'] = payload[2]
+        results['STATUS'] = payload[3]
+        return results
+
     def _parse_eep_A5_38_08(self, payload, status):
         results = {}
         if (payload[1] == 2):  # Dimming
