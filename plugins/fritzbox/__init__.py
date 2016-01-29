@@ -140,7 +140,7 @@ class FritzBox(lib.www.Client):
                 self._items.append(item)
             if value in commands:
                 return self.update_item
-            if value in ['switch', 'power', 'energy']:
+            if value in ['switch', 'power', 'energy', 'temperature']:
                 if 'fb_ain' in item.conf:
                     ain = item.conf['fb_ain']
                 elif 'fb_ain' in item.return_parent().conf:
@@ -304,6 +304,8 @@ class FritzBox(lib.www.Client):
                 command = 'getswitchpower'
             elif value == 'energy':
                 command = 'getswitchenergy'
+            elif value == 'temperature':
+                command = 'gettemperature'
             else:
                 command = 'getswitchstate'
             value = self._aha_command(command, item.conf['fb_ain'])
