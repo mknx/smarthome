@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # vim: set encoding=utf-8 tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 #########################################################################
 # Copyright 2013 KNX-User-Forum e.V.            http://knx-user-forum.de/
@@ -125,7 +124,6 @@ class Modbus():
             master = modbus_tcp.TcpMaster(host=self._tcp_ip,
                                           port=self._tcp_port)
             master.set_timeout(self._timeout)
-            # master.open()
             self._connected = True
             logger.info("Modbus TCP Master successfully created.")
         except modbus_tk.modbus.ModbusError as exc:
@@ -145,7 +143,6 @@ class Modbus():
                                        xonxoff=self._rtu_xonxoff)
             master = modbus_rtu.RtuMaster(serialPort)
             master.set_timeout(self._timeout)
-            # master.open()
             self._connected = True
             logger.info("Modbus RTU Master successfully created.")
 
@@ -268,7 +265,6 @@ class Modbus():
             logger.warning("Accumulated modbus read error count: {}"
                            .format(self._readErrorCount))
         # exceptions for connection problems
-        # if this happens connection is considerd lost
         except (ConnectionResetError,
                 ConnectionRefusedError,
                 Exception) as exc:  # For undefind pyserial exceptions
@@ -302,7 +298,6 @@ class Modbus():
                            .format(self._writeErrorCount))
             self.__manage_lost_connection(dataPoint)
         # exceptions for connection problems 
-        # if this happens connection is considerd lost
         except (ConnectionResetError,
                 ConnectionRefusedError,
                 Exception) as exc:  # For undefind pyserial exceptions
@@ -323,7 +318,7 @@ class Modbus():
             'pack': lambda x: x,  # lambda function
             'read_interval': None,
             'current_time': -1,  # counts down and if <0 reading is done
-            'init': False  # is set to True if read once. 
+            'init': False  # is set to True if read once.
         }
 
         param = 'modbus_addr'
